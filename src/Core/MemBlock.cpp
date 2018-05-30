@@ -2,27 +2,30 @@
 #include <cstring>
 
 #include "Core/Core.h"
-#include "Core/MemBlock.h"
 
 namespace ngx::Core {
 
 	MemBlock *MemBlock::New( size_t Size ) {
-	
-		MemBlock *ret = (MemBlock *) valloc( Size );
 
-        memset(ret, 0, Size);
+        void *TempPointer = valloc(Size);
 
-		if (nullptr == ret) {
-			return nullptr;
-		}
+        if (nullptr == TempPointer) {
+            return nullptr;
+        }
 
-		ret -> PointerToData = ret + sizeof(MemBlock);
-        ret -> PointerToHead = ret + sizeof(MemBlock);
+        memset(TempPointer, 0, Size);
+
+		MemBlock *ret = (MemBlock *) TempPointer;
+
+		ret -> PointerToHead = (u_char *)TempPointer + sizeof(MemBlock);
+        ret -> TotalSize = Size - sizeof(MemBlock);
+
+        ret -> PointerToData = ret ->PointerToHead;
         ret -> FreeSize = Size - sizeof(MemBlock);
-        ret -> TotalSize = Size;
 
 		ret -> Magic1 = MemBlockMagic;
-		ret -> Magic2 = (unsigned long)ret;
+		ret -> Magic2 = (unsigned long)TempPointer;
+        ret -> Next = nullptr;
 
 		return ret;
 	}
@@ -32,6 +35,7 @@ namespace ngx::Core {
              MemBlk -> PointerToData != nullptr &&
              MemBlockMagic == MemBlk->Magic1 &&
              (unsigned long)MemBlk == MemBlk->Magic2) {
+
             MemBlk -> TotalSize = 0;
             MemBlk -> PointerToData = nullptr;
             MemBlk -> Magic1 = 0;
@@ -68,11 +72,13 @@ namespace ngx::Core {
         return ret;
     }
 
+    bool MemBlock::IsInBlock(void *Address){
+        return (Address >= PointerToHead && Address < ((u_char *)PointerToHead + TotalSize));
+    }
+
     void MemBlock::Free(void *pointer) {
-        if (pointer >= PointerToHead &&
-            pointer <= ((u_char *)PointerToHead + TotalSize)) {
+        if (IsInBlock(pointer)) {
             UseCount -= 1;
         }
     }
-
 }
