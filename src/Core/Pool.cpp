@@ -19,23 +19,20 @@ namespace ngx::Core {
             ret = malloc(Size);
         }
         else {
-            ret = CurrentBlock -> Allocate(Size);
 
-            if (nullptr == ret) {
+            do {
+                ret = CurrentBlock -> Allocate(Size);
 
-                MemBlock *Next = MemBlock::New(BlockSize);
-
-                if (nullptr == Next) {
-                    return nullptr;
+                if (ret == nullptr) {
+                    if (CurrentBlock -> GetNext() == nullptr) {
+                        CurrentBlock -> SetNext(MemBlock::New(BlockSize));
+                    }
+                    CurrentBlock = CurrentBlock->GetNext();
+                } else {
+                    break;
                 }
-
-                CurrentBlock -> SetNext(Next);
-                CurrentBlock = Next;
-
-                ret = CurrentBlock->Allocate(Size);
-            }
+            } while (true);
         }
-
         return ret;
     }
 
@@ -58,6 +55,10 @@ namespace ngx::Core {
         MemBlock *Last = HeadBlock, *Current = nullptr, *Next = nullptr, *TempFreeBlockHead = nullptr, *TempFreeBlockTail = nullptr;
 
         Current = Last -> GetNext();
+
+        if (HeadBlock -> IsFreeBlock()) {
+            HeadBlock -> Reset();
+        }
 
         while (Current != nullptr) {
 
@@ -84,7 +85,7 @@ namespace ngx::Core {
             return;
         }
 
-        Current = Next = TempFreeBlockHead;
+        Current = TempFreeBlockHead;
 
         while (Current != nullptr) {
 
@@ -93,25 +94,6 @@ namespace ngx::Core {
             Current = Next;
         }
 
-//        int reserve = PoolReserveMemBlockCount;
-//
-//        while (reserve -- >0 && Next != nullptr) {
-//            Current = Next;
-//            Next = Next ->GetNext();
-//        }
-//
-//        Current -> SetNext(nullptr);
-//
-//        Current = Next;
-//
-//        while (Current != nullptr) {
-//
-//            Next = Current -> GetNext();
-//            MemBlock::Destroy(Current);
-//            Current = Next;
-//        }
-//
-//        Last -> SetNext(TempFreeBlockHead);
-
+        CurrentBlock = HeadBlock;
     };
 }
