@@ -23,6 +23,7 @@ namespace ngx::Core {
 			void GC() { /*Empty Code Block*/};
             void SetNext(MemBlock *Next) {this->Next = Next;}
             MemBlock *GetNext() { return Next;}
+			void Reset();
 	};
 }
 

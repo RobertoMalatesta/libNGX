@@ -46,6 +46,18 @@ int MemBlockTest() {
         cout<<"MemBlockTest Unsatisfied Allocate Failed!"<<endl;
     }
 
+    memBlk->Reset();
+    pData = memBlk->Allocate(100);
+
+    cout<<"MemBlockTest Reset Test Start..."<<endl;
+
+    if (pData != nullptr) {
+        cout<<"MemBlockTest Reset Test OK!"<<endl;
+    }
+    else {
+        cout<<"MemBlockTest Reset Failed!"<<endl;
+    }
+
     memBlk->Free(pData);
 
 	MemBlock::Destroy(memBlk);

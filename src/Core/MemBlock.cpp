@@ -20,8 +20,8 @@ namespace ngx::Core {
 		ret -> PointerToHead = (u_char *)TempPointer + sizeof(MemBlock);
         ret -> TotalSize = Size - sizeof(MemBlock);
 
-        ret -> PointerToData = ret ->PointerToHead;
-        ret -> FreeSize = Size - sizeof(MemBlock);
+        ret -> PointerToData = ret -> PointerToHead;
+        ret -> FreeSize = ret -> TotalSize;
 
 		ret -> Magic1 = MemBlockMagic;
 		ret -> Magic2 = (unsigned long)TempPointer;
@@ -80,5 +80,10 @@ namespace ngx::Core {
         if (IsInBlock(pointer)) {
             UseCount -= 1;
         }
+    }
+
+    void MemBlock::Reset() {
+        PointerToData = PointerToHead;
+        FreeSize = TotalSize;
     }
 }
