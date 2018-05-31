@@ -6,6 +6,12 @@ namespace ngx::Core {
 
     Pool::Pool(size_t BlockSize) {
 
+
+        if (BlockSize < 1024) {
+            BlockSize = 1024;
+            //[WARNING] Block Size too small
+        }
+
         this -> BlockSize = BlockSize;
         HeadBlock = MemBlock::New(BlockSize);
         CurrentBlock = HeadBlock;
@@ -15,11 +21,10 @@ namespace ngx::Core {
 
         void *ret = nullptr;
 
-        if (Size >  BlockSize - 2 * sizeof(MemBlock)) {
+        if (Size >  BlockSize - 4 * sizeof(MemBlock)) {
             ret = malloc(Size);
         }
         else {
-
             do {
                 ret = CurrentBlock -> Allocate(Size);
 
@@ -96,4 +101,26 @@ namespace ngx::Core {
 
         CurrentBlock = HeadBlock;
     };
+
+    void Pool::Reset() {
+
+        MemBlock *TempMemBlock = HeadBlock;
+
+        while (TempMemBlock != nullptr) {
+            TempMemBlock -> Reset();
+            TempMemBlock = TempMemBlock -> GetNext();
+        }
+        CurrentBlock = HeadBlock;
+    }
+
+    Pool::~Pool() {
+        MemBlock *TempMemBlock = HeadBlock, *Next = nullptr;
+
+        while (TempMemBlock != nullptr) {
+            Next = TempMemBlock -> GetNext();
+            MemBlock::Destroy(TempMemBlock);
+            TempMemBlock = Next;
+        }
+        HeadBlock = CurrentBlock = nullptr;
+    }
 }
