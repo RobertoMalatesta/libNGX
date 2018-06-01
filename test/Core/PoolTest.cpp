@@ -1,6 +1,3 @@
-#include <iostream>
-#include <vector>
-
 #include "Core/Core.h"
 
 using namespace std;

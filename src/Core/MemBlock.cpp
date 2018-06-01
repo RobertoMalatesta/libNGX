@@ -1,6 +1,3 @@
-#include <cstdlib>
-#include <cstring>
-
 #include "Core/Core.h"
 
 namespace ngx::Core {

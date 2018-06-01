@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "Core/Core.h"
 
 using namespace std;
