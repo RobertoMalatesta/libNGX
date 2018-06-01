@@ -8,11 +8,12 @@ namespace ngx::Core {
             MemBlock *HeadBlock, *CurrentBlock;
 
         public:
-
             Pool(size_t BlockSize = PageSize);
+            ~Pool();
             void *Allocate(size_t Size);
             void Free(void * pointer);
             void GC();
+            void Reset();
     };
 }
 

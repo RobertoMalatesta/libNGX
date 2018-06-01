@@ -17,10 +17,10 @@ namespace ngx::Core {
 			static void Destroy(MemBlock *MemBlk);
 			static MemBlock *AddressToMemBlock(void * Addr, size_t Size);
             bool IsInBlock(void *Address);
-            bool IsFreeBlock() { return UseCount == 0;}
+            bool IsFreeBlock() { return UseCount <= 0;}
             void *Allocate(size_t Size);
             void Free(void *pointer);
-			void GC() { /*Empty Code Block*/};
+			void GC() {/*Empty Code Block*/};
             void SetNext(MemBlock *Next) {this->Next = Next;}
             MemBlock *GetNext() { return Next;}
 			void Reset();

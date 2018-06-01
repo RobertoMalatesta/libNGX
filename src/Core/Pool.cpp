@@ -4,6 +4,12 @@ namespace ngx::Core {
 
     Pool::Pool(size_t BlockSize) {
 
+
+        if (BlockSize < 1024) {
+            BlockSize = 1024;
+            //[WARNING] Block Size too small
+        }
+
         this -> BlockSize = BlockSize;
         HeadBlock = MemBlock::New(BlockSize);
         CurrentBlock = HeadBlock;
@@ -13,27 +19,23 @@ namespace ngx::Core {
 
         void *ret = nullptr;
 
-        if (Size >  BlockSize - 2 * sizeof(MemBlock)) {
+        if (Size >  BlockSize - 4 * sizeof(MemBlock)) {
             ret = malloc(Size);
         }
         else {
-            ret = CurrentBlock -> Allocate(Size);
+            do {
+                ret = CurrentBlock -> Allocate(Size);
 
-            if (nullptr == ret) {
-
-                MemBlock *Next = MemBlock::New(BlockSize);
-
-                if (nullptr == Next) {
-                    return nullptr;
+                if (ret == nullptr) {
+                    if (CurrentBlock -> GetNext() == nullptr) {
+                        CurrentBlock -> SetNext(MemBlock::New(BlockSize));
+                    }
+                    CurrentBlock = CurrentBlock->GetNext();
+                } else {
+                    break;
                 }
-
-                CurrentBlock -> SetNext(Next);
-                CurrentBlock = Next;
-
-                ret = CurrentBlock->Allocate(Size);
-            }
+            } while (true);
         }
-
         return ret;
     }
 
@@ -56,6 +58,10 @@ namespace ngx::Core {
         MemBlock *Last = HeadBlock, *Current = nullptr, *Next = nullptr, *TempFreeBlockHead = nullptr, *TempFreeBlockTail = nullptr;
 
         Current = Last -> GetNext();
+
+        if (HeadBlock -> IsFreeBlock()) {
+            HeadBlock -> Reset();
+        }
 
         while (Current != nullptr) {
 
@@ -82,7 +88,7 @@ namespace ngx::Core {
             return;
         }
 
-        Current = Next = TempFreeBlockHead;
+        Current = TempFreeBlockHead;
 
         while (Current != nullptr) {
 
@@ -91,25 +97,28 @@ namespace ngx::Core {
             Current = Next;
         }
 
-//        int reserve = PoolReserveMemBlockCount;
-//
-//        while (reserve -- >0 && Next != nullptr) {
-//            Current = Next;
-//            Next = Next ->GetNext();
-//        }
-//
-//        Current -> SetNext(nullptr);
-//
-//        Current = Next;
-//
-//        while (Current != nullptr) {
-//
-//            Next = Current -> GetNext();
-//            MemBlock::Destroy(Current);
-//            Current = Next;
-//        }
-//
-//        Last -> SetNext(TempFreeBlockHead);
-
+        CurrentBlock = HeadBlock;
     };
+
+    void Pool::Reset() {
+
+        MemBlock *TempMemBlock = HeadBlock;
+
+        while (TempMemBlock != nullptr) {
+            TempMemBlock -> Reset();
+            TempMemBlock = TempMemBlock -> GetNext();
+        }
+        CurrentBlock = HeadBlock;
+    }
+
+    Pool::~Pool() {
+        MemBlock *TempMemBlock = HeadBlock, *Next = nullptr;
+
+        while (TempMemBlock != nullptr) {
+            Next = TempMemBlock -> GetNext();
+            MemBlock::Destroy(TempMemBlock);
+            TempMemBlock = Next;
+        }
+        HeadBlock = CurrentBlock = nullptr;
+    }
 }

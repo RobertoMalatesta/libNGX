@@ -76,6 +76,10 @@ namespace ngx::Core {
     void MemBlock::Free(void *pointer) {
         if (IsInBlock(pointer)) {
             UseCount -= 1;
+
+            if ((UseCount < 0)) {
+                //[UNREACHABLE BRANCH] BUG: Over free, will add log here later
+            }
         }
     }
 
