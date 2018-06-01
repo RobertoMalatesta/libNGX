@@ -16,3 +16,5 @@ namespace ngx::Core {
 #include "Core/Buf.h"
 #include "Core/Array.h"
 
+#include "Core/CryptoUtil.h"
+

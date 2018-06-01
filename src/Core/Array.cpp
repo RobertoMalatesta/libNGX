@@ -64,9 +64,9 @@ namespace ngx::Core {
 
             void *NewDataPointer;
 
-            size_t  New_Size = 2 * ( N >= NAlloc ? N : NAlloc) * Size;
+            uint  NewAlloc = 2 * ( N >= NAlloc ? N : NAlloc);
 
-            NewDataPointer = Allocator ->Allocate(New_Size);
+            NewDataPointer = Allocator ->Allocate(NewAlloc * Size);
 
             if (NewDataPointer == nullptr) {
                 return nullptr;
@@ -76,7 +76,7 @@ namespace ngx::Core {
 
             Allocator -> Free(PointerToData);
             PointerToData = NewDataPointer;
-            NAlloc = New_Size;
+            NAlloc = NewAlloc;
         }
 
         u_char *Ret = (u_char *)PointerToData + Size * ElementCount;
