@@ -2,9 +2,13 @@
 
 namespace ngx::Core {
 
-    const MemBlock constBlock;
+    namespace MemblockNS {
+        const MemBlock constBlock;
+    }
 
     MemBlock *MemBlock::New( size_t Size ) {
+
+        using namespace MemblockNS;
 
         void *TempPointer = valloc(Size);
 
@@ -12,7 +16,7 @@ namespace ngx::Core {
             return nullptr;
         }
 
-        memcpy(TempPointer, (void *)&constBlock, sizeof(MemBlock));
+        memcpy(TempPointer, (void *)&MemblockNS::constBlock, sizeof(MemBlock));
         MemBlock *ret = (MemBlock *) TempPointer;
 
         ret -> PointerToHead = (u_char *)TempPointer + sizeof(MemBlock);

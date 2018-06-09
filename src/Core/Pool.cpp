@@ -4,7 +4,6 @@ namespace ngx::Core {
 
     Pool::Pool(size_t BlockSize) {
 
-
         if (BlockSize < 1024) {
             BlockSize = 1024;
             //[WARNING] Block Size too small
@@ -44,15 +43,19 @@ namespace ngx::Core {
         MemBlock *TempBlock = HeadBlock;
 
         if (nullptr != pointer) {
+
             while (nullptr != TempBlock) {
                 if (TempBlock -> IsInBlock(*pointer)) {
                     TempBlock -> Free(pointer);
-                    *pointer = nullptr;
-                    return;
+                    goto Out;
                 }
                 TempBlock = TempBlock->GetNext();
             }
+
             free(*pointer);
+
+            Out:
+                *pointer = nullptr;
         }
     }
 
