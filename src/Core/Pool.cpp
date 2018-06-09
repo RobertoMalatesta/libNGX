@@ -39,18 +39,21 @@ namespace ngx::Core {
         return ret;
     }
 
-    void Pool::Free(void *pointer) {
+    void Pool::Free(void **pointer) {
 
         MemBlock *TempBlock = HeadBlock;
 
-        while (nullptr != TempBlock) {
-            if (TempBlock -> IsInBlock(pointer)) {
-                TempBlock -> Free(pointer);
-                return;
+        if (nullptr != pointer) {
+            while (nullptr != TempBlock) {
+                if (TempBlock -> IsInBlock(*pointer)) {
+                    TempBlock -> Free(pointer);
+                    *pointer = nullptr;
+                    return;
+                }
+                TempBlock = TempBlock->GetNext();
             }
-            TempBlock = TempBlock->GetNext();
+            free(*pointer);
         }
-        free(pointer);
     }
 
     void Pool::GC() {

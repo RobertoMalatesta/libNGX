@@ -1,13 +1,15 @@
 #include "ngx.h"
 
 namespace ngx::Core {
-	class Ref;
-	class MemBlock;
+    class Ref;
+    class MemBlock;
     class MemAllocator;
     class Pool;
-	class Buf;
+    class Buf;
     class Array;
 }
+
+#include "Core/OSAgent.h"
 
 #include "Core/Ref.h"
 #include "Core/MemAllocator.h"

@@ -1,30 +1,31 @@
 namespace ngx::Core {
-	static size_t PageSize = 4096;
 
     const unsigned long MemBlockMagic = 4268635721590065164;
 
-	class MemBlock: public MemAllocator{
-	    private:
-            int UseCount;
-            MemBlock *Next;
-            size_t TotalSize;
-            size_t FreeSize;
-            void *PointerToData, *PointerToHead;
-            unsigned long Magic1, Magic2;
+    class MemBlock: public MemAllocator{
+        private:
+            int UseCount = 0;
+            MemBlock *Next = nullptr;
+            size_t TotalSize = 0;
+            size_t FreeSize = 0;
+            void *PointerToData = nullptr, *PointerToHead = nullptr;
+            unsigned long Magic1 = MemBlockMagic, Magic2 = 0;
 
-	    public: 
-			static MemBlock *New(size_t Size = PageSize);
-			static void Destroy(MemBlock *MemBlk);
-			static MemBlock *AddressToMemBlock(void * Addr, size_t Size);
+        public:
+            static MemBlock *New(size_t Size = PageSize);
+            static void Destroy(MemBlock *MemBlk);
+            static MemBlock *AddressToMemBlock(void * Addr, size_t Size);
+            MemBlock() = default;
+            ~MemBlock();
             bool IsInBlock(void *Address);
             bool IsFreeBlock() { return UseCount <= 0;}
-            void *Allocate(size_t Size);
-            void Free(void *pointer);
-			void GC() {/*Empty Code Block*/};
+            virtual void *Allocate(size_t Size);
+            virtual void Free(void **pointer);
+            void GC() {/*Empty Code Block*/};
             void SetNext(MemBlock *Next) {this->Next = Next;}
             MemBlock *GetNext() { return Next;}
-			void Reset();
-	};
+            void Reset();
+    };
 }
 
 

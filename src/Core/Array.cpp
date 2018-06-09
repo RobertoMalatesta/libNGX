@@ -23,7 +23,7 @@ namespace ngx::Core {
     Array::~Array() {
 
         if (Allocator != nullptr && PointerToData != nullptr) {
-            Allocator -> Free(PointerToData);
+            Allocator -> Free(&PointerToData);
             PointerToData = nullptr;
         }
 
@@ -47,7 +47,7 @@ namespace ngx::Core {
 
             memcpy(NewDataPointer, PointerToData, (Size * NAlloc));
 
-            Allocator -> Free(PointerToData);
+            Allocator -> Free(&PointerToData);
             PointerToData = NewDataPointer;
             NAlloc = 2 * NAlloc;
         }
@@ -74,7 +74,7 @@ namespace ngx::Core {
 
             memcpy(NewDataPointer, PointerToData, (Size * ElementCount));
 
-            Allocator -> Free(PointerToData);
+            Allocator -> Free(& PointerToData);
             PointerToData = NewDataPointer;
             NAlloc = NewAlloc;
         }

@@ -2,7 +2,9 @@
 
 namespace ngx::Core {
 
-	MemBlock *MemBlock::New( size_t Size ) {
+    const MemBlock constBlock;
+
+    MemBlock *MemBlock::New( size_t Size ) {
 
         void *TempPointer = valloc(Size);
 
@@ -10,50 +12,44 @@ namespace ngx::Core {
             return nullptr;
         }
 
-        memset(TempPointer, 0, Size);
+        memcpy(TempPointer, (void *)&constBlock, sizeof(MemBlock));
+        MemBlock *ret = (MemBlock *) TempPointer;
 
-		MemBlock *ret = (MemBlock *) TempPointer;
-
-		ret -> PointerToHead = (u_char *)TempPointer + sizeof(MemBlock);
+        ret -> PointerToHead = (u_char *)TempPointer + sizeof(MemBlock);
         ret -> TotalSize = Size - sizeof(MemBlock);
-
         ret -> PointerToData = ret -> PointerToHead;
         ret -> FreeSize = ret -> TotalSize;
+        ret -> Magic2 = (unsigned long)TempPointer;
 
-		ret -> Magic1 = MemBlockMagic;
-		ret -> Magic2 = (unsigned long)TempPointer;
-        ret -> Next = nullptr;
+        return ret;
+    }
 
-		return ret;
-	}
-	
-	void MemBlock::Destroy( MemBlock *MemBlk ) {
-		if ( nullptr != MemBlk &&
-             MemBlk -> PointerToData != nullptr &&
-             MemBlockMagic == MemBlk->Magic1 &&
-             (unsigned long)MemBlk == MemBlk->Magic2) {
+    MemBlock::~MemBlock() {
+        TotalSize = Magic1 = Magic2 = 0;
+        PointerToData = nullptr;
+    };
 
-            MemBlk -> TotalSize = 0;
-            MemBlk -> PointerToData = nullptr;
-            MemBlk -> Magic1 = 0;
-            MemBlk -> Magic2 = 0;
-			free((void *) MemBlk);
-		}
-	}
+    void MemBlock::Destroy( MemBlock *MemBlk ) {
+        if ( nullptr != MemBlk && MemBlockMagic == MemBlk->Magic1 &&
+                (unsigned long)MemBlk == MemBlk->Magic2 &&
+                MemBlk -> PointerToData != nullptr) {
+                delete MemBlk;
+        }
+    }
 
-	MemBlock *MemBlock::AddressToMemBlock(void *Addr, size_t Size) {
+    MemBlock *MemBlock::AddressToMemBlock(void *Addr, size_t Size) {
 
-		MemBlock * MemBlk = (MemBlock *)( (size_t)Addr & ~(Size - 1));
+        MemBlock * MemBlk = (MemBlock *)( (size_t)Addr & ~(Size - 1));
 
-		if (nullptr != MemBlk
+        if (nullptr != MemBlk
             && MemBlk -> Magic1 == MemBlockMagic
             && MemBlk -> Magic2 == (unsigned long)MemBlk) {
 
             return MemBlk;
         }
 
-		return nullptr;
-	}
+        return nullptr;
+    }
 
     void *MemBlock::Allocate(size_t Size) {
 
@@ -73,10 +69,10 @@ namespace ngx::Core {
         return (Address >= PointerToHead && Address < ((u_char *)PointerToHead + TotalSize));
     }
 
-    void MemBlock::Free(void *pointer) {
-        if (IsInBlock(pointer)) {
+    void MemBlock::Free(void **pointer) {
+        if (nullptr != pointer && IsInBlock(*pointer)) {
+            *pointer = nullptr;
             UseCount -= 1;
-
             if ((UseCount < 0)) {
                 //[UNREACHABLE BRANCH] BUG: Over free, will add log here later
             }
