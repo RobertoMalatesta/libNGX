@@ -46,4 +46,6 @@ namespace ngx::Core {
             void Md5Update (u_char *Data, size_t Size);
             void Md5Final (u_char Result[16], size_t Size);
     };
+
+    uint32_t murmur_hash2(u_char *data, size_t len);
 }

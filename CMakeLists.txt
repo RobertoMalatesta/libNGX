@@ -4,11 +4,13 @@ project(NgxTest)
 project(NgxLibrary)
 set(CMAKE_CXX_STANDARD 14)
 
-set(SOURCE_FILES 
-		src/Core/MemBlock.cpp
-		src/Core/Pool.cpp
-		src/Core/Buf.cpp
-        src/Core/Array.cpp)
+set(SOURCE_FILES
+        src/Core/MemBlock.cpp
+        src/Core/Pool.cpp
+        src/Core/Buf.cpp
+        src/Core/Array.cpp
+        src/Core/Queue.cpp
+        src/Core/CryptoUtil.cpp)
 
 set(TEST_FILES
         test/Core/Test.cpp

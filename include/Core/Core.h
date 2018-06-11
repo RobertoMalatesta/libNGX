@@ -5,8 +5,9 @@ namespace ngx::Core {
     class MemBlock;
     class MemAllocator;
     class Pool;
-    class Buf;
     class Array;
+    class Buf;
+    class Queue;
 }
 
 #include "Core/OSAgent.h"
@@ -15,8 +16,9 @@ namespace ngx::Core {
 #include "Core/MemAllocator.h"
 #include "Core/MemBlock.h"
 #include "Core/Pool.h"
-#include "Core/Buf.h"
 #include "Core/Array.h"
+#include "Core/Buf.h"
+#include "Core/Queue.h"
 
 #include "Core/CryptoUtil.h"
 
