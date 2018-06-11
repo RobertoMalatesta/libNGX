@@ -10,7 +10,8 @@ set(SOURCE_FILES
         src/Core/Buf.cpp
         src/Core/Array.cpp
         src/Core/Queue.cpp
-        src/Core/CryptoUtil.cpp)
+        src/Core/CryptoUtil.cpp
+        src/Core/Arch.cpp)
 
 set(TEST_FILES
         test/Core/Test.cpp

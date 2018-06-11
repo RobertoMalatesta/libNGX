@@ -8,6 +8,9 @@ namespace ngx::Core {
     class Array;
     class Buf;
     class Queue;
+    class List;
+    class ListCarriage;
+    class ListIterator;
 }
 
 #include "Core/OSAgent.h"
@@ -19,6 +22,7 @@ namespace ngx::Core {
 #include "Core/Array.h"
 #include "Core/Buf.h"
 #include "Core/Queue.h"
+#include "Core/List.h"
 
 #include "Core/CryptoUtil.h"
 
