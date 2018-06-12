@@ -7,9 +7,6 @@ using namespace ngx::Core;
 int PoolTest() {
 
     Pool pool;
-
-    cout<<"Pool Class Test Start..."<<endl;
-
     cout<<"Pool Allocate Start..."<<endl;
 
     void *p1 = pool.Allocate(100);          // Test if Pool can allocate small object
@@ -20,7 +17,7 @@ int PoolTest() {
     cout<<"Pool Allocate p2="<<p1<<endl;
     pool.Free(&p1);
 
-    p1 = pool.Allocate(10000);              // Test if Pool can allocate big object
+    p1 = pool.Allocate(1000);              // Test if Pool can allocate big object
     cout<<"Pool Allocate p3="<<p1<<endl;
     pool.Free(&p1);
 
@@ -44,8 +41,8 @@ int PoolTest() {
     }
     pool.GC();  // Call GC to destroy free blocks
 
-    for (auto it = PointerList.begin(); it != PointerList.end(); it++){ // Free all the rest objects
-        pool.Free(&(*it));
+    for (auto &it : PointerList) { // Free all the rest objects
+        pool.Free(&it);
     }
 
     pool.GC();  // Call GC to destroy free blocks, now the Pool returns to the origin state

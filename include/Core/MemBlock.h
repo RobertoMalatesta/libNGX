@@ -1,7 +1,5 @@
 namespace ngx::Core {
 
-    const unsigned long MemBlockMagic = 4268635721590065164;
-
     class MemBlock: public MemAllocator{
         private:
             int UseCount = 0;
@@ -9,13 +7,12 @@ namespace ngx::Core {
             size_t TotalSize = 0;
             size_t FreeSize = 0;
             void *PointerToData = nullptr, *PointerToHead = nullptr;
-            unsigned long Magic1 = MemBlockMagic, Magic2 = 0;
+            unsigned long Magic = 0;
 
         public:
-            static MemBlock *New(size_t Size = PageSize);
-            static void Destroy(MemBlock *MemBlk);
+            MemBlock(size_t Size);
+            void *operator new  (size_t Size) throw() ;
             static MemBlock *AddressToMemBlock(void * Addr, size_t Size);
-            MemBlock() = default;
             ~MemBlock();
             bool IsInBlock(void *Address);
             bool IsFreeBlock() { return UseCount <= 0;}

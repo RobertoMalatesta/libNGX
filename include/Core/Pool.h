@@ -1,5 +1,7 @@
 namespace ngx::Core {
 
+    static int DefaultPoolResidual = 8;
+
     class Pool : public MemAllocator{
         private:
             size_t BlockSize;
@@ -10,7 +12,7 @@ namespace ngx::Core {
             ~Pool();
             virtual void *Allocate(size_t Size);
             virtual void Free(void ** pointer);
-            void GC();
+            void GC(int Residual=DefaultPoolResidual);
             void Reset();
     };
 }

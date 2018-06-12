@@ -8,7 +8,7 @@ int MemBlockTest() {
 
     cout<<"MemBlock Class Test Start!"<<endl;
 
-	MemBlock *memBlk = MemBlock::New(4096);
+	MemBlock *memBlk = new MemBlock(4096);
 
     cout<<"MemBlockTest AddressToMemBlock Start..."<<endl;
 
@@ -60,6 +60,7 @@ int MemBlockTest() {
 
     memBlk->Free(&pData);
 
-	MemBlock::Destroy(memBlk);
+    delete memBlk;
+
 	return 0;
 }

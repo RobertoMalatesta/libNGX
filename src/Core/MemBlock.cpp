@@ -2,13 +2,20 @@
 
 namespace ngx::Core {
 
-    namespace MemblockNS {
-        const MemBlock constBlock;
+    MemBlock::MemBlock(size_t Size) {
+        PointerToHead = (u_char *)this + sizeof(MemBlock);
+        TotalSize = Size - sizeof(MemBlock);
+        PointerToData = PointerToHead;
+        FreeSize = TotalSize;
+        Magic = (unsigned long)this;
     }
 
-    MemBlock *MemBlock::New( size_t Size ) {
+    MemBlock::~MemBlock() {
+        TotalSize = Magic = 0;
+        PointerToData = nullptr;
+    };
 
-        using namespace MemblockNS;
+    void *MemBlock::operator new (size_t Size) throw() {
 
         void *TempPointer = valloc(Size);
 
@@ -16,39 +23,14 @@ namespace ngx::Core {
             return nullptr;
         }
 
-        memcpy(TempPointer, (void *)&MemblockNS::constBlock, sizeof(MemBlock));
-        MemBlock *ret = (MemBlock *) TempPointer;
-
-        ret -> PointerToHead = (u_char *)TempPointer + sizeof(MemBlock);
-        ret -> TotalSize = Size - sizeof(MemBlock);
-        ret -> PointerToData = ret -> PointerToHead;
-        ret -> FreeSize = ret -> TotalSize;
-        ret -> Magic2 = (unsigned long)TempPointer;
-
-        return ret;
-    }
-
-    MemBlock::~MemBlock() {
-        TotalSize = Magic1 = Magic2 = 0;
-        PointerToData = nullptr;
-    };
-
-    void MemBlock::Destroy( MemBlock *MemBlk ) {
-        if ( nullptr != MemBlk && MemBlockMagic == MemBlk->Magic1 &&
-                (unsigned long)MemBlk == MemBlk->Magic2 &&
-                MemBlk -> PointerToData != nullptr) {
-                delete MemBlk;
-        }
+        return TempPointer;
     }
 
     MemBlock *MemBlock::AddressToMemBlock(void *Addr, size_t Size) {
 
         MemBlock * MemBlk = (MemBlock *)( (size_t)Addr & ~(Size - 1));
 
-        if (nullptr != MemBlk
-            && MemBlk -> Magic1 == MemBlockMagic
-            && MemBlk -> Magic2 == (unsigned long)MemBlk) {
-
+        if (nullptr != MemBlk && MemBlk -> Magic == (unsigned long)MemBlk) {
             return MemBlk;
         }
 
