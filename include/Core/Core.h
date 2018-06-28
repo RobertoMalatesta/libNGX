@@ -11,6 +11,8 @@ namespace ngx::Core {
     class List;
     class ListCarriage;
     class ListIterator;
+    class RBTreeNode;
+    class RBTRee;
 }
 
 #include "Core/OSAgent.h"
@@ -23,6 +25,6 @@ namespace ngx::Core {
 #include "Core/Buf.h"
 #include "Core/Queue.h"
 #include "Core/List.h"
-
+#include "Core/RBTree.h"
 #include "Core/CryptoUtil.h"
 

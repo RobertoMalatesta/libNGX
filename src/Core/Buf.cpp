@@ -2,7 +2,7 @@
 
 namespace ngx::Core {
 
-    Buf::Buf(Pool *Allocator, size_t Size) {
+    Buf::Buf(MemAllocator *Allocator, size_t Size) {
 
         if (nullptr == Allocator) {
             return;

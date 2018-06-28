@@ -4,7 +4,7 @@ namespace ngx::Core {
 
         private:
 
-            Pool *Allocator = nullptr;
+            MemAllocator *Allocator = nullptr;
             u_char *Start = nullptr, *End = nullptr, *Pos = nullptr, *Last = nullptr;
             Buf *Shadow = nullptr;
 
@@ -26,10 +26,7 @@ namespace ngx::Core {
             };
 
         public:
-            Buf(Pool * Allocator, size_t Size);
+            Buf(MemAllocator * Allocator, size_t Size);
             ~Buf();
     };
-
-
-
 }
