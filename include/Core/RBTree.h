@@ -6,7 +6,8 @@ namespace ngx::Core {
             uint Key;
             RBTreeNode *Left, *Right, *Parent;
             u_char Color;
-            u_char Data;
+            uint DataSize;
+            u_char Data[0];
 
         public:
 
@@ -16,9 +17,12 @@ namespace ngx::Core {
             void SetBlack();
             void SetRed();
             void CopyColor(RBTreeNode *Node);
+            int Compare(RBTreeNode *Node);
+
+            static RBTreeNode *CreateFromAllocator(MemAllocator *Allocator, uint DateSize);
+            static void FreeFromAllocator(RBTreeNode *Node);
 
             friend class RBTree;
-
     };
 
     typedef void *(RBTreeInsertFunc) (RBTreeNode *Root, RBTreeNode *Node, RBTreeNode *Sentinel);
@@ -33,11 +37,11 @@ namespace ngx::Core {
 
         public:
             RBTree(MemAllocator *Allocator);
-            static RBTree *CreateFromAllocator(MemAllocator *Allocator);
             void Insert(RBTreeNode *Node);
             void Delete(RBTreeNode *Node);
             RBTreeNode *Next(RBTreeNode *Node);
+
+            static RBTree *CreateFromAllocator(MemAllocator *Allocator);
+            static void FreeFromAllocator( RBTree * Tree);
     };
-
-
 }

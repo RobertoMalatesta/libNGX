@@ -11,6 +11,7 @@ set(SOURCE_FILES
         src/Core/Array.cpp
         src/Core/Queue.cpp
         src/Core/List.cpp
+        src/Core/RBTree.cpp
         src/Core/CryptoUtil.cpp
         src/Core/Arch.cpp)
 
