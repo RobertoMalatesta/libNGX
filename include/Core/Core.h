@@ -28,3 +28,8 @@ namespace ngx::Core {
 #include "Core/RBTree.h"
 #include "Core/CryptoUtil.h"
 
+#include "Core/Connection.h"
+#include "Core/Listening.h"
+#include "Core/ThreadPool.h"
+#include "Core/Time.h"
+
