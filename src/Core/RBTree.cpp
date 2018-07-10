@@ -17,11 +17,17 @@ RBTreeNode *RBTreeNode::CreateFromAllocator(MemAllocator *Allocator, size_t Date
     return Ret;
 }
 
-void RBTreeNode::FreeFromAllocator(RBTreeNode *Node) {
+void RBTreeNode::FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node) {
+
+    if (nullptr != Node);
+    Allocator ->Free((void **)Node);
 }
 
+
 int RBTreeNode::Compare(_RBTreeNode_ *Node) {
-    return 0;
+
+    RBTreeNode *RightOperator = (RBTreeNode *)Node;
+    return Key - RightOperator->Key;
 }
 
 RBTree::RBTree(MemAllocator *Allocator, size_t DataSize) {
@@ -40,6 +46,88 @@ RBTree::RBTree(MemAllocator *Allocator, size_t DataSize) {
 
     Sentinel->SetBlack();
     Root = Sentinel;
+}
+
+RBTree::~RBTree() {
+
+    if (Sentinel != nullptr) {
+        RBTreeNode::FreeFromAllocator(this->Allocator, (RBTreeNode **)&Sentinel);
+    }
+}
+
+
+RBTree *RBTree::CreateFromAllocator(MemAllocator *Allocator, size_t DataSize) {
+
+    void * PointerToMemory = Allocator->Allocate(sizeof(RBTree));
+
+    if (nullptr == PointerToMemory) {
+        return nullptr;
+    }
+
+    return new (PointerToMemory) RBTree(Allocator, DataSize);
+}
+
+void RBTree::FreeFromAllocator(MemAllocator *Allocator, RBTree **Tree) {
+
+    if (nullptr != Tree && nullptr != *Tree) {
+        (*Tree)->~RBTree();
+        Allocator -> Free((void **)Tree);
+    }
+}
+
+void RBTree::RotateLeft(ngx::Core::_RBTreeNode_ *Node) {
+
+    _RBTreeNode_ *Temp;
+
+    Temp = Node->Right;
+    Node->Right = Temp->Left;
+
+    if (Temp->Left != Sentinel) {
+        Temp->Left->Parent = Node;
+    }
+
+    Temp->Parent = Node->Parent;
+
+    if (Node == Root) {
+        Root = Temp;
+    }
+    else if (Node == Node->Parent->Left) {
+        Node->Parent->Left=Temp;
+    }
+    else {
+        Node->Parent->Right=Temp;
+    }
+
+    Temp->Left=Node;
+    Node->Parent=Temp;
+
+}
+
+void RBTree::RotateRight(ngx::Core::_RBTreeNode_ *Node) {
+
+    _RBTreeNode_ *Temp;
+
+    Temp = Node->Left;
+    Node->Left = Temp->Right;
+
+    if (Temp->Right !=Sentinel) {
+        Temp->Right->Parent =Node;
+    }
+
+    Temp->Parent = Node->Parent;
+
+    if (Node == Root) {
+        Root = Temp;
+    }
+    else if (Node == Node->Parent->Right) {
+        Node->Parent->Right = Temp;
+    }
+    else {
+        Node->Parent->Left = Temp;
+    }
+
+    Temp->Right = Node;
+    Node->Parent = Temp;
 }
 
 void RBTree::Insert(ngx::Core::_RBTreeNode_ *Node) {
@@ -116,61 +204,6 @@ void RBTree::Insert(ngx::Core::_RBTreeNode_ *Node) {
     Root ->SetBlack();
 }
 
-void RBTree::RotateLeft(ngx::Core::_RBTreeNode_ *Node) {
-
-    _RBTreeNode_ *Temp;
-
-    Temp = Node->Right;
-    Node->Right = Temp->Left;
-
-    if (Temp->Left != Sentinel) {
-        Temp->Left->Parent = Node;
-    }
-
-    Temp->Parent = Node->Parent;
-
-    if (Node == Root) {
-        Root = Temp;
-    }
-    else if (Node == Node->Parent->Left) {
-        Node->Parent->Left=Temp;
-    }
-    else {
-        Node->Parent->Right=Temp;
-    }
-
-    Temp->Left=Node;
-    Node->Parent=Temp;
-
-}
-
-void RBTree::RotateRight(ngx::Core::_RBTreeNode_ *Node) {
-
-    _RBTreeNode_ *Temp;
-
-    Temp = Node->Left;
-    Node->Left = Temp->Right;
-
-    if (Temp->Right !=Sentinel) {
-        Temp->Right->Parent =Node;
-    }
-
-    Temp->Parent = Node->Parent;
-
-    if (Node == Root) {
-        Root = Temp;
-    }
-    else if (Node == Node->Parent->Right) {
-        Node->Parent->Right = Temp;
-    }
-    else {
-        Node->Parent->Left = Temp;
-    }
-
-    Temp->Right = Node;
-    Node->Parent = Temp;
-}
-
 _RBTreeNode_ *RBTree::Next(ngx::Core::_RBTreeNode_ *Node) {
 
     _RBTreeNode_ *Ret, *Parent;
@@ -197,4 +230,153 @@ _RBTreeNode_ *RBTree::Next(ngx::Core::_RBTreeNode_ *Node) {
         }
         Node = Node -> Parent;
     }
+}
+
+void RBTree::Delete(ngx::Core::_RBTreeNode_ *Node) {
+
+    _RBTreeNode_ *Subst, *Temp, *W;
+
+    if ( Node->Left == Sentinel) {
+        Temp = Node->Right;
+        Subst = Node;
+    }
+    else if (Node->Right == Sentinel) {
+        Temp = Node->Left;
+        Subst = Node;
+    }
+    else {
+        Subst = Node->Right;
+
+        while (Subst->Left != Sentinel) {
+            Subst = Subst->Left;
+        }
+
+        if (Subst->Left !=Sentinel) {
+            Temp = Subst->Left;
+        }
+        else {
+            Temp = Subst->Right;
+        }
+    }
+
+    if (Subst == Root) {
+        Root = Temp;
+        Temp->SetBlack();
+        Node->Left = nullptr;
+        Node->Right = nullptr;
+        Node->Parent = nullptr;
+        return;
+    }
+
+    if (Subst == Subst->Parent->Left) {
+        Subst->Parent->Left = Temp;
+    }
+    else {
+        Subst->Parent->Right = Temp;
+    }
+
+    if (Subst == Node) {
+        Temp->Parent = Subst;
+    }
+    else {
+
+        if (Subst->Parent == Node) {
+            Temp->Parent = Subst;
+        }
+        else {
+            Temp->Parent = Subst->Parent;
+        }
+        Subst->Left = Node->Left;
+        Subst->Right = Node->Right;
+        Subst->Parent = Node->Parent;
+        Subst->CopyColor(Node);
+
+        if (Node == Root) {
+            Root = Subst;
+        }
+        else {
+            if (Node == Node->Parent->Left) {
+                Node->Parent->Left = Subst;
+            }
+            else {
+                Node->Parent->Right =Subst;
+            }
+        }
+
+        if (Subst->Left != Sentinel) {
+            Subst->Left->Parent =Subst;
+        }
+        if (Subst->Right != Sentinel) {
+            Subst->Right->Parent = Subst;
+        }
+    }
+
+    if (Subst->IsRed()) {
+        return;
+    }
+
+    while (Temp != Root && Temp->IsBlack()) {
+
+        if (Temp == Temp->Parent->Left) {
+            W = Temp->Parent->Right;
+
+            if (W->IsRed()) {
+                W->SetBlack();
+                Temp->Parent->SetRed();
+                RotateLeft(Temp->Parent);
+            }
+
+            if (W->Left->IsBlack() && W->Right->IsBlack()) {
+                W->SetRed();
+                Temp = Temp->Parent;
+            }
+            else {
+
+                if (W->Right->IsBlack()) {
+                    W->Left->IsBlack();
+                    W->SetRed();
+                    RotateRight(W);
+                    W = Temp->Parent->Right;
+                }
+
+                W->CopyColor(Temp->Parent);
+                Temp->Parent->SetBlack();
+                W->Right->SetBlack();
+                RotateLeft(Temp->Parent);
+                Temp=Root;
+            }
+        }
+        else {
+
+            W = Temp->Parent->Left;
+
+            if (W->IsRed()) {
+                W->SetBlack();
+                Temp->Parent->SetRed();
+                RotateRight(Temp->Parent);
+                W = Temp->Parent->Left;
+            }
+
+            if (W->Left->IsBlack() && W->Right->IsBlack()) {
+                W->SetRed();
+                Temp = Temp->Parent;
+            }
+            else {
+
+                if (W->Left -> IsBlack()) {
+                    W->Right->SetBlack();
+                    W->SetRed();
+                    RotateLeft(W);
+                    W = Temp->Parent->Left;
+                }
+
+                W->CopyColor(Temp->Parent);
+                Temp->Parent->SetBlack();
+                W->Left->SetBlack();
+                RotateRight(Temp->Parent);
+                Temp = Root;
+            }
+        }
+    }
+    Temp->SetBlack();
 }

@@ -26,7 +26,7 @@ namespace ngx::Core {
 
             virtual int Compare(_RBTreeNode_ *Node);
             static RBTreeNode *CreateFromAllocator(MemAllocator *Allocator, size_t DateSize);
-            static void FreeFromAllocator(RBTreeNode *Node);
+            static void FreeFromAllocator(MemAllocator *Allocator,RBTreeNode **Node);
             friend class RBTree;
     };
 
@@ -44,11 +44,12 @@ namespace ngx::Core {
 
         public:
             RBTree(MemAllocator *Allocator, size_t DataSize);
+            ~RBTree();
             void Insert(_RBTreeNode_ *Node);
             void Delete(_RBTreeNode_ *Node);
             _RBTreeNode_ *Next(_RBTreeNode_ *Node);
 
-            static RBTree *CreateFromAllocator(MemAllocator *Allocator);
-            static void FreeFromAllocator( RBTree * Tree);
+            static RBTree *CreateFromAllocator(MemAllocator *Allocator, size_t DataSize);
+            static void FreeFromAllocator(MemAllocator *Allocator, RBTree **Tree);
     };
 }

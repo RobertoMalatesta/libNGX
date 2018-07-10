@@ -38,11 +38,11 @@ namespace ngx::Core {
 
     void cpuinfo() {
 
-        u_char    *vendor;
-        uint32_t   vbuf[5], cpu[4], model;
+        u_char *vendor;
+        uint32_t vbuf[5], cpu[4], model;
 
-        if (strcmp(CPU_Module, "I386")==0 || strcmp(CPU_Module, "AMD64") == 0||
-                strcmp(CPU_Module, "GCC") == 0 || strcmp(CPU_Module, "INTEL") == 0) {
+        if (strcmp(CPU_Module, "I386") == 0 || strcmp(CPU_Module, "AMD64") == 0 ||
+            strcmp(CPU_Module, "GCC") == 0 || strcmp(CPU_Module, "INTEL") == 0) {
             return;
         }
 
@@ -62,7 +62,7 @@ namespace ngx::Core {
 
         cpuid(1, cpu);
 
-        if (strcmp((const char *)vendor, "GenuineIntel") == 0) {
+        if (strcmp((const char *) vendor, "GenuineIntel") == 0) {
 
             switch ((cpu[0] & 0xf00) >> 8) {
 
@@ -93,7 +93,7 @@ namespace ngx::Core {
                     break;
             }
 
-        } else if (strcmp((const char *)vendor, "AuthenticAMD") == 0) {
+        } else if (strcmp((const char *) vendor, "AuthenticAMD") == 0) {
             CacheLineSize = 64;
         }
     }

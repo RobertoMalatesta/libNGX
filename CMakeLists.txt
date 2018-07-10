@@ -13,14 +13,15 @@ set(SOURCE_FILES
         src/Core/List.cpp
         src/Core/RBTree.cpp
         src/Core/CryptoUtil.cpp
-        src/Core/Arch.cpp)
+        src/Core/Arch.cpp
+        src/Core/Time.cpp)
 
 set(TEST_FILES
         test/Core/Test.cpp
         test/Core/MemBlockTest.cpp
         test/Core/PoolTest.cpp
         test/Core/BufTest.cpp
-        test/Core/ArrayTest.cpp)
+        test/Core/ArrayTest.cpp test/Core/TimeTest.cpp)
 include_directories(./include)
 
 add_executable(NgxTest ${SOURCE_FILES} ${TEST_FILES})

@@ -3,7 +3,7 @@ extern int MemBlockTest();
 extern int PoolTest();
 extern int BufTest();
 extern int ArrayTest();
-
+extern int TimeTest();
 
 int main() {
 
@@ -11,5 +11,6 @@ int main() {
     PoolTest();
 	BufTest();
 	ArrayTest();
+	TimeTest();
 	return 0;
 }

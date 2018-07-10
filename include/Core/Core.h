@@ -12,10 +12,12 @@ namespace ngx::Core {
     class ListCarriage;
     class ListIterator;
     class RBTreeNode;
-    class RBTRee;
+    class RBTree;
 }
 
+#include "Core/Arch.h"
 #include "Core/OSAgent.h"
+#include "Core/Time.h"
 
 #include "Core/Ref.h"
 #include "Core/MemAllocator.h"
@@ -31,5 +33,3 @@ namespace ngx::Core {
 #include "Core/Connection.h"
 #include "Core/Listening.h"
 #include "Core/ThreadPool.h"
-#include "Core/Time.h"
-
