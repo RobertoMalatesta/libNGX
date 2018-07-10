@@ -9,11 +9,14 @@ int TimeTest () {
     TimeModuleInit();
     GetTimeStamp();
 
+    printf("Testing Time module...");
+
     for (int i=0; i<10; i++) {
         printf("-----------------------------------------\n");
 
         {
             char TimeBuf[ErrorLogTimeSize];
+            memset(TimeBuf, 0 , ErrorLogTimeSize);
             WriteErrorLogTime(TimeBuf, ErrorLogTimeSize);
             printf("%s\n",TimeBuf);
         }

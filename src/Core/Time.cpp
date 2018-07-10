@@ -78,7 +78,7 @@ namespace ngx::Core {
 
         memcpy(Buf, TimeStringRingBuffer[Version].ErrorLogTime, ErrorLogTimeSize);
 
-        return ErrorLogTimeSize;
+        return ErrorLogTimeSize-1;
     }
 
     int WriteHttpTime(char *Buf, size_t Size) {
@@ -91,7 +91,7 @@ namespace ngx::Core {
 
         memcpy(Buf, TimeStringRingBuffer[Version].HttpTime, HttpTimeSize);
 
-        return HttpTimeSize;
+        return HttpTimeSize-1;
     }
 
     int WriteHttpLogTime(char *Buf, size_t Size) {
@@ -104,7 +104,7 @@ namespace ngx::Core {
 
         memcpy(Buf, TimeStringRingBuffer[Version].HttpLogTime, HttpLogTimeSize);
 
-        return HttpLogTimeSize;
+        return HttpLogTimeSize-1;
     }
 
     int WriteHttpLogTimeISO8601(char *Buf, size_t Size) {
@@ -117,7 +117,7 @@ namespace ngx::Core {
 
         memcpy(Buf, TimeStringRingBuffer[Version].HttpLogTimeISO8601, HttpLogTimeISO8601Size);
 
-        return HttpLogTimeISO8601Size;
+        return HttpLogTimeISO8601Size-1;
     }
 
     int WriteSysLogTime(char *Buf, size_t Size) {
@@ -130,7 +130,7 @@ namespace ngx::Core {
 
         memcpy(Buf, TimeStringRingBuffer[Version].SysLogTime, SysLogTimeSize);
 
-        return SysLogTimeSize;
+        return SysLogTimeSize-1;
     }
 
     static int FetchTimeVersion() {

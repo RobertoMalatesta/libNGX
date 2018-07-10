@@ -11,8 +11,11 @@ namespace ngx::Core {
     class List;
     class ListCarriage;
     class ListIterator;
-    class RBTreeNode;
+    class _RBTreeNode_; // Base RBTreeNode Type
+    class RBTreeNode;   // Common RBTreeNode Type(with unsigned int key)
     class RBTree;
+    class Promise;
+    class ThreadPool;
 }
 
 #include "Core/Arch.h"
