@@ -18,8 +18,9 @@ namespace ngx::Core {
     class ThreadPool;
 }
 
-#include "Core/Arch.h"
-#include "Core/OSAgent.h"
+#include "Core/ArchX86.h"
+#include "Core/LinuxOSUtility.h"
+
 #include "Core/Time.h"
 
 #include "Core/Ref.h"
@@ -31,7 +32,8 @@ namespace ngx::Core {
 #include "Core/Queue.h"
 #include "Core/List.h"
 #include "Core/RBTree.h"
-#include "Core/CryptoUtil.h"
+#include "Core/Checksum.h"
+#include "Core/Hash.h"
 
 #include "Core/Connection.h"
 #include "Core/Listening.h"

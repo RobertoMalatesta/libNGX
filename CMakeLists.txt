@@ -12,9 +12,9 @@ set(SOURCE_FILES
         src/Core/Queue.cpp
         src/Core/List.cpp
         src/Core/RBTree.cpp
-        src/Core/CryptoUtil.cpp
-        src/Core/Arch.cpp
-        src/Core/Time.cpp)
+        src/Core/Hash.cpp
+        src/Core/ArchX86.cpp
+        src/Core/Time.cpp src/Core/Checksum.cpp include/Core/Hash.h)
 
 set(TEST_FILES
         test/Core/Test.cpp

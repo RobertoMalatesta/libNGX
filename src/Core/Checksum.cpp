@@ -1,15 +1,15 @@
-#include "Core/Core.h"
+#include <Core/Core.h>
 
 namespace ngx::Core {
 
-    static uint32_t crc32_table16[] = {
+    uint32_t crc32_table16[] = {
             0x00000000, 0x1db71064, 0x3b6e20c8, 0x26d930ac,
             0x76dc4190, 0x6b6b51f4, 0x4db26158, 0x5005713c,
             0xedb88320, 0xf00f9344, 0xd6d6a3e8, 0xcb61b38c,
             0x9b64c2b0, 0x86d3d2d4, 0xa00ae278, 0xbdbdf21c
     };
 
-    const uint32_t crc32_table256[] = {
+    uint32_t crc32_table256[] = {
             0x00000000, 0x77073096, 0xee0e612c, 0x990951ba,
             0x076dc419, 0x706af48f, 0xe963a535, 0x9e6495a3,
             0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
@@ -75,64 +75,4 @@ namespace ngx::Core {
             0xb3667a2e, 0xc4614ab8, 0x5d681b02, 0x2a6f2b94,
             0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
     };
-
-    uint32_t *crc32_table_short = crc32_table16;
-
-    uint32_t crc(u_char *data, size_t len) {
-
-        uint32_t  sum;
-
-        for (sum = 0; len; len--) {
-
-            /*
-             * gcc 2.95.2 x86 and icc 7.1.006 compile
-             * that operator into the single "rol" opcode,
-             * msvc 6.0sp2 compiles it into four opcodes.
-             */
-            sum = sum >> 1 | sum << 31;
-
-            sum += *data++;
-        }
-
-        return sum;
-    }
-
-    uint32_t murmur_hash2(u_char *data, size_t len) {
-
-        uint32_t  h = 0 ^ len, k;
-
-        while (len >= 4) {
-            k  = data[0];
-            k |= data[1] << 8;
-            k |= data[2] << 16;
-            k |= data[3] << 24;
-
-            k *= 0x5bd1e995;
-            k ^= k >> 24;
-            k *= 0x5bd1e995;
-
-            h *= 0x5bd1e995;
-            h ^= k;
-
-            data += 4;
-            len -= 4;
-        }
-
-        switch (len) {
-            case 3:
-                h ^= data[2] << 16;/* fall through */
-            case 2:
-                h ^= data[1] << 8;/* fall through */
-            case 1:
-                h ^= data[0];
-                h *= 0x5bd1e995;
-        }
-
-        h ^= h >> 13;
-        h *= 0x5bd1e995;
-        h ^= h >> 15;
-
-        return h;
-    }
-
 }
