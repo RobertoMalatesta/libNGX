@@ -16,6 +16,9 @@ namespace ngx::Core {
     class RBTree;
     class Promise;
     class ThreadPool;
+    class Connection;
+    class Listening;
+
 }
 
 #include "Core/ArchX86.h"

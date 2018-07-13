@@ -7,3 +7,6 @@
 
 #include <atomic>
 #include <thread>
+
+#include <netinet/in.h>
+#include <sys/socket.h>

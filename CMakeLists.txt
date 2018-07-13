@@ -14,7 +14,7 @@ set(SOURCE_FILES
         src/Core/RBTree.cpp
         src/Core/Hash.cpp
         src/Core/ArchX86.cpp
-        src/Core/Time.cpp src/Core/Checksum.cpp include/Core/Hash.h)
+        src/Core/Time.cpp src/Core/Checksum.cpp include/Core/Hash.h src/Core/ThreadPool.cpp)
 
 set(TEST_FILES
         test/Core/Test.cpp
