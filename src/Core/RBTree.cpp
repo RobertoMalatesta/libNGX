@@ -19,8 +19,9 @@ RBTreeNode *RBTreeNode::CreateFromAllocator(MemAllocator *Allocator, size_t Date
 
 void RBTreeNode::FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node) {
 
-    if (nullptr != Node);
-    Allocator ->Free((void **)Node);
+    if (nullptr != Node) {
+        Allocator ->Free((void **)Node);
+    }
 }
 
 

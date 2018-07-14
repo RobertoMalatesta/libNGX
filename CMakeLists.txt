@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.7)
 
 project(NgxTest)
 project(NgxLibrary)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 set(SOURCE_FILES
         src/Core/MemBlock.cpp
@@ -14,7 +14,10 @@ set(SOURCE_FILES
         src/Core/RBTree.cpp
         src/Core/Hash.cpp
         src/Core/ArchX86.cpp
-        src/Core/Time.cpp src/Core/Checksum.cpp include/Core/Hash.h src/Core/ThreadPool.cpp)
+        src/Core/Time.cpp
+        src/Core/Checksum.cpp
+        include/Core/Hash.h
+        src/Core/ThreadPool.cpp)
 
 set(TEST_FILES
         test/Core/Test.cpp
