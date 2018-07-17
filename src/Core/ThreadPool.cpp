@@ -3,18 +3,17 @@
 
 namespace ngx::Core {
 
-    static const Promise SleepPromise;
-
-    static Promise *Sleep(Promise *, void * ) {
+    Promise *Sleep(Promise *, void * ) {
         usleep(20);
         return nullptr;
     }
 
-    Promise::Promise() {
-        Callback = Sleep;
-        PointerToArg = nullptr;
-        Allocator = nullptr;
-        TPool = nullptr;
+    Promise::Promise(ThreadPool *Pool, PromiseCallback *Callback, void *PointerToArgs):
+            Queue(Pool->Sentinel, false) {
+
+        this->Callback = Callback;
+        this->PointerToArg = PointerToArgs;
+        this->Allocator = Pool -> Allocator;
     }
 
     void Promise::CleanSelf() {
@@ -24,44 +23,31 @@ namespace ngx::Core {
         }
     }
 
-    void Promise::doPromise() {
+    Promise *Promise::doPromise() {
 
-        Promise *Next;
+        Promise *Next = nullptr;
 
         if (Callback != nullptr) {
             Next = Callback(this, PointerToArg);
-
-            if (nullptr != Next) {
-                this->TPool->PostPromise(Next);
-            }
         }
         CleanSelf();
+
+        return Next;
     }
 
-    Promise* Promise::CreatePromise(ThreadPool *Pool, PromiseCallback *Callback, void *PointerToArg, MemAllocator *Allocator) {
+    Promise* Promise::CreatePromise(ThreadPool *Pool, PromiseCallback *Callback, void *PointerToArg) {
 
-        void *PointerToMemory = Allocator->Allocate(sizeof(Promise));
+        MemAllocator *PoolMemAllocator = Pool -> Allocator;
+
+        void *PointerToMemory = PoolMemAllocator->Allocate(sizeof(Promise));
 
         if (nullptr == PointerToMemory) {
             return nullptr;
         }
 
-        Promise * Ret= new(PointerToMemory) Promise();
-
-        Ret->TPool = Pool;
-        Ret->Allocator = Allocator;
-        Ret->Callback = Callback;
-        Ret->PointerToArg = PointerToArg;
-
-        return Ret;
-
-    }
-
-    const Promise *Promise::GetIdlePromise() {
-        return &SleepPromise;
+        return new(PointerToMemory) Promise(Pool, Callback, PointerToArg);
     }
 
     void ThreadPool::PostPromise(Promise *P) {
-
     }
 }

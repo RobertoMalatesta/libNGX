@@ -4,34 +4,33 @@ namespace ngx::Core {
 
     typedef Promise *(PromiseCallback)(Promise *self, void *PointerToArg);
 
-    class Promise {
+    Promise *Sleep(Promise *, void *);
 
+    class Promise : Queue {
         private:
-            ThreadPool *TPool;
-            MemAllocator *Allocator;
-            PromiseCallback *Callback;
-            void *PointerToArg;
-
-
+            MemAllocator *Allocator = nullptr;
+            PromiseCallback *Callback = Sleep;
+            void *PointerToArg = nullptr;
+            Promise(ThreadPool *TPool, PromiseCallback *Callback, void *PointerToArg);
+            Promise () = default;
         public:
-            Promise();
-            static Promise *CreatePromise(ThreadPool *Pool, PromiseCallback *Callback, void *PointerToArg, MemAllocator *Allocator= nullptr);
+            static Promise SleepyPromise;
+
+            static Promise *CreatePromise(ThreadPool *TPool, PromiseCallback *Callback , void *PointerToArg );
             void CleanSelf();
-            void doPromise();
-            static const Promise *GetIdlePromise();
+            Promise *doPromise();
     };
 
     class ThreadPool {
 
         private:
-            MemAllocator * Allocator;
-
             int NumThread;
-            Queue *Sentinel;
-
+            Promise *Sentinel;
+            atomic_flag PromiseQueueLock;
+            MemAllocator * Allocator;
             vector<thread> Threads;
-
             void ThreadProcess();
+            friend class Promise;
         public:
             void PostPromise(Promise *Next);
     };
