@@ -35,19 +35,24 @@ namespace ngx::Core {
         return Next;
     }
 
-    Promise* Promise::CreatePromise(ThreadPool *Pool, PromiseCallback *Callback, void *PointerToArg) {
+    int Promise::PostPromise(ThreadPool *Pool, PromiseCallback *Callback, void *PointerToArg) {
 
         MemAllocator *PoolMemAllocator = Pool -> Allocator;
 
         void *PointerToMemory = PoolMemAllocator->Allocate(sizeof(Promise));
 
-        if (nullptr == PointerToMemory) {
-            return nullptr;
+        while(Pool->PromiseQueueLock.test_and_set()) {
+            RelaxMachine();
         }
 
-        return new(PointerToMemory) Promise(Pool, Callback, PointerToArg);
+        if (nullptr == PointerToMemory) {
+            return -1;
+        }
+
+        new(PointerToMemory) Promise(Pool, Callback, PointerToArg);
+
+        Pool->PromiseQueueLock.clear();
+        return 0;
     }
 
-    void ThreadPool::PostPromise(Promise *P) {
-    }
 }

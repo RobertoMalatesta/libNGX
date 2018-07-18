@@ -2,7 +2,7 @@
 
 namespace ngx::Core {
 
-    Array::Array(Pool *Allocator, size_t Size, int Count) {
+    Array::Array(Pool *Allocator, size_t Size, uint Count) {
 
         this -> Allocator = Allocator;
         ElementCount = 0;
