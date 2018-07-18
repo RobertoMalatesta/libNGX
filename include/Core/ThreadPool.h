@@ -6,16 +6,16 @@ namespace ngx::Core {
 
     Promise *Sleep(Promise *, void *);
 
-    class Promise : Queue {
+    extern Promise SleepyPromise;
+
+    class Promise : public Queue {
         private:
             void *PointerToArg = nullptr;
             MemAllocator *Allocator = nullptr;
             PromiseCallback *Callback = Sleep;
-
-            Promise(ThreadPool *TPool, PromiseCallback *Callback, void *PointerToArg);
-            Promise () = default;
         public:
-            static Promise SleepyPromise;
+            Promise () = default;
+            Promise(ThreadPool *TPool, PromiseCallback *Callback, void *PointerToArg);
             static int PostPromise(ThreadPool *TPool, PromiseCallback *Callback , void *PointerToArg );
             void CleanSelf();
             Promise *doPromise();
@@ -24,16 +24,17 @@ namespace ngx::Core {
     class ThreadPool {
 
         private:
-            int NumThread;
+            bool Running;
+            int NumThread = 8;
             Promise *Sentinel;
             atomic_flag PromiseQueueLock = ATOMIC_FLAG_INIT;
             MemAllocator * Allocator;
-            vector<thread> Threads;
-            void ThreadProcess();
+            vector<thread *> Threads;
+            static void ThreadProcess(ThreadPool *Pool);
             friend class Promise;
 
         public:
-
-
+            void Start();
+            void Stop();
     };
 }

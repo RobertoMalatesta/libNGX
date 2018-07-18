@@ -3,6 +3,8 @@
 
 namespace ngx::Core {
 
+    Promise SleepyPromise;
+
     Promise *Sleep(Promise *, void * ) {
         usleep(20);
         return nullptr;
@@ -55,4 +57,57 @@ namespace ngx::Core {
         return 0;
     }
 
+
+    void ThreadPool::ThreadProcess(ThreadPool *Pool) {
+
+        bool IsRunning = true;
+        Promise *Node;
+
+        while (IsRunning) {
+
+            while(Pool -> PromiseQueueLock.test_and_set()) {
+                RelaxMachine();
+            }
+
+            IsRunning = Pool ->Running;
+
+            if (Pool -> Sentinel -> IsEmpty()) {
+                Node = &SleepyPromise;
+            }
+            else {
+                Node = (Promise *)Pool -> Sentinel -> GetLast();
+                Node->Detach();
+            }
+            Pool -> PromiseQueueLock.clear();
+
+            Node->doPromise();
+        }
+    }
+
+    void ThreadPool::Start() {
+
+        if (!Threads.empty()) {
+            return;
+        }
+
+        for (int i=0; i < NumThread; i++) {
+            Threads.push_back( new thread(ThreadProcess, this));
+        }
+    }
+
+    void ThreadPool::Stop() {
+
+        while(PromiseQueueLock.test_and_set()) {
+            RelaxMachine();
+        }
+        Running = false;
+        PromiseQueueLock.clear();
+
+        for ( thread *t : Threads) {
+            if (nullptr != t) {
+                t->join();
+            }
+        }
+        Threads.clear();
+    }
 }

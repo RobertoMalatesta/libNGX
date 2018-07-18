@@ -27,5 +27,7 @@ set(TEST_FILES
         test/Core/ArrayTest.cpp test/Core/TimeTest.cpp)
 include_directories(./include)
 
+LINK_LIBRARIES(-lpthread)
+
 add_executable(NgxTest ${SOURCE_FILES} ${TEST_FILES})
 add_library(NgxLibrary STATIC ${SOURCE_FILES})
