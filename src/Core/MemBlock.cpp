@@ -15,7 +15,7 @@ namespace ngx::Core {
         PointerToData = nullptr;
     };
 
-    void *MemBlock::operator new (size_t Size) throw() {
+    MemBlock *MemBlock::CreateMemBlock(size_t Size) {
 
         void *TempPointer = valloc(Size);
 
@@ -23,7 +23,17 @@ namespace ngx::Core {
             return nullptr;
         }
 
-        return TempPointer;
+        return new(TempPointer) MemBlock(Size);
+    }
+
+    void MemBlock::FreeMemBlock(ngx::Core::MemBlock **PointerToBlock) {
+
+        if (nullptr == PointerToBlock || nullptr == *PointerToBlock) {
+            return;
+        }
+
+        free((void*)*PointerToBlock);
+        *PointerToBlock = nullptr;
     }
 
     MemBlock *MemBlock::AddressToMemBlock(void *Addr, size_t Size) {

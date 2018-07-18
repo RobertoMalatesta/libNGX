@@ -3,7 +3,7 @@ namespace ngx::Core {
     class Queue {
 
         private:
-            Queue   *Prev,  *Next, *Sentinel;
+            Queue   *Prev = this,  *Next = this, *Sentinel;
             void InsertToHead();
             void InsertToTail();
         public:

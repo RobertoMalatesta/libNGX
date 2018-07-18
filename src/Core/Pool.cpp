@@ -10,7 +10,7 @@ namespace ngx::Core {
         }
 
         this -> BlockSize = BlockSize;
-        HeadBlock = new MemBlock(BlockSize);
+        HeadBlock = MemBlock::CreateMemBlock(BlockSize);
         CurrentBlock = HeadBlock;
     }
 
@@ -121,7 +121,7 @@ namespace ngx::Core {
 
         while (TempMemBlock != nullptr) {
             Next = TempMemBlock -> GetNext();
-            delete TempMemBlock;
+            MemBlock::FreeMemBlock(&TempMemBlock);
             TempMemBlock = Next;
         }
         HeadBlock = CurrentBlock = nullptr;

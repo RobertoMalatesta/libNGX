@@ -11,7 +11,10 @@ namespace ngx::Core {
 
         public:
             MemBlock(size_t Size);
-            void *operator new  (size_t Size) throw() ;
+            
+            static MemBlock *CreateMemBlock(size_t Size);
+            static void FreeMemBlock(MemBlock **PointerToBlock);
+
             static MemBlock *AddressToMemBlock(void * Addr, size_t Size);
             ~MemBlock();
             bool IsInBlock(void *Address);

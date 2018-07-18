@@ -13,8 +13,9 @@ namespace ngx::Core {
             void *PointerToArg = nullptr;
             MemAllocator *Allocator = nullptr;
             PromiseCallback *Callback = Sleep;
+            friend class ThreadPool;
         public:
-            Promise () = default;
+            Promise (ThreadPool *TPool = nullptr);
             Promise(ThreadPool *TPool, PromiseCallback *Callback, void *PointerToArg);
             static int PostPromise(ThreadPool *TPool, PromiseCallback *Callback , void *PointerToArg );
             void CleanSelf();
@@ -24,17 +25,25 @@ namespace ngx::Core {
     class ThreadPool {
 
         private:
-            bool Running;
+            atomic_flag Running = ATOMIC_FLAG_INIT;
             int NumThread = 8;
-            Promise *Sentinel;
+            Promise Sentinel;
             atomic_flag PromiseQueueLock = ATOMIC_FLAG_INIT;
             MemAllocator * Allocator;
             vector<thread *> Threads;
             static void ThreadProcess(ThreadPool *Pool);
             friend class Promise;
-
         public:
+            ThreadPool(MemAllocator *Allocator, int NumThread);
             void Start();
             void Stop();
+            void Lock() {
+                while (PromiseQueueLock.test_and_set()) {
+                    RelaxMachine();
+                }
+            };
+            void Unlock() {
+                PromiseQueueLock.clear();
+            }
     };
 }

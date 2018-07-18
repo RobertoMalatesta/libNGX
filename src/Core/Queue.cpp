@@ -6,16 +6,11 @@ namespace ngx::Core {
 
 
     Queue::Queue() {
-        this -> Prev = this;
-        this -> Next = this;
         this -> Sentinel = this;
     }
 
     Queue::Queue(Queue *Sentinel, bool IsInsertToHead) {
-        this -> Prev = this;
-        this -> Next = this;
         this -> Sentinel = Sentinel;
-
         IsInsertToHead? InsertToHead(): InsertToTail();
     }
 
