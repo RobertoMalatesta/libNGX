@@ -25,6 +25,7 @@ namespace ngx::Core {
         private:
             bool Running = false;
             int NumThread = 8;
+            int ProcessedCount = 0;
             Promise Sentinel;
             atomic_flag PromiseQueueLock = ATOMIC_FLAG_INIT;
             MemAllocator * Allocator;

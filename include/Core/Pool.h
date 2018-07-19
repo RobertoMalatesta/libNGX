@@ -12,7 +12,7 @@ namespace ngx::Core {
             ~Pool();
             virtual void *Allocate(size_t Size);
             virtual void Free(void ** pointer);
-            void GC(int Residual=DefaultPoolResidual);
+            virtual void GC();
             void Reset();
     };
 }

@@ -21,7 +21,7 @@ namespace ngx::Core {
             bool IsFreeBlock() { return UseCount <= 0;}
             virtual void *Allocate(size_t Size);
             virtual void Free(void **pointer);
-            void GC() {/*Empty Code Block*/};
+            virtual void GC() {/*Empty Code Block*/};
             void SetNext(MemBlock *Next) {this->Next = Next;}
             MemBlock *GetNext() { return Next;}
             void Reset();

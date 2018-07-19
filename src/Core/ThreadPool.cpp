@@ -32,9 +32,20 @@ namespace ngx::Core {
         return Next;
     }
 
+    ThreadPool::ThreadPool(MemAllocator *Allocator, int NumThread){
+        Threads.clear();
+        this->Allocator = Allocator;
+        this->NumThread = NumThread;
+        this->Sentinel.TPool = this;
+    }
+
     int ThreadPool::PostPromise(PromiseCallback *Callback, void *PointerToArg) {
 
         Lock();
+
+        if(ProcessedCount++ % 1000 == 0) {
+            Allocator->GC();
+        }
 
         void *PointerToMemory = Allocator->Allocate(sizeof(Promise));
 
@@ -46,13 +57,6 @@ namespace ngx::Core {
         Unlock();
 
         return 0;
-    }
-
-    ThreadPool::ThreadPool(MemAllocator *Allocator, int NumThread){
-        Threads.clear();
-        this->Allocator = Allocator;
-        this->NumThread = NumThread;
-        this->Sentinel.TPool = this;
     }
 
     void ThreadPool::ThreadProcess(ThreadPool *Pool) {
@@ -84,7 +88,6 @@ namespace ngx::Core {
                 Pool->Allocator->Free((void **)&Head);
             }
             Pool->Unlock();
-
 
         }while(IsRunning);
     }

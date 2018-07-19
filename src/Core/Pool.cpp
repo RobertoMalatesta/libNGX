@@ -60,7 +60,9 @@ namespace ngx::Core {
         }
     }
 
-    void Pool::GC(int Residual) {
+    void Pool::GC() {
+
+        int Residual = DefaultPoolResidual;
 
         MemBlock *Last = HeadBlock, *Current = nullptr, *Next = nullptr, *TempFreeBlockHead = nullptr, *TempFreeBlockTail = nullptr;
 

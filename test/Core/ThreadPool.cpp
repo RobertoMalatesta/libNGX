@@ -14,15 +14,13 @@ Promise *func(Promise *, void * args) {
 int ThreadPoolTest()  {
 
     Pool pool;
-    ThreadPool TPool(&pool, 4);
+    ThreadPool TPool(&pool, 8);
     TPool.Start();
 
-    for(long i=0; i< 1000; i++) {    // [BUG] 内存分配器有BUG
+    for(long i=0; i< 100000; i++) {    // [BUG] 内存分配器有BUG
         TPool.PostPromise(func, (void *)i);
         usleep(10);
     }
-
-    usleep(1000000);
 
     TPool.Stop();
     return 0;
