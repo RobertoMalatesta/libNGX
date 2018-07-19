@@ -25,7 +25,7 @@ namespace ngx::Core {
     class ThreadPool {
 
         private:
-            atomic_flag Running = ATOMIC_FLAG_INIT;
+            bool Running = false;
             int NumThread = 8;
             Promise Sentinel;
             atomic_flag PromiseQueueLock = ATOMIC_FLAG_INIT;
@@ -37,12 +37,12 @@ namespace ngx::Core {
             ThreadPool(MemAllocator *Allocator, int NumThread);
             void Start();
             void Stop();
-            void Lock() {
+            inline void Lock() {
                 while (PromiseQueueLock.test_and_set()) {
                     RelaxMachine();
                 }
             };
-            void Unlock() {
+            inline void Unlock() {
                 PromiseQueueLock.clear();
             }
     };

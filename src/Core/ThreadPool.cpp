@@ -6,7 +6,7 @@ namespace ngx::Core {
     Promise SleepyPromise;
 
     Promise *Sleep(Promise *, void * ) {
-        usleep(20);
+        usleep(500);
         return nullptr;
     }
 
@@ -51,9 +51,7 @@ namespace ngx::Core {
 
         void *PointerToMemory = PoolMemAllocator->Allocate(sizeof(Promise));
 
-        while(Pool->PromiseQueueLock.test_and_set()) {
-            RelaxMachine();
-        }
+        Pool->Lock();
 
         if (nullptr == PointerToMemory) {
             return -1;
@@ -61,7 +59,8 @@ namespace ngx::Core {
 
         new(PointerToMemory) Promise(Pool, Callback, PointerToArg);
 
-        Pool->PromiseQueueLock.clear();
+        Pool->Unlock();
+
         return 0;
     }
 
@@ -74,25 +73,28 @@ namespace ngx::Core {
 
     void ThreadPool::ThreadProcess(ThreadPool *Pool) {
 
-        Promise *Node;
+        Promise *Head, *Node, *Next;    // [TODO] 添加一次拉取多条Promise
+
+        bool IsRunning;
 
         do {
             Pool->Lock();
             usleep(10);
 
             if (Pool -> Sentinel.IsEmpty()) {
-                Node = &SleepyPromise;
+                Head = &SleepyPromise;
             }
             else {
-                Node = (Promise *)Pool -> Sentinel. GetLast();
-                Node->Detach();
+                Head = (Promise *) Pool->Sentinel.GetHead();
+                Head ->Detach();
             }
 
+            IsRunning = Pool -> Running;
             Pool->Unlock();
 
-            Node->doPromise();
+            Head->doPromise();
 
-        }while(Pool-> Running.test_and_set());
+        }while(IsRunning);
     }
 
     void ThreadPool::Start() {
@@ -101,7 +103,7 @@ namespace ngx::Core {
             return;
         }
 
-        Running.test_and_set();
+        Running = true;
 
         for (int i=0; i < NumThread; i++) {
             Threads.push_back(new thread(ThreadProcess, this));
@@ -110,14 +112,15 @@ namespace ngx::Core {
 
     void ThreadPool::Stop() {
 
-        while(Running.test_and_set()) {
-            Running.clear();
-            usleep(1000);
-        }
+        Lock();
+        Running = false;
+        Unlock();
 
         for(thread *t: Threads) {
             t -> join();
+            delete t;
         }
+
         Threads.clear();
     }
 }

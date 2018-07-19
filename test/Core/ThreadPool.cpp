@@ -7,7 +7,7 @@ using namespace std;
 using namespace ngx::Core;
 
 Promise *func(Promise *, void * args) {
-    cout<< "doing Promise"<<endl;
+    printf("Doing Promise: %ld\n", (long)args);
     return nullptr;
 }
 
@@ -17,13 +17,11 @@ int ThreadPoolTest()  {
     ThreadPool TPool(&pool, 8);
     TPool.Start();
 
-    for(int i=0; i< 100; i++) {
-        Promise::PostPromise(&TPool, func, nullptr);
+    for(int i=0; i< 1000; i++) {    // [BUG] 内存分配器有BUG
+        Promise::PostPromise(&TPool, func, (void *)i);
         usleep(10);
     }
 
-    usleep(5000000);
-    cout<< "release"<<endl;
     TPool.Stop();
     return 0;
 }
