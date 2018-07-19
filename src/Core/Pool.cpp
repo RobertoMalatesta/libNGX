@@ -27,7 +27,7 @@ namespace ngx::Core {
 
                 if (ret == nullptr) {
                     if (CurrentBlock -> GetNext() == nullptr) {
-                        CurrentBlock -> SetNext( new MemBlock(BlockSize));
+                        CurrentBlock -> SetNext( MemBlock::CreateMemBlock(BlockSize));
                     }
                     CurrentBlock = CurrentBlock->GetNext();
                 } else {

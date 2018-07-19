@@ -36,7 +36,6 @@ namespace ngx::Core {
             void Start();
             void Stop();
             int PostPromise(PromiseCallback *Callback , void *PointerToArg );
-            void CleanPromise(Promise *Promise);
             inline void Lock() {
                 while (PromiseQueueLock.test_and_set()) {
                     RelaxMachine();

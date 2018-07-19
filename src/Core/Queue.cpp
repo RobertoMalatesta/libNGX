@@ -63,6 +63,8 @@ namespace ngx::Core {
     void Queue::Detach() {
         Next -> Prev = Prev;
         Prev -> Next = Next;
+        Prev = this;
+        Next = this;
     }
 
     void Queue::Append(Queue *Node) {

@@ -52,7 +52,7 @@ namespace ngx::Core {
         void *ret = nullptr;
 
         if (FreeSize >= Size) {
-            UseCount += 1;
+            UseCount++;
             ret = PointerToData;
             PointerToData = (u_char *)PointerToData + Size;
             FreeSize -= Size;
@@ -68,7 +68,7 @@ namespace ngx::Core {
     void MemBlock::Free(void **pointer) {
         if (nullptr != pointer && IsInBlock(*pointer)) {
             *pointer = nullptr;
-            UseCount -= 1;
+            UseCount--;
             if ((UseCount < 0)) {
                 //[UNREACHABLE BRANCH] BUG: Over free, will add log here later
             }

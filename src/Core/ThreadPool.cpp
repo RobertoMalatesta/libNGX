@@ -29,10 +29,6 @@ namespace ngx::Core {
             Next = Callback(this, PointerToArg);
         }
 
-        if (nullptr != TPool) {
-            TPool->CleanPromise(this);
-        }
-
         return Next;
     }
 
@@ -50,12 +46,6 @@ namespace ngx::Core {
         Unlock();
 
         return 0;
-    }
-
-    void ThreadPool::CleanPromise(Promise *Promise) {
-        Lock();
-        Allocator->Free((void **)&Promise);
-        Unlock();
     }
 
     ThreadPool::ThreadPool(MemAllocator *Allocator, int NumThread){
@@ -87,6 +77,14 @@ namespace ngx::Core {
             Pool->Unlock();
 
             Head->doPromise();
+
+            Pool->Lock();
+
+            if (Head != &SleepyPromise) {
+                Pool->Allocator->Free((void **)&Head);
+            }
+            Pool->Unlock();
+
 
         }while(IsRunning);
     }

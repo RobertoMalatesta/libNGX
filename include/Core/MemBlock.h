@@ -2,7 +2,7 @@ namespace ngx::Core {
 
     class MemBlock: public MemAllocator{
         private:
-            int UseCount = 0;
+            std::atomic<int> UseCount = 0;
             MemBlock *Next = nullptr;
             size_t TotalSize = 0;
             size_t FreeSize = 0;
