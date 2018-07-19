@@ -17,10 +17,12 @@ int ThreadPoolTest()  {
     ThreadPool TPool(&pool, 8);
     TPool.Start();
 
-    for(int i=0; i< 1000; i++) {    // [BUG] 内存分配器有BUG
-        Promise::PostPromise(&TPool, func, (void *)i);
+    for(long i=0; i< 500; i++) {    // [BUG] 内存分配器有BUG
+        TPool.PostPromise(func, (void *)i);
         usleep(10);
     }
+
+    usleep(1000000);
 
     TPool.Stop();
     return 0;

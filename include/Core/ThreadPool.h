@@ -11,14 +11,12 @@ namespace ngx::Core {
     class Promise : public Queue {
         private:
             void *PointerToArg = nullptr;
-            MemAllocator *Allocator = nullptr;
+            ThreadPool *TPool = nullptr;
             PromiseCallback *Callback = Sleep;
             friend class ThreadPool;
         public:
             Promise (ThreadPool *TPool = nullptr);
             Promise(ThreadPool *TPool, PromiseCallback *Callback, void *PointerToArg);
-            static int PostPromise(ThreadPool *TPool, PromiseCallback *Callback , void *PointerToArg );
-            void CleanSelf();
             Promise *doPromise();
     };
 
@@ -37,6 +35,8 @@ namespace ngx::Core {
             ThreadPool(MemAllocator *Allocator, int NumThread);
             void Start();
             void Stop();
+            int PostPromise(PromiseCallback *Callback , void *PointerToArg );
+            void CleanPromise(Promise *Promise);
             inline void Lock() {
                 while (PromiseQueueLock.test_and_set()) {
                     RelaxMachine();

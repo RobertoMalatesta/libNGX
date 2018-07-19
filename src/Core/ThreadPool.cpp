@@ -11,25 +11,14 @@ namespace ngx::Core {
     }
 
     Promise::Promise(ThreadPool *Pool): Queue() {
-        if (nullptr != Pool) {
-            this->Allocator = Pool -> Allocator;
-        }
+        this->TPool = Pool;
     }
 
     Promise::Promise(ThreadPool *Pool, PromiseCallback *Callback, void *PointerToArgs)
             : Queue((Queue *)&Pool->Sentinel, false) {
-
+        this->TPool = Pool;
         this->Callback = Callback;
         this->PointerToArg = PointerToArgs;
-        this->Allocator = Pool -> Allocator;
-    }
-
-    void Promise::CleanSelf() {
-
-        if (this->Allocator != nullptr) {
-            Promise *Self = this;
-            this->Allocator->Free((void **)&Self);
-        }
     }
 
     Promise *Promise::doPromise() {
@@ -40,35 +29,40 @@ namespace ngx::Core {
             Next = Callback(this, PointerToArg);
         }
 
-        CleanSelf();
+        if (nullptr != TPool) {
+            TPool->CleanPromise(this);
+        }
 
         return Next;
     }
 
-    int Promise::PostPromise(ThreadPool *Pool, PromiseCallback *Callback, void *PointerToArg) {
+    int ThreadPool::PostPromise(PromiseCallback *Callback, void *PointerToArg) {
 
-        MemAllocator *PoolMemAllocator = Pool -> Allocator;
+        Lock();
 
-        void *PointerToMemory = PoolMemAllocator->Allocate(sizeof(Promise));
-
-        Pool->Lock();
+        void *PointerToMemory = Allocator->Allocate(sizeof(Promise));
 
         if (nullptr == PointerToMemory) {
             return -1;
         }
 
-        new(PointerToMemory) Promise(Pool, Callback, PointerToArg);
-
-        Pool->Unlock();
+        new(PointerToMemory) Promise(this, Callback, PointerToArg);
+        Unlock();
 
         return 0;
+    }
+
+    void ThreadPool::CleanPromise(Promise *Promise) {
+        Lock();
+        Allocator->Free((void **)&Promise);
+        Unlock();
     }
 
     ThreadPool::ThreadPool(MemAllocator *Allocator, int NumThread){
         Threads.clear();
         this->Allocator = Allocator;
         this->NumThread = NumThread;
-        this->Sentinel.Allocator = Allocator;
+        this->Sentinel.TPool = this;
     }
 
     void ThreadPool::ThreadProcess(ThreadPool *Pool) {
@@ -123,4 +117,5 @@ namespace ngx::Core {
 
         Threads.clear();
     }
+
 }
