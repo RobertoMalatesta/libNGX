@@ -5,17 +5,17 @@ namespace ngx::Core {
 
     Promise SleepyPromise;
 
-    Promise *Sleep(Promise *, void * ) {
-        usleep(1);
+    Promise *Sleep(Promise *, void *) {
+        usleep(20 * 1000);
         return nullptr;
     }
 
-    Promise::Promise(ThreadPool *Pool): Queue() {
+    Promise::Promise(ThreadPool *Pool) : Queue() {
         this->TPool = Pool;
     }
 
     Promise::Promise(ThreadPool *Pool, PromiseCallback *Callback, void *PointerToArgs)
-            : Queue((Queue *)&Pool->Sentinel, false) {
+            : Queue((Queue *) &Pool->Sentinel, false) {
         this->TPool = Pool;
         this->Callback = Callback;
         this->PointerToArg = PointerToArgs;
@@ -32,7 +32,7 @@ namespace ngx::Core {
         return Next;
     }
 
-    ThreadPool::ThreadPool(MemAllocator *Allocator, int NumThread){
+    ThreadPool::ThreadPool(MemAllocator *Allocator, int NumThread) {
         Threads.clear();
         this->Allocator = Allocator;
         this->NumThread = NumThread;
@@ -43,19 +43,20 @@ namespace ngx::Core {
 
         Lock();
 
-        if(ProcessedCount++ % 10000 == 0) {
+        if (ProcessedCount++ % 5000 == 0) {
             Allocator->GC();
         }
 
         void *PointerToMemory = Allocator->Allocate(sizeof(Promise));
 
         if (nullptr == PointerToMemory) {
+            Unlock();
             return -1;
         }
 
         new(PointerToMemory) Promise(this, Callback, PointerToArg);
-        Unlock();
 
+        Unlock();
         return 0;
     }
 
@@ -68,28 +69,37 @@ namespace ngx::Core {
         do {
             Pool->Lock();
 
-            if (Pool -> Sentinel.IsEmpty()) {
+            if (Pool->Sentinel.IsEmpty()) {
                 Head = &SleepyPromise;
-            }
-            else {
+            } else {
                 Head = (Promise *) Pool->Sentinel.GetHead();
-                Head ->Detach();
+                Pool->Sentinel.Detach();
             }
 
-            IsRunning = Pool -> Running;
+            IsRunning = Pool->Running;
             Pool->Unlock();
 
-            Head->doPromise();
+            if (Head == &SleepyPromise) {
+                Head->doPromise();
+            } else {
 
+                Node = Head;
+                do {
+                    Node->doPromise();
+                    Node = (Promise *) Node->GetNext();
+                } while (Node != Head);
 
-            if (Head != &SleepyPromise) {
-                Pool->Lock();
-                Pool->Allocator->Free((void **)&Head);
-                Pool->Unlock();
+//                 内存释放存在问题
+//                Pool->Lock();
+//                Node = Head;
+//                do {
+//                    Next = (Promise *) Node->GetNext();
+//                    Pool->Allocator->Free((void **) &Node);
+//                    Node = Next;
+//                } while (Node != Head);
+//                Pool->Unlock();
             }
-
-
-        }while(IsRunning);
+        } while (IsRunning);
     }
 
     void ThreadPool::Start() {
@@ -100,7 +110,7 @@ namespace ngx::Core {
 
         Running = true;
 
-        for (int i=0; i < NumThread; i++) {
+        for (int i = 0; i < NumThread; i++) {
             Threads.push_back(new thread(ThreadProcess, this));
         }
     }
@@ -111,8 +121,8 @@ namespace ngx::Core {
         Running = false;
         Unlock();
 
-        for(thread *t: Threads) {
-            t -> join();
+        for (thread *t: Threads) {
+            t->join();
             delete t;
         }
 

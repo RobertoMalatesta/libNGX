@@ -6,21 +6,21 @@ using namespace std;
 
 using namespace ngx::Core;
 
-Promise *func(Promise *, void * args) {
-    printf("Doing Promise: %ld\n", (long)args);
+Promise *func(Promise *, void *args) {
+    printf("Doing Promise: %ld\n", (long) args);
     return nullptr;
 }
 
-int ThreadPoolTest()  {
+int ThreadPoolTest() {
 
     Pool pool;
-    ThreadPool TPool(&pool, 8);
+    ThreadPool TPool(&pool, 6);
     TPool.Start();
 
-    for(long i=0; i< 100000; i++) {
-        TPool.PostPromise(func, (void *)i);
+    for (long i = 0; i < 1000000; i++) {
+        TPool.PostPromise(func, (void *) i);
     }
-    usleep(10*1000*1000);
+    usleep(10 * 1000 * 1000);
     TPool.Stop();
 
     return 0;

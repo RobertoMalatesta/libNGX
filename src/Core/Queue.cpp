@@ -6,63 +6,63 @@ namespace ngx::Core {
 
 
     Queue::Queue() {
-        this -> Sentinel = this;
+        this->Sentinel = this;
     }
 
     Queue::Queue(Queue *Sentinel, bool IsInsertToHead) {
-        this -> Sentinel = Sentinel;
-        IsInsertToHead? InsertToHead(): InsertToTail();
+        this->Sentinel = Sentinel;
+        IsInsertToHead ? InsertToHead() : InsertToTail();
     }
 
     bool Queue::IsEmpty() {
-        return this == this -> Prev;
+        return this == this->Prev;
     }
 
     void Queue::InsertToHead() {
-        Next = Sentinel -> Next;
-        Next -> Prev = Next;
+        Next = Sentinel->Next;
+        Next->Prev = Next;
         Prev = Sentinel;
-        Sentinel -> Next = this;
+        Sentinel->Next = this;
     }
 
     void Queue::InsertToTail() {
 
-        Prev = Sentinel -> Prev;
+        Prev = Sentinel->Prev;
         Prev->Next = this;
         Next = Sentinel;
-        Sentinel -> Prev = this;
+        Sentinel->Prev = this;
     }
 
     Queue *Queue::GetHead() {
-        return Sentinel -> Next;
+        return Sentinel->Next;
     }
 
-    Queue *Queue::GetLast(){
-        return Sentinel -> Prev;
+    Queue *Queue::GetLast() {
+        return Sentinel->Prev;
     }
 
-    Queue *Queue::GetSentinel(){
+    Queue *Queue::GetSentinel() {
         return Sentinel;
     }
 
-    Queue *Queue::GetNext(){
+    Queue *Queue::GetNext() {
         return Next;
     }
 
-    Queue *Queue::GetPrev(){
+    Queue *Queue::GetPrev() {
         return Prev;
     }
 
     void Queue::Attach() {
-        Sentinel -> Prev -> Next = Next;
-        Next -> Prev = Sentinel -> Prev;
-        Sentinel -> Prev = Prev;
-        Sentinel -> Prev ->Next = Sentinel;
+        Sentinel->Prev->Next = Next;
+        Next->Prev = Sentinel->Prev;
+        Sentinel->Prev = Prev;
+        Sentinel->Prev->Next = Sentinel;
     }
 
     void Queue::Detach() {
-        Next -> Prev = Prev;
-        Prev -> Next = Next;
+        Next->Prev = Prev;
+        Prev->Next = Next;
         Prev = Next = this;
     }
 
@@ -72,33 +72,33 @@ namespace ngx::Core {
             return;
         }
 
-        Node -> Next = Next;
-        Node -> Next -> Prev = Node;
-        Node -> Prev = this;
+        Node->Next = Next;
+        Node->Next->Prev = Node;
+        Node->Prev = this;
         Next = Node;
     }
 
     void Queue::QueueSplit(Queue *Q1, Queue *Node) {
 
-        Node -> Prev = Sentinel -> Prev;
-        Node -> Prev -> Next = Node;
-        Node -> Next = Q1;
-        Sentinel -> Prev = Q1 -> Prev;
-        Sentinel -> Prev -> Next = Sentinel;
-        Q1 -> Prev = Node;
+        Node->Prev = Sentinel->Prev;
+        Node->Prev->Next = Node;
+        Node->Next = Q1;
+        Sentinel->Prev = Q1->Prev;
+        Sentinel->Prev->Next = Sentinel;
+        Q1->Prev = Node;
     }
 
-    void Queue::Sort(int (*cmp)(Queue *, Queue *) ) {
+    void Queue::Sort(int (*cmp)(Queue *, Queue *)) {
 
-        Queue *TQueue=Sentinel, *TPrev= nullptr, *TNext = nullptr;
+        Queue *TQueue = Sentinel, *TPrev = nullptr, *TNext = nullptr;
 
         if (GetLast() == GetHead()) {
             return;
         }
 
-        for (TQueue = TQueue -> GetNext(); TQueue != Sentinel; TQueue = TQueue -> GetNext()) {
+        for (TQueue = TQueue->GetNext(); TQueue != Sentinel; TQueue = TQueue->GetNext()) {
 
-            TPrev = TQueue -> GetPrev();
+            TPrev = TQueue->GetPrev();
             TQueue->Detach();
 
             do {
@@ -106,28 +106,28 @@ namespace ngx::Core {
                     break;
                 }
 
-                TPrev = TPrev -> GetPrev();
+                TPrev = TPrev->GetPrev();
 
             } while (TPrev != Sentinel);
-            TPrev -> Append(TQueue);
+            TPrev->Append(TQueue);
         }
     }
 
-    Queue* Queue::GetMiddle() {
+    Queue *Queue::GetMiddle() {
         Queue *Middle = Sentinel, *Next = Sentinel;
 
         if (Middle == GetLast()) {
             return Middle;
         }
 
-        for ( ;; ) {
+        for (;;) {
 
-            Middle = Middle -> GetNext();
-            Next = Next -> GetNext();
+            Middle = Middle->GetNext();
+            Next = Next->GetNext();
 
             if (Next == GetLast() ||
-                    (Next = Next -> GetNext()) == GetLast()) {
-                return  Middle;
+                (Next = Next->GetNext()) == GetLast()) {
+                return Middle;
             }
         }
     }
