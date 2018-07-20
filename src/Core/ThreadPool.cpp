@@ -6,7 +6,7 @@ namespace ngx::Core {
     Promise SleepyPromise;
 
     Promise *Sleep(Promise *, void * ) {
-        usleep(500);
+        usleep(1);
         return nullptr;
     }
 
@@ -43,7 +43,7 @@ namespace ngx::Core {
 
         Lock();
 
-        if(ProcessedCount++ % 1000 == 0) {
+        if(ProcessedCount++ % 10000 == 0) {
             Allocator->GC();
         }
 
@@ -67,7 +67,6 @@ namespace ngx::Core {
 
         do {
             Pool->Lock();
-            usleep(10);
 
             if (Pool -> Sentinel.IsEmpty()) {
                 Head = &SleepyPromise;
@@ -82,12 +81,13 @@ namespace ngx::Core {
 
             Head->doPromise();
 
-            Pool->Lock();
 
             if (Head != &SleepyPromise) {
+                Pool->Lock();
                 Pool->Allocator->Free((void **)&Head);
+                Pool->Unlock();
             }
-            Pool->Unlock();
+
 
         }while(IsRunning);
     }
@@ -116,6 +116,7 @@ namespace ngx::Core {
             delete t;
         }
 
+        Allocator->GC();
         Threads.clear();
     }
 
