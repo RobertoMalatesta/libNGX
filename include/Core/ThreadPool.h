@@ -2,6 +2,8 @@ namespace ngx::Core {
 
     using namespace std;
 
+    class Thread;
+
     typedef Promise *(PromiseCallback)(Promise *self, void *PointerToArg);
 
     Promise *Sleep(Promise *, void *);
@@ -20,42 +22,45 @@ namespace ngx::Core {
         Promise(ThreadPool *TPool = nullptr);
 
         Promise(ThreadPool *TPool, PromiseCallback *Callback, void *PointerToArg);
+        Promise(Thread *T, PromiseCallback *Callback, void *PointerToArgs);
 
         Promise *doPromise();
+    };
+
+    class Thread {
+
+        private:
+
+            static const uint PoolMemorySize = 409600;
+            static const uint GCRound = 5000;
+
+            thread WorkerThread;
+            Pool *Allocator;
+            atomic_flag Lock = ATOMIC_FLAG_INIT;
+            bool Running = true;
+            uint PostCount;
+            Promise Sentinel;
+            static void ThreadProcess(Thread *Thread);
+            friend Promise;
+
+        public:
+            Thread();
+            ~Thread();
+            void Stop();
+            int TryPostPromise(PromiseCallback *Callback, void * Argument);
     };
 
     class ThreadPool {
 
     private:
-        bool Running = false;
-        int NumThread = 8;
-        int ProcessedCount = 0;
-        Promise Sentinel;
-        atomic_flag PromiseQueueLock = ATOMIC_FLAG_INIT;
-        MemAllocator *Allocator;
-        vector<thread *> Threads;
-
-        static void ThreadProcess(ThreadPool *Pool);
-
-        friend class Promise;
+        int NumThread;
+        int DeliverIndex = 0;
+        vector<Thread *> Threads;
 
     public:
-        ThreadPool(MemAllocator *Allocator, int NumThread);
+        ThreadPool(int NumThread = 8);
+        ~ThreadPool();
+        void PostPromise(PromiseCallback *Callback, void *PointerToArg);
 
-        void Start();
-
-        void Stop();
-
-        int PostPromise(PromiseCallback *Callback, void *PointerToArg);
-
-        inline void Lock() {
-            while (PromiseQueueLock.test_and_set()) {
-                RelaxMachine();
-            }
-        };
-
-        inline void Unlock() {
-            PromiseQueueLock.clear();
-        }
     };
 }

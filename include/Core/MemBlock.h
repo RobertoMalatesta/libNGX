@@ -18,7 +18,7 @@ namespace ngx::Core {
             static MemBlock *AddressToMemBlock(void * Addr, size_t Size);
             ~MemBlock();
             bool IsInBlock(void *Address);
-            bool IsFreeBlock() { return UseCount <= 0;}
+            bool IsFreeBlock() { return UseCount == 0;}
             virtual void *Allocate(size_t Size);
             virtual void Free(void **pointer);
             virtual void GC() {/*Empty Code Block*/};

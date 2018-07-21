@@ -13,15 +13,12 @@ Promise *func(Promise *, void *args) {
 
 int ThreadPoolTest() {
 
-    Pool pool;
-    ThreadPool TPool(&pool, 6);
-    TPool.Start();
+    ThreadPool T(8);
 
-    for (long i = 0; i < 1000000; i++) {
-        TPool.PostPromise(func, (void *) i);
+    for(long i=0; i < 2000000; i++) {
+        T.PostPromise(func, (void *)i);
     }
-    usleep(10 * 1000 * 1000);
-    TPool.Stop();
+    usleep( 20 * 1000 * 1000);
 
     return 0;
 }

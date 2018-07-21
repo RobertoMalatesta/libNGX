@@ -14,9 +14,8 @@ namespace ngx::Core {
         this->TPool = Pool;
     }
 
-    Promise::Promise(ThreadPool *Pool, PromiseCallback *Callback, void *PointerToArgs)
-            : Queue((Queue *) &Pool->Sentinel, false) {
-        this->TPool = Pool;
+    Promise::Promise(Thread *T, PromiseCallback *Callback, void *PointerToArgs)
+            : Queue((Queue *) &T->Sentinel, false) {
         this->Callback = Callback;
         this->PointerToArg = PointerToArgs;
     }
@@ -32,102 +31,109 @@ namespace ngx::Core {
         return Next;
     }
 
-    ThreadPool::ThreadPool(MemAllocator *Allocator, int NumThread) {
-        Threads.clear();
-        this->Allocator = Allocator;
-        this->NumThread = NumThread;
-        this->Sentinel.TPool = this;
+    Thread::Thread() :Sentinel(), WorkerThread(Thread::ThreadProcess, this){
+
+        Allocator = new Pool(PoolMemorySize);
+        Lock.clear();
     }
 
-    int ThreadPool::PostPromise(PromiseCallback *Callback, void *PointerToArg) {
+    Thread::~Thread() {
+        Stop();
+        delete Allocator;
+    }
 
-        Lock();
+    int Thread::TryPostPromise( PromiseCallback *Callback, void *Argument){
 
-        if (ProcessedCount++ % 5000 == 0) {
-            Allocator->GC();
-        }
-
-        void *PointerToMemory = Allocator->Allocate(sizeof(Promise));
-
-        if (nullptr == PointerToMemory) {
-            Unlock();
+        if (Lock.test_and_set()) {
             return -1;
         }
 
-        new(PointerToMemory) Promise(this, Callback, PointerToArg);
+        if (!Running) {
+            return  0;
+        }
 
-        Unlock();
+        void *PointerToPromise = Allocator->Allocate(sizeof(Promise));
+
+        if (nullptr == PointerToPromise) {
+            Lock.clear();
+            return -1;
+        }
+
+        new(PointerToPromise) Promise(this, Callback, Argument);
+        Lock.clear();
         return 0;
     }
 
-    void ThreadPool::ThreadProcess(ThreadPool *Pool) {
+    void Thread::ThreadProcess(ngx::Core::Thread *Thread) {
 
-        Promise *Head, *Node, *Next;    // [TODO] 添加一次拉取多条Promise
+        usleep(50);
 
-        bool IsRunning;
+        Promise *Node;
+        bool IsRunnig = Thread->Running;
 
-        do {
-            Pool->Lock();
+        while (IsRunnig) {
 
-            if (Pool->Sentinel.IsEmpty()) {
-                Head = &SleepyPromise;
-            } else {
-                Head = (Promise *) Pool->Sentinel.GetHead();
-                Pool->Sentinel.Detach();
+            usleep(20 * 1000);
+
+            while (Thread->Lock.test_and_set()) {
+                RelaxMachine();
             }
 
-            IsRunning = Pool->Running;
-            Pool->Unlock();
+            while(!Thread->Sentinel.IsEmpty()) {
 
-            if (Head == &SleepyPromise) {
-                Head->doPromise();
-            } else {
-
-                Node = Head;
-                do {
-                    Node->doPromise();
-                    Node = (Promise *) Node->GetNext();
-                } while (Node != Head);
-
-//                 内存释放存在问题
-//                Pool->Lock();
-//                Node = Head;
-//                do {
-//                    Next = (Promise *) Node->GetNext();
-//                    Pool->Allocator->Free((void **) &Node);
-//                    Node = Next;
-//                } while (Node != Head);
-//                Pool->Unlock();
+                Node = (Promise *) Thread->Sentinel.GetHead();
+                Node->Detach();
+                Node->doPromise();
+                Thread->Allocator->Free((void **)&Node);
             }
-        } while (IsRunning);
-    }
 
-    void ThreadPool::Start() {
+            if (Thread -> PostCount >= GCRound) {
+                Thread -> PostCount = 0;
+                Thread -> Allocator->GC();
+            }
 
-        if (!Threads.empty()) {
-            return;
-        }
-
-        Running = true;
-
-        for (int i = 0; i < NumThread; i++) {
-            Threads.push_back(new thread(ThreadProcess, this));
+            IsRunnig = Thread->Running;
+            Thread->Lock.clear();
         }
     }
 
-    void ThreadPool::Stop() {
+    void Thread::Stop() {
 
-        Lock();
+        while (Lock.test_and_set()) {
+            RelaxMachine();
+        }
         Running = false;
-        Unlock();
-
-        for (thread *t: Threads) {
-            t->join();
-            delete t;
-        }
-
+        Lock.clear();
+        WorkerThread.join();
         Allocator->GC();
+    }
+
+    ThreadPool::ThreadPool(int NumThread) {
+        this->NumThread = NumThread;
+
+        while(NumThread-- > 0) {
+            Threads.push_back(new Thread());
+        }
+    }
+
+    ThreadPool::~ThreadPool() {
+        for (Thread *Temp: Threads) {
+            delete Temp;
+        }
         Threads.clear();
     }
 
+    void ThreadPool::PostPromise(PromiseCallback *Callback, void *PointerToArg) {
+
+        int RetCode;
+
+        do {
+            RetCode = Threads[(DeliverIndex++) % NumThread]->TryPostPromise(Callback, PointerToArg);
+
+            if (DeliverIndex % NumThread == 0) {
+                usleep(50);
+            }
+
+        }while(RetCode == -1);
+    }
 }

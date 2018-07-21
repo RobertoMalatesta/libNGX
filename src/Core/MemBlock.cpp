@@ -62,7 +62,7 @@ namespace ngx::Core {
     }
 
     bool MemBlock::IsInBlock(void *Address){
-        return (Address >= PointerToHead && Address < ((u_char *)PointerToHead + TotalSize));
+        return (Address >= PointerToHead && Address < ((u_char *)PointerToData));
     }
 
     void MemBlock::Free(void **pointer) {
