@@ -6,8 +6,8 @@ using namespace std;
 
 using namespace ngx::Core;
 
-atomic_int clocks = 1;
-atomic_int turns = 1;
+atomic_uint64_t clocks = 1;
+atomic_uint64_t turns = 1;
 
 void func(void *, ThreadPool *) {
 
@@ -15,7 +15,7 @@ void func(void *, ThreadPool *) {
 
     clock_t t1 = clock(), t2;
 
-    for(int i =0; i< 100000; i++) {
+    for(int i =0; i< 10000; i++) {
         j+=i;
     }
 
@@ -30,11 +30,11 @@ int ThreadPoolTest() {
 
     ThreadPool T(7);
 
-    for(long i=0; i < 2000000; i++) {
+    for(long i=0; i < 5000; i++) {
         T.PostPromise(func, (void *)i);
     }
 
-    usleep( 40 * 1000 * 1000);
+    usleep( 10 * 1000 * 1000);
 
     return 0;
 }
