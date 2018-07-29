@@ -3,29 +3,25 @@
 
 namespace ngx::Core {
 
-    Promise::Promise(ThreadPool *Pool) : Queue() {
-        this->TPool = Pool;
+    Promise::Promise() : Queue() {
     }
 
-    Promise::Promise(Thread *T, PromiseCallback *Callback, void *PointerToArgs)
+    Promise::Promise(ThreadPool *TPool, Thread *T, PromiseCallback *Callback, void *PointerToArgs)
             : Queue((Queue *) &T->Sentinel, false) {
+        this->TPool = TPool;
         this->Callback = Callback;
         this->PointerToArg = PointerToArgs;
     }
 
-    Promise *Promise::doPromise() {
-
-        Promise *Next = nullptr;
-
+    void Promise::doPromise() {
         if (Callback != nullptr) {
-            Next = Callback(this, PointerToArg);
+            Callback(PointerToArg, TPool);
         }
-
-        return Next;
     }
 
-    Thread::Thread() :Sentinel(), WorkerThread(Thread::ThreadProcess, this){
+    Thread::Thread(ThreadPool *TPool) :Sentinel(), WorkerThread(Thread::ThreadProcess, this){
 
+        this->TPool = TPool;
         Allocator = new Pool(PoolMemorySize);
         Lock.clear();
     }
@@ -52,7 +48,7 @@ namespace ngx::Core {
             return -1;
         }
 
-        new(PointerToPromise) Promise(this, Callback, Argument);
+        new(PointerToPromise) Promise(TPool, this, Callback, Argument);
 
         if (PostCount++ % 1000 == 0) {
             Allocator->GC();
@@ -104,7 +100,7 @@ namespace ngx::Core {
         this->NumThread = NumThread;
 
         while(NumThread-- > 0) {
-            Threads.push_back(new Thread());
+            Threads.push_back(new Thread(this));
         }
     }
 

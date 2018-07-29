@@ -9,7 +9,7 @@ using namespace ngx::Core;
 atomic_int clocks = 1;
 atomic_int turns = 1;
 
-Promise *func(Promise *, void *) {
+void func(void *, ThreadPool *) {
 
     int j=0;
 
@@ -24,7 +24,6 @@ Promise *func(Promise *, void *) {
     long ratio = (clocks+=t2) / turns++;
 
     printf("Turn Ratio: %ld\n", ratio);
-    return nullptr;
 }
 
 int ThreadPoolTest() {

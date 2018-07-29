@@ -3,8 +3,9 @@ namespace ngx::Core {
     using namespace std;
 
     class Thread;
+    class ThreadPool;
 
-    typedef Promise *(PromiseCallback)(Promise *self, void *PointerToArg);
+    typedef void (PromiseCallback)(void *PointerToArguments, ThreadPool *TPool);
 
     class Promise : public Queue {
     private:
@@ -12,15 +13,16 @@ namespace ngx::Core {
         ThreadPool *TPool = nullptr;
         PromiseCallback *Callback = nullptr;
 
+        friend class Thread;
         friend class ThreadPool;
 
     public:
-        Promise(ThreadPool *TPool = nullptr);
+        Promise();
 
-        Promise(ThreadPool *TPool, PromiseCallback *Callback, void *PointerToArg);
+        Promise(ThreadPool *TPool, Thread *T, PromiseCallback *Callback, void *PointerToArg);
         Promise(Thread *T, PromiseCallback *Callback, void *PointerToArgs);
 
-        Promise *doPromise();
+        void doPromise();
     };
 
     class Thread {
@@ -30,8 +32,9 @@ namespace ngx::Core {
             static const uint PoolMemorySize = 409600;
             static const uint GCRound = 5000;
 
+            ThreadPool *TPool = nullptr;
             thread WorkerThread;
-            Pool *Allocator;
+            Pool *Allocator = nullptr;
             atomic_flag Lock = ATOMIC_FLAG_INIT;
             bool Running = true;
             uint PostCount;
@@ -40,7 +43,7 @@ namespace ngx::Core {
             friend Promise;
 
         public:
-            Thread();
+            Thread(ThreadPool *TPool);
             ~Thread();
             void Stop();
             int TryPostPromise(PromiseCallback *Callback, void * Argument);
@@ -52,6 +55,7 @@ namespace ngx::Core {
         int NumThread;
         int DeliverIndex = 0;
         vector<Thread *> Threads;
+        friend class Promise;
 
     public:
         ThreadPool(int NumThread = 8);
