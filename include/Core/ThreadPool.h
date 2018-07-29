@@ -6,15 +6,11 @@ namespace ngx::Core {
 
     typedef Promise *(PromiseCallback)(Promise *self, void *PointerToArg);
 
-    Promise *Sleep(Promise *, void *);
-
-    extern Promise SleepyPromise;
-
     class Promise : public Queue {
     private:
         void *PointerToArg = nullptr;
         ThreadPool *TPool = nullptr;
-        PromiseCallback *Callback = Sleep;
+        PromiseCallback *Callback = nullptr;
 
         friend class ThreadPool;
 

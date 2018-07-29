@@ -3,13 +3,6 @@
 
 namespace ngx::Core {
 
-    Promise SleepyPromise;
-
-    Promise *Sleep(Promise *, void *) {
-        usleep(20 * 1000);
-        return nullptr;
-    }
-
     Promise::Promise(ThreadPool *Pool) : Queue() {
         this->TPool = Pool;
     }
@@ -60,20 +53,24 @@ namespace ngx::Core {
         }
 
         new(PointerToPromise) Promise(this, Callback, Argument);
+
+        if (PostCount++ % 1000 == 0) {
+            Allocator->GC();
+        }
+
         Lock.clear();
+
         return 0;
     }
 
     void Thread::ThreadProcess(ngx::Core::Thread *Thread) {
-
-        usleep(50);
 
         Promise *Node;
         bool IsRunnig = Thread->Running;
 
         while (IsRunnig) {
 
-            usleep(20 * 1000);
+            usleep(1000);
 
             while (Thread->Lock.test_and_set()) {
                 RelaxMachine();
@@ -85,11 +82,6 @@ namespace ngx::Core {
                 Node->Detach();
                 Node->doPromise();
                 Thread->Allocator->Free((void **)&Node);
-            }
-
-            if (Thread -> PostCount >= GCRound) {
-                Thread -> PostCount = 0;
-                Thread -> Allocator->GC();
             }
 
             IsRunnig = Thread->Running;
@@ -125,15 +117,20 @@ namespace ngx::Core {
 
     void ThreadPool::PostPromise(PromiseCallback *Callback, void *PointerToArg) {
 
-        int RetCode;
+        int RetCode, i=DeliverIndex;
 
         do {
-            RetCode = Threads[(DeliverIndex++) % NumThread]->TryPostPromise(Callback, PointerToArg);
+            RetCode = Threads[(i) % NumThread]->TryPostPromise(Callback, PointerToArg);
 
-            if (DeliverIndex % NumThread == 0) {
-                usleep(50);
+            if (RetCode == 0) {
+                break;
             }
 
-        }while(RetCode == -1);
+            if (((i -= RetCode)-DeliverIndex) % NumThread == 0) {
+                usleep(10);
+            }
+        } while (true);
+
+        DeliverIndex = i;
     }
 }
