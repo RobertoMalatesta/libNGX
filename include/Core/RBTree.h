@@ -1,9 +1,9 @@
 namespace ngx::Core {
 
-    class _RBTreeNode_ {
+    class RBTreeNode {
 
         private:
-            _RBTreeNode_ *Left = nullptr, *Right = nullptr, *Parent = nullptr;
+            RBTreeNode *Left = nullptr, *Right = nullptr, *Parent = nullptr;
             u_char Color=0;
             uint DataSize=0;
             u_char Data[0];
@@ -12,22 +12,29 @@ namespace ngx::Core {
             bool IsRed() {return Color;};
             void SetBlack() { Color=0;};
             void SetRed() {Color=1;};
-            void CopyColor(_RBTreeNode_ *Node) { if (nullptr != Node) {Color=Node->Color;}};
-            virtual int Compare(_RBTreeNode_ *Node) = 0;
+            void CopyColor(RBTreeNode *Node) { if (nullptr != Node) {Color=Node->Color;}};
+
+        public:
+            virtual int Compare(RBTreeNode *Node) = 0;
+            static RBTreeNode *CreateFromAllocator(MemAllocator *Allocator, size_t DateSize) {return nullptr;};
+            static void FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node) {};
 
             friend class RBTree;
     };
 
-
-    class RBTreeNode : public _RBTreeNode_{
+    class UInt32RBTreeNode : public RBTreeNode{
 
         private:
-            uint Key = 0;
+            uint32_t Key = 0;
+            UInt32RBTreeNode();
+            ~UInt32RBTreeNode();
 
-            virtual int Compare(_RBTreeNode_ *Node);
+        public:
+            virtual int Compare(RBTreeNode *Node);
             static RBTreeNode *CreateFromAllocator(MemAllocator *Allocator, size_t DateSize);
             static void FreeFromAllocator(MemAllocator *Allocator,RBTreeNode **Node);
-            friend class RBTree;
+
+        friend class RBTree;
     };
 
 //    typedef void *(RBTreeInsertFunc) (RBTreeNode *Root, RBTreeNode *Node, RBTreeNode *Sentinel);
@@ -35,21 +42,42 @@ namespace ngx::Core {
     class RBTree {
 
         private:
-            _RBTreeNode_ *Root;
-            _RBTreeNode_ *Sentinel;
+            RBTreeNode *Root;
+            RBTreeNode *Sentinel;
             MemAllocator *Allocator;
 
-            void RotateLeft(_RBTreeNode_ *Node);
-            void RotateRight(_RBTreeNode_ *Node);
-
-        public:
-            RBTree(MemAllocator *Allocator, size_t DataSize);
+            void RotateLeft(RBTreeNode *Node);
+            void RotateRight(RBTreeNode *Node);
+            RBTree(MemAllocator *Allocator);
             ~RBTree();
-            void Insert(_RBTreeNode_ *Node);
-            void Delete(_RBTreeNode_ *Node);
-            _RBTreeNode_ *Next(_RBTreeNode_ *Node);
+        public:
+            void Insert(RBTreeNode *Node);
+            void Delete(RBTreeNode *Node);
+            RBTreeNode *Next(RBTreeNode *Node);
+    };
 
-            static RBTree *CreateFromAllocator(MemAllocator *Allocator, size_t DataSize);
-            static void FreeFromAllocator(MemAllocator *Allocator, RBTree **Tree);
+    class UInt32RBTree: public RBTree {
+
+    private:
+
+        UInt32RBTree(MemAllocator *Allocator, size_t DataSize);
+        ~UInt32RBTree();
+    public:
+        void Insert(RBTreeNode *Node);
+        void Delete(RBTreeNode *Node);
+        RBTreeNode *Next(RBTreeNode *Node);
+
+        static RBTree* CreateFromAllocator(MemAllocator *Allocator);
+        static void FreeFromAllocator(MemAllocator *Allocator, UInt32RBTree *TheRBTree);
+
+        static RBTreeNode* CreateNodeFromAllocator(MemAllocator *Allocator);
+        static void FreeNodeFromAllocator(MemAllocator *Allocator, UInt32RBTreeNode *TheRBTreeNode);
     };
 }
+
+// [TODO]
+// UInt32RBTree 哈希或整数检索树
+// TimerTree 定时器检索树 定时发出Promise
+// FSTree 文件系统树 层级资源索引, 正则支持 要用哈希来优化加速
+// CacheTree 数据缓存树,版本控制+过期清除
+// PrefixSuffixTree 前缀后缀查询树

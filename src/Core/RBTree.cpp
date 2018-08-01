@@ -2,7 +2,11 @@
 
 using namespace ngx::Core;
 
-RBTreeNode *RBTreeNode::CreateFromAllocator(MemAllocator *Allocator, size_t DateSize) {
+UInt32RBTreeNode::UInt32RBTreeNode() {
+
+}
+
+RBTreeNode *UInt32RBTreeNode::CreateFromAllocator(MemAllocator *Allocator, size_t DateSize) {
 
     RBTreeNode *Ret = nullptr;
     size_t AllocateSize = DateSize + sizeof(RBTreeNode);
@@ -13,11 +17,11 @@ RBTreeNode *RBTreeNode::CreateFromAllocator(MemAllocator *Allocator, size_t Date
         return nullptr;
     }
 
-    Ret = new (PointerToMemory) RBTreeNode();
+    Ret = new (PointerToMemory) UInt32RBTreeNode();
     return Ret;
 }
 
-void RBTreeNode::FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node) {
+void UInt32RBTreeNode::FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node) {
 
     if (nullptr != Node) {
         Allocator ->Free((void **)Node);
@@ -25,60 +29,51 @@ void RBTreeNode::FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node) {
 }
 
 
-int RBTreeNode::Compare(_RBTreeNode_ *Node) {
+int UInt32RBTreeNode::Compare(RBTreeNode *Node) {
 
-    RBTreeNode *RightOperator = (RBTreeNode *)Node;
+    UInt32RBTreeNode *RightOperator = (UInt32RBTreeNode *)Node;
     return Key - RightOperator->Key;
 }
 
-RBTree::RBTree(MemAllocator *Allocator, size_t DataSize) {
+RBTree::RBTree(MemAllocator *Allocator) {
 
     this -> Allocator = Allocator;
 
     if (nullptr == Allocator) {
         return;
     }
-
-    Sentinel = RBTreeNode::CreateFromAllocator(this->Allocator, DataSize);
-
-    if (nullptr == Sentinel) {
-        return;
-    }
-
-    Sentinel->SetBlack();
-    Root = Sentinel;
 }
 
 RBTree::~RBTree() {
 
-    if (Sentinel != nullptr) {
-        RBTreeNode::FreeFromAllocator(this->Allocator, (RBTreeNode **)&Sentinel);
-    }
+//    if (Sentinel != nullptr) {
+//        UInt32RBTreeNode::FreeFromAllocator(this->Allocator, (RBTreeNode **)&Sentinel);
+//    }
 }
 
+//
+//RBTree *RBTree::CreateFromAllocator(MemAllocator *Allocator, size_t DataSize) {
+//
+//    void * PointerToMemory = Allocator->Allocate(sizeof(RBTree));
+//
+//    if (nullptr == PointerToMemory) {
+//        return nullptr;
+//    }
+//
+//    return new (PointerToMemory) RBTree(Allocator, DataSize);
+//}
+//
+//void RBTree::FreeFromAllocator(MemAllocator *Allocator, RBTree **Tree) {
+//
+//    if (nullptr != Tree && nullptr != *Tree) {
+//        (*Tree)->~RBTree();
+//        Allocator -> Free((void **)Tree);
+//    }
+//}
 
-RBTree *RBTree::CreateFromAllocator(MemAllocator *Allocator, size_t DataSize) {
+void RBTree::RotateLeft(ngx::Core::RBTreeNode *Node) {
 
-    void * PointerToMemory = Allocator->Allocate(sizeof(RBTree));
-
-    if (nullptr == PointerToMemory) {
-        return nullptr;
-    }
-
-    return new (PointerToMemory) RBTree(Allocator, DataSize);
-}
-
-void RBTree::FreeFromAllocator(MemAllocator *Allocator, RBTree **Tree) {
-
-    if (nullptr != Tree && nullptr != *Tree) {
-        (*Tree)->~RBTree();
-        Allocator -> Free((void **)Tree);
-    }
-}
-
-void RBTree::RotateLeft(ngx::Core::_RBTreeNode_ *Node) {
-
-    _RBTreeNode_ *Temp;
+    RBTreeNode *Temp;
 
     Temp = Node->Right;
     Node->Right = Temp->Left;
@@ -104,9 +99,9 @@ void RBTree::RotateLeft(ngx::Core::_RBTreeNode_ *Node) {
 
 }
 
-void RBTree::RotateRight(ngx::Core::_RBTreeNode_ *Node) {
+void RBTree::RotateRight(ngx::Core::RBTreeNode *Node) {
 
-    _RBTreeNode_ *Temp;
+    RBTreeNode *Temp;
 
     Temp = Node->Left;
     Node->Left = Temp->Right;
@@ -131,7 +126,7 @@ void RBTree::RotateRight(ngx::Core::_RBTreeNode_ *Node) {
     Node->Parent = Temp;
 }
 
-void RBTree::Insert(ngx::Core::_RBTreeNode_ *Node) {
+void RBTree::Insert(ngx::Core::RBTreeNode *Node) {
 
     if (Root == Sentinel) {
         Node->Parent = nullptr;
@@ -142,7 +137,7 @@ void RBTree::Insert(ngx::Core::_RBTreeNode_ *Node) {
         return;
     }
 
-    _RBTreeNode_ *Temp = Root, **P = nullptr;
+    RBTreeNode *Temp = Root, **P = nullptr;
 
     for ( ;; ) {
 
@@ -205,9 +200,9 @@ void RBTree::Insert(ngx::Core::_RBTreeNode_ *Node) {
     Root ->SetBlack();
 }
 
-_RBTreeNode_ *RBTree::Next(ngx::Core::_RBTreeNode_ *Node) {
+RBTreeNode *RBTree::Next(RBTreeNode *Node) {
 
-    _RBTreeNode_ *Ret, *Parent;
+    RBTreeNode *Ret, *Parent;
 
     if (Node->Right != Sentinel) {
 
@@ -233,9 +228,9 @@ _RBTreeNode_ *RBTree::Next(ngx::Core::_RBTreeNode_ *Node) {
     }
 }
 
-void RBTree::Delete(ngx::Core::_RBTreeNode_ *Node) {
+void RBTree::Delete(RBTreeNode *Node) {
 
-    _RBTreeNode_ *Subst, *Temp, *W;
+    RBTreeNode *Subst, *Temp, *W;
 
     if ( Node->Left == Sentinel) {
         Temp = Node->Right;

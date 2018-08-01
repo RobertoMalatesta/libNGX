@@ -7,6 +7,7 @@ extern int TimeTest();
 extern int ThreadPoolTest();
 extern int HashTest();
 extern int CRCTest();
+extern int RBTreeTest();
 
 int main() {
 
