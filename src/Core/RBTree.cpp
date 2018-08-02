@@ -2,10 +2,6 @@
 
 using namespace ngx::Core;
 
-UInt32RBTreeNode::UInt32RBTreeNode() {
-
-}
-
 RBTreeNode *UInt32RBTreeNode::CreateFromAllocator(MemAllocator *Allocator, size_t DateSize) {
 
     RBTreeNode *Ret = nullptr;
@@ -28,11 +24,13 @@ void UInt32RBTreeNode::FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **N
     }
 }
 
-
 int UInt32RBTreeNode::Compare(RBTreeNode *Node) {
 
-    UInt32RBTreeNode *RightOperator = (UInt32RBTreeNode *)Node;
-    return Key - RightOperator->Key;
+    if (typeid(Node) == typeid(UInt32RBTreeNode)) {
+        return this->Key - ((UInt32RBTreeNode *)Node)->Key;
+    }
+    // WARN can not compare here!
+    return 0;
 }
 
 RBTree::RBTree(MemAllocator *Allocator) {
@@ -42,13 +40,6 @@ RBTree::RBTree(MemAllocator *Allocator) {
     if (nullptr == Allocator) {
         return;
     }
-}
-
-RBTree::~RBTree() {
-
-//    if (Sentinel != nullptr) {
-//        UInt32RBTreeNode::FreeFromAllocator(this->Allocator, (RBTreeNode **)&Sentinel);
-//    }
 }
 
 //
@@ -375,4 +366,65 @@ void RBTree::Delete(RBTreeNode *Node) {
         }
     }
     Temp->SetBlack();
+}
+
+
+UInt32RBTree::UInt32RBTree(MemAllocator *Allocator) : RBTree(Allocator) {
+
+    void *PointerToSentinel = Allocator->Allocate(sizeof(UInt32RBTreeNode));
+
+    if (nullptr == PointerToSentinel) {
+        return;
+    }
+
+    Root = Sentinel = new(PointerToSentinel) UInt32RBTreeNode();
+}
+
+UInt32RBTree::~UInt32RBTree(){
+
+    if (Sentinel != nullptr) {
+        Allocator->Free((void **)&Sentinel);
+    }
+
+    if (Root != nullptr) {
+        Allocator->Free((void **)&Root);
+    }
+
+    RBTree::~RBTree();
+}
+
+
+UInt32RBTree* UInt32RBTree::CreateFromAllocator(MemAllocator *ParentAllocator, MemAllocator *Allocator) {
+
+    void *PointerToRBTree = ParentAllocator->Allocate(sizeof(UInt32RBTree));
+
+    if (nullptr == PointerToRBTree) {
+        return nullptr;
+    }
+
+    return new(PointerToRBTree) UInt32RBTree(Allocator);
+}
+
+void UInt32RBTree::FreeFromAllocator(MemAllocator *ParentAllocator, UInt32RBTree **TheRBTree){
+    (*TheRBTree) -> ~UInt32RBTree();
+    ParentAllocator->Free((void **)TheRBTree);
+}
+
+UInt32RBTreeNode* UInt32RBTree::CreateNodeFromAllocator(size_t DataSize) {
+
+    void *PointerToNode = Allocator->Allocate(sizeof(UInt32RBTreeNode) + DataSize);
+
+    if (nullptr == PointerToNode) {
+        return nullptr;
+    }
+
+    return new(PointerToNode) UInt32RBTreeNode();
+}
+
+void UInt32RBTree::FreeNodeFromAllocator(ngx::Core::UInt32RBTreeNode **TheRBTreeNode) {
+    if (nullptr == TheRBTreeNode || nullptr == *TheRBTreeNode) {
+        return;
+    }
+
+    Allocator->Free((void **)TheRBTreeNode);
 }

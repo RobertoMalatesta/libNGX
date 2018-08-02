@@ -2,11 +2,9 @@ namespace ngx::Core {
 
     class RBTreeNode {
 
-        private:
+        protected:
             RBTreeNode *Left = nullptr, *Right = nullptr, *Parent = nullptr;
             u_char Color=0;
-            uint DataSize=0;
-            u_char Data[0];
 
             bool IsBlack() {return !Color;};
             bool IsRed() {return Color;};
@@ -24,32 +22,40 @@ namespace ngx::Core {
 
     class UInt32RBTreeNode : public RBTreeNode{
 
-        private:
+        protected:
             uint32_t Key = 0;
-            UInt32RBTreeNode();
-            ~UInt32RBTreeNode();
+            uint DataSize=0;
+            u_char Data[0];
+            UInt32RBTreeNode() = default;
+            ~UInt32RBTreeNode() = default;
 
         public:
+
+            void SetKey(uint32_t Key) {this->Key = Key;};
+            uint32_t GetKey() { return Key;};
+
+            u_char *GetDataPointer() { return this->Data;};
+
             virtual int Compare(RBTreeNode *Node);
             static RBTreeNode *CreateFromAllocator(MemAllocator *Allocator, size_t DateSize);
             static void FreeFromAllocator(MemAllocator *Allocator,RBTreeNode **Node);
 
-        friend class RBTree;
+        friend class UInt32RBTree;
     };
 
 //    typedef void *(RBTreeInsertFunc) (RBTreeNode *Root, RBTreeNode *Node, RBTreeNode *Sentinel);
 
     class RBTree {
 
-        private:
+        protected:
             RBTreeNode *Root;
             RBTreeNode *Sentinel;
             MemAllocator *Allocator;
 
+            RBTree(MemAllocator *Allocator);
+            ~RBTree() = default;
             void RotateLeft(RBTreeNode *Node);
             void RotateRight(RBTreeNode *Node);
-            RBTree(MemAllocator *Allocator);
-            ~RBTree();
         public:
             void Insert(RBTreeNode *Node);
             void Delete(RBTreeNode *Node);
@@ -59,19 +65,14 @@ namespace ngx::Core {
     class UInt32RBTree: public RBTree {
 
     private:
-
-        UInt32RBTree(MemAllocator *Allocator, size_t DataSize);
+        UInt32RBTree(MemAllocator *Allocator);
         ~UInt32RBTree();
     public:
-        void Insert(RBTreeNode *Node);
-        void Delete(RBTreeNode *Node);
-        RBTreeNode *Next(RBTreeNode *Node);
+        UInt32RBTreeNode* CreateNodeFromAllocator(size_t DataSize);
+        void FreeNodeFromAllocator(UInt32RBTreeNode **TheRBTreeNode);
 
-        static RBTree* CreateFromAllocator(MemAllocator *Allocator);
-        static void FreeFromAllocator(MemAllocator *Allocator, UInt32RBTree *TheRBTree);
-
-        static RBTreeNode* CreateNodeFromAllocator(MemAllocator *Allocator);
-        static void FreeNodeFromAllocator(MemAllocator *Allocator, UInt32RBTreeNode *TheRBTreeNode);
+        static UInt32RBTree* CreateFromAllocator(MemAllocator *ParentAllocator, MemAllocator *Allocator);
+        static void FreeFromAllocator(MemAllocator *ParentAllocator, UInt32RBTree **TheRBTree);
     };
 }
 
