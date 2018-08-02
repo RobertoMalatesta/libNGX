@@ -2,37 +2,6 @@
 
 using namespace ngx::Core;
 
-RBTreeNode *UInt32RBTreeNode::CreateFromAllocator(MemAllocator *Allocator, size_t DateSize) {
-
-    RBTreeNode *Ret = nullptr;
-    size_t AllocateSize = DateSize + sizeof(RBTreeNode);
-
-    void *PointerToMemory =  ((nullptr != Allocator)?Allocator->Allocate(AllocateSize):malloc(AllocateSize));
-
-    if (nullptr == PointerToMemory) {
-        return nullptr;
-    }
-
-    Ret = new (PointerToMemory) UInt32RBTreeNode();
-    return Ret;
-}
-
-void UInt32RBTreeNode::FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node) {
-
-    if (nullptr != Node) {
-        Allocator ->Free((void **)Node);
-    }
-}
-
-int UInt32RBTreeNode::Compare(RBTreeNode *Node) {
-
-    if (typeid(Node) == typeid(UInt32RBTreeNode)) {
-        return this->Key - ((UInt32RBTreeNode *)Node)->Key;
-    }
-    // WARN can not compare here!
-    return 0;
-}
-
 RBTree::RBTree(MemAllocator *Allocator) {
 
     this -> Allocator = Allocator;
@@ -41,26 +10,6 @@ RBTree::RBTree(MemAllocator *Allocator) {
         return;
     }
 }
-
-//
-//RBTree *RBTree::CreateFromAllocator(MemAllocator *Allocator, size_t DataSize) {
-//
-//    void * PointerToMemory = Allocator->Allocate(sizeof(RBTree));
-//
-//    if (nullptr == PointerToMemory) {
-//        return nullptr;
-//    }
-//
-//    return new (PointerToMemory) RBTree(Allocator, DataSize);
-//}
-//
-//void RBTree::FreeFromAllocator(MemAllocator *Allocator, RBTree **Tree) {
-//
-//    if (nullptr != Tree && nullptr != *Tree) {
-//        (*Tree)->~RBTree();
-//        Allocator -> Free((void **)Tree);
-//    }
-//}
 
 void RBTree::RotateLeft(ngx::Core::RBTreeNode *Node) {
 
@@ -368,6 +317,36 @@ void RBTree::Delete(RBTreeNode *Node) {
     Temp->SetBlack();
 }
 
+RBTreeNode *UInt32RBTreeNode::CreateFromAllocator(MemAllocator *Allocator, size_t DateSize) {
+
+    RBTreeNode *Ret = nullptr;
+    size_t AllocateSize = DateSize + sizeof(RBTreeNode);
+
+    void *PointerToMemory =  ((nullptr != Allocator)?Allocator->Allocate(AllocateSize):malloc(AllocateSize));
+
+    if (nullptr == PointerToMemory) {
+        return nullptr;
+    }
+
+    Ret = new (PointerToMemory) UInt32RBTreeNode();
+    return Ret;
+}
+
+void UInt32RBTreeNode::FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node) {
+
+    if (nullptr != Node) {
+        Allocator ->Free((void **)Node);
+    }
+}
+
+int UInt32RBTreeNode::Compare(RBTreeNode *Node) {
+
+    if (typeid(Node) == typeid(UInt32RBTreeNode)) {
+        return this->Key - ((UInt32RBTreeNode *)Node)->Key;
+    }
+    // WARN can not compare here!
+    return 0;
+}
 
 UInt32RBTree::UInt32RBTree(MemAllocator *Allocator) : RBTree(Allocator) {
 
