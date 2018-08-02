@@ -67,7 +67,7 @@ namespace ngx::Core {
 
         int Residual = DefaultPoolResidual;
 
-        MemBlock *Last = HeadBlock, *Current = nullptr, __attribute__((unused)) *Next = nullptr, *TempFreeBlockHead = nullptr, *TempFreeBlockTail = nullptr;
+        MemBlock *Last = HeadBlock, *Current = nullptr /*, *Next = nullptr */, *TempFreeBlockHead = nullptr, *TempFreeBlockTail = nullptr;
 
         Current = Last -> GetNext();
 
