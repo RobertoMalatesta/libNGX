@@ -66,7 +66,7 @@ void RBTree::RotateRight(ngx::Core::RBTreeNode *Node) {
     Node->Parent = Temp;
 }
 
-void RBTree::Insert(ngx::Core::RBTreeNode *Node) {
+void RBTree::Insert(RBTreeNode *Node) {
 
     if (Root == Sentinel) {
         Node->Parent = nullptr;
@@ -86,6 +86,7 @@ void RBTree::Insert(ngx::Core::RBTreeNode *Node) {
         if (*P == Sentinel) {
             break;
         }
+        Temp = *P;
     }
 
     *P = Node;
@@ -97,6 +98,7 @@ void RBTree::Insert(ngx::Core::RBTreeNode *Node) {
     while (Node != Root && Node->Parent->IsRed()) {
 
         if (Node ->Parent == Node->Parent->Parent->Left) {
+
             Temp = Node->Parent->Parent->Right;
 
             if (Temp->IsRed()) {
@@ -106,6 +108,7 @@ void RBTree::Insert(ngx::Core::RBTreeNode *Node) {
                 Node = Node->Parent->Parent;
             }
             else {
+
                 if (Node == Node->Parent->Right) {
                     Node = Node->Parent;
                     RotateLeft(Node);
@@ -113,7 +116,7 @@ void RBTree::Insert(ngx::Core::RBTreeNode *Node) {
 
                 Node->Parent->SetBlack();
                 Node->Parent->Parent->SetRed();
-                RotateRight(Node);
+                RotateRight(Node->Parent->Parent);
             }
         }
         else {
@@ -126,13 +129,14 @@ void RBTree::Insert(ngx::Core::RBTreeNode *Node) {
                 Node = Node->Parent->Parent;
             }
             else {
+
                 if (Node == Node->Parent->Left) {
                     Node=Node->Parent;
                     RotateRight(Node);
                 }
                 Node->Parent->SetBlack();
                 Node->Parent->Parent->SetRed();
-                RotateLeft(Node);
+                RotateLeft(Node->Parent->Parent);
             }
         }
 
@@ -212,7 +216,7 @@ void RBTree::Delete(RBTreeNode *Node) {
     }
 
     if (Subst == Node) {
-        Temp->Parent = Subst;
+        Temp->Parent = Subst->Parent;
     }
     else {
 
@@ -247,6 +251,10 @@ void RBTree::Delete(RBTreeNode *Node) {
         }
     }
 
+    Node->Left = nullptr;
+    Node->Right = nullptr;
+    Node->Parent = nullptr;
+
     if (Subst->IsRed()) {
         return;
     }
@@ -260,6 +268,7 @@ void RBTree::Delete(RBTreeNode *Node) {
                 W->SetBlack();
                 Temp->Parent->SetRed();
                 RotateLeft(Temp->Parent);
+                W = Temp -> Parent ->Right;
             }
 
             if (W->Left->IsBlack() && W->Right->IsBlack()) {
@@ -267,9 +276,8 @@ void RBTree::Delete(RBTreeNode *Node) {
                 Temp = Temp->Parent;
             }
             else {
-
                 if (W->Right->IsBlack()) {
-                    W->Left->IsBlack();
+                    W->Left->SetBlack();
                     W->SetRed();
                     RotateRight(W);
                     W = Temp->Parent->Right;
@@ -339,13 +347,8 @@ void UInt32RBTreeNode::FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **N
     }
 }
 
-int UInt32RBTreeNode::Compare(RBTreeNode *Node) {
-
-    if (typeid(Node) == typeid(UInt32RBTreeNode)) {
-        return this->Key - ((UInt32RBTreeNode *)Node)->Key;
-    }
-    // WARN can not compare here!
-    return 0;
+int UInt32RBTreeNode::Compare(UInt32RBTreeNode *Node) {
+    return this->Key - Node->Key;
 }
 
 UInt32RBTree::UInt32RBTree(MemAllocator *Allocator) : RBTree(Allocator) {
@@ -360,10 +363,6 @@ UInt32RBTree::UInt32RBTree(MemAllocator *Allocator) : RBTree(Allocator) {
 }
 
 UInt32RBTree::~UInt32RBTree(){
-
-    if (Sentinel != nullptr) {
-        Allocator->Free((void **)&Sentinel);
-    }
 
     if (Root != nullptr) {
         Allocator->Free((void **)&Root);
@@ -389,7 +388,7 @@ void UInt32RBTree::FreeFromAllocator(MemAllocator *ParentAllocator, UInt32RBTree
     ParentAllocator->Free((void **)TheRBTree);
 }
 
-UInt32RBTreeNode* UInt32RBTree::CreateNodeFromAllocator(size_t DataSize) {
+UInt32RBTreeNode* UInt32RBTree::CreateNodeFromAllocator(size_t DataSize, uint32_t Key) {
 
     void *PointerToNode = Allocator->Allocate(sizeof(UInt32RBTreeNode) + DataSize);
 
@@ -397,7 +396,7 @@ UInt32RBTreeNode* UInt32RBTree::CreateNodeFromAllocator(size_t DataSize) {
         return nullptr;
     }
 
-    return new(PointerToNode) UInt32RBTreeNode();
+    return new(PointerToNode) UInt32RBTreeNode(DataSize, Key);
 }
 
 void UInt32RBTree::FreeNodeFromAllocator(ngx::Core::UInt32RBTreeNode **TheRBTreeNode) {

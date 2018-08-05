@@ -11,9 +11,9 @@ namespace ngx::Core {
             void SetBlack() { Color=0;};
             void SetRed() {Color=1;};
             void CopyColor(RBTreeNode *Node) { if (nullptr != Node) {Color=Node->Color;}};
+            virtual int Compare(RBTreeNode *Node) { return 0;}
 
         public:
-            virtual int Compare(RBTreeNode *Node) = 0;
             static RBTreeNode *CreateFromAllocator(MemAllocator *Allocator, size_t DateSize) {return nullptr;};
             static void FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node) {};
 
@@ -24,19 +24,19 @@ namespace ngx::Core {
 
         protected:
             uint32_t Key = 0;
-            uint DataSize=0;
+            size_t DataSize=0;
             u_char Data[0];
             UInt32RBTreeNode() = default;
+            UInt32RBTreeNode(size_t DataSize, uint32_t Key) {this->DataSize = DataSize; this->Key = Key;};
             ~UInt32RBTreeNode() = default;
 
         public:
 
             void SetKey(uint32_t Key) {this->Key = Key;};
             uint32_t GetKey() { return Key;};
-
             u_char *GetDataPointer() { return this->Data;};
 
-            virtual int Compare(RBTreeNode *Node);
+            virtual int Compare(UInt32RBTreeNode *Node);
             static RBTreeNode *CreateFromAllocator(MemAllocator *Allocator, size_t DateSize);
             static void FreeFromAllocator(MemAllocator *Allocator,RBTreeNode **Node);
 
@@ -68,7 +68,7 @@ namespace ngx::Core {
         UInt32RBTree(MemAllocator *Allocator);
         ~UInt32RBTree();
     public:
-        UInt32RBTreeNode* CreateNodeFromAllocator(size_t DataSize);
+        UInt32RBTreeNode* CreateNodeFromAllocator(size_t DataSize, uint32_t Key=0);
         void FreeNodeFromAllocator(UInt32RBTreeNode **TheRBTreeNode);
 
         static UInt32RBTree* CreateFromAllocator(MemAllocator *ParentAllocator, MemAllocator *Allocator);
