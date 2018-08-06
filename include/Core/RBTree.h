@@ -22,6 +22,8 @@ namespace ngx::Core {
 
     class UInt32RBTreeNode : public RBTreeNode{
 
+        friend class UInt32RBTree;
+
         protected:
             uint32_t Key = 0;
             size_t DataSize=0;
@@ -29,6 +31,9 @@ namespace ngx::Core {
             UInt32RBTreeNode() = default;
             UInt32RBTreeNode(size_t DataSize, uint32_t Key) {this->DataSize = DataSize; this->Key = Key;};
             ~UInt32RBTreeNode() = default;
+
+            RBTreeNode *GetLeft() { return this->Left; }
+            RBTreeNode *GetRight() { return this->Right; }
 
         public:
 
@@ -39,11 +44,7 @@ namespace ngx::Core {
             virtual int Compare(UInt32RBTreeNode *Node);
             static RBTreeNode *CreateFromAllocator(MemAllocator *Allocator, size_t DateSize);
             static void FreeFromAllocator(MemAllocator *Allocator,RBTreeNode **Node);
-
-        friend class UInt32RBTree;
     };
-
-//    typedef void *(RBTreeInsertFunc) (RBTreeNode *Root, RBTreeNode *Node, RBTreeNode *Sentinel);
 
     class RBTree {
 
@@ -60,6 +61,7 @@ namespace ngx::Core {
             void Insert(RBTreeNode *Node);
             void Delete(RBTreeNode *Node);
             RBTreeNode *Next(RBTreeNode *Node);
+            RBTreeNode *Minimum();
     };
 
     class UInt32RBTree: public RBTree {
@@ -73,6 +75,8 @@ namespace ngx::Core {
 
         static UInt32RBTree* CreateFromAllocator(MemAllocator *ParentAllocator, MemAllocator *Allocator);
         static void FreeFromAllocator(MemAllocator *ParentAllocator, UInt32RBTree **TheRBTree);
+
+        UInt32RBTreeNode *Find(uint32_t Key);
     };
 }
 

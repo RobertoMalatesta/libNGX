@@ -2,6 +2,21 @@
 
 using namespace ngx::Core;
 
+RBTreeNode *RBTree::Minimum() {
+
+    RBTreeNode *Temp = Root;
+
+    if (Temp == Sentinel) {
+        return Temp;
+    }
+
+    while (Temp -> Left != Sentinel) {
+        Temp = Temp -> Left;
+    }
+
+    return Temp;
+}
+
 RBTree::RBTree(MemAllocator *Allocator) {
 
     this -> Allocator = Allocator;
@@ -11,7 +26,7 @@ RBTree::RBTree(MemAllocator *Allocator) {
     }
 }
 
-void RBTree::RotateLeft(ngx::Core::RBTreeNode *Node) {
+void RBTree::RotateLeft(RBTreeNode *Node) {
 
     RBTreeNode *Temp;
 
@@ -39,7 +54,7 @@ void RBTree::RotateLeft(ngx::Core::RBTreeNode *Node) {
 
 }
 
-void RBTree::RotateRight(ngx::Core::RBTreeNode *Node) {
+void RBTree::RotateRight(RBTreeNode *Node) {
 
     RBTreeNode *Temp;
 
@@ -399,10 +414,38 @@ UInt32RBTreeNode* UInt32RBTree::CreateNodeFromAllocator(size_t DataSize, uint32_
     return new(PointerToNode) UInt32RBTreeNode(DataSize, Key);
 }
 
-void UInt32RBTree::FreeNodeFromAllocator(ngx::Core::UInt32RBTreeNode **TheRBTreeNode) {
+void UInt32RBTree::FreeNodeFromAllocator(UInt32RBTreeNode **TheRBTreeNode) {
     if (nullptr == TheRBTreeNode || nullptr == *TheRBTreeNode) {
         return;
     }
 
     Allocator->Free((void **)TheRBTreeNode);
+}
+
+UInt32RBTreeNode *UInt32RBTree::Find(uint32_t Key) {
+
+    auto *Temp = (UInt32RBTreeNode *)Root;
+
+    uint32_t TempKey;
+
+    do {
+
+        if (Temp == Sentinel) {
+            return nullptr;
+        }
+
+        TempKey = Temp->GetKey();
+
+        if (Key == TempKey) {
+            return Temp;
+        }
+
+        else if (Key > TempKey) {
+            Temp = (UInt32RBTreeNode *)Temp->GetRight();
+        }
+        else {
+            Temp = (UInt32RBTreeNode *)Temp->GetLeft();
+        }
+
+    } while (true);
 }
