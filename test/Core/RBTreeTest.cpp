@@ -64,5 +64,4 @@ int RBTreeTest() {
     MemoryPool.GC();
 
     return 0;
-
 }
