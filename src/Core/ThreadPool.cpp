@@ -59,7 +59,7 @@ namespace ngx::Core {
         return 0;
     }
 
-    void Thread::ThreadProcess(ngx::Core::Thread *Thread) {
+    void Thread::ThreadProcess(Thread *Thread) {
 
         Promise *Node;
         bool IsRunnig = Thread->Running;

@@ -357,13 +357,21 @@ RBTreeNode *UInt32RBTreeNode::CreateFromAllocator(MemAllocator *Allocator, size_
 
 void UInt32RBTreeNode::FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node) {
 
-    if (nullptr != Node) {
+    if (nullptr != Node && nullptr != *Node) {
         Allocator ->Free((void **)Node);
     }
 }
 
 int UInt32RBTreeNode::Compare(UInt32RBTreeNode *Node) {
-    return this->Key - Node->Key;
+    if ( this->Key == Node->Key) {
+        return 0;
+    }
+    else if (this->Key > Node->Key) {
+        return 1;
+    }
+    else {
+        return -1;
+    }
 }
 
 UInt32RBTree::UInt32RBTree(MemAllocator *Allocator) : RBTree(Allocator) {

@@ -9,6 +9,9 @@ namespace ngx::Core {
         const size_t SysLogTimeSize = sizeof("Sep 28 12:00:00");
 
         int TimeModuleInit();
+        int EnableTimer();
+        int DisableTimer();
+        void ForceUSleep(useconds_t USeconds);
         uint64_t GetTimeStamp();
         int WriteErrorLogTime(char *Buf, size_t Size);
         int WriteHttpTime(char *Buf, size_t Size);

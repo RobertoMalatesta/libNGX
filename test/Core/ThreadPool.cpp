@@ -30,11 +30,11 @@ int ThreadPoolTest() {
 
     ThreadPool T(7);
 
-    for(long i=0; i < 5000; i++) {
+    for(long i=0; i < 500000; i++) {
         T.PostPromise(func, (void *)i);
     }
 
-    usleep( 10 * 1000 * 1000);
+    ForceUSleep( 10 * 1000 * 1000);
 
     return 0;
 }

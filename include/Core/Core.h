@@ -15,7 +15,9 @@ namespace ngx::Core {
     class RBTree;
     class UInt32RBTreeNode;
     class UInt32RBTree;
+    class TimerTree;
     class Promise;
+    class Thread;
     class ThreadPool;
     class Connection;
     class Listening;
@@ -42,3 +44,4 @@ namespace ngx::Core {
 #include "Core/Connection.h"
 #include "Core/Listening.h"
 #include "Core/ThreadPool.h"
+#include "Core/TimerTree.h"

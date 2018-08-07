@@ -2,6 +2,7 @@
 #include "Core/Core.h"
 #include <sys/time.h>
 #include <csignal>
+#include <unistd.h>
 
 using namespace std;
 
@@ -29,10 +30,45 @@ namespace ngx::Core {
 
     static inline int FetchTimeVersion();
 
+    int EnableTimer() {
+
+        struct itimerval  itv = {0};
+
+        itv.it_interval.tv_sec = TimeResolution / 1000;
+        itv.it_interval.tv_usec = (TimeResolution % 1000) * 1000;
+        itv.it_value.tv_sec = TimeResolution / 1000;
+        itv.it_value.tv_usec = (TimeResolution % 1000 ) * 1000;
+
+        if (setitimer(ITIMER_REAL, &itv, nullptr) == -1) {
+            return -1;
+        }
+        return 0;
+    };
+
+    int DisableTimer() {
+
+        struct itimerval  itv = {0};
+
+        itv.it_value.tv_sec = 0;
+        itv.it_value.tv_usec = 0;
+        itv.it_interval = itv.it_value;
+
+        if (setitimer(ITIMER_REAL, &itv, nullptr) == -1) {
+            return -1;
+        }
+        return 0;
+
+    }
+
+    void ForceUSleep(useconds_t USeconds) {
+        DisableTimer();
+        usleep(USeconds);
+        EnableTimer();
+    }
+
     int TimeModuleInit() {
 
-        struct sigaction  sa;
-        struct itimerval  itv;
+        struct sigaction  sa = {nullptr};
 
         UpdateTimeString();
 
@@ -44,12 +80,7 @@ namespace ngx::Core {
             return -1;
         }
 
-        itv.it_interval.tv_sec = TimeResolution / 1000;
-        itv.it_interval.tv_usec = (TimeResolution % 1000) * 1000;
-        itv.it_value.tv_sec = TimeResolution / 1000;
-        itv.it_value.tv_usec = (TimeResolution % 1000 ) * 1000;
-
-        if (setitimer(ITIMER_REAL, &itv, nullptr) == -1) {
+        if (EnableTimer() == -1) {
             return -1;
         }
 

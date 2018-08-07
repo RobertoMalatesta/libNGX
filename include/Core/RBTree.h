@@ -66,7 +66,7 @@ namespace ngx::Core {
 
     class UInt32RBTree: public RBTree {
 
-    private:
+    protected:
         UInt32RBTree(MemAllocator *Allocator);
         ~UInt32RBTree();
     public:

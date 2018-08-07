@@ -9,7 +9,7 @@ int TimeTest () {
     TimeModuleInit();
     GetTimeStamp();
 
-    printf("Testing Time module...");
+    printf("Testing Time module...\n");
 
     for (int i=0; i<10; i++) {
         printf("-----------------------------------------\n");
@@ -45,7 +45,7 @@ int TimeTest () {
             printf("%s\n",TimeBuf);
         }
 
-        sleep(1000);
+        ForceUSleep(1000 * 1000);
     }
 
     return 0;

@@ -2,9 +2,6 @@ namespace ngx::Core {
 
     using namespace std;
 
-    class Thread;
-    class ThreadPool;
-
     typedef void (PromiseCallback)(void *PointerToArguments, ThreadPool *TPool);
 
     class Promise : public Queue {

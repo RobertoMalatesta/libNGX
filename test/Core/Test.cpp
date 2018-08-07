@@ -11,14 +11,14 @@ extern int RBTreeTest();
 
 int main() {
 
-//	MemBlockTest();
-//    PoolTest();
-//	BufTest();
-//	ArrayTest();
-//	TimeTest();
-//	ThreadPoolTest();
-//	HashTest();
-//    CRCTest();
+	MemBlockTest();
+    PoolTest();
+	BufTest();
+	ArrayTest();
+	TimeTest();
+	ThreadPoolTest();
+	HashTest();
+    CRCTest();
     RBTreeTest();
 	return 0;
 }

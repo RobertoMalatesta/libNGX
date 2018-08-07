@@ -17,14 +17,14 @@ set(SOURCE_FILES
         src/Core/Time.cpp
         src/Core/Checksum.cpp
         include/Core/Hash.h
-        src/Core/ThreadPool.cpp)
+        src/Core/ThreadPool.cpp src/Core/TimerTree.cpp)
 
 set(TEST_FILES
         test/Core/Test.cpp
         test/Core/MemBlockTest.cpp
         test/Core/PoolTest.cpp
         test/Core/BufTest.cpp
-        test/Core/ArrayTest.cpp test/Core/TimeTest.cpp test/Core/ThreadPool.cpp test/Core/HashTest.cpp test/Core/CRCTest.cpp test/Core/RBTreeTest.cpp)
+        test/Core/ArrayTest.cpp test/Core/TimeTest.cpp test/Core/ThreadPool.cpp test/Core/HashTest.cpp test/Core/CRCTest.cpp test/Core/RBTreeTest.cpp src/Core/TimerTree.cpp)
 include_directories(./include)
 
 LINK_LIBRARIES(-lpthread)
