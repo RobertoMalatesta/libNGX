@@ -9,9 +9,9 @@ namespace ngx::Core {
 
     protected:
         uint64_t Timestamp = 0;
-        PromiseCallback *Callback;
-        void *Argument;
-        TimerTreeNode() = default;
+        PromiseCallback *Callback = nullptr;
+        void *Argument = nullptr;
+        TimerTreeNode() {};
         TimerTreeNode(uint64_t Timestamp, PromiseCallback *Callback, void *Argument) {
             this->Timestamp = Timestamp;
             this->Callback = Callback;

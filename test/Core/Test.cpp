@@ -8,6 +8,7 @@ extern int ThreadPoolTest();
 extern int HashTest();
 extern int CRCTest();
 extern int RBTreeTest();
+extern int TimerTreeTest();
 
 int main() {
 
@@ -20,5 +21,6 @@ int main() {
 	HashTest();
     CRCTest();
     RBTreeTest();
+    TimerTreeTest();
 	return 0;
 }

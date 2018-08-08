@@ -9,7 +9,7 @@ using namespace ngx::Core;
 atomic_uint64_t clocks = 1;
 atomic_uint64_t turns = 1;
 
-void func(void *, ThreadPool *) {
+static void func(void *, ThreadPool *) {
 
     int j=0;
 

@@ -70,18 +70,25 @@ namespace ngx::Core {
 
         struct sigaction  sa = {nullptr};
 
-        UpdateTimeString();
+        static bool TimeModuleInited = false;
 
-        memset(&sa, 0, sizeof(struct sigaction));
-        sa.sa_handler = TimerHandle;
-        sigemptyset(&sa.sa_mask);
+        if (!TimeModuleInited) {
 
-        if (sigaction(SIGALRM, &sa, nullptr) == -1) {
-            return -1;
-        }
+            UpdateTimeString();
 
-        if (EnableTimer() == -1) {
-            return -1;
+            memset(&sa, 0, sizeof(struct sigaction));
+            sa.sa_handler = TimerHandle;
+            sigemptyset(&sa.sa_mask);
+
+            if (sigaction(SIGALRM, &sa, nullptr) == -1) {
+                return -1;
+            }
+
+            if (EnableTimer() == -1) {
+                return -1;
+            }
+            TimeModuleInited = true;
+            FetchTimeVersion();
         }
 
         return 0;

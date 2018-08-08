@@ -14,10 +14,10 @@ int TimerTreeNode::Compare(TimerTreeNode *Node) {
     }
 }
 
-RBTreeNode *TimerTreeNode::CreateFromAllocator(MemAllocator *Allocator, uint64_t MillSecond, PromiseCallback *Callback, void *Argument) {
+RBTreeNode *TimerTreeNode::CreateFromAllocator(MemAllocator *Allocator, uint64_t Seconds, PromiseCallback *Callback, void *Argument) {
 
     RBTreeNode *Ret = nullptr;
-    size_t AllocateSize = 0 + sizeof(RBTreeNode);
+    size_t AllocateSize = 0 + sizeof(TimerTreeNode);
 
     void *PointerToMemory =  ((nullptr != Allocator)?Allocator->Allocate(AllocateSize):malloc(AllocateSize));
 
@@ -25,7 +25,7 @@ RBTreeNode *TimerTreeNode::CreateFromAllocator(MemAllocator *Allocator, uint64_t
         return nullptr;
     }
 
-    Ret = new (PointerToMemory) TimerTreeNode(MillSecond, Callback, Argument);
+    Ret = new (PointerToMemory) TimerTreeNode(Seconds, Callback, Argument);
     return Ret;
 }
 
@@ -61,9 +61,9 @@ void TimerTree::FreeFromAllocator(MemAllocator *ParentAllocator, TimerTree **The
     ParentAllocator->Free((void **)TheRBTree);
 }
 
-int TimerTree::PostTimerPromise(uint64_t MillSecond, PromiseCallback Callback, void *Argument) {
+int TimerTree::PostTimerPromise(uint64_t Seconds, PromiseCallback Callback, void *Argument) {
 
-    uint64_t TimeStamp = GetTimeStamp() + MillSecond;
+    uint64_t TimeStamp = GetTimeStamp() + Seconds;
 
     RBTreeNode *Node = TimerTreeNode::CreateFromAllocator(Allocator, TimeStamp, Callback, Argument);
 
@@ -83,9 +83,10 @@ int TimerTree::QueueExpiredTimer(ThreadPool *TPool) {
 
     uint64_t Timestamp = GetTimeStamp();
 
-    for (It = Minimum(); It != Sentinel; It = Next(It)) {
+    for (It = Minimum(); It != Sentinel && It != nullptr; ) {
 
         Temp = (TimerTreeNode *)It;
+        It = Next(It);
 
         if (Temp->Timestamp > Timestamp) {
             break;
@@ -93,6 +94,7 @@ int TimerTree::QueueExpiredTimer(ThreadPool *TPool) {
 
         TPool->PostPromise(Temp->Callback, Temp->Argument);
         Delete(Temp);
+
         TimerTreeNode::FreeFromAllocator(Allocator, (RBTreeNode **)&Temp);
     }
     return 0;
