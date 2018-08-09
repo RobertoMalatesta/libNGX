@@ -28,7 +28,7 @@ namespace ngx::Core {
     static void TimerHandle(int);
     static void UpdateTimeString();
 
-    static inline int FetchTimeVersion();
+    static inline int FetchTimeVersion(bool Force = false);
 
     int EnableTimer() {
 
@@ -63,6 +63,7 @@ namespace ngx::Core {
     void ForceUSleep(useconds_t USeconds) {
         DisableTimer();
         usleep(USeconds);
+        FetchTimeVersion(true);
         EnableTimer();
     }
 
@@ -171,14 +172,14 @@ namespace ngx::Core {
         return SysLogTimeSize-1;
     }
 
-    static int FetchTimeVersion() {
+    static int FetchTimeVersion(bool Force) {
 
         int Version=0;
         while(TimestampLock.test_and_set()) {
             RelaxMachine();
         }
 
-        if (UpdateTimestamp) {
+        if (UpdateTimestamp || Force) {
             UpdateTimeString();
         }
 

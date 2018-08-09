@@ -16,6 +16,8 @@ namespace ngx::Core {
     class UInt32RBTreeNode;
     class UInt32RBTree;
     class TimerTree;
+    class FSEntity;
+    class FSTree;
     class Promise;
     class Thread;
     class ThreadPool;
@@ -45,3 +47,4 @@ namespace ngx::Core {
 #include "Core/Listening.h"
 #include "Core/ThreadPool.h"
 #include "Core/TimerTree.h"
+#include "Core/FSTree.h"
