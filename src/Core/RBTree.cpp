@@ -20,10 +20,6 @@ RBTreeNode *RBTree::Minimum() {
 RBTree::RBTree(MemAllocator *Allocator) {
 
     this -> Allocator = Allocator;
-
-    if (nullptr == Allocator) {
-        return;
-    }
 }
 
 void RBTree::RotateLeft(RBTreeNode *Node) {

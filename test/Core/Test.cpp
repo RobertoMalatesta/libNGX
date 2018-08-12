@@ -9,18 +9,20 @@ extern int HashTest();
 extern int CRCTest();
 extern int RBTreeTest();
 extern int TimerTreeTest();
+extern int FSTreeTest();
 
 int main() {
 
-	MemBlockTest();
-    PoolTest();
-	BufTest();
-	ArrayTest();
-	TimeTest();
-	ThreadPoolTest();
-	HashTest();
-    CRCTest();
-    RBTreeTest();
-    TimerTreeTest();
+//	MemBlockTest();
+//    PoolTest();
+//	BufTest();
+//	ArrayTest();
+//	TimeTest();
+//	ThreadPoolTest();
+//	HashTest();
+//    CRCTest();
+//    RBTreeTest();
+//    TimerTreeTest();
+	FSTreeTest();
 	return 0;
 }

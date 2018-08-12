@@ -46,6 +46,26 @@ TimerTree::TimerTree(MemAllocator *Allocator): RBTree(Allocator) {
     Root = Sentinel = new(PointerToSentinel) TimerTreeNode();
 }
 
+TimerTree::~TimerTree()  {
+
+    RBTreeNode *Temp;
+
+    for (RBTreeNode *It = Minimum(); It != nullptr && It != Sentinel; ) {
+        Temp = It;
+        It = Next(It);
+        Delete(Temp);
+        Allocator->Free((void **)&Temp);
+    }
+
+    Temp = Sentinel;
+
+    if (Temp != nullptr) {
+        Allocator->Free((void **)&Temp);
+    }
+
+    RBTree::~RBTree();
+};
+
 TimerTree * TimerTree::CreateFromAllocator(MemAllocator *ParentAllocator, MemAllocator *Allocator) {
     void *PointerToRBTree = ParentAllocator->Allocate(sizeof(TimerTree));
 

@@ -7,10 +7,11 @@ namespace ngx::Core {
         private:
 
             friend class FSEntity;
-            FilterCallback *Callback;
+            FilterCallback *Callback = nullptr;
 
-            FilterQueue(FilterCallback *Callback, size_t DataSize);
-            ~FilterQueue();
+            FilterQueue() {};
+            FilterQueue(FilterCallback *Callback) {};
+            ~FilterQueue() {};
 
         public:
             static FilterQueue *CreateFromAllocator(MemAllocator *Allocator);
@@ -23,69 +24,77 @@ namespace ngx::Core {
         private:
 
             friend class FSEntity;
+            u_char  *RegExp = nullptr;
+            size_t RegExpLength = 0;
+            size_t DataLength = 0;
             u_char Data[0];
             RegExpQueue *Match(u_char *Key) {
                 bool Matched;
-                if (!(Matched = true)) {
+                if ( (RegExp != nullptr) && !(Matched = true)) {
                     return this;
                 }
                 return nullptr;
             }
 
-            RegExpQueue( u_char RegExp, size_t Length, size_t DataSize);
-            ~RegExpQueue();
+            RegExpQueue() {};
+            RegExpQueue( u_char RegExp, size_t Length, size_t DataSize) {};
+            ~RegExpQueue() {};
 
         public:
             static RegExpQueue *CreateFromAllocator(MemAllocator *Allocator);
             static void FreeFromAllocator(MemAllocator *Allocator, RegExpQueue **PointerToRegExpQueue);
-            static int Match(RegExpQueue *RegExpQueue, u_char *Key);
-
+            static int Match(RegExpQueue *RegExpQueue, u_char *Key, size_t Length);
     };
 
     class FSEntity : RBTreeNode{
 
         protected:
             friend class FSTree;
+
             MemAllocator *Allocator;
+            bool Directory = false;
             FSTree *Children;
             FilterQueue  FilterSentinel;
             RegExpQueue  RegExpSentinel;
             size_t KeyLength = -1;
             size_t DataSize = -1;
-            uint32_t Hash = 0LL;
-            u_char Key[0];
+            uint32_t Hash = 0L;
+            u_char *Key;
             u_char *Data;
 
-            FSEntity();
+            FSEntity(MemAllocator *Allocator, bool Directory = false);
             ~FSEntity();
 
             virtual int Compare(FSEntity *Node);
-            FSEntity *CreateChildDirectory(u_char *Key, size_t Length, size_t DataSize);
-            FSEntity *CreateChildNode(u_char *Key, size_t Length, size_t DataSize);
-            void * DeleteChildEntity(u_char *Key, size_t Length);
+
+            RBTreeNode *GetLeft() { return this->Left; }
+            RBTreeNode *GetRight() { return this->Right; }
+
+            FSEntity *CreateChild(u_char *Key, size_t Length, size_t DataSize, bool Directory);
+            void DeleteChild(u_char *Key, size_t Length, bool Directory);
 
         public:
-            bool IsDirectory() {return Children == nullptr;};
-            u_char *GetDataPointer();
+            bool IsDirectory() { return Directory; };
+            u_char *GetDataPointer() { return Data; };
+
+            static RBTreeNode *CreateFromAllocator(MemAllocator *Allocator, size_t DateSize);
+            static void FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node);
     };
 
-    class FSTree : RBTree {
-
-        private:
-            MemAllocator *Allocator;
+    class FSTree : public RBTree {
 
         protected:
             FSTree(MemAllocator *Allocator);
             ~FSTree();
 
         public:
-            static FSTree *CreateFSTree(MemAllocator *ParentAllocator, MemAllocator *Allocator);
-            static void FreeFSTree(FSTree **PointerToFSTree);
-
-            FSEntity *CreateDirectory(u_char *Path, size_t Length, size_t DataSize);
-            FSEntity *CreateNode(u_char *Path, size_t Length, size_t DataSize);
-
-            FSEntity *QueryPath(u_char *Path, size_t Length);
+            FSEntity *CreateChild(u_char *Key, size_t Length, size_t DataSize, bool Directory);
+            FSEntity *QueryChild(u_char *Key, size_t Length, bool Directory);
+            void DeleteChild(u_char *Key, size_t Length, bool Directory);
+            // CreatePath
             FSEntity *DeletePath(u_char, size_t Length);
+
+            static FSTree* CreateFromAllocator(MemAllocator *ParentAllocator, MemAllocator *Allocator);
+            static void FreeFromAllocator(MemAllocator *ParentAllocator, FSTree **TheRBTree);
     };
 }

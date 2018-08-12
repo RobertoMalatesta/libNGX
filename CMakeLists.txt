@@ -24,7 +24,7 @@ set(TEST_FILES
         test/Core/MemBlockTest.cpp
         test/Core/PoolTest.cpp
         test/Core/BufTest.cpp
-        test/Core/ArrayTest.cpp test/Core/TimeTest.cpp test/Core/ThreadPool.cpp test/Core/HashTest.cpp test/Core/CRCTest.cpp test/Core/RBTreeTest.cpp src/Core/TimerTree.cpp test/Core/TimerTreeTest.cpp)
+        test/Core/ArrayTest.cpp test/Core/TimeTest.cpp test/Core/ThreadPool.cpp test/Core/HashTest.cpp test/Core/CRCTest.cpp test/Core/RBTreeTest.cpp src/Core/TimerTree.cpp test/Core/TimerTreeTest.cpp test/Core/FSTreeTest.cpp)
 include_directories(./include)
 
 LINK_LIBRARIES(-lpthread)

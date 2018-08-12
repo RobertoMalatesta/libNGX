@@ -30,27 +30,7 @@ namespace ngx::Core {
 
         protected:
             TimerTree(MemAllocator *Allocator);
-            ~TimerTree() {
-
-                RBTreeNode *Temp;
-
-                for (RBTreeNode *It = Minimum(); It != nullptr && It != Sentinel; ) {
-                    Temp = It;
-                    It = Next(It);
-
-                    Delete(It);
-
-                    Allocator->Free((void **)&Temp);
-                }
-
-                Temp = Sentinel;
-
-                if (Temp != nullptr) {
-                    Allocator->Free((void **)&Temp);
-                }
-
-                RBTree::~RBTree();
-            };
+            ~TimerTree();
         public:
             static TimerTree* CreateFromAllocator(MemAllocator *ParentAllocator, MemAllocator *Allocator);
             static void FreeFromAllocator(MemAllocator *ParentAllocator, TimerTree **TheRBTree);
