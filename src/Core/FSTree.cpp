@@ -50,30 +50,36 @@ void FSEntity::DeleteChild(u_char *Key, size_t Length, bool Directory) {
     return Children->DeleteChild(Key, Length, Directory);
 }
 
+int FSEntity::RawCompare(u_char *Key, size_t Length, bool Directory) {
+
+    uint32_t Hash = murmur_hash2(Key, Length);
+
+    if (!this->Directory && Directory) {
+        return 1;
+    }
+    else if (this->Directory && !Directory) {
+        return -1;
+    }
+
+    if (KeyLength < Length) {
+        return 1;
+    }
+    else if (KeyLength > Length) {
+        return -1;
+    }
+
+    if (this->Hash < Hash) {
+        return 1;
+    }
+    else if (this->Hash > Hash) {
+        return -1;
+    }
+
+    return strncmp((char *)Key, (char *)this->Key, KeyLength);
+}
+
 int FSEntity::Compare(FSEntity *Node) {
-
-    if (Directory && !Node->Directory) {
-        return 1;
-    }
-    else if (!Directory && Node->Directory) {
-        return -1;
-    }
-
-    if (KeyLength > Node->KeyLength) {
-        return  1;
-    }
-    else if (KeyLength < Node->KeyLength) {
-        return -1;
-    }
-
-    if (Hash > Node->Hash) {
-        return 1;
-    }
-    else if (Hash < Node->Hash) {
-        return -1;
-    }
-
-    return  strncmp((const char *)Key, (const char *)Node->Key, KeyLength);
+    return RawCompare(Node->Key, Node->KeyLength, Node->Directory);
 }
 
 FSTree::FSTree(MemAllocator *Allocator): RBTree(Allocator) {
@@ -118,18 +124,20 @@ FSEntity *FSTree::CreateChild(u_char *Key, size_t Length, size_t DataSize, bool 
         return nullptr;
     }
 
-    Node = (FSEntity *)FSEntity::CreateFromAllocator(Allocator, sizeof(FSEntity) + sizeof(u_char) * (Length + 1) + DataSize);
+    Node = (FSEntity *)FSEntity::CreateFromAllocator(Allocator, sizeof(FSEntity) + sizeof(u_char) * (Length + 2) + DataSize);
+
+    printf("分配大小: %lu\n", (sizeof(FSEntity) + 4 + sizeof(u_char) * (Length) + 4 + DataSize + 4));
 
     if (nullptr == Node) {
         return nullptr;
     }
 
-    Node->Key = (u_char *)Node + sizeof(FSEntity);
+    Node->Key = (u_char *)Node + sizeof(FSEntity) + 4;
     strncpy((char *)Node->Key, (char *)Key, Length);
     Node->KeyLength = Length;
     Node->Hash = murmur_hash2(Node->Key, Length);
     Node->DataSize = DataSize;
-    Node->Data = ((u_char *)Node) + sizeof(FSEntity) + sizeof(u_char) * (Length + 1);
+    Node->Data = ((u_char *)Node) + sizeof(FSEntity) + 4 + sizeof(u_char) * (Length) + 4;
     Node->Directory = Directory;
 
     Insert((RBTreeNode *)Node);
@@ -139,40 +147,25 @@ FSEntity *FSTree::CreateChild(u_char *Key, size_t Length, size_t DataSize, bool 
 
 FSEntity* FSTree::QueryChild(u_char *Key, size_t Length, bool Directory) {
 
-    FSEntity *Temp, *Node = (FSEntity *)FSEntity::CreateFromAllocator(Allocator, sizeof(FSEntity) + sizeof(u_char) * (Length + 1));
-
-    if (nullptr == Node) {
-        return nullptr;
-    }
-
-    Node->Key = (u_char *)Node + sizeof(FSEntity);
-    strncpy((char *)Node->Key, (char *)Key, Length);
-
-    Node->KeyLength = Length;
-    Node->Hash = murmur_hash2(Node->Key, Length);
-    Node->Directory = Directory;
-
-    Temp = (FSEntity *)Root;
+    FSEntity *Temp = (FSEntity *)Root;
 
     int CompareResult;
 
     do {
 
         if (Temp == Sentinel) {
-            FSEntity::FreeFromAllocator(Allocator, (RBTreeNode **)&Node);
             return nullptr;
         }
 
-        CompareResult = Temp->Compare(Node);
+        CompareResult = Temp->RawCompare(Key, Length, Directory);
 
-        if (CompareResult > 0) {
+        if (CompareResult < 0) {
             Temp = (FSEntity *)Temp -> GetLeft();
         }
-        else if (CompareResult < 0) {
+        else if (CompareResult > 0) {
             Temp = (FSEntity *)Temp -> GetRight();
         }
         else {
-            FSEntity::FreeFromAllocator(Allocator, (RBTreeNode **)&Node);
             return Temp;
         }
     } while (true);

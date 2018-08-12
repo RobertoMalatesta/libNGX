@@ -64,7 +64,7 @@ namespace ngx::Core {
 
             FSEntity(MemAllocator *Allocator, bool Directory = false);
             ~FSEntity();
-
+            int RawCompare(u_char *Key, size_t Length, bool Directory);
             virtual int Compare(FSEntity *Node);
 
             RBTreeNode *GetLeft() { return this->Left; }
