@@ -29,8 +29,6 @@ void FSEntity::FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node) {
 
 FSEntity* FSEntity::CreateChild(u_char *Key, size_t Length, size_t DataSize, bool Directory) {
 
-    FSEntity *Node = nullptr;
-
     if ( !IsDirectory()) {
         return nullptr;
     }
@@ -52,30 +50,30 @@ void FSEntity::DeleteChild(u_char *Key, size_t Length, bool Directory) {
 
 int FSEntity::RawCompare(u_char *Key, size_t Length, bool Directory) {
 
-    uint32_t Hash = murmur_hash2(Key, Length);
+//    uint32_t Hash = murmur_hash2(Key, Length);
 
-    if (!this->Directory && Directory) {
+    if (this->Directory && !Directory) {
         return 1;
     }
-    else if (this->Directory && !Directory) {
+    else if (!this->Directory && Directory) {
         return -1;
     }
 
-    if (KeyLength < Length) {
+    if (KeyLength > Length) {
         return 1;
     }
-    else if (KeyLength > Length) {
+    else if (KeyLength < Length) {
         return -1;
     }
 
-    if (this->Hash < Hash) {
-        return 1;
-    }
-    else if (this->Hash > Hash) {
-        return -1;
-    }
+//    if (this->Hash > Hash) {
+//        return 1;
+//    }
+//    else if (this->Hash < Hash) {
+//        return -1;
+//    }
 
-    return strncmp((char *)Key, (char *)this->Key, KeyLength);
+    return -strncmp((char *)this->Key, (char *)Key, KeyLength);
 }
 
 int FSEntity::Compare(FSEntity *Node) {
@@ -125,8 +123,6 @@ FSEntity *FSTree::CreateChild(u_char *Key, size_t Length, size_t DataSize, bool 
     }
 
     Node = (FSEntity *)FSEntity::CreateFromAllocator(Allocator, sizeof(FSEntity) + sizeof(u_char) * (Length + 2) + DataSize);
-
-    printf("分配大小: %lu\n", (sizeof(FSEntity) + 4 + sizeof(u_char) * (Length) + 4 + DataSize + 4));
 
     if (nullptr == Node) {
         return nullptr;
@@ -179,7 +175,6 @@ void FSTree::DeleteChild(u_char *Key, size_t Length, bool Directory) {
         Delete((RBTreeNode *)Entity);
         FSEntity::FreeFromAllocator(Allocator, (RBTreeNode **)&Entity);
     }
-    return;
 }
 
 FSTree* FSTree::CreateFromAllocator(MemAllocator *ParentAllocator, MemAllocator *Allocator) {

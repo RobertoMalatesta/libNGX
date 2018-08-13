@@ -92,7 +92,7 @@ void RBTree::Insert(RBTreeNode *Node) {
 
     for ( ;; ) {
 
-        P = (Node->Compare(Temp)) ? &Temp->Left : & Temp->Right;
+        P = (Node->Compare(Temp) > 0) ? &Temp->Left : & Temp->Right;
 
         if (*P == Sentinel) {
             break;

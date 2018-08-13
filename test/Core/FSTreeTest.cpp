@@ -33,8 +33,6 @@ int FSTreeTest () {
     PointerToData = Child->GetDataPointer();
     sprintf((char *)PointerToData, "节点5中存储的数据");
 
-
-    Child = nullptr;
     Child = Tree->QueryChild((u_char *)"节点1", sizeof("节点1"), true);
 
     if (nullptr != Child) {
@@ -72,6 +70,8 @@ int FSTreeTest () {
     Tree->DeleteChild((u_char *)"节点5", sizeof("节点5"), true);
 
     FSTree::FreeFromAllocator(&pool, &Tree);
+
+    pool.GC();
 
     return 0;
 }
