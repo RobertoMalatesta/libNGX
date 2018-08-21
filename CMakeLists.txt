@@ -17,7 +17,7 @@ set(SOURCE_FILES
         src/Core/Time.cpp
         src/Core/Checksum.cpp
         include/Core/Hash.h
-        src/Core/ThreadPool.cpp src/Core/TimerTree.cpp src/Core/FSTree.cpp)
+        src/Core/ThreadPool.cpp src/Core/TimerTree.cpp src/Core/FSTree.cpp src/Core/EventDomain.cpp)
 
 set(TEST_FILES
         test/Core/Test.cpp

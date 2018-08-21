@@ -23,6 +23,8 @@ namespace ngx::Core {
     class ThreadPool;
     class Connection;
     class Listening;
+    class Event;
+    class EventDomain;
 
 }
 
@@ -43,8 +45,10 @@ namespace ngx::Core {
 #include "Core/Checksum.h"
 #include "Core/Hash.h"
 
+
 #include "Core/Connection.h"
 #include "Core/Listening.h"
 #include "Core/ThreadPool.h"
 #include "Core/TimerTree.h"
 #include "Core/FSTree.h"
+#include "Core/EventDomain.h"
