@@ -50,8 +50,6 @@ void FSEntity::DeleteChild(u_char *Key, size_t Length, bool Directory) {
 
 int FSEntity::RawCompare(u_char *Key, size_t Length, bool Directory) {
 
-//    uint32_t Hash = murmur_hash2(Key, Length);
-
     if (this->Directory && !Directory) {
         return 1;
     }
@@ -65,13 +63,6 @@ int FSEntity::RawCompare(u_char *Key, size_t Length, bool Directory) {
     else if (KeyLength < Length) {
         return -1;
     }
-
-//    if (this->Hash > Hash) {
-//        return 1;
-//    }
-//    else if (this->Hash < Hash) {
-//        return -1;
-//    }
 
     return -strncmp((char *)this->Key, (char *)Key, KeyLength);
 }
@@ -143,7 +134,7 @@ FSEntity *FSTree::CreateChild(u_char *Key, size_t Length, size_t DataSize, bool 
 
 FSEntity* FSTree::QueryChild(u_char *Key, size_t Length, bool Directory) {
 
-    FSEntity *Temp = (FSEntity *)Root;
+    auto *Temp = (FSEntity *)Root;
 
     int CompareResult;
 
