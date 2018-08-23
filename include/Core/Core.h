@@ -8,6 +8,7 @@ namespace ngx::Core {
     class Array;
     class Buf;
     class Queue;
+    class Error;
     class List;
     class ListCarriage;
     class ListIterator;
@@ -22,7 +23,7 @@ namespace ngx::Core {
     class Thread;
     class ThreadPool;
     class Connection;
-    class Listening;
+    class Listen;
     class Event;
     class EventDomain;
 
@@ -32,7 +33,7 @@ namespace ngx::Core {
 #include "Core/LinuxOSUtility.h"
 
 #include "Core/Time.h"
-
+#include "Core/Error.h"
 #include "Core/Ref.h"
 #include "Core/MemAllocator.h"
 #include "Core/MemBlock.h"
@@ -47,8 +48,9 @@ namespace ngx::Core {
 
 
 #include "Core/Connection.h"
-#include "Core/Listening.h"
+#include "Core/Listen.h"
 #include "Core/ThreadPool.h"
 #include "Core/TimerTree.h"
 #include "Core/FSTree.h"
 #include "Core/EventDomain.h"
+#include "Core/EPollEventDomain.h"
