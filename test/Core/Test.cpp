@@ -10,6 +10,7 @@ extern int CRCTest();
 extern int RBTreeTest();
 extern int TimerTreeTest();
 extern int FSTreeTest();
+extern int TCPSocketTest();
 
 int main() {
 
@@ -23,6 +24,7 @@ int main() {
 //    CRCTest();
 //    RBTreeTest();
 //    TimerTreeTest();
-	FSTreeTest();
+//	FSTreeTest();
+	TCPSocketTest();
 	return 0;
 }
