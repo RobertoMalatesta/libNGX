@@ -14,6 +14,7 @@ TCP4Listening::TCP4Listening(struct sockaddr *SockAddr, socklen_t SocketLength) 
     Active = 0;
     Stream = 1;
     Version = 4;
+    TCPFlags = 0;
 
     SocketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
@@ -30,33 +31,27 @@ TCP4Listening::~TCP4Listening() {
     }
 }
 
-int TCP4Listening::Bind() {
+SocketError TCP4Listening::Bind() {
 
     if (bind(SocketFd, SocketAddress, SocketLength)) {
-        switch (errno) {
-            case EACCES:
-            case EADDRINUSE:
-            case EBADF:
-            case EINVAL:
-            case ENOENT:
-            default:
-                printf("error binding socket!");
-                return -1;
-        }
+        return SocketError(errno);
     }
 
     Active = 1;
 
-    return 0;
+    return SocketError(0);
 }
 
-int TCP4Listening::SetPortReuse(bool Open) {
+SocketError TCP4Listening::SetPortReuse(bool Open) {
 
     int Val = Open? 1: 0;
 
-    if (setsockopt(SocketFd, SOL_SOCKET, SO_REUSEPORT, &Val, sizeof(int))) {
-        printf("setsockopt error!");
-        return -1;
+    if ((Open && Reuse) || (!Open && !Reuse)) {
+        return SocketError(EALREADY);
     }
-    return 0;
+
+    if (setsockopt(SocketFd, SOL_SOCKET, SO_REUSEPORT, &Val, sizeof(int))) {
+        return SocketError(errno);
+    }
+    return SocketError(0);
 }

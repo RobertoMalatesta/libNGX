@@ -13,7 +13,7 @@ namespace ngx::Core {
                     unsigned Version:3;
                     unsigned Stream:1;
                 };
-                uint32_t Flags;
+                u_short Flags;
             };
 
         public:
@@ -25,12 +25,19 @@ namespace ngx::Core {
     };
 
     class TCP4Listening : public Listening{
+        private:
+            union {
+                struct {
+                    unsigned Reuse:1;
+                };
+                u_short TCPFlags;
+            };
 
         public:
             TCP4Listening(struct sockaddr *SockAddr, socklen_t SocketLength);
             ~TCP4Listening();
 
-            int Bind();
-            int SetPortReuse(bool Open);
+            SocketError Bind();
+            SocketError SetPortReuse(bool Open);
     };
 }

@@ -9,6 +9,7 @@ namespace ngx::Core {
     class Buf;
     class Queue;
     class Error;
+    class SocketError;
     class List;
     class ListCarriage;
     class ListIterator;
