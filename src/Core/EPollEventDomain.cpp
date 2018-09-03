@@ -13,17 +13,20 @@ EPollEventDomain::EPollEventDomain(size_t PoolSize, int ThreadCount, int EPollSi
     }
 }
 
+EPollEventDomain::~EPollEventDomain() {
+}
+
 int EPollEventDomain::EPollAdd() {
 
     struct epoll_event event;
 
     if (EPollFD > 0) {
-        return epoll_ctl( EPollFD, EPOLL_CTL_ADD, &event);
+        return epoll_ctl( EPollFD, EPOLL_CTL_ADD, 0, &event);
     }
     return -1;
 }
 
 int EPollEventDomain::EPollModify() {
 
-
+    return 0;
 }

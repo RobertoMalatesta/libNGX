@@ -1,7 +1,9 @@
 #include "Core/Core.h"
 
-using namespace ngx::Core;
+#include <iostream>
 
+using namespace ngx::Core;
+using namespace std;
 int TCPSocketTest() {
 
     struct sockaddr_in server_sockaddr;
@@ -11,11 +13,8 @@ int TCPSocketTest() {
 
     TCP4Listening Listen((sockaddr *)&server_sockaddr, sizeof(server_sockaddr));
 
-    Listen.SetPortReuse(true).PrintError();
-    Listen.Bind().PrintError();
-
-    printf("%d\n", Listen.GetSocketFD());
+    cout<<Listen.SetPortReuse(true).GetErrorMessage()<<endl;
+    cout<<Listen.Bind().GetErrorMessage()<<endl;
 
     return 0;
-
 }

@@ -57,11 +57,11 @@ int FSEntity::RawCompare(u_char *Key, size_t Length, bool Directory) {
         return -1;
     }
 
-    if (KeyLength > Length) {
-        return 1;
+    if(KeyLength > Length) {
+        return -1;
     }
     else if (KeyLength < Length) {
-        return -1;
+        return 1;
     }
 
     return -strncmp((char *)this->Key, (char *)Key, KeyLength);
@@ -126,7 +126,6 @@ FSEntity *FSTree::CreateChild(u_char *Key, size_t Length, size_t DataSize, bool 
     Node->DataSize = DataSize;
     Node->Data = ((u_char *)Node) + sizeof(FSEntity) + 4 + sizeof(u_char) * (Length) + 4;
     Node->Directory = Directory;
-
     Insert((RBTreeNode *)Node);
 
     return Node;

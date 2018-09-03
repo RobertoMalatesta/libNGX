@@ -24,7 +24,7 @@ namespace ngx::Core {
             EventDomain(size_t PoolSize, int ThreadCount);
             ~EventDomain();
 
-            void PostTimerEvent(uint32_t Timestamp, PromiseCallback *Callback, void *Argument);
-            void EventDomainProcess();
+            RuntimeError PostTimerEvent(uint32_t Timestamp, PromiseCallback *Callback, void *Argument);
+            RuntimeError EventDomainProcess();
     };
 }

@@ -21,6 +21,7 @@ set(SOURCE_FILES
         src/Core/TimerTree.cpp
         src/Core/FSTree.cpp
         src/Core/EventDomain.cpp
+        src/Core/EPollEventDomain.cpp
         src/Core/Connection.cpp
         src/Core/Listening.cpp)
 
@@ -37,7 +38,7 @@ set(TEST_FILES
         test/Core/RBTreeTest.cpp
         test/Core/TimerTreeTest.cpp
         test/Core/FSTreeTest.cpp
-        test/Core/SocketTest.cpp)
+        test/Core/SocketTest.cpp test/Core/EPollEventDomainTest.cpp)
 include_directories(./include)
 
 LINK_LIBRARIES(-lpthread)

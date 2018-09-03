@@ -12,16 +12,24 @@ EventDomain::~EventDomain() {
     TimerTree::FreeFromAllocator(&Allocator, &Timers);
 }
 
-void EventDomain::PostTimerEvent(uint32_t Seconds, PromiseCallback *Callback, void *Argument) {
+RuntimeError EventDomain::PostTimerEvent(uint32_t Seconds, PromiseCallback *Callback, void *Argument) {
 
-    if (Timers) {
-        Timers->PostTimerPromise(Seconds, Callback, Argument);
+    if (nullptr == Timers) {
+        return RuntimeError(EINVAL);
     }
-    else {
-        // [WARN] 定时器初始化错误
-    }
+
+    Timers->PostTimerPromise(Seconds, Callback, Argument);
+
+    return RuntimeError(0);
 }
 
-void EventDomain::EventDomainProcess() {
+RuntimeError EventDomain::EventDomainProcess() {
+
+    if (nullptr == Timers || nullptr == TPool) {
+        return RuntimeError(EINVAL);
+    }
+
     Timers->QueueExpiredTimer(TPool);
+
+    return RuntimeError(0);
 }

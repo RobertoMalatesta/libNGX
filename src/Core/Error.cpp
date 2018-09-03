@@ -2,10 +2,21 @@
 
 using namespace ngx::Core;
 
+const char *RuntimeError::ErrorMessage(int ErrorCode) {
+    switch (ErrorCode) {
+        case 0:
+            return "Success!";
+        case EINVAL:
+            return "Invalid Access!";
+        default:
+            return "Unspecified error!";
+    }
+}
+
 const char *SocketError::ErrorMessage(int ErrorCode) {
     switch (ErrorCode) {
         case 0:
-            return "No error!";
+            return "Success!";
         case EACCES:
             return "Access denied!";
         case EADDRINUSE:
