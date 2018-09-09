@@ -9,10 +9,11 @@ namespace ngx::Core {
             EPollEventDomain(size_t PoolSize, int ThreadCount, int EPollSize);
             ~EPollEventDomain();
 
-            int EPollAdd();
-            int EPollRemove();
-            int EPollModify();
+            EventError EPollAttachConnection(Connection *C);
+            EventError EPollDetachConnection(Connection *C);
 
-            int EPollWaitEvent();
+//            EventError EPoll
+
+            RuntimeError EventDomainProcess();
     };
 }

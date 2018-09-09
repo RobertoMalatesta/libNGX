@@ -1,5 +1,9 @@
 namespace ngx::Core {
 
+    static void DiscardPromise(void *Argument, ThreadPool *TPool) {
+        return;
+    }
+
     class Connection {
 
         private:
@@ -24,11 +28,16 @@ namespace ngx::Core {
                 uint32_t Flags;
             };
 
+            PromiseCallback  *OnRead = &DiscardPromise;
+            PromiseCallback  *OnWrite = &DiscardPromise;
+            PromiseCallback  *OnClose = &DiscardPromise;
+
         public:
 
             Connection(int SocketFD);
 
             int GetFD(){ return this->SocketFd;};
+
             int Send(u_char *Buf, size_t Size);
             int Recv(u_char *Buf, size_t Size);
             int SendFile();

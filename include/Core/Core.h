@@ -11,6 +11,7 @@ namespace ngx::Core {
     class Error;
     class RuntimeError;
     class SocketError;
+    class EventError;
     class List;
     class ListCarriage;
     class ListIterator;
@@ -48,10 +49,9 @@ namespace ngx::Core {
 #include "Core/Checksum.h"
 #include "Core/Hash.h"
 
-
+#include "Core/ThreadPool.h"
 #include "Core/Connection.h"
 #include "Core/Listening.h"
-#include "Core/ThreadPool.h"
 #include "Core/TimerTree.h"
 #include "Core/FSTree.h"
 #include "Core/EventDomain.h"

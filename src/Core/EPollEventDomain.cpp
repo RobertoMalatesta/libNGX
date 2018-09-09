@@ -16,17 +16,27 @@ EPollEventDomain::EPollEventDomain(size_t PoolSize, int ThreadCount, int EPollSi
 EPollEventDomain::~EPollEventDomain() {
 }
 
-int EPollEventDomain::EPollAdd() {
+EventError EPollEventDomain::EPollAttachConnection(Connection *C)  {
 
-    struct epoll_event event;
+    struct epoll_event Event;
+    int ConnectionFD = C->GetFD();
 
-    if (EPollFD > 0) {
-        return epoll_ctl( EPollFD, EPOLL_CTL_ADD, 0, &event);
+    Event.events = EPOLLIN|EPOLLOUT|EPOLLET|EPOLLRDHUP;
+    Event.data.ptr = (void *)C;
+
+    if (EPollFD != -1 && ConnectionFD != -1) {
+        if (-1 == epoll_ctl( EPollFD, EPOLL_CTL_ADD, ConnectionFD, &Event)) {
+            return EventError(-1);
+        }
     }
-    return -1;
+    return EventError(0);
 }
 
-int EPollEventDomain::EPollModify() {
+EventError EPollEventDomain::EPollDetachConnection(Connection *C)  {
+    return EventError(0);
+}
 
-    return 0;
+
+RuntimeError EPollEventDomain::EventDomainProcess() {
+    return RuntimeError(0);
 }

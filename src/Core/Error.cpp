@@ -27,3 +27,12 @@ const char *SocketError::ErrorMessage(int ErrorCode) {
             return "Unspecified error!";
     }
 }
+
+const char *EventError::ErrorMessage(int ErrorCode) {
+    switch (ErrorCode) {
+        case 0:
+            return "Success!";
+        default:
+            return "Unspecified error!";
+    }
+}
