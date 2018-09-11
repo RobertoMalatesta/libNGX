@@ -15,7 +15,7 @@ EventDomain::~EventDomain() {
 RuntimeError EventDomain::PostTimerEvent(uint32_t Seconds, PromiseCallback *Callback, void *Argument) {
 
     if (nullptr == Timers) {
-        return RuntimeError(EINVAL);
+        return RuntimeError(EINVAL, "Timer init failed, Timer == nullptr!");
     }
 
     Timers->PostTimerPromise(Seconds, Callback, Argument);
@@ -26,7 +26,7 @@ RuntimeError EventDomain::PostTimerEvent(uint32_t Seconds, PromiseCallback *Call
 RuntimeError EventDomain::EventDomainProcess() {
 
     if (nullptr == Timers || nullptr == TPool) {
-        return RuntimeError(EINVAL);
+        return RuntimeError(EINVAL, "Timer init failed, Timer == nullptr!");
     }
 
     Timers->QueueExpiredTimer(TPool);

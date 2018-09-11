@@ -24,6 +24,7 @@ namespace ngx::Core {
                     unsigned SendLowat:1;
                     unsigned Tcp_nodelay:1;
                     unsigned Tcp_nopush:1;
+                    unsigned Attached;
                 };
                 uint32_t Flags;
             };
@@ -33,17 +34,8 @@ namespace ngx::Core {
             PromiseCallback  *OnClose = &DiscardPromise;
 
         public:
-
             Connection(int SocketFD);
-
             int GetFD(){ return this->SocketFd;};
-
-            int Send(u_char *Buf, size_t Size);
-            int Recv(u_char *Buf, size_t Size);
-            int SendFile();
-            int ReadIOVector();
-            int WriteIOVector();
-
             int Close();
             int SetOption();
     };

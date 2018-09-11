@@ -1,48 +1,50 @@
 namespace ngx::Core {
 
     class Error {
+        protected:
+            int ErrorCode;
+            const char *Message;
         public:
-            Error() = default;
+            Error(int ErrorCode, const char *Message = nullptr) {
+                this->ErrorCode = ErrorCode;
+                this->Message = Message;
+            };
+            int GetErrorCode() { return this->ErrorCode; }
+            const char *GetErrorMessage() { return Message; }
             void PrintError() { printf("BaseError: Unspecfied error!\n"); }
     };
 
     class RuntimeError : public  Error {
-    private:
-        int ErrorCode;
-        static const char *ErrorMessage(int ErrorCode);
-    public:
-        RuntimeError(int ErrorCode):Error() {
-            this->ErrorCode = ErrorCode;
-        };
-        const char *GetErrorMessage() {return ErrorMessage(ErrorCode);}
-        void PrintError() {printf("RuntimeError: %s\n", ErrorMessage(ErrorCode));}
-        int GetErrorCode() { return this->ErrorCode; }
+        private:
+            static const char *ErrorCodeToString(int ErrorCode);
+        public:
+            RuntimeError(int ErrorCode, const char *Message = nullptr):Error(ErrorCode, Message) {};
+            const char *GetErrorString() {
+                return ErrorCodeToString(ErrorCode);
+            }
+            void PrintError() {
+                printf("RuntimeError: %s, Message: %s\n", ErrorCodeToString(ErrorCode), Message == nullptr? "null": Message);
+            }
     };
 
     class SocketError : public  Error {
         private:
-            int ErrorCode;
-            static const char *ErrorMessage(int ErrorCode);
+            static const char *ErrorCodeToString(int ErrorCode);
         public:
-            SocketError(int ErrorCode):Error() {
-                this->ErrorCode = ErrorCode;
-            };
-            const char *GetErrorMessage() {return ErrorMessage(ErrorCode);}
-            void PrintError() {printf("SocketError: %s\n", ErrorMessage(ErrorCode));}
-            int GetErrorCode() { return this->ErrorCode; }
+            SocketError(int ErrorCode, const char *Message = nullptr):Error(ErrorCode, Message) {};
+            const char *GetErrorString() { return ErrorCodeToString(ErrorCode); }
+        void PrintError() {
+                printf("SocketError: %s, Message: %s\n", ErrorCodeToString(ErrorCode), Message == nullptr? "null": Message);
+            }
     };
 
     class EventError : public  Error {
         private:
-            int ErrorCode;
-            static const char *ErrorMessage(int ErrorCode);
+            static const char *ErrorCodeToString(int ErrorCode);
         public:
-            EventError(int ErrorCode):Error() {
-                this->ErrorCode = ErrorCode;
-            };
-            const char *GetErrorMessage() {return ErrorMessage(ErrorCode);}
-            void PrintError() {printf("EventError: %s\n", ErrorMessage(ErrorCode));}
-            int GetErrorCode() { return this->ErrorCode; }
+            EventError(int ErrorCode, const char *Message = nullptr):Error(ErrorCode, Message) {};
+            void PrintError() {
+                printf("EventError: %s, Message: %s\n", ErrorCodeToString(ErrorCode), Message == nullptr? "null": Message);
+            }
     };
-
 };

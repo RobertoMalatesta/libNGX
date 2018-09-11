@@ -2,7 +2,7 @@
 
 using namespace ngx::Core;
 
-const char *RuntimeError::ErrorMessage(int ErrorCode) {
+const char *RuntimeError::ErrorCodeToString(int ErrorCode) {
     switch (ErrorCode) {
         case 0:
             return "Success!";
@@ -13,7 +13,7 @@ const char *RuntimeError::ErrorMessage(int ErrorCode) {
     }
 }
 
-const char *SocketError::ErrorMessage(int ErrorCode) {
+const char *SocketError::ErrorCodeToString(int ErrorCode) {
     switch (ErrorCode) {
         case 0:
             return "Success!";
@@ -28,7 +28,7 @@ const char *SocketError::ErrorMessage(int ErrorCode) {
     }
 }
 
-const char *EventError::ErrorMessage(int ErrorCode) {
+const char *EventError::ErrorCodeToString(int ErrorCode) {
     switch (ErrorCode) {
         case 0:
             return "Success!";

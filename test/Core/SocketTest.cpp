@@ -13,8 +13,8 @@ int TCPSocketTest() {
 
     TCP4Listening Listen((sockaddr *)&server_sockaddr, sizeof(server_sockaddr));
 
-    cout<<Listen.SetPortReuse(true).GetErrorMessage()<<endl;
-    cout<<Listen.Bind().GetErrorMessage()<<endl;
+    cout<<Listen.SetPortReuse(true).GetErrorString()<<endl;
+    cout<<Listen.Bind().GetErrorString()<<endl;
 
     return 0;
 }
