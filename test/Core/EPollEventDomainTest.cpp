@@ -12,8 +12,11 @@ int EPollEventDomainTest() {
     TCP4Listening Listen((sockaddr *)&server_sockaddr, sizeof(server_sockaddr));
     EPollEventDomain Domain(40960, 4, 31723);
 
-    cout<<Listen.SetPortReuse(true).GetErrorString()<<endl;
-    cout<<Listen.Bind().GetErrorString()<<endl;
+    Listen.SetPortReuse(true).PrintError();
+    Listen.Bind().PrintError();
+    Domain.EPollPostListenPromise(&Listen).PrintError();
+    Domain.EPollPostListenPromise(&Listen).PrintError();
+    ForceUSleep(100000);
 
     return 0;
 }

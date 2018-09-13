@@ -3,6 +3,7 @@ namespace ngx::Core {
     class EPollEventDomain : public EventDomain {
         private:
             int EPollFD = -1;
+            atomic_flag Waiting = ATOMIC_FLAG_INIT;
 
             static void EPollEventProcessPromise(void* Args, ThreadPool *TPoll);
 

@@ -2,13 +2,11 @@
 
 using namespace ngx::Core;
 
-EventDomain::EventDomain(size_t PoolSize, int ThreadCount) : Allocator(PoolSize){
+EventDomain::EventDomain(size_t PoolSize, int ThreadCount) : Allocator(PoolSize), TPool(ThreadCount){
     Timers = TimerTree::CreateFromAllocator(&Allocator, &Allocator);
-    TPool = new ThreadPool(ThreadCount);
 }
 
 EventDomain::~EventDomain() {
-    delete TPool;
     TimerTree::FreeFromAllocator(&Allocator, &Timers);
 }
 
@@ -25,11 +23,11 @@ RuntimeError EventDomain::PostTimerEvent(uint32_t Seconds, PromiseCallback *Call
 
 RuntimeError EventDomain::EventDomainProcess() {
 
-    if (nullptr == Timers || nullptr == TPool) {
+    if (nullptr == Timers) {
         return RuntimeError(EINVAL, "Timer init failed, Timer == nullptr!");
     }
 
-    Timers->QueueExpiredTimer(TPool);
+    Timers->QueueExpiredTimer(&TPool);
 
     return RuntimeError(0);
 }

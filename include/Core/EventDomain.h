@@ -16,7 +16,7 @@ namespace ngx::Core {
     class EventDomain {
         protected:
             Pool Allocator;
-            ThreadPool *TPool;
+            ThreadPool TPool;
             TimerTree *Timers;
 
         public:
