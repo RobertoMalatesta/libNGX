@@ -1,42 +1,70 @@
 namespace ngx::Core {
 
+    enum {
+        SOCK_TYPE_DGRAM = 0,
+        SOCK_TYPE_STREAM = 1,
+        SOCK_TYPE_RESERVED1,
+        SOCK_TYPE_RESERVED2
+    };
+
     static void DiscardPromise(void *Argument, ThreadPool *TPool) {
         return;
     }
 
-    class Connection {
+    class EventEntity {
+        protected:
+            PromiseCallback  *OnRead = &DiscardPromise;
+            PromiseCallback  *OnWrite = &DiscardPromise;
+            PromiseCallback  *OnClose = &DiscardPromise;
+    };
 
-        private:
-
+    class Socket : protected EventEntity{
+        protected:
             int SocketFd;
-            struct sockaddr SocketAddress;
+            struct sockaddr *SocketAddress;
             socklen_t SocketLength;
 
             union {
                 struct {
-                    unsigned Timeout:1;
-                    unsigned Error:1;
-                    unsigned Destoryed:1;
-                    unsigned Idle:1;
-                    unsigned Reuseable:1;
-                    unsigned Closed:1;
-                    unsigned Shared:1;
-                    unsigned SendLowat:1;
-                    unsigned Tcp_nodelay:1;
-                    unsigned Tcp_nopush:1;
-                    unsigned Attached;
+                    unsigned Open: 1;
+                    unsigned Active: 1;
+                    unsigned Type: 2;
+                    unsigned Expired:1;
+                    unsigned IsListen:1;
+                    unsigned Version:3;
+                    unsigned Reuse;
                 };
-                uint32_t Flags;
+                u_short Flags = 0;
             };
 
-            PromiseCallback  *OnRead = &DiscardPromise;
-            PromiseCallback  *OnWrite = &DiscardPromise;
-            PromiseCallback  *OnClose = &DiscardPromise;
-
         public:
-            Connection(int SocketFD);
-            int GetFD(){ return this->SocketFd;};
-            int Close();
-            int SetOption();
+            Socket (int SocketFd);
+            Socket(struct sockaddr *SocketAddress, socklen_t SocketLength);
+            int GetSocketFD();
+            SocketError SetOption();
+    };
+
+    class Connection: Socket {
+        public:
+            Connection(int SocketFd);
+            SocketError Connect();
+            SocketError Close();
+    };
+
+    class Listening: protected Socket {
+        public:
+            Listening(int SocketFd);
+            Listening(struct sockaddr *SocketAddress, socklen_t SocketLength);
+            SocketError Listen();
+    };
+
+    class TCP4Listening: protected Listening {
+
+    public:
+        TCP4Listening(struct sockaddr *SocketAddress, socklen_t SocketLength);
+        ~TCP4Listening();
+        SocketError Bind();
+        SocketError Listen();
+        SocketError SetPortReuse(bool Open);
     };
 }

@@ -12,9 +12,9 @@ namespace ngx::Core {
             EPollEventDomain(size_t PoolSize, int ThreadCount, int EPollSize);
             ~EPollEventDomain();
 
-            EventError EPollAttachConnection(Connection *C);
-            EventError EPollDetachConnection(Connection *C);
-            EventError EPollPostListenPromise(Listening *Listening);
+            EventError EPollAttachConnection(Socket *C);
+            EventError EPollDetachConnection(Socket *C);
+//            EventError EPollPostListenPromise(Listening *Listening);
 
 
 //            EventError EPoll

@@ -16,13 +16,13 @@ EPollEventDomain::EPollEventDomain(size_t PoolSize, int ThreadCount, int EPollSi
 EPollEventDomain::~EPollEventDomain() {
 }
 
-EventError EPollEventDomain::EPollAttachConnection(Connection *C)  {
+EventError EPollEventDomain::EPollAttachConnection(Socket *S)  {
 
     struct epoll_event Event;
-    int ConnectionFD = C->GetFD();
+    int ConnectionFD = S->GetSocketFD();
 
     Event.events = EPOLLIN|EPOLLOUT|EPOLLET|EPOLLRDHUP;
-    Event.data.ptr = (void *)C;
+    Event.data.ptr = (void *)S;
 
     if (-1 == EPollFD || -1 == ConnectionFD) {
         return EventError(-1, "Epoll initial failed!");
@@ -35,39 +35,39 @@ EventError EPollEventDomain::EPollAttachConnection(Connection *C)  {
     return EventError(0);
 }
 
-EventError EPollEventDomain::EPollDetachConnection(Connection *C)  {
+EventError EPollEventDomain::EPollDetachConnection(Socket *S)  {
     return EventError(0);
 }
 
-EventError EPollEventDomain::EPollPostListenPromise(Listening *Listening) {
-
-    if (-1==EPollFD ) {
-        return EventError(ENOENT, "EPollEventDomain initial failed!");
-    }
-
-    if (nullptr==Listening || -1 == Listening->GetSocketFD()) {
-        return EventError(EINVAL, "Invalid input socket!");
-    }
-
-    if (Waiting.test_and_set()) {
-        return EventError(EALREADY, "EPollEventDomain is already waiting for events!");
-    }
-
-    EPollEventProcessArguments * Arguments =
-            static_cast<EPollEventProcessArguments *>(Allocator.Allocate(sizeof(EPollEventProcessArguments)));
-
-    if (nullptr == Arguments) {
-        return EventError(ENOMEM, "No sufficent memory!");
-    }
-
-    Arguments->EventDomain = this;
-    Arguments->PointerToListening = Listening;
-
-
-    TPool.PostPromise(&(EPollEventDomain::EPollEventProcessPromise), Arguments);
-
-    return EventError(0);
-}
+//EventError EPollEventDomain::EPollPostListenPromise(Listening *Listening) {
+//
+//    if (-1==EPollFD ) {
+//        return EventError(ENOENT, "EPollEventDomain initial failed!");
+//    }
+//
+//    if (nullptr==Listening || -1 == Listening->GetSocketFD()) {
+//        return EventError(EINVAL, "Invalid input socket!");
+//    }
+//
+//    if (Waiting.test_and_set()) {
+//        return EventError(EALREADY, "EPollEventDomain is already waiting for events!");
+//    }
+//
+//    EPollEventProcessArguments * Arguments =
+//            static_cast<EPollEventProcessArguments *>(Allocator.Allocate(sizeof(EPollEventProcessArguments)));
+//
+//    if (nullptr == Arguments) {
+//        return EventError(ENOMEM, "No sufficent memory!");
+//    }
+//
+//    Arguments->EventDomain = this;
+//    Arguments->PointerToListening = Listening;
+//
+//
+//    TPool.PostPromise(&(EPollEventDomain::EPollEventProcessPromise), Arguments);
+//
+//    return EventError(0);
+//}
 
 RuntimeError EPollEventDomain::EventDomainProcess() {
     return RuntimeError(0);
@@ -83,6 +83,11 @@ void EPollEventDomain::EPollEventProcessPromise(void *Args, ThreadPool *TPool) {
 
     EPollEventDomain *Domain = EPollArguments->EventDomain;
     Listening *Listening = EPollArguments->PointerToListening;
+
+    if (Listening != nullptr) {
+
+    }
+
 
     printf("PointerToEventDomain: %p,PointerToListening: %p,PointerToThreadPool: %p",Domain, Listening, TPool);
 

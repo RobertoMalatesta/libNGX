@@ -23,7 +23,7 @@ set(SOURCE_FILES
         src/Core/EventDomain.cpp
         src/Core/EPollEventDomain.cpp
         src/Core/Connection.cpp
-        src/Core/Listening.cpp)
+        )
 
 set(TEST_FILES
         test/Core/Test.cpp
