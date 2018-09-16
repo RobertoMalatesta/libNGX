@@ -7,7 +7,7 @@ namespace ngx::Core {
             uint32_t AllTasks;
             uint32_t RunningTasks;
             uint32_t ErrorTasks;
-    }
+    };
 
     class ExecutionStage {
         private:

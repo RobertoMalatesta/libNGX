@@ -14,7 +14,7 @@ int TCPSocketTest() {
     TCP4Listening Listen((sockaddr *)&server_sockaddr, sizeof(server_sockaddr));
 
     cout<<Listen.SetPortReuse(true).GetErrorString()<<endl;
-    cout<<Listen.Bind().GetErrorString()<<endl;
+    cout<<Listen.Listen().GetErrorString()<<endl;
 
     return 0;
 }

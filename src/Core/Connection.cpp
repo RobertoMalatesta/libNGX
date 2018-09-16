@@ -19,36 +19,8 @@ int Socket::GetSocketFD() {
     return SocketFd;
 }
 
-Connection::Connection(int SocketFD) :Socket(SocketFD){
-}
-
-SocketError Connection::Connect() {
-
-    if (SocketFd == -1) {
-        return SocketError(EFAULT, "Invalid Socket");
-    }
-
-    if (Active == 1) {
-        return SocketError(EALREADY, "Socket is already active!");
-    }
-
-    return SocketError(0);
-}
-
-SocketError Connection::Close() {
-
-    if (SocketFd != -1 && Active) {
-        close(SocketFd);
-        SocketFd = -1;
-        Active = 0;
-    }
-
-    return SocketError(0);
-}
-
 Listening::Listening(struct sockaddr *SocketAddress, socklen_t SocketLength):
         Socket(SocketAddress, SocketLength) {
-    SocketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     IsListen = 1;
 }
 
@@ -56,29 +28,33 @@ Listening::Listening(int SocketFd) : Socket(SocketFd) {
     IsListen = 1;
 }
 
-
 TCP4Listening::TCP4Listening(struct sockaddr *SocketAddress, socklen_t SocketLength)
         : Listening(SocketAddress, SocketLength) {
+    SocketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     Type = SOCK_TYPE_STREAM;
+
+    if ( 0 == bind(SocketFd, SocketAddress, SocketLength)) {
+        Active = 1;
+    }
 }
 
 TCP4Listening::~TCP4Listening() {
-
-    if (SocketFd != -1 && Active == 1) {
+    if (SocketFd != -1) {
         close(SocketFd);
         Active = 0;
         SocketFd = -1;
     }
 }
 
-SocketError TCP4Listening::Bind() {
+SocketError TCP4Listening::Listen() {
 
-    if (bind(SocketFd, SocketAddress, SocketLength)) {
-        return SocketError(errno);
+    if (SocketFd == -1) {
+        return SocketError(EINVAL, "Bad Socket!");
     }
 
-    Active = 1;
-
+    if (-1 == listen(SocketFd, Backlog)) {
+        return SocketError(errno, "Listen to Socket failed!");
+    }
     return SocketError(0);
 }
 
@@ -92,6 +68,47 @@ SocketError TCP4Listening::SetPortReuse(bool Open) {
 
     if (setsockopt(SocketFd, SOL_SOCKET, SO_REUSEPORT, &Val, sizeof(int))) {
         return SocketError(errno);
+    }
+    return SocketError(0);
+}
+
+Connection::Connection(int SocketFd) :Socket(SocketFd) {};
+Connection::Connection(struct sockaddr *SocketAddress, socklen_t SocketLength):
+        Socket(SocketAddress, SocketLength){
+}
+
+TCP4Connection::TCP4Connection(int SocketFd): Connection(SocketFd) {
+    if (SocketFd != -1) {
+        Active = 1;
+    }
+}
+
+TCP4Connection::TCP4Connection(struct sockaddr *SocketAddress, socklen_t SocketLength):
+        Connection(SocketAddress, SocketLength) {
+    SocketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    Type = SOCK_TYPE_STREAM;
+
+    if ( 0 == bind(SocketFd, SocketAddress, SocketLength)) {
+        Active = 1;
+    }
+}
+
+SocketError TCP4Connection::Connect() {
+    if (SocketFd == -1) {
+        return SocketError(EFAULT, "Invalid Socket");
+    }
+
+    if (Active == 1) {
+        return SocketError(EALREADY, "Socket is already active!");
+    }
+
+    return SocketError(0);
+}
+SocketError TCP4Connection::Close() {
+    if (SocketFd != -1) {
+        close(SocketFd);
+        SocketFd = -1;
+        Active = 0;
     }
     return SocketError(0);
 }

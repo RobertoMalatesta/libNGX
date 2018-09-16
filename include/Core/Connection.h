@@ -13,6 +13,7 @@ namespace ngx::Core {
 
     class EventEntity {
         protected:
+            PromiseCallback  *OnAccept = &DiscardPromise;
             PromiseCallback  *OnRead = &DiscardPromise;
             PromiseCallback  *OnWrite = &DiscardPromise;
             PromiseCallback  *OnClose = &DiscardPromise;
@@ -23,7 +24,8 @@ namespace ngx::Core {
             int SocketFd;
             struct sockaddr *SocketAddress;
             socklen_t SocketLength;
-
+            Queue SocketPeer;
+            atomic_flag EventLock = ATOMIC_FLAG_INIT;
             union {
                 struct {
                     unsigned Open: 1;
@@ -41,30 +43,47 @@ namespace ngx::Core {
             Socket (int SocketFd);
             Socket(struct sockaddr *SocketAddress, socklen_t SocketLength);
             int GetSocketFD();
-            SocketError SetOption();
-    };
-
-    class Connection: Socket {
-        public:
-            Connection(int SocketFd);
-            SocketError Connect();
-            SocketError Close();
+            SocketError SetOption() {
+                return SocketError(ENOENT, "Method not implemented!");
+            }
     };
 
     class Listening: protected Socket {
         public:
             Listening(int SocketFd);
             Listening(struct sockaddr *SocketAddress, socklen_t SocketLength);
-            SocketError Listen();
+            SocketError Listen() {
+                return SocketError(ENOENT, "Method not implemented!");
+            }
     };
 
     class TCP4Listening: protected Listening {
+        protected:
+            uint Backlog = 1024;
+        public:
+            TCP4Listening(struct sockaddr *SocketAddress, socklen_t SocketLength);
+            ~TCP4Listening();
+            SocketError Listen();
+            SocketError SetPortReuse(bool Open);
+    };
 
-    public:
-        TCP4Listening(struct sockaddr *SocketAddress, socklen_t SocketLength);
-        ~TCP4Listening();
-        SocketError Bind();
-        SocketError Listen();
-        SocketError SetPortReuse(bool Open);
+    class Connection: protected Socket {
+        public:
+            Connection(int SocketFd);
+            Connection(struct sockaddr *SocketAddress, socklen_t SocketLength);
+            SocketError Connect() {
+                return SocketError(ENOENT, "Method not implemented!");
+            };
+            SocketError Close() {
+                return SocketError(ENOENT, "Method not implemented!");
+            };
+    };
+
+    class TCP4Connection:  protected Connection {
+        public:
+            TCP4Connection(int SocketFd);
+            TCP4Connection(struct sockaddr* SocketAddress, socklen_t SocketLength);
+            SocketError Connect();
+            SocketError Close();
     };
 }

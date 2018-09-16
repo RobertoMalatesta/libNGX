@@ -13,7 +13,7 @@ int EPollEventDomainTest() {
     EPollEventDomain Domain(40960, 4, 31723);
 
     Listen.SetPortReuse(true).PrintError();
-    Listen.Bind().PrintError();
+    Listen.Listen().PrintError();
     ForceUSleep(100000);
 
     return 0;
