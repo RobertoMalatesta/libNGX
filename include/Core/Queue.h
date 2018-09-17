@@ -2,7 +2,7 @@ namespace ngx::Core {
 
     class Queue {
 
-        private:
+        protected:
             Queue   *Prev = this,  *Next = this, *Sentinel;
             void InsertToHead();
             void InsertToTail();

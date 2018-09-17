@@ -34,7 +34,8 @@ namespace ngx::Core {
                     unsigned Expired:1;
                     unsigned IsListen:1;
                     unsigned Version:3;
-                    unsigned Reuse;
+                    unsigned Reuse:1;
+                    unsigned Nodelay:1;
                 };
                 u_short Flags = 0;
             };
@@ -48,7 +49,7 @@ namespace ngx::Core {
             }
     };
 
-    class Listening: protected Socket {
+    class Listening: public Socket, public Queue {
         public:
             Listening(int SocketFd);
             Listening(struct sockaddr *SocketAddress, socklen_t SocketLength);
@@ -57,7 +58,7 @@ namespace ngx::Core {
             }
     };
 
-    class TCP4Listening: protected Listening {
+    class TCP4Listening: public Listening {
         protected:
             uint Backlog = 1024;
         public:
@@ -67,7 +68,7 @@ namespace ngx::Core {
             SocketError SetPortReuse(bool Open);
     };
 
-    class Connection: protected Socket {
+    class Connection: protected Socket, public Queue{
         public:
             Connection(int SocketFd);
             Connection(struct sockaddr *SocketAddress, socklen_t SocketLength);
@@ -85,5 +86,6 @@ namespace ngx::Core {
             TCP4Connection(struct sockaddr* SocketAddress, socklen_t SocketLength);
             SocketError Connect();
             SocketError Close();
+            SocketError SetNoDelay(bool Open);
     };
 }

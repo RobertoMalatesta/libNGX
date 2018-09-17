@@ -1,6 +1,7 @@
 #include "Core/Core.h"
 #include <unistd.h>
 #include <sys/socket.h>
+#include <netinet/tcp.h>
 #include <sys/types.h>
 
 using namespace ngx::Core;
@@ -104,11 +105,29 @@ SocketError TCP4Connection::Connect() {
 
     return SocketError(0);
 }
+
 SocketError TCP4Connection::Close() {
     if (SocketFd != -1) {
         close(SocketFd);
         SocketFd = -1;
         Active = 0;
     }
+    return SocketError(0);
+}
+
+SocketError TCP4Connection::SetNoDelay(bool Open) {
+
+    int  TCPNoDelay = Open? 1: 0;
+
+    if ((Nodelay == 1 && TCPNoDelay == 1) || (Nodelay==0 && TCPNoDelay == 0)) {
+        return SocketError(0, "No delay is already set!");
+    }
+
+    if (setsockopt(SocketFd, IPPROTO_TCP, TCP_NODELAY,
+                   (const void *) &TCPNoDelay, sizeof(int)) == -1) {
+        return SocketError(errno, "setsockopt() failed to set TCP_NODELAY!");
+    }
+
+    Nodelay = TCPNoDelay;
     return SocketError(0);
 }
