@@ -1,12 +1,16 @@
 namespace ngx::Core {
 
-    const int EVENT_BATCH_SIZE = 512;
-    const int EVENT_WAIT_TIME = 10;
+    const int EPOLL_EVENT_BATCH_SIZE = 512;
+    const int EPOLL_EVENT_WAIT_TIME = 10;
+    const int EPOLL_EVENT_MAX_CONNECTION = 32768;
+
 
     class EPollEventDomain : public EventDomain {
-        private:
+        protected:
             int EPollFD = -1;
             atomic_flag Waiting = ATOMIC_FLAG_INIT;
+            atomic_int64_t MaxConnection = EPOLL_EVENT_MAX_CONNECTION;
+            SpinLock Lock;
             Listening ListenSentinel;
             Connection ConnectionSentinel;
             static void EPollEventProcessPromise(void* Args, ThreadPool *TPool);

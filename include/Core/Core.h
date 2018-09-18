@@ -22,6 +22,7 @@ namespace ngx::Core {
     class TimerTree;
     class FSEntity;
     class FSTree;
+    class SpinLock;
     class Promise;
     class Thread;
     class ThreadPool;
@@ -29,7 +30,6 @@ namespace ngx::Core {
     class Listening;
     class Event;
     class EventDomain;
-
 }
 
 #include "Core/ArchX86.h"
@@ -38,6 +38,7 @@ namespace ngx::Core {
 #include "Core/Time.h"
 #include "Core/Error.h"
 #include "Core/Ref.h"
+#include "Core/Lock.h"
 #include "Core/MemAllocator.h"
 #include "Core/MemBlock.h"
 #include "Core/Pool.h"

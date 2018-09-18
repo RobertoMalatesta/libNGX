@@ -68,7 +68,7 @@ namespace ngx::Core {
             SocketError SetPortReuse(bool Open);
     };
 
-    class Connection: protected Socket, public Queue{
+    class Connection: public Socket, public Queue{
         public:
             Connection(int SocketFd);
             Connection(struct sockaddr *SocketAddress, socklen_t SocketLength);
@@ -80,7 +80,7 @@ namespace ngx::Core {
             };
     };
 
-    class TCP4Connection:  protected Connection {
+    class TCP4Connection: public Connection {
         public:
             TCP4Connection(int SocketFd);
             TCP4Connection(struct sockaddr* SocketAddress, socklen_t SocketLength);

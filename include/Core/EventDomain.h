@@ -18,9 +18,7 @@ namespace ngx::Core {
             Pool Allocator;
             ThreadPool TPool;
             TimerTree *Timers;
-
         public:
-
             EventDomain(size_t PoolSize, int ThreadCount);
             ~EventDomain();
 

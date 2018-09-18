@@ -88,7 +88,7 @@ RuntimeError EPollEventDomain::EPollListenToNext() {
         return RuntimeError(EINVAL, "Invalid socket fd!");
     }
 
-    Events = static_cast<epoll_event *>(Allocator.Allocate(EVENT_BATCH_SIZE * sizeof(epoll_event)));
+    Events = static_cast<epoll_event *>(Allocator.Allocate(EPOLL_EVENT_BATCH_SIZE * sizeof(epoll_event)));
 
     if (nullptr == Events) {
         return RuntimeError(ENOMEM, "Failed to allocate memory for epoll_event!");
@@ -99,7 +99,8 @@ RuntimeError EPollEventDomain::EPollListenToNext() {
     }
 
     EPollAttachSocket(Listen);
-    EventCount = epoll_pwait(EPollFD, Events, EVENT_BATCH_SIZE, EVENT_WAIT_TIME, &sigmask);
+
+    EventCount = epoll_pwait(EPollFD, Events, EPOLL_EVENT_BATCH_SIZE, EPOLL_EVENT_WAIT_TIME, &sigmask);
     EPollDetachSocket(Listen);
     ListenSentinel.Append(Listen);
     Waiting.clear();
@@ -159,3 +160,65 @@ void EPollEventDomain::EPollEventProcessPromise(void *Args, ThreadPool *TPool) {
            ListeningSocketFD);
 }
 
+EventError EPollEventDomain::EPollAddListening(Listening *L) {
+
+    Queue *PQueue;
+    Listening *PListen;
+
+    for (PQueue = ListenSentinel.GetHead(); PQueue != ListenSentinel.GetSentinel(); PQueue = PQueue->GetNext()) {
+        PListen = (Listening *)(PQueue);
+
+        if (PListen == L) {
+            return EventError(EALREADY, "Listen is already added to the Queue");
+        }
+    }
+
+    ListenSentinel.Append(L);
+    return EventError(0);
+}
+
+EventError EPollEventDomain::EPollRemoveListening(Listening *L) {
+
+    Queue *PQueue;
+    Listening *PListen;
+
+    for (PQueue = ListenSentinel.GetHead(); PQueue != ListenSentinel.GetSentinel(); PQueue = PQueue->GetNext()) {
+        PListen = (Listening *)(PQueue);
+
+        if (PListen == L) {
+            PListen->Detach();
+            return EventError(0);
+        }
+    }
+
+    return EventError(ENOENT, "Listening not found!");
+}
+
+EventError EPollEventDomain::EPollAddConnection(Connection *C) {
+
+    if (C == nullptr || C->GetSocketFD() == -1) {
+        return EventError(EINVAL, "Bad connection!");
+    }
+
+    if (MaxConnection.fetch_sub(1) < 0) {
+        MaxConnection.fetch_add(1);
+        return EventError(ECANCELED, "Connection reaches maximum connection count!");
+    }
+
+    ConnectionSentinel.Append(C);
+    return EventError(0);
+}
+
+EventError EPollEventDomain::EPollRemoveConnection(Connection *C) {
+
+    if (C == nullptr || C->GetSocketFD() == -1) {
+        return EventError(EINVAL, "Bad connection!");
+    }
+
+
+
+    C->Detach();
+    MaxConnection.fetch_add(1);
+
+    return EventError(0);
+}
