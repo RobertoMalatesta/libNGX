@@ -30,6 +30,7 @@ namespace ngx::Core {
     class Listening;
     class Event;
     class EventDomain;
+    class EPollEventDomain;
 }
 
 #include "Core/ArchX86.h"

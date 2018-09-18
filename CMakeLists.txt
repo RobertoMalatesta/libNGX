@@ -5,6 +5,7 @@ project(NgxLibrary)
 set(CMAKE_CXX_STANDARD 17)
 
 set(SOURCE_FILES
+        src/Core/Error.cpp
         src/Core/MemBlock.cpp
         src/Core/Pool.cpp
         src/Core/Buf.cpp
@@ -17,14 +18,13 @@ set(SOURCE_FILES
         src/Core/Lock.cpp
         src/Core/Time.cpp
         src/Core/Checksum.cpp
-        src/Core/Error.cpp
         src/Core/ThreadPool.cpp
         src/Core/TimerTree.cpp
         src/Core/FSTree.cpp
+        src/Core/Connection.cpp
         src/Core/EventDomain.cpp
         src/Core/EPollEventDomain.cpp
-        src/Core/Connection.cpp
-        )
+        src/Http/HttpServer.cpp include/Core/Recylcer.h)
 
 set(TEST_FILES
         test/Core/Test.cpp
@@ -39,7 +39,8 @@ set(TEST_FILES
         test/Core/RBTreeTest.cpp
         test/Core/TimerTreeTest.cpp
         test/Core/FSTreeTest.cpp
-        test/Core/SocketTest.cpp test/Core/EPollEventDomainTest.cpp)
+        test/Core/SocketTest.cpp
+        test/Core/EPollEventDomainTest.cpp)
 include_directories(./include)
 
 LINK_LIBRARIES(-lpthread)
