@@ -10,7 +10,7 @@ namespace ngx::Core {
             int EPollFD = -1;
             atomic_flag Waiting = ATOMIC_FLAG_INIT;
             atomic_int64_t MaxConnection = EPOLL_EVENT_MAX_CONNECTION;
-            SpinLock Lock;
+            SpinLock ModifyLock;
             Listening ListenSentinel;
             Connection ConnectionSentinel;
             static void EPollEventProcessPromise(void* Args, ThreadPool *TPool);
@@ -24,6 +24,8 @@ namespace ngx::Core {
             EventError EPollDetachSocket(Socket *S);
             EventError EPollAddListening(Listening *L);
             EventError EPollRemoveListening(Listening *L);
+            EventError EPollEnqueueListening(Listening *L);
+            Listening *EPollDequeueListening();
             EventError EPollAddConnection(Connection *C);
             EventError EPollRemoveConnection(Connection *C);
             RuntimeError EPollListenToNext();

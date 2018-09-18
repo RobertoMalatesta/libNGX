@@ -1,13 +1,17 @@
 #include "Core/Core.h"
 
-#include <sys/epoll.h>
 #include <signal.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <sys/epoll.h>
 
 using namespace ngx::Core;
 
+const char CONTENT[] = "Hello World!";
+
 typedef struct _EPollEventProcessArguments{
     EPollEventDomain *EventDomain;
-    int ListeningSocketFD;
+    Listening *Listening;
     epoll_event *Events;
     int EventCount;
 } EPollEventProcessArguments;
@@ -62,6 +66,7 @@ RuntimeError EPollEventDomain::EPollListenToNext() {
     int EventCount = -1;
     epoll_event * Events;
     Listening *Listen;
+    Socket *S;
 
     /* [TODO] should move to initialize code latter! */
     sigset_t sigmask;
@@ -76,13 +81,11 @@ RuntimeError EPollEventDomain::EPollListenToNext() {
         return RuntimeError(0);
     }
 
-    Listen = (Listening *)ListenSentinel.GetNext();
+    Listen = EPollDequeueListening();
 
     if (nullptr==Listen) {
-        return RuntimeError(ENOENT, "Bad evnet queue!");
+        return RuntimeError(ENOENT, "Listen queue empty!");
     }
-
-    Listen->Detach();
 
     if (-1 == Listen->GetSocketFD()) {
         return RuntimeError(EINVAL, "Invalid socket fd!");
@@ -99,19 +102,29 @@ RuntimeError EPollEventDomain::EPollListenToNext() {
     }
 
     EPollAttachSocket(Listen);
-
     EventCount = epoll_pwait(EPollFD, Events, EPOLL_EVENT_BATCH_SIZE, EPOLL_EVENT_WAIT_TIME, &sigmask);
     EPollDetachSocket(Listen);
-    ListenSentinel.Append(Listen);
+
+    for (int i=0; i< EventCount; i++) {
+        S = (Socket *) Events[i].data.ptr;
+        if (S != nullptr) {
+            EPollDetachSocket(S);
+        }
+    }
+
     Waiting.clear();
 
     if (-1 == EventCount) {
         if (errno == EINTR) {
+            EPollEnqueueListening(Listen);
             return RuntimeError(0, "Interrupted by signal");
         }
         else {
             return RuntimeError(errno, "epoll_wait() failed!");
         }
+    }
+    else if (EventCount == 0) {
+        EPollEnqueueListening(Listen);
     }
     else if (EventCount > 0) {
         EPollEventProcessArguments *Arguments;
@@ -123,20 +136,17 @@ RuntimeError EPollEventDomain::EPollListenToNext() {
         Arguments->EventCount = EventCount;
         Arguments->EventDomain = this;
         Arguments->Events = Events;
-        Arguments->ListeningSocketFD = Listen->GetSocketFD();
+        Arguments->Listening = Listen;
 
         TPool.PostPromise(&(EPollEventDomain::EPollEventProcessPromise), Arguments);
     }
     return RuntimeError(0);
 }
 
-RuntimeError EPollEventDomain::EventDomainProcess() {
-    return RuntimeError(0);
-}
-
 void EPollEventDomain::EPollEventProcessPromise(void *Args, ThreadPool *TPool) {
 
     EPollEventProcessArguments *EPollArguments;
+    Socket *S;
 
     if (nullptr == Args) {
         return;
@@ -146,18 +156,37 @@ void EPollEventDomain::EPollEventProcessPromise(void *Args, ThreadPool *TPool) {
     EPollEventDomain *Domain = EPollArguments->EventDomain;
     epoll_event *Events = EPollArguments->Events;
     int EventCount = EPollArguments->EventCount;
-    int ListeningSocketFD = EPollArguments->ListeningSocketFD;
+    Listening *Listening = EPollArguments->Listening;
 
-    if (Domain == nullptr ||
-        Events == nullptr ||
-        EventCount <= 0) {
+    if (Domain == nullptr || Events == nullptr) {
         return;
     }
 
     Domain->Allocator.Free((void **)&EPollArguments);
 
-    printf("PointerToEventDomain: %p,EventCount: %d,Events: %p, ListeningSocketFD: %d\n", Domain, EventCount, Events,
-           ListeningSocketFD);
+    for (int i=0; i < EventCount; i++) {
+        S = (Socket *)Events[i].data.ptr;
+        if (nullptr != S) {
+            if (S->GetSocketFD() == Listening->GetSocketFD()) {
+
+//                struct sockaddr_in SocketAddress;
+//                socklen_t SocketLength;
+//
+//                printf("PointerToEventDomain: %p, SocketFD: %d\n", Domain, S->GetSocketFD());
+//
+//                int ConnectionFD = accept4(S->GetSocketFD(), (struct sockaddr *)&SocketAddress, &SocketLength, SOCK_NONBLOCK);
+//
+//                if (-1 == ConnectionFD) {
+//                    continue;
+//                }
+//
+//                send(ConnectionFD, CONTENT, sizeof(CONTENT), 0);
+//                close(ConnectionFD);
+            }
+        }
+    }
+
+    Domain->EPollEnqueueListening(Listening);
 }
 
 EventError EPollEventDomain::EPollAddListening(Listening *L) {
@@ -173,7 +202,10 @@ EventError EPollEventDomain::EPollAddListening(Listening *L) {
         }
     }
 
+    ModifyLock.Lock();
     ListenSentinel.Append(L);
+    ModifyLock.Unlock();
+
     return EventError(0);
 }
 
@@ -186,12 +218,35 @@ EventError EPollEventDomain::EPollRemoveListening(Listening *L) {
         PListen = (Listening *)(PQueue);
 
         if (PListen == L) {
+            ModifyLock.Lock();
             PListen->Detach();
+            ModifyLock.Unlock();
             return EventError(0);
         }
     }
 
     return EventError(ENOENT, "Listening not found!");
+}
+
+EventError EPollEventDomain::EPollEnqueueListening(ngx::Core::Listening *L) {
+    return EPollAddListening(L);
+}
+
+Listening *EPollEventDomain::EPollDequeueListening() {
+
+    Listening *Listen;
+    ModifyLock.Lock();
+
+    if (ListenSentinel.IsEmpty()) {
+        ModifyLock.Unlock();
+        return nullptr;
+    }
+
+    Listen = (Listening *)ListenSentinel.GetHead();
+    Listen->Detach();
+
+    ModifyLock.Unlock();
+    return Listen;
 }
 
 EventError EPollEventDomain::EPollAddConnection(Connection *C) {
@@ -205,7 +260,9 @@ EventError EPollEventDomain::EPollAddConnection(Connection *C) {
         return EventError(ECANCELED, "Connection reaches maximum connection count!");
     }
 
+    ModifyLock.Lock();
     ConnectionSentinel.Append(C);
+    ModifyLock.Unlock();
     return EventError(0);
 }
 
@@ -215,10 +272,21 @@ EventError EPollEventDomain::EPollRemoveConnection(Connection *C) {
         return EventError(EINVAL, "Bad connection!");
     }
 
-
-
+    ModifyLock.Lock();
     C->Detach();
+    ModifyLock.Unlock();
     MaxConnection.fetch_add(1);
 
     return EventError(0);
 }
+
+RuntimeError EPollEventDomain::EventDomainProcess() {
+   RuntimeError Error = EPollListenToNext();
+
+   if (Error.GetErrorCode() != 0) {
+       return  Error;
+   }
+
+  return EventDomain::EventDomainProcess();
+}
+

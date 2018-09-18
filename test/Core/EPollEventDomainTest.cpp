@@ -16,9 +16,16 @@ int EPollEventDomainTest() {
     Listen.Listen().PrintError();
 
     Domain.EPollAddListening(&Listen).PrintError();
-    Domain.EPollRemoveListening(&Listen).PrintError();
-    Domain.EPollListenToNext().PrintError();
-    ForceUSleep(100000);
+
+    while (true) {
+        RuntimeError Error = Domain.EventDomainProcess();
+
+        if (Error.GetErrorCode() != 0) {
+            Error.PrintError();
+        }
+
+        ForceUSleep(500);
+    }
 
     return 0;
 }
