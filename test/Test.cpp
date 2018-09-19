@@ -12,6 +12,7 @@ extern int TimerTreeTest();
 extern int FSTreeTest();
 extern int TCPSocketTest();
 extern int EPollEventDomainTest();
+extern int HttpServerTest();
 int main() {
 
 //	MemBlockTest();
@@ -26,6 +27,7 @@ int main() {
 //  TimerTreeTest();
 //	FSTreeTest();
 //	TCPSocketTest();
-    EPollEventDomainTest();
+//  EPollEventDomainTest();
+	HttpServerTest();
 	return 0;
 }

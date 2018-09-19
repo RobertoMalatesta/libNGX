@@ -1,0 +1,30 @@
+#include "Http/Http.h"
+
+using namespace ngx::Core;
+using namespace ngx::Http;
+
+int HttpServerTest() {
+
+    struct sockaddr_in server_sockaddr;
+    server_sockaddr.sin_family = AF_INET;
+    server_sockaddr.sin_port = htons(8080);
+    server_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    TCP4Listening Listen((sockaddr *)&server_sockaddr, sizeof(server_sockaddr));
+    HttpServer Server(40960, 4, 31728, 1024, 1024);
+
+    Listen.SetPortReuse(true).PrintError();
+    Listen.Listen().PrintError();
+
+    Server.EPollEnqueueListening(&Listen).PrintError();
+
+    int Count = 500000;
+
+    while (Count -- > 0) {
+        RuntimeError Error = Server.EventDomainProcess();
+        Error.PrintError();
+        ForceUSleep(1000000);
+    }
+
+    return 0;
+}

@@ -6,14 +6,29 @@
 
 using namespace ngx::Core;
 
-Socket::Socket(int SocketFd) {
-    this->SocketFd = SocketFd;
-}
-
 Socket::Socket(struct sockaddr *SocketAddress, socklen_t SocketLength) {
     this->SocketFd = -1;
-    this->SocketAddress = SocketAddress;
+    memcpy((void *)&(this->SocketAddress), SocketAddress, SocketLength);
     this->SocketLength = SocketLength;
+}
+
+Socket::Socket(int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength) {
+
+    if (SocketAddress == nullptr || SocketLength <= 0) {
+        SocketFd = -1;
+        Active = 0;
+        return;
+    }
+
+    memcpy((void *)&(this->SocketAddress), SocketAddress, SocketLength);
+    this->SocketLength = SocketLength;
+
+    if (SocketFd == -1) {
+        return;
+    }
+
+    this->SocketFd = SocketFd;
+    Active = 1;
 }
 
 int Socket::GetSocketFD() {
@@ -25,14 +40,17 @@ Listening::Listening(struct sockaddr *SocketAddress, socklen_t SocketLength):
     IsListen = 1;
 }
 
-Listening::Listening(int SocketFd) : Socket(SocketFd) {
+Listening::Listening(int SocketFd, struct sockaddr *SocketAddr, socklen_t SocketLength) :
+        Socket(SocketFd, SocketAddr, SocketLength) {
     IsListen = 1;
 }
 
 TCP4Listening::TCP4Listening(struct sockaddr *SocketAddress, socklen_t SocketLength)
         : Listening(SocketAddress, SocketLength) {
     SocketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
     Type = SOCK_TYPE_STREAM;
+    Version = 4;
 
     if ( 0 == bind(SocketFd, SocketAddress, SocketLength)) {
         Active = 1;
@@ -73,16 +91,13 @@ SocketError TCP4Listening::SetPortReuse(bool Open) {
     return SocketError(0);
 }
 
-Connection::Connection(int SocketFd) :Socket(SocketFd) {};
+Connection::Connection(int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength)
+        :Socket(SocketFd, SocketAddress, SocketLength) {};
 Connection::Connection(struct sockaddr *SocketAddress, socklen_t SocketLength):
-        Socket(SocketAddress, SocketLength){
-}
+        Socket(SocketAddress, SocketLength){}
 
-TCP4Connection::TCP4Connection(int SocketFd): Connection(SocketFd) {
-    if (SocketFd != -1) {
-        Active = 1;
-    }
-}
+TCP4Connection::TCP4Connection(int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength):
+        Connection(SocketFd, SocketAddress, SocketLength) {}
 
 TCP4Connection::TCP4Connection(struct sockaddr *SocketAddress, socklen_t SocketLength):
         Connection(SocketAddress, SocketLength) {
@@ -117,7 +132,7 @@ SocketError TCP4Connection::Close() {
 
 SocketError TCP4Connection::SetNoDelay(bool Open) {
 
-    int  TCPNoDelay = Open? 1: 0;
+    unsigned int TCPNoDelay = Open? 1: 0;
 
     if ((Nodelay == 1 && TCPNoDelay == 1) || (Nodelay==0 && TCPNoDelay == 0)) {
         return SocketError(0, "No delay is already set!");

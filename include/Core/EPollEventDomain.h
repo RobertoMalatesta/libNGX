@@ -30,8 +30,6 @@ namespace ngx::Core {
 
             EventError EPollAttachSocket(Socket *S);
             EventError EPollDetachSocket(Socket *S);
-            EventError EPollAddListening(Listening *L);
-            EventError EPollRemoveListening(Listening *L);
             EventError EPollEnqueueListening(Listening *L);
             Listening *EPollDequeueListening();
             EventError EPollAddConnection(Connection *C);

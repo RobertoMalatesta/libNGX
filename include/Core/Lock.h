@@ -6,7 +6,10 @@ namespace ngx::Core {
         protected:
             atomic_flag LockAtomic = ATOMIC_FLAG_INIT;
         public:
-        void Lock();
-        void Unlock();
+            SpinLock() {
+                LockAtomic.clear();
+            }
+            void Lock();
+            void Unlock();
     };
 };

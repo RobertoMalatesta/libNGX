@@ -3,7 +3,7 @@
 using namespace ngx::Core;
 
 EPollEventDomain::EPollEventDomain(size_t PoolSize, int ThreadCount, int EPollSize, PromiseCallback *ProcessPromise):
-        EventDomain(PoolSize, ThreadCount), ListenSentinel(-1), ConnectionSentinel(-1){
+        EventDomain(PoolSize, ThreadCount), ListenSentinel(-1, nullptr, -1), ConnectionSentinel(-1, nullptr, -1){
     EPollFD = epoll_create(EPollSize);
     EPollProcessPromise = ProcessPromise;
 }
@@ -57,9 +57,7 @@ EventError EPollEventDomain::EPollDetachSocket(Socket *S)  {
     return EventError(0);
 }
 
-
-EventError EPollEventDomain::EPollAddListening(Listening *L) {
-
+EventError EPollEventDomain::EPollEnqueueListening(ngx::Core::Listening *L) {
     Queue *PQueue;
     Listening *PListen;
 
@@ -76,29 +74,6 @@ EventError EPollEventDomain::EPollAddListening(Listening *L) {
     ModifyLock.Unlock();
 
     return EventError(0);
-}
-
-EventError EPollEventDomain::EPollRemoveListening(Listening *L) {
-
-    Queue *PQueue;
-    Listening *PListen;
-
-    for (PQueue = ListenSentinel.GetHead(); PQueue != ListenSentinel.GetSentinel(); PQueue = PQueue->GetNext()) {
-        PListen = (Listening *)(PQueue);
-
-        if (PListen == L) {
-            ModifyLock.Lock();
-            PListen->Detach();
-            ModifyLock.Unlock();
-            return EventError(0);
-        }
-    }
-
-    return EventError(ENOENT, "Listening not found!");
-}
-
-EventError EPollEventDomain::EPollEnqueueListening(ngx::Core::Listening *L) {
-    return EPollAddListening(L);
 }
 
 Listening *EPollEventDomain::EPollDequeueListening() {
@@ -149,7 +124,8 @@ EventError EPollEventDomain::EPollRemoveConnection(Connection *C) {
     return EventError(0);
 }
 
-RuntimeError EPollEventDomain::EPollListenToNext() {
+RuntimeError EPollEventDomain::EventDomainProcess() {
+   RuntimeError Error = EventDomain::EventDomainProcess();
 
     int EventCount = -1;
     epoll_event * Events;
@@ -158,6 +134,11 @@ RuntimeError EPollEventDomain::EPollListenToNext() {
 
     /* [TODO] should move to initialize code latter! */
     sigset_t sigmask;
+
+    if (Error.GetErrorCode() != 0) {
+       return  Error;
+   }
+
     sigemptyset(&sigmask);
     sigaddset(&sigmask, SIGALRM);
 
@@ -228,15 +209,6 @@ RuntimeError EPollEventDomain::EPollListenToNext() {
 
         TPool.PostPromise(EPollProcessPromise, Arguments);
     }
+
     return RuntimeError(0);
-}
-
-RuntimeError EPollEventDomain::EventDomainProcess() {
-   RuntimeError Error = EPollListenToNext();
-
-   if (Error.GetErrorCode() != 0) {
-       return  Error;
-   }
-
-  return EventDomain::EventDomainProcess();
 }

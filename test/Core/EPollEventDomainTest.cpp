@@ -23,6 +23,7 @@ static void HttpEventProcessPromise(void *Args, ThreadPool *TPool) {
     Domain->FreeAllocatedMemory((void **)&Events);
     Domain->EPollEnqueueListening(Listening);
 }
+
 int EPollEventDomainTest() {
 
     struct sockaddr_in server_sockaddr;
@@ -36,7 +37,7 @@ int EPollEventDomainTest() {
     Listen.SetPortReuse(true).PrintError();
     Listen.Listen().PrintError();
 
-    Domain.EPollAddListening(&Listen).PrintError();
+    Domain.EPollEnqueueListening(&Listen).PrintError();
 
     int Count = 500000;
 

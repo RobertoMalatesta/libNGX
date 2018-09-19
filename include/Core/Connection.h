@@ -7,6 +7,12 @@ namespace ngx::Core {
         SOCK_TYPE_RESERVED2
     };
 
+    typedef union {
+        struct sockaddr sockaddr;
+        struct sockaddr_in sockaddr_in;
+        struct sockaddr_in6 sockaddr_in6;
+    } SocketAddress;
+
     static void DiscardPromise(void *Argument, ThreadPool *TPool) {
         return;
     }
@@ -14,6 +20,7 @@ namespace ngx::Core {
     class EventEntity {
         protected:
             PromiseCallback  *OnAccept = &DiscardPromise;
+            PromiseCallback  *OnConnected = &DiscardPromise;
             PromiseCallback  *OnRead = &DiscardPromise;
             PromiseCallback  *OnWrite = &DiscardPromise;
             PromiseCallback  *OnClose = &DiscardPromise;
@@ -22,7 +29,7 @@ namespace ngx::Core {
     class Socket : protected EventEntity{
         protected:
             int SocketFd;
-            struct sockaddr *SocketAddress;
+            SocketAddress SocketAddress;
             socklen_t SocketLength;
             Queue SocketPeer;
             atomic_flag EventLock = ATOMIC_FLAG_INIT;
@@ -41,8 +48,8 @@ namespace ngx::Core {
             };
 
         public:
-            Socket (int SocketFd);
             Socket(struct sockaddr *SocketAddress, socklen_t SocketLength);
+            Socket(int ScoketFd, struct sockaddr *SocketAddress, socklen_t SocketLength);
             int GetSocketFD();
             SocketError SetOption() {
                 return SocketError(ENOENT, "Method not implemented!");
@@ -51,8 +58,8 @@ namespace ngx::Core {
 
     class Listening: public Socket, public Queue {
         public:
-            Listening(int SocketFd);
             Listening(struct sockaddr *SocketAddress, socklen_t SocketLength);
+            Listening(int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength);
             SocketError Listen() {
                 return SocketError(ENOENT, "Method not implemented!");
             }
@@ -63,6 +70,7 @@ namespace ngx::Core {
             uint Backlog = 1024;
         public:
             TCP4Listening(struct sockaddr *SocketAddress, socklen_t SocketLength);
+            TCP4Listening(int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength);
             ~TCP4Listening();
             SocketError Listen();
             SocketError SetPortReuse(bool Open);
@@ -70,8 +78,8 @@ namespace ngx::Core {
 
     class Connection: public Socket, public Queue{
         public:
-            Connection(int SocketFd);
             Connection(struct sockaddr *SocketAddress, socklen_t SocketLength);
+            Connection(int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength);
             SocketError Connect() {
                 return SocketError(ENOENT, "Method not implemented!");
             };
@@ -81,9 +89,12 @@ namespace ngx::Core {
     };
 
     class TCP4Connection: public Connection {
+        protected:
+            Pool Allocator;
         public:
-            TCP4Connection(int SocketFd);
             TCP4Connection(struct sockaddr* SocketAddress, socklen_t SocketLength);
+            TCP4Connection(int SocketFd, struct sockaddr* SocketAddress, socklen_t SocketLength);
+
             SocketError Connect();
             SocketError Close();
             SocketError SetNoDelay(bool Open);

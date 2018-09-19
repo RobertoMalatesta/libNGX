@@ -24,10 +24,10 @@ set(SOURCE_FILES
         src/Core/Connection.cpp
         src/Core/EventDomain.cpp
         src/Core/EPollEventDomain.cpp
-        src/Http/HttpServer.cpp include/Core/Recylcer.h)
+        src/Http/HttpServer.cpp include/Core/Recylcer.h src/Http/Recycler.cpp)
 
 set(TEST_FILES
-        test/Core/Test.cpp
+        test/Test.cpp
         test/Core/MemBlockTest.cpp
         test/Core/PoolTest.cpp
         test/Core/BufTest.cpp
@@ -40,7 +40,7 @@ set(TEST_FILES
         test/Core/TimerTreeTest.cpp
         test/Core/FSTreeTest.cpp
         test/Core/SocketTest.cpp
-        test/Core/EPollEventDomainTest.cpp)
+        test/Core/EPollEventDomainTest.cpp test/Http/HttpServerTest.cpp)
 include_directories(./include)
 
 LINK_LIBRARIES(-lpthread)
