@@ -4,14 +4,14 @@ using namespace ngx::Core;
 
 static void HttpEventProcessPromise(void *Args, ThreadPool *TPool) {
 
-    EPollEventProcessArguments *EPollArguments;
+    EPollEventDomainArgument *EPollArguments;
 
     if (nullptr == Args) {
         return;
     }
 
-    EPollArguments = static_cast<EPollEventProcessArguments *>(Args);
-    EPollEventDomain *Domain = EPollArguments->EventDomain;
+    EPollArguments = static_cast<EPollEventDomainArgument *>(Args);
+    EPollEventDomain *Domain = static_cast<EPollEventDomain *>(EPollArguments->EventDomain);
     epoll_event *Events = EPollArguments->Events;
     Listening *Listening = EPollArguments->Listening;
 
@@ -19,9 +19,9 @@ static void HttpEventProcessPromise(void *Args, ThreadPool *TPool) {
         return;
     }
 
-    Domain->FreeAllocatedMemory((void **)&EPollArguments);
-    Domain->FreeAllocatedMemory((void **)&Events);
-    Domain->EPollEnqueueListening(Listening);
+//    Domain->FreeAllocatedMemory((void **)&EPollArguments);
+//    Domain->FreeAllocatedMemory((void **)&Events);
+//    Domain->EPollEnqueueListening(Listening);
 }
 
 int EPollEventDomainTest() {
@@ -37,16 +37,16 @@ int EPollEventDomainTest() {
     Listen.SetPortReuse(true).PrintError();
     Listen.Listen().PrintError();
 
-    Domain.EPollEnqueueListening(&Listen).PrintError();
+//    Domain.EPollEnqueueListening(&Listen).PrintError();
 
     int Count = 500000;
 
     while (Count -- > 0) {
-        RuntimeError Error = Domain.EventDomainProcess();
+//        RuntimeError Error = Domain.EventDomainProcess(nullptr);
 
-        if (Error.GetErrorCode() != 0) {
-            Error.PrintError();
-        }
+//        if (Error.GetErrorCode() != 0) {
+//            Error.PrintError();
+//        }
 
         ForceUSleep(500);
     }

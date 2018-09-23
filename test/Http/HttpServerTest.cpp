@@ -13,16 +13,16 @@ int HttpServerTest() {
     TCP4Listening Listen((sockaddr *)&server_sockaddr, sizeof(server_sockaddr));
     HttpServer Server(40960, 4, 31728, 1024, 1024);
 
-    Listen.SetPortReuse(true).PrintError();
+    Listen.SetPortReuse(false).PrintError();
     Listen.Listen().PrintError();
 
-    Server.EPollEnqueueListening(&Listen).PrintError();
+//    Server.EPollEnqueueListening(&Listen).PrintError();
 
     int Count = 500000;
 
     while (Count -- > 0) {
-        RuntimeError Error = Server.EventDomainProcess();
-        Error.PrintError();
+//        RuntimeError Error = Server.EventDomainProcess(nullptr);
+//        Error.PrintError();
         ForceUSleep(1000000);
     }
 

@@ -12,4 +12,10 @@ namespace ngx::Core {
             void Lock();
             void Unlock();
     };
+
+    class BigSpinlock: public SpinLock {
+        public:
+            BigSpinlock();
+            void Lock();
+    };
 };

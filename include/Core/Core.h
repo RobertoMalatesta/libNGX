@@ -30,7 +30,9 @@ namespace ngx::Core {
     class Listening;
     class Event;
     class EventDomain;
+    class SocketEventDomain;
     class EPollEventDomain;
+    class Server;
 }
 
 #include "Core/ArchX86.h"
@@ -58,3 +60,4 @@ namespace ngx::Core {
 #include "Core/DAGScheduler.h"
 #include "Core/EventDomain.h"
 #include "Core/EPollEventDomain.h"
+#include "Core/Server.h"

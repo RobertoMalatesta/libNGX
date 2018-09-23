@@ -19,11 +19,7 @@ namespace ngx::Core {
 
     class EventEntity {
         protected:
-            PromiseCallback  *OnAccept = &DiscardPromise;
-            PromiseCallback  *OnConnected = &DiscardPromise;
-            PromiseCallback  *OnRead = &DiscardPromise;
-            PromiseCallback  *OnWrite = &DiscardPromise;
-            PromiseCallback  *OnClose = &DiscardPromise;
+            PromiseCallback  *OnEvent = &DiscardPromise;
     };
 
     class Socket : protected EventEntity{
@@ -31,7 +27,6 @@ namespace ngx::Core {
             int SocketFd;
             SocketAddress SocketAddress;
             socklen_t SocketLength;
-            Queue SocketPeer;
             atomic_flag EventLock = ATOMIC_FLAG_INIT;
             union {
                 struct {
@@ -43,10 +38,12 @@ namespace ngx::Core {
                     unsigned Version:3;
                     unsigned Reuse:1;
                     unsigned Nodelay:1;
+                    unsigned ReadAttach:1;
+                    unsigned WriteAttach:1;
                 };
                 u_short Flags = 0;
             };
-
+            friend class SocketEventDomain;
         public:
             Socket(struct sockaddr *SocketAddress, socklen_t SocketLength);
             Socket(int ScoketFd, struct sockaddr *SocketAddress, socklen_t SocketLength);

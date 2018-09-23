@@ -4,6 +4,7 @@ using namespace ngx::Core;
 
 EventDomain::EventDomain(size_t PoolSize, int ThreadCount) : Allocator(PoolSize), TPool(ThreadCount){
     Timers = TimerTree::CreateFromAllocator(&Allocator, &Allocator);
+    Lock.Unlock();
 }
 
 EventDomain::~EventDomain() {
@@ -21,7 +22,7 @@ RuntimeError EventDomain::PostTimerEvent(uint32_t Seconds, PromiseCallback *Call
     return RuntimeError(0);
 }
 
-RuntimeError EventDomain::EventDomainProcess() {
+RuntimeError EventDomain::EventDomainProcess(SocketEventDomainArgument* PointerToArgument) {
 
     if (nullptr == Timers) {
         return RuntimeError(EINVAL, "Timer init failed, Timer == nullptr!");
@@ -30,4 +31,12 @@ RuntimeError EventDomain::EventDomainProcess() {
     Timers->QueueExpiredTimer(&TPool);
 
     return RuntimeError(0);
+}
+
+SocketEventDomain::SocketEventDomain(size_t PoolSize, int ThreadCount) : EventDomain(PoolSize, ThreadCount) {
+    this->EventPromise = &DiscardPromise;
+}
+
+SocketEventDomain::SocketEventDomain(size_t PoolSize, int ThreadCount, PromiseCallback *EventPromise) : EventDomain(PoolSize, ThreadCount) {
+    this->EventPromise = EventPromise;
 }

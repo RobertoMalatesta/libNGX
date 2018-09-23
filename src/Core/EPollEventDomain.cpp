@@ -2,10 +2,10 @@
 
 using namespace ngx::Core;
 
-EPollEventDomain::EPollEventDomain(size_t PoolSize, int ThreadCount, int EPollSize, PromiseCallback *ProcessPromise):
-        EventDomain(PoolSize, ThreadCount), ListenSentinel(-1, nullptr, -1), ConnectionSentinel(-1, nullptr, -1){
+EPollEventDomain::EPollEventDomain(size_t PoolSize, int ThreadCount, int EPollSize, PromiseCallback *ProcessPromise) :
+        SocketEventDomain(PoolSize, ThreadCount, ProcessPromise) {
     EPollFD = epoll_create(EPollSize);
-    EPollProcessPromise = ProcessPromise;
+    Lock.Unlock();
 }
 
 EPollEventDomain::~EPollEventDomain() {
@@ -14,145 +14,165 @@ EPollEventDomain::~EPollEventDomain() {
     }
 }
 
-void EPollEventDomain::FreeAllocatedMemory(void **PointerToMemory) {
-    ModifyLock.Lock();
-    Allocator.Free(PointerToMemory);
-    ModifyLock.Unlock();
-}
+EventError EPollEventDomain::AttachSocket(Socket *S, SocketEventType Type) {
 
-EventError EPollEventDomain::EPollAttachSocket(Socket *S)  {
+    bool ReadAttached = IsSocketReadAttached(S),
+            WriteAttached = IsSocketWriteAttached(S),
+            Detached = !(ReadAttached || WriteAttached);
+    int SocketFD = S->GetSocketFD();
 
+    if ((Type == SOCK_READ_EVENT && ReadAttached) ||
+        (Type == SOCK_WRITE_EVENT && WriteAttached) ||
+        (Type == SOCK_READ_WRITE_EVENT && ReadAttached && WriteAttached)
+            ) {
+        return EventError(EALREADY, "Socket already attached!");
+    }
+
+    if (EPollFD == -1 || SocketFD == -1) {
+        return EventError(-1, "Bad Socket Descriptor!");
+    }
+
+    unsigned int EPollCommand = EPOLL_CTL_ADD;
     struct epoll_event Event;
-    int ConnectionFD = S->GetSocketFD();
-
-    Event.events = EPOLLIN|EPOLLOUT|EPOLLET|EPOLLRDHUP;
-    Event.data.ptr = (void *)S;
-
-    if (-1 == EPollFD || -1 == ConnectionFD) {
-        return EventError(-1, "Epoll initial failed!");
-    }
-
-    if (-1 == epoll_ctl( EPollFD, EPOLL_CTL_ADD, ConnectionFD, &Event)) {
-        return EventError(errno, "Failed to attach connection to epoll!");
-    }
-
-    return EventError(0);
-}
-
-EventError EPollEventDomain::EPollDetachSocket(Socket *S)  {
-    epoll_event Event;
-    int ConnectionFD = S->GetSocketFD();
-
+    Event.data.ptr = (void *) S;
     Event.events = 0;
-    Event.data.ptr = nullptr;
 
-    if (-1 == EPollFD || -1 == ConnectionFD) {
-        return EventError(-1, "Epoll initial failed!");
-    }
+    if (!Detached) {
+        EPollCommand = EPOLL_CTL_MOD;
 
-    if (-1 == epoll_ctl( EPollFD, EPOLL_CTL_DEL, ConnectionFD, &Event)) {
-        return EventError(errno, "Failed to attach connection to epoll!");
-    }
+        if (ReadAttached) {
+            Event.events |= EPOLLIN | EPOLLRDHUP;
+        }
 
-    return EventError(0);
-}
-
-EventError EPollEventDomain::EPollEnqueueListening(ngx::Core::Listening *L) {
-    Queue *PQueue;
-    Listening *PListen;
-
-    for (PQueue = ListenSentinel.GetHead(); PQueue != ListenSentinel.GetSentinel(); PQueue = PQueue->GetNext()) {
-        PListen = (Listening *)(PQueue);
-
-        if (PListen == L) {
-            return EventError(EALREADY, "Listen is already added to the Queue");
+        if (WriteAttached) {
+            Event.events |= EPOLLOUT;
         }
     }
 
-    ModifyLock.Lock();
-    ListenSentinel.Append(L);
-    ModifyLock.Unlock();
+    switch (Type) {
+        case SOCK_READ_EVENT:
+            Event.events |= EPOLLIN | EPOLLRDHUP;
+            break;
+        case SOCK_WRITE_EVENT:
+            Event.events |= EPOLLOUT;
+            break;
+        case SOCK_READ_WRITE_EVENT:
+            Event.events |= EPOLLIN | EPOLLRDHUP | EPOLLOUT;
+            break;
+    }
+
+    Lock.Lock();
+
+    if (-1 == epoll_ctl(EPollFD, EPollCommand, SocketFD, &Event)) {
+        Lock.Unlock();
+        return EventError(errno, "Failed to attach connection to epoll!");
+    }
+
+    if (EPollCommand | (EPOLLIN | EPOLLRDHUP)) {
+        SetSocketReadAttached(S, 1);
+    }
+
+    if (EPollCommand | (EPOLLOUT)) {
+        SetSocketWriteAttached(S, 1);
+    }
+
+    Lock.Unlock();
+    return EventError(0);
+}
+
+EventError EPollEventDomain::DetachSocket(Socket *S, SocketEventType Type) {
+
+    bool ReadAttached = IsSocketReadAttached(S),
+            WriteAttached = IsSocketWriteAttached(S),
+            Attached = ReadAttached || WriteAttached;
+    int SocketFD = S->GetSocketFD();
+
+    if ((Type == SOCK_READ_EVENT && !ReadAttached) ||
+        (Type == SOCK_WRITE_EVENT && !WriteAttached) ||
+        (Type == SOCK_READ_WRITE_EVENT && !Attached)
+            ) {
+        return EventError(EALREADY, "Socket already attached!");
+    }
+
+    if (EPollFD == -1 || SocketFD == -1) {
+        return EventError(-1, "Bad Socket Descriptor!");
+    }
+
+    unsigned int EPollCommand = EPOLL_CTL_DEL;
+    struct epoll_event Event;
+    Event.data.ptr = (void *) S;
+    Event.events = 0;
+
+    if (ReadAttached) {
+        Event.events |= EPOLLIN | EPOLLRDHUP;
+    }
+
+    if (WriteAttached) {
+        Event.events |= EPOLLOUT;
+    }
+
+    switch (Type) {
+        case SOCK_READ_EVENT:
+            Event.events &= ~(EPOLLIN | EPOLLRDHUP);
+            break;
+        case SOCK_WRITE_EVENT:
+            Event.events &= ~(EPOLLOUT);
+            break;
+        case SOCK_READ_WRITE_EVENT:
+            Event.events &= ~(EPOLLIN | EPOLLRDHUP | EPOLLOUT);
+            break;
+    }
+
+    if (Event.events == 0) {
+        EPollCommand = EPOLL_CTL_DEL;
+    }
+
+    Lock.Lock();
+
+    if (-1 == epoll_ctl(EPollFD, EPollCommand, SocketFD, &Event)) {
+        return EventError(errno, "Failed to attach connection to epoll!");
+    }
+
+    if (EPollCommand | (EPOLLIN | EPOLLRDHUP)) {
+        SetSocketReadAttached(S, 1);
+    }
+
+    if (EPollCommand | (EPOLLOUT)) {
+        SetSocketWriteAttached(S, 1);
+    }
+
+    Lock.Unlock();
 
     return EventError(0);
 }
 
-Listening *EPollEventDomain::EPollDequeueListening() {
-
-    Listening *Listen;
-    ModifyLock.Lock();
-
-    if (ListenSentinel.IsEmpty()) {
-        ModifyLock.Unlock();
-        return nullptr;
-    }
-
-    Listen = (Listening *)ListenSentinel.GetHead();
-    Listen->Detach();
-
-    ModifyLock.Unlock();
-    return Listen;
-}
-
-EventError EPollEventDomain::EPollAddConnection(Connection *C) {
-
-    if (C == nullptr || C->GetSocketFD() == -1) {
-        return EventError(EINVAL, "Bad connection!");
-    }
-
-    if (MaxConnection.fetch_sub(1) < 0) {
-        MaxConnection.fetch_add(1);
-        return EventError(ECANCELED, "Connection reaches maximum connection count!");
-    }
-
-    ModifyLock.Lock();
-    ConnectionSentinel.Append(C);
-    ModifyLock.Unlock();
-    return EventError(0);
-}
-
-EventError EPollEventDomain::EPollRemoveConnection(Connection *C) {
-
-    if (C == nullptr || C->GetSocketFD() == -1) {
-        return EventError(EINVAL, "Bad connection!");
-    }
-
-    ModifyLock.Lock();
-    C->Detach();
-    ModifyLock.Unlock();
-    MaxConnection.fetch_add(1);
-
-    return EventError(0);
-}
-
-RuntimeError EPollEventDomain::EventDomainProcess() {
-   RuntimeError Error = EventDomain::EventDomainProcess();
+RuntimeError EPollEventDomain::EventDomainProcess(SocketEventDomainArgument *PointerToArgument) {
 
     int EventCount = -1;
-    epoll_event * Events;
+    sigset_t sigmask;
     Listening *Listen;
-    Socket *S;
+    epoll_event *Events;
+    EPollEventDomainArgument *Arguments, *AllocArgument;
 
     /* [TODO] should move to initialize code latter! */
-    sigset_t sigmask;
+
+    RuntimeError Error = EventDomain::EventDomainProcess(PointerToArgument);
 
     if (Error.GetErrorCode() != 0) {
-       return  Error;
-   }
+        return Error;
+    }
 
     sigemptyset(&sigmask);
     sigaddset(&sigmask, SIGALRM);
 
-    if (-1==EPollFD ) {
+    if (-1 == EPollFD) {
         return RuntimeError(ENOENT, "EPollEventDomain initial failed!");
     }
 
-    if (ListenSentinel.IsEmpty()) {
-        return RuntimeError(0);
-    }
+    Arguments = (EPollEventDomainArgument *)PointerToArgument;
+    Listen = Arguments->Listening;
 
-    Listen = EPollDequeueListening();
-
-    if (nullptr==Listen) {
+    if (nullptr == Listen) {
         return RuntimeError(ENOENT, "Listen queue empty!");
     }
 
@@ -160,55 +180,59 @@ RuntimeError EPollEventDomain::EventDomainProcess() {
         return RuntimeError(EINVAL, "Invalid socket fd!");
     }
 
-    Events = static_cast<epoll_event *>(Allocator.Allocate(EPOLL_EVENT_BATCH_SIZE * sizeof(epoll_event)));
-
-    if (nullptr == Events) {
-        return RuntimeError(ENOMEM, "Failed to allocate memory for epoll_event!");
-    }
-
     if (Waiting.test_and_set()) {
         return RuntimeError(EALREADY, "EPollEventDomain is already waiting for events!");
     }
 
-    EPollAttachSocket(Listen);
-    EventCount = epoll_pwait(EPollFD, Events, EPOLL_EVENT_BATCH_SIZE, EPOLL_EVENT_WAIT_TIME, &sigmask);
-    EPollDetachSocket(Listen);
+    Events = (epoll_event *)Allocate(EPOLL_EVENT_BATCH_SIZE * sizeof(epoll_event));
 
-    for (int i=0; i< EventCount; i++) {
-        S = (Socket *) Events[i].data.ptr;
-        if (S != nullptr) {
-            EPollDetachSocket(S);
-        }
+    if (nullptr == Events) {
+        Waiting.clear();
+        return RuntimeError(ENOMEM, "Failed to allocate memory for epoll_event!");
     }
+    Arguments->Events = Events;
+
+    AttachSocket(Listen, SOCK_READ_WRITE_EVENT);
+    EventCount = epoll_pwait(EPollFD, Events, EPOLL_EVENT_BATCH_SIZE, EPOLL_EVENT_WAIT_TIME, &sigmask);
+    DetachSocket(Listen, SOCK_READ_WRITE_EVENT);
 
     Waiting.clear();
 
-    if (-1 == EventCount) {
-        if (errno == EINTR) {
-            EPollEnqueueListening(Listen);
-            return RuntimeError(0, "Interrupted by signal");
+    if (EventCount <= 0) {
+        Free((void **)&Events);
+        if (-1 == EventCount) {
+            if (errno == EINTR) {
+                return RuntimeError(0, "Interrupted by signal");
+            } else {
+                return RuntimeError(errno, "epoll_wait() failed!");
+            }
+        } else if (EventCount == 0) {
+            return RuntimeError(0);
         }
-        else {
-            return RuntimeError(errno, "epoll_wait() failed!");
-        }
-    }
-    else if (EventCount == 0) {
-        EPollEnqueueListening(Listen);
-    }
-    else if (EventCount > 0) {
-        EPollEventProcessArguments *Arguments;
-        Arguments = static_cast<EPollEventProcessArguments *>(Allocator.Allocate(sizeof(EPollEventProcessArguments)));
-        if (Arguments == nullptr) {
-            return RuntimeError(ENOMEM, "Failed to allocate memory for EPollEventArguments!");
-        }
-
+    } else {
         Arguments->EventCount = EventCount;
-        Arguments->EventDomain = this;
-        Arguments->Events = Events;
-        Arguments->Listening = Listen;
-
-        TPool.PostPromise(EPollProcessPromise, Arguments);
+        TPool.PostPromise(EventPromise, Arguments);
     }
 
     return RuntimeError(0);
+}
+
+void *EPollEventDomain::Allocate(size_t Size) {
+    void *Pointer;
+    Lock.Lock();
+    Pointer = Allocator.Allocate(Size);
+    Lock.Unlock();
+    return Pointer;
+}
+
+void EPollEventDomain::Free(void **Pointer) {
+    Lock.Lock();
+    Allocator.Free(Pointer);
+    Lock.Unlock();
+}
+
+void EPollEventDomain::GC() {
+    Lock.Lock();
+    Allocator.GC();
+    Lock.Unlock();
 }
