@@ -16,13 +16,13 @@ int HttpServerTest() {
     Listen.SetPortReuse(false).PrintError();
     Listen.Listen().PrintError();
 
-//    Server.EPollEnqueueListening(&Listen).PrintError();
+    Server.EnqueueListening(&Listen).PrintError();
 
     int Count = 500000;
 
     while (Count -- > 0) {
-//        RuntimeError Error = Server.EventDomainProcess(nullptr);
-//        Error.PrintError();
+        RuntimeError Error = Server.HttpServerEventProcess();
+        Error.PrintError();
         ForceUSleep(1000000);
     }
 

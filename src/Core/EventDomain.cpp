@@ -22,7 +22,7 @@ RuntimeError EventDomain::PostTimerEvent(uint32_t Seconds, PromiseCallback *Call
     return RuntimeError(0);
 }
 
-RuntimeError EventDomain::EventDomainProcess(SocketEventDomainArgument* PointerToArgument) {
+RuntimeError EventDomain::EventDomainProcess(void* PointerToArgument) {
 
     if (nullptr == Timers) {
         return RuntimeError(EINVAL, "Timer init failed, Timer == nullptr!");
@@ -34,9 +34,5 @@ RuntimeError EventDomain::EventDomainProcess(SocketEventDomainArgument* PointerT
 }
 
 SocketEventDomain::SocketEventDomain(size_t PoolSize, int ThreadCount) : EventDomain(PoolSize, ThreadCount) {
-    this->EventPromise = &DiscardPromise;
 }
 
-SocketEventDomain::SocketEventDomain(size_t PoolSize, int ThreadCount, PromiseCallback *EventPromise) : EventDomain(PoolSize, ThreadCount) {
-    this->EventPromise = EventPromise;
-}

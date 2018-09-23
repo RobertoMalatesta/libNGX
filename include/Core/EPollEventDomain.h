@@ -13,6 +13,7 @@ namespace ngx::Core {
         protected:
             int EPollFD = -1;
             atomic_flag Waiting = ATOMIC_FLAG_INIT;
+            PromiseCallback *EventPromise;
         public:
 
             EPollEventDomain(size_t PoolSize, int ThreadCount, int EPollSize, PromiseCallback  *ProcessPromise);
@@ -20,7 +21,7 @@ namespace ngx::Core {
 
             EventError AttachSocket(Socket *S, SocketEventType Type);
             EventError DetachSocket(Socket *S, SocketEventType Type);
-            RuntimeError EventDomainProcess(SocketEventDomainArgument *PointerToArgument);
+            RuntimeError EventDomainProcess(void *PointerToArgument);
 
             void *Allocate(size_t Size);
             void Free(void **Pointer);

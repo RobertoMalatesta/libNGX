@@ -3,8 +3,9 @@
 using namespace ngx::Core;
 
 EPollEventDomain::EPollEventDomain(size_t PoolSize, int ThreadCount, int EPollSize, PromiseCallback *ProcessPromise) :
-        SocketEventDomain(PoolSize, ThreadCount, ProcessPromise) {
+        SocketEventDomain(PoolSize, ThreadCount) {
     EPollFD = epoll_create(EPollSize);
+    this->EventPromise = ProcessPromise;
     Lock.Unlock();
 }
 
@@ -68,11 +69,11 @@ EventError EPollEventDomain::AttachSocket(Socket *S, SocketEventType Type) {
         return EventError(errno, "Failed to attach connection to epoll!");
     }
 
-    if (EPollCommand | (EPOLLIN | EPOLLRDHUP)) {
+    if (Event.events | (EPOLLIN | EPOLLRDHUP)) {
         SetSocketReadAttached(S, 1);
     }
 
-    if (EPollCommand | (EPOLLOUT)) {
+    if (Event.events | (EPOLLOUT)) {
         SetSocketWriteAttached(S, 1);
     }
 
@@ -130,29 +131,25 @@ EventError EPollEventDomain::DetachSocket(Socket *S, SocketEventType Type) {
     Lock.Lock();
 
     if (-1 == epoll_ctl(EPollFD, EPollCommand, SocketFD, &Event)) {
+        Lock.Unlock();
         return EventError(errno, "Failed to attach connection to epoll!");
     }
 
-    if (EPollCommand | (EPOLLIN | EPOLLRDHUP)) {
-        SetSocketReadAttached(S, 1);
-    }
-
-    if (EPollCommand | (EPOLLOUT)) {
-        SetSocketWriteAttached(S, 1);
-    }
+    SetSocketReadAttached(S, (Event.events & (EPOLLIN | EPOLLRDHUP)) == 0 ? 0 : 1 );
+    SetSocketWriteAttached(S, (Event.events & (EPOLLOUT)) == 0 ? 0 : 1 );
 
     Lock.Unlock();
 
     return EventError(0);
 }
 
-RuntimeError EPollEventDomain::EventDomainProcess(SocketEventDomainArgument *PointerToArgument) {
+RuntimeError EPollEventDomain::EventDomainProcess(void *PointerToArgument) {
 
     int EventCount = -1;
     sigset_t sigmask;
     Listening *Listen;
     epoll_event *Events;
-    EPollEventDomainArgument *Arguments, *AllocArgument;
+    EPollEventDomainArgument *Arguments;
 
     /* [TODO] should move to initialize code latter! */
 
@@ -169,7 +166,7 @@ RuntimeError EPollEventDomain::EventDomainProcess(SocketEventDomainArgument *Poi
         return RuntimeError(ENOENT, "EPollEventDomain initial failed!");
     }
 
-    Arguments = (EPollEventDomainArgument *)PointerToArgument;
+    Arguments = static_cast<EPollEventDomainArgument *>(PointerToArgument);
     Listen = Arguments->Listening;
 
     if (nullptr == Listen) {
@@ -211,7 +208,7 @@ RuntimeError EPollEventDomain::EventDomainProcess(SocketEventDomainArgument *Poi
         }
     } else {
         Arguments->EventCount = EventCount;
-        TPool.PostPromise(EventPromise, Arguments);
+        TPool.PostPromise(EventPromise, (void *)Arguments);
     }
 
     return RuntimeError(0);

@@ -6,12 +6,13 @@ using namespace ngx::Http;
 HttpConnection::HttpConnection(struct sockaddr *SocketAddress, socklen_t SocketLength):
         TCP4Connection(SocketAddress, SocketLength){
     Lock.Unlock();
+    OnEvent = & HttpConnection::OnEventFunc;
 }
 
 HttpConnection::HttpConnection(int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength) :
         TCP4Connection(SocketFd, SocketAddress, SocketLength){
     Lock.Unlock();
-    OnEvent = &(HttpConnection::OnEventFunc);
+    OnEvent = & HttpConnection::OnEventFunc;
 }
 
 void HttpConnection::OnEventFunc(void *Argument, ThreadPool *TPool) {
@@ -19,6 +20,8 @@ void HttpConnection::OnEventFunc(void *Argument, ThreadPool *TPool) {
     HttpEventArgument *HttpArguments;
     EPollEventDomain *EventDomain;
     HttpConnection *Connection;
+
+    cout<<"event"<<endl;
 
     if (Argument == nullptr) {
         return;
@@ -34,22 +37,21 @@ void HttpConnection::OnEventFunc(void *Argument, ThreadPool *TPool) {
     Connection = HttpArguments->Connection;
 
     if (HttpArguments->Connected) {
-
+        cout<< "Connected: "<< Connection->GetSocketFD() << endl;
     }
 
     if (HttpArguments->Read) {
-
+        cout<< "Read: "<< Connection->GetSocketFD() << endl;
     }
 
     if (HttpArguments->Write) {
-
+        cout<< "Write: "<< Connection->GetSocketFD() << endl;
     }
 }
 
-
 HttpServer::HttpServer(size_t PoolSize, int ThreadCount, int EPollSize,
         int ConnectionRecycleSize, int BufferRecycleSize) : Server(),
-        EventDomain(PoolSize, ThreadCount, EPollSize, &(HttpEventProcessPromise)) {}
+        EventDomain(PoolSize, ThreadCount, EPollSize, HttpServer::HttpEventProcessPromise) {}
 
 void HttpServer::HttpEventProcessPromise(void *Args, ThreadPool *TPool) {
 
@@ -122,7 +124,7 @@ void HttpServer::HttpEventProcessPromise(void *Args, ThreadPool *TPool) {
                 TempEventArgument->Write = 1;
             }
         }
-        TPool->PostPromise(C->OnEvent, (void *)TempEventArgument);
+        TPool->PostPromise(*C->OnEvent, (void *)TempEventArgument);
     }
 
     Server->EnqueueListening(Listening);
@@ -136,9 +138,7 @@ RuntimeError HttpServer::HttpServerEventProcess() {
     HttpEventArgument *Argument;
 
     Argument = (HttpEventArgument *)EventDomain.Allocate(sizeof(HttpEventArgument));
-
-    Lock.Lock();
-    memset(&Argument, 0, sizeof(Argument));
+    memset(Argument, 0, sizeof(HttpEventArgument));
 
     Listen = DequeueListening();
 
@@ -147,17 +147,20 @@ RuntimeError HttpServer::HttpServerEventProcess() {
         return RuntimeError(ENOENT, "Can not get A Listening from HttpServer!");
     }
 
+    Lock.Lock();
+
     Argument->Server = this;
     Argument->Listening = Listen;
     Argument->EventDomain = &EventDomain;
     Argument->ArgumentSize = sizeof(HttpEventArgument);
 
-    RuntimeError Error = EventDomain.EventDomainProcess((SocketEventDomainArgument *)&Argument);
+    Lock.Unlock();
+
+    RuntimeError Error = EventDomain.EventDomainProcess((void *)Argument);
 
     if (Error.GetErrorCode() == 0) {
         EnqueueListening(Listen);
     }
 
-    Lock.Unlock();
     return Error;
 }

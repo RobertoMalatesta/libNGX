@@ -29,7 +29,7 @@ namespace ngx::Core {
             ~EventDomain();
             static void DiscardPromise(void *Argument, ThreadPool *TPool) {};
             RuntimeError PostTimerEvent(uint32_t Timestamp, PromiseCallback *Callback, void *Argument);
-            RuntimeError EventDomainProcess(SocketEventDomainArgument *PointerToArgument);
+            RuntimeError EventDomainProcess(void *PointerToArgument);
     };
 
     typedef enum {
@@ -40,7 +40,6 @@ namespace ngx::Core {
 
     class SocketEventDomain : public EventDomain {
         protected:
-            PromiseCallback *EventPromise = &EventDomain::DiscardPromise;
             bool IsSocketReadAttached(Socket *S) {
 
                 if (nullptr == S) {
@@ -72,10 +71,8 @@ namespace ngx::Core {
                 S->WriteAttach = (Val == 1)? 1: 0;
                 return;
             }
-            static void DiscardPromise(void *PointerToArgument, ThreadPool *TPool) {}
         public:
             SocketEventDomain(size_t PoolSize, int ThreadCount);
-            SocketEventDomain(size_t PoolSize, int ThreadCount, PromiseCallback *EventPromise);
             EventError AttachSocket(Socket *S, SocketEventType Type) { return EventError(0);};
             EventError DetachSocket(Socket *S, SocketEventType Type) { return EventError(0);};
     };
