@@ -2,6 +2,9 @@ namespace ngx::Core {
 
     using namespace std;
 
+    const int THREAD_WAIT_TIME = 1000;
+    const int THREAD_POOL_SPIN_TIME =50;
+
     typedef void (PromiseCallback)(void *PointerToArguments, ThreadPool *TPool);
 
     class Promise : public Queue {

@@ -50,7 +50,7 @@ namespace ngx::Core {
 
         new(PointerToPromise) Promise(TPool, this, Callback, Argument);
 
-        if (PostCount++ % 1000 == 0) {
+        if (PostCount++ % GCRound == 0) {
             Allocator->GC();
         }
 
@@ -66,10 +66,10 @@ namespace ngx::Core {
 
         while (IsRunnig) {
 
-            usleep(1000);
+            usleep(THREAD_WAIT_TIME);
 
             while (Thread->Lock.test_and_set()) {
-                RelaxMachine();
+                this_thread::yield();
             }
 
             while(!Thread->Sentinel.IsEmpty()) {
@@ -123,7 +123,7 @@ namespace ngx::Core {
             }
 
             if (((i -= RetCode)-DeliverIndex) % NumThread == 0) {
-                usleep(10);
+                usleep(THREAD_POOL_SPIN_TIME);
             }
         } while (true);
 

@@ -46,7 +46,8 @@ void HttpConnection::OnEventFunc(void *Argument, ThreadPool *TPool) {
 
     if (EventDomainArguments->UserArguments[2].UInt & ET_READ) {
         EventDomain->DetachSocket(Connection, SOCK_READ_EVENT);
-        cout<< "Read: "<< Connection->GetSocketFD() << endl;
+        int n = recv(Connection->GetSocketFD(), buffer, BUFSIZ, 0);
+        cout<< "Read: "<< Connection->GetSocketFD() << "-" << n<< ": " << buffer << endl;
     }
 
     if (EventDomainArguments->UserArguments[2].UInt & ET_WRITE) {
