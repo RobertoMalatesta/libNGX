@@ -1,21 +1,17 @@
 namespace ngx::Core {
 
     typedef enum {
-        NONE_EVENT = 0x00,
-        TIMER_EVENT = 010,
-        CONNECTION_READ =0x20,
-        CONNECTION_WRITE = 0x21,
+        ET_NONE = 0x0000,
+        ET_TIMER = 0x0001,
+        ET_CONNECTED = 0x0002,
+        ET_READ = 0x0004,
+        ET_WRITE = 0x0008,
+        ET_CLOSED = 0x0010,
     } EventType;
 
-    struct SocketEventDomainArgument {
-        size_t ArgumentSize;
-        SocketEventDomain *EventDomain;
-        Listening *Listening;
-    };
-
-    class Event {
-        public:
-            virtual EventType GetType() {return NONE_EVENT;};
+    union UserArgument {
+        void *Ptr;
+        unsigned int UInt;
     };
 
     class EventDomain {

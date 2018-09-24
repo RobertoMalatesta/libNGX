@@ -15,38 +15,45 @@ HttpConnection::HttpConnection(int SocketFd, struct sockaddr *SocketAddress, soc
     OnEvent = & HttpConnection::OnEventFunc;
 }
 
+char buffer[BUFSIZ];
+
 void HttpConnection::OnEventFunc(void *Argument, ThreadPool *TPool) {
 
-    HttpEventArgument *HttpArguments;
+    HttpServer *Server;
     EPollEventDomain *EventDomain;
+    EPollEventDomainArgument *EventDomainArguments;
     HttpConnection *Connection;
-
-    cout<<"event"<<endl;
 
     if (Argument == nullptr) {
         return;
     }
 
-    HttpArguments = static_cast<HttpEventArgument *>(Argument);
+    EventDomainArguments = static_cast<EPollEventDomainArgument *>(Argument);
+    EventDomain = EventDomainArguments->EventDomain;
+    Connection = static_cast<HttpConnection *>(EventDomainArguments->UserArguments[1].Ptr);
+    Server = static_cast<HttpServer *>(EventDomainArguments->UserArguments[0].Ptr);
+    printf("event start: %p, %p, %x \n", EventDomain, Connection, EventDomainArguments->UserArguments[2].UInt);
 
-    if (HttpArguments->EventDomain == nullptr || HttpArguments->Connection == nullptr) {
+    if (EventDomain == nullptr || Connection == nullptr) {
         return;
     }
 
-    EventDomain = (EPollEventDomain *)HttpArguments->EventDomain;
-    Connection = HttpArguments->Connection;
-
-    if (HttpArguments->Connected) {
+    if (EventDomainArguments->UserArguments[2].UInt & ET_CONNECTED) {
         cout<< "Connected: "<< Connection->GetSocketFD() << endl;
+        EventDomain->AttachSocket(Connection, SOCK_READ_WRITE_EVENT);
+        Server->AttachConnection(Connection);
     }
 
-    if (HttpArguments->Read) {
+    if (EventDomainArguments->UserArguments[2].UInt & ET_READ) {
+        EventDomain->DetachSocket(Connection, SOCK_READ_EVENT);
         cout<< "Read: "<< Connection->GetSocketFD() << endl;
     }
 
-    if (HttpArguments->Write) {
+    if (EventDomainArguments->UserArguments[2].UInt & ET_WRITE) {
+        EventDomain->DetachSocket(Connection, SOCK_WRITE_EVENT);
         cout<< "Write: "<< Connection->GetSocketFD() << endl;
     }
+    printf("event end: %p, %p\n", EventDomain, Connection);
 }
 
 HttpServer::HttpServer(size_t PoolSize, int ThreadCount, int EPollSize,
@@ -61,23 +68,24 @@ void HttpServer::HttpEventProcessPromise(void *Args, ThreadPool *TPool) {
     epoll_event *Events;
     Listening *Listening;
     socklen_t SocketLength;
-    EPollEventDomain *Domain;
+    EPollEventDomain *EventDomain;
     struct sockaddr_in SocketAddress;
     int EventCount, ConnectionFd;
-    HttpEventArgument *HttpEventArgument, *TempEventArgument;
+    EPollEventDomainArgument *EventArgument, *TempArgument;
 
     if (nullptr == Args) {
         return;
     }
 
-    HttpEventArgument = static_cast< struct HttpEventArgument *>(Args);
-    Domain = (EPollEventDomain *)HttpEventArgument->EventDomain;
-    EventCount = HttpEventArgument->EventCount;
-    Server = HttpEventArgument->Server;
-    Events = HttpEventArgument->Events;
-    Listening = HttpEventArgument->Listening;
+    EventArgument = static_cast<EPollEventDomainArgument *>(Args);
 
-    if (Domain == nullptr || Events == nullptr) {
+    Events = EventArgument->Events;
+    Listening = EventArgument->Listening;
+    EventCount = EventArgument->EventCount;
+    EventDomain = EventArgument->EventDomain;
+    Server = static_cast<HttpServer *>(EventArgument->UserArguments[0].Ptr);
+
+    if (EventDomain == nullptr || Events == nullptr) {
         return;
     }
 
@@ -88,17 +96,17 @@ void HttpServer::HttpEventProcessPromise(void *Args, ThreadPool *TPool) {
             continue;
         }
 
-        TempEventArgument = static_cast<struct HttpEventArgument *> (Domain->Allocate(sizeof(HttpEventArgument)));
+        TempArgument = static_cast<EPollEventDomainArgument *>(EventDomain->Allocate(sizeof(EPollEventDomainArgument)));
 
-        if (TempEventArgument == nullptr) {
+        if (TempArgument == nullptr) {
             continue;
         }
 
-        memset((void *)TempEventArgument, 0, sizeof(HttpEventArgument));
+        memcpy(TempArgument, EventArgument, sizeof(EPollEventDomainArgument));
 
-        TempEventArgument->Server = Server;
-        TempEventArgument->ArgumentSize = sizeof(HttpEventArgument);
-        TempEventArgument->Flags = 0;
+        TempArgument->UserArguments[0].Ptr = Server;
+        TempArgument->UserArguments[2].UInt = 0;
+        TempArgument->EventDomain = EventDomain;
 
         if (S->GetSocketFD() == Listening->GetSocketFD()) {
 
@@ -109,36 +117,34 @@ void HttpServer::HttpEventProcessPromise(void *Args, ThreadPool *TPool) {
             }
 
             C = new HttpConnection(ConnectionFd, (struct sockaddr *)&SocketAddress, SocketLength);
-            TempEventArgument->Connection = C;
-            TempEventArgument->Connected = 1;
-            Server->AttachConnection(C);
-            Domain->AttachSocket(C, SOCK_READ_WRITE_EVENT);
+            TempArgument->UserArguments[1].Ptr = C;
+            TempArgument->UserArguments[2].UInt |= ET_CONNECTED;
         }
         else {
             C= (HttpConnection *)S;
-            TempEventArgument->Connection = C;
+            TempArgument->UserArguments[1].Ptr = C;
             if (Events[i].events & (EPOLLIN | EPOLLRDHUP)) {
-                TempEventArgument->Read = 1;
+                TempArgument->UserArguments[2].UInt |= ET_READ;
             }
             if (Events[i].events & (EPOLLOUT)){
-                TempEventArgument->Write = 1;
+                TempArgument->UserArguments[2].UInt |= ET_WRITE;
             }
         }
-        TPool->PostPromise(*C->OnEvent, (void *)TempEventArgument);
+        TPool->PostPromise(*C->OnEvent, (void *)TempArgument);
     }
 
     Server->EnqueueListening(Listening);
-    Domain->Free((void **)&Events);
+    EventDomain->Free((void **)&Events);
 }
 
 RuntimeError HttpServer::HttpServerEventProcess() {
 
     Listening *Listen;
 
-    HttpEventArgument *Argument;
+    EPollEventDomainArgument *Argument;
 
-    Argument = (HttpEventArgument *)EventDomain.Allocate(sizeof(HttpEventArgument));
-    memset(Argument, 0, sizeof(HttpEventArgument));
+    Argument = (EPollEventDomainArgument *)EventDomain.Allocate(sizeof(EPollEventDomainArgument));
+    memset(Argument, 0, sizeof(EPollEventDomainArgument));
 
     Listen = DequeueListening();
 
@@ -148,12 +154,9 @@ RuntimeError HttpServer::HttpServerEventProcess() {
     }
 
     Lock.Lock();
-
-    Argument->Server = this;
+    Argument->UserArguments[0].Ptr = this;
     Argument->Listening = Listen;
     Argument->EventDomain = &EventDomain;
-    Argument->ArgumentSize = sizeof(HttpEventArgument);
-
     Lock.Unlock();
 
     RuntimeError Error = EventDomain.EventDomainProcess((void *)Argument);

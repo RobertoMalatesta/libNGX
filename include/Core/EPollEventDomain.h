@@ -4,9 +4,12 @@ namespace ngx::Core {
     const int EPOLL_EVENT_WAIT_TIME = 10;
     const int EPOLL_EVENT_MAX_CONNECTION = 32768;
 
-    struct EPollEventDomainArgument: SocketEventDomainArgument {
+    struct EPollEventDomainArgument {
+        EPollEventDomain *EventDomain;
+        class Listening *Listening;
         epoll_event *Events;
         int EventCount;
+        UserArgument UserArguments[4];
     };
 
     class EPollEventDomain : public SocketEventDomain, MemAllocator{
