@@ -48,7 +48,7 @@ namespace ngx::Core {
 #include "Core/Pool.h"
 #include "Core/Array.h"
 #include "Core/Queue.h"
-#include "Core/Buf.h"
+#include "Core/Buffer.h"
 #include "Core/List.h"
 #include "Core/RBTree.h"
 #include "Core/Checksum.h"

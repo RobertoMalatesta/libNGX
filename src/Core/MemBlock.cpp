@@ -5,8 +5,7 @@ namespace ngx::Core {
     MemoryBlock::MemoryBlock(size_t Size) {
         PointerToHead = (u_char *)this + sizeof(MemoryBlock);
         TotalSize = Size - sizeof(MemoryBlock);
-        PointerToData = PointerToHead;
-        FreeSize = TotalSize;
+        Reset();
         Magic = (void *)this;
     }
 
@@ -51,16 +50,10 @@ namespace ngx::Core {
         return (Address >= PointerToHead && Address < ((u_char *)PointerToData));
     }
 
-    void MemoryBlock::Reset() {
-        PointerToData = PointerToHead;
-        FreeSize = TotalSize;
-    }
-
     MemoryBlockAllocator::MemoryBlockAllocator(size_t Size): MemoryBlock(Size) {
         PointerToHead = (u_char *)this + sizeof(MemoryBlockAllocator);
         TotalSize = Size - sizeof(MemoryBlockAllocator);
-        PointerToData = PointerToHead;
-        FreeSize = TotalSize;
+        Reset();
         Magic = (void *)this;
     }
 
@@ -110,4 +103,36 @@ namespace ngx::Core {
         }
     }
 
+    BufferMemoryBlock::BufferMemoryBlock(size_t Size) : MemoryBlock(Size) {
+        TotalSize = Size - sizeof(BufferMemoryBlock);
+        FreeSize = TotalSize;
+        PointerToHead = (u_char *)this + sizeof(BufferMemoryBlock);
+        PointerToData = PointerToHead;
+        Start = Pos = (u_char *)PointerToHead;
+        End = Start + TotalSize;
+    }
+
+    BufferMemoryBlock::~BufferMemoryBlock() {
+        Start = Pos = End = nullptr;
+    }
+
+    BufferMemoryBlock* BufferMemoryBlock::CreateBufferMemoryBlock(size_t Size) {
+        void *TempPointer = valloc(Size);
+
+        if (nullptr == TempPointer) {
+            return nullptr;
+        }
+
+        return new(TempPointer) BufferMemoryBlock(Size);
+    }
+
+    void BufferMemoryBlock::FreeBufferMemoryBlock(BufferMemoryBlock **PointerToBlock) {
+
+        if (nullptr == PointerToBlock || nullptr == *PointerToBlock) {
+            return;
+        }
+
+        free((void*)*PointerToBlock);
+        *PointerToBlock = nullptr;
+    }
 }

@@ -6,14 +6,13 @@ namespace ngx::Core {
     class Buffer {
         protected:
             size_t BlockSize = 0;
-            MemoryBlock *HeadBlock = nullptr, *CurrentBlock = nullptr;
-            MemoryBlock *ReadBlock = nullptr, *WriteBlock = nullptr;
+            BufferMemoryBlock *HeadBlock = nullptr, *CurrentBlock = nullptr;
+            BufferMemoryBlock *ReadBlock = nullptr, *WriteBlock = nullptr;
             u_char *ReadPosition= nullptr, *WritePosition = nullptr;
         public:
             Buffer(size_t BlockSize=DEFAULT_BLOCK_SIZE);
             RuntimeError WriteDataToBuffer(u_char *PointerToData, size_t DataLength);
-            bool HasByte();
-            char *ReadByte();
+            u_char *ReadByte();
             void Reset();
     };
 }

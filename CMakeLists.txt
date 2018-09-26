@@ -8,7 +8,7 @@ set(SOURCE_FILES
         src/Core/Error.cpp
         src/Core/MemBlock.cpp
         src/Core/Pool.cpp
-        src/Core/Buf.cpp
+        src/Core/Buffer.cpp
         src/Core/Array.cpp
         src/Core/Queue.cpp
         src/Core/List.cpp

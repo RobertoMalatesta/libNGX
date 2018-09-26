@@ -18,8 +18,10 @@ namespace ngx::Core {
 
             bool IsInBlock(void *Address);
             bool IsFreeBlock() { return UseCount == 0; }
-            void Reset();
-
+            inline void Reset() {
+                PointerToData = PointerToHead;
+                FreeSize = TotalSize;
+            }
             void SetNext(MemoryBlock *Next) { this->Next = Next; }
             MemoryBlock *GetNext() { return  Next; }
     };
@@ -45,12 +47,16 @@ namespace ngx::Core {
             u_char *Start, *End, *Pos;
             friend class Buffer;
         public:
-            BufferMemoryBlock();
+            BufferMemoryBlock(size_t Size);
             ~BufferMemoryBlock();
+
+            bool IsEmpty() { return Pos >= End || Pos < Start; }
 
             static BufferMemoryBlock *CreateBufferMemoryBlock(size_t Size);
             static void FreeBufferMemoryBlock(BufferMemoryBlock **PointerToBlock);
 
+            void SetNext(BufferMemoryBlock *Next) { this->Next = Next; }
+            BufferMemoryBlock *GetNext() { return  (BufferMemoryBlock *)Next; }
     };
 }
 

@@ -5,7 +5,7 @@ using namespace ngx::Core;
 
 Buffer::Buffer(size_t BlockSize) {
 
-    HeadBlock = MemoryBlock::CreateMemoryBlock(BlockSize);
+    HeadBlock = BufferMemoryBlock::CreateBufferMemoryBlock(BlockSize);
 
     if (HeadBlock == nullptr) {
         return;
@@ -18,11 +18,7 @@ RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength)
     return RuntimeError(0);
 }
 
-bool Buffer::HasByte() {
-    return false;
-}
-
-char* Buffer::ReadByte() {
+u_char* Buffer::ReadByte() {
     return nullptr;
 }
 
