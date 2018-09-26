@@ -22,7 +22,6 @@ int PoolTest() {
     pool.Free(&p1);
 
     cout<<"Pool Allocate Done!"<<endl;
-
     cout<<"Pool GC Test Start!"<<endl;
 
     vector<void *> PointerList;

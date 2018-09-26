@@ -1,30 +1,56 @@
 namespace ngx::Core {
-
-    class MemBlock: public MemAllocator{
-        private:
-            std::atomic<int> UseCount = 0;
-            MemBlock *Next = nullptr;
+    class MemoryBlock {
+        protected:
+            std::atomic_uint UseCount = {0};
             size_t TotalSize = 0;
             size_t FreeSize = 0;
             void *PointerToData = nullptr, *PointerToHead = nullptr;
-            unsigned long Magic = 0;
-
+            void * Magic = nullptr;
+            MemoryBlock *Next;
         public:
-            MemBlock(size_t Size);
-            
-            static MemBlock *CreateMemBlock(size_t Size);
-            static void FreeMemBlock(MemBlock **PointerToBlock);
+            MemoryBlock(size_t Size);
+            ~MemoryBlock();
 
-            static MemBlock *AddressToMemBlock(void * Addr, size_t Size);
-            ~MemBlock();
+            static MemoryBlock *CreateMemoryBlock(size_t Size);
+            static void FreeMemoryBlock(MemoryBlock **PointerToBlock);
+
+            static MemoryBlock *AddressToMemoryBlock(void *Address, size_t Size);
+
             bool IsInBlock(void *Address);
-            bool IsFreeBlock() { return UseCount == 0;}
-            virtual void *Allocate(size_t Size);
-            virtual void Free(void **pointer);
-            virtual void GC() {/*Empty Code Block*/};
-            void SetNext(MemBlock *Next) {this->Next = Next;}
-            MemBlock *GetNext() { return Next;}
+            bool IsFreeBlock() { return UseCount == 0; }
             void Reset();
+
+            void SetNext(MemoryBlock *Next) { this->Next = Next; }
+            MemoryBlock *GetNext() { return  Next; }
+    };
+
+    class MemoryBlockAllocator : public MemoryBlock, MemAllocator {
+        public:
+            MemoryBlockAllocator(size_t Size);
+            ~MemoryBlockAllocator();
+
+            virtual void *Allocate(size_t Size);
+            virtual void Free(void **Pointer);
+            virtual void GC() { /*Empty Code Block*/ }
+
+            static MemoryBlockAllocator *CreateMemoryBlockAllocator(size_t Size);
+            static void FreeMemoryBlockAllocator(MemoryBlockAllocator **PointerToAllocator);
+
+            void SetNext(MemoryBlockAllocator *Next) { this->Next = Next; }
+            MemoryBlockAllocator *GetNext() { return  (MemoryBlockAllocator *)Next; }
+    };
+
+    class BufferMemoryBlock : MemoryBlock {
+        protected:
+            u_char *Start, *End, *Pos;
+            friend class Buffer;
+        public:
+            BufferMemoryBlock();
+            ~BufferMemoryBlock();
+
+            static BufferMemoryBlock *CreateBufferMemoryBlock(size_t Size);
+            static void FreeBufferMemoryBlock(BufferMemoryBlock **PointerToBlock);
+
     };
 }
 

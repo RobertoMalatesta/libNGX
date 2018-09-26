@@ -1,32 +1,19 @@
 namespace ngx::Core {
 
-    class Buf {
+    const size_t DEFAULT_BLOCK_SIZE = 4096;
+    const size_t BUFFER_BLOCK_RESERVED = 4;
 
-        private:
-
-            MemAllocator *Allocator = nullptr;
-            u_char *Start = nullptr, *End = nullptr, *Pos = nullptr, *Last = nullptr;
-            Buf *Shadow = nullptr;
-
-            union {
-                struct {
-                    unsigned         temporary:1;
-                    unsigned         memory:1;
-                    unsigned         mmap:1;
-                    unsigned         recycled:1;
-                    unsigned         in_file:1;
-                    unsigned         flush:1;
-                    unsigned         sync:1;
-                    unsigned         last_buf:1;
-                    unsigned         last_in_chain:1;
-                    unsigned         last_shadow:1;
-                    unsigned         temp_file:1;
-                };
-                uint32_t flags = 0;
-            };
-
+    class Buffer {
+        protected:
+            size_t BlockSize = 0;
+            MemoryBlock *HeadBlock = nullptr, *CurrentBlock = nullptr;
+            MemoryBlock *ReadBlock = nullptr, *WriteBlock = nullptr;
+            u_char *ReadPosition= nullptr, *WritePosition = nullptr;
         public:
-            Buf(MemAllocator * Allocator, size_t Size);
-            ~Buf();
+            Buffer(size_t BlockSize=DEFAULT_BLOCK_SIZE);
+            RuntimeError WriteDataToBuffer(u_char *PointerToData, size_t DataLength);
+            bool HasByte();
+            char *ReadByte();
+            void Reset();
     };
 }

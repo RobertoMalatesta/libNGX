@@ -1,30 +1,31 @@
 #include "Core/Core.h"
 
-namespace ngx::Core {
+using namespace ngx::Core;
 
-    Buf::Buf(MemAllocator *Allocator, size_t Size) {
 
-        if (nullptr == Allocator) {
-            return;
-        }
+Buffer::Buffer(size_t BlockSize) {
 
-        this -> Allocator = Allocator;
-        this -> Start = (u_char *)this -> Allocator ->Allocate(Size);
+    HeadBlock = MemoryBlock::CreateMemoryBlock(BlockSize);
 
-        if (nullptr == Start) {
-            return;
-        }
-
-        Last = Pos = Start;
-        End = Last + Size;
-        temporary = 1;
+    if (HeadBlock == nullptr) {
+        return;
     }
+    this->BlockSize = BlockSize;
+    CurrentBlock = HeadBlock;
+}
 
-    Buf::~Buf() {
-        if (nullptr != Allocator && nullptr != Start) {
-            Allocator -> Free((void **)&Start);
-            Start = End = Pos = Last = nullptr;
-            Allocator = nullptr;
-        }
-    }
+RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength) {
+    return RuntimeError(0);
+}
+
+bool Buffer::HasByte() {
+    return false;
+}
+
+char* Buffer::ReadByte() {
+    return nullptr;
+}
+
+void Buffer::Reset() {
+
 }

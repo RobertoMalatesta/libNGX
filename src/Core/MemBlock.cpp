@@ -2,20 +2,20 @@
 
 namespace ngx::Core {
 
-    MemBlock::MemBlock(size_t Size) {
-        PointerToHead = (u_char *)this + sizeof(MemBlock);
-        TotalSize = Size - sizeof(MemBlock);
+    MemoryBlock::MemoryBlock(size_t Size) {
+        PointerToHead = (u_char *)this + sizeof(MemoryBlock);
+        TotalSize = Size - sizeof(MemoryBlock);
         PointerToData = PointerToHead;
         FreeSize = TotalSize;
-        Magic = (unsigned long)this;
+        Magic = (void *)this;
     }
 
-    MemBlock::~MemBlock() {
-        TotalSize = Magic = 0;
-        PointerToData = nullptr;
-    };
+    MemoryBlock::~MemoryBlock() {
+        Magic = nullptr;
+        PointerToData = PointerToHead = nullptr;
+    }
 
-    MemBlock *MemBlock::CreateMemBlock(size_t Size) {
+    MemoryBlock* MemoryBlock::CreateMemoryBlock(size_t Size) {
 
         void *TempPointer = valloc(Size);
 
@@ -23,11 +23,10 @@ namespace ngx::Core {
             return nullptr;
         }
 
-        return new(TempPointer) MemBlock(Size);
+        return new(TempPointer) MemoryBlock(Size);
     }
 
-    void MemBlock::FreeMemBlock(ngx::Core::MemBlock **PointerToBlock) {
-
+    void MemoryBlock::FreeMemoryBlock(MemoryBlock **PointerToBlock) {
         if (nullptr == PointerToBlock || nullptr == *PointerToBlock) {
             return;
         }
@@ -36,19 +35,59 @@ namespace ngx::Core {
         *PointerToBlock = nullptr;
     }
 
-    MemBlock *MemBlock::AddressToMemBlock(void *Addr, size_t Size) {
+    MemoryBlock* MemoryBlock::AddressToMemoryBlock(void *Address, size_t Size) {
 
-        MemBlock * MemBlk = (MemBlock *)( (size_t)Addr & ~(Size - 1));
+        MemoryBlock * MemBlk;
+        MemBlk = (MemoryBlock *)( (size_t)Address & ~(Size - 1));
 
-        if (nullptr != MemBlk && MemBlk -> Magic == (unsigned long)MemBlk) {
+        if (nullptr != MemBlk && MemBlk -> Magic ==(void *) MemBlk) {
             return MemBlk;
         }
 
         return nullptr;
     }
 
-    void *MemBlock::Allocate(size_t Size) {
+    bool MemoryBlock::IsInBlock(void *Address) {
+        return (Address >= PointerToHead && Address < ((u_char *)PointerToData));
+    }
 
+    void MemoryBlock::Reset() {
+        PointerToData = PointerToHead;
+        FreeSize = TotalSize;
+    }
+
+    MemoryBlockAllocator::MemoryBlockAllocator(size_t Size): MemoryBlock(Size) {
+        PointerToHead = (u_char *)this + sizeof(MemoryBlockAllocator);
+        TotalSize = Size - sizeof(MemoryBlockAllocator);
+        PointerToData = PointerToHead;
+        FreeSize = TotalSize;
+        Magic = (void *)this;
+    }
+
+    MemoryBlockAllocator::~MemoryBlockAllocator() {
+        MemoryBlock::~MemoryBlock();
+    }
+
+    MemoryBlockAllocator* MemoryBlockAllocator::CreateMemoryBlockAllocator(size_t Size) {
+        void *TempPointer = valloc(Size);
+
+        if (nullptr == TempPointer) {
+            return nullptr;
+        }
+
+        return new(TempPointer) MemoryBlockAllocator(Size);
+    }
+
+    void MemoryBlockAllocator::FreeMemoryBlockAllocator(MemoryBlockAllocator **PointerToAllocator) {
+        if (nullptr == PointerToAllocator || nullptr == *PointerToAllocator) {
+            return;
+        }
+
+        free((void*)*PointerToAllocator);
+        *PointerToAllocator = nullptr;
+    }
+
+    void* MemoryBlockAllocator::Allocate(size_t Size) {
         void *ret = nullptr;
 
         if (FreeSize >= Size) {
@@ -61,13 +100,9 @@ namespace ngx::Core {
         return ret;
     }
 
-    bool MemBlock::IsInBlock(void *Address){
-        return (Address >= PointerToHead && Address < ((u_char *)PointerToData));
-    }
-
-    void MemBlock::Free(void **pointer) {
-        if (nullptr != pointer && IsInBlock(*pointer)) {
-            *pointer = nullptr;
+    void MemoryBlockAllocator::Free(void **Pointer) {
+        if (nullptr != Pointer && IsInBlock(*Pointer)) {
+            *Pointer = nullptr;
             UseCount--;
             if ((UseCount < 0)) {
                 //[UNREACHABLE BRANCH] BUG: Over free, will add log here later
@@ -75,8 +110,4 @@ namespace ngx::Core {
         }
     }
 
-    void MemBlock::Reset() {
-        PointerToData = PointerToHead;
-        FreeSize = TotalSize;
-    }
 }

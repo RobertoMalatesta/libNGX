@@ -2,11 +2,12 @@
 
 namespace ngx::Core {
     class Ref;
-    class MemBlock;
+    class MemoryBlock;
+    class MemoryBlockAllocator;
     class MemAllocator;
     class Pool;
     class Array;
-    class Buf;
+    class Buffer;
     class Queue;
     class Error;
     class RuntimeError;
@@ -46,8 +47,8 @@ namespace ngx::Core {
 #include "Core/MemBlock.h"
 #include "Core/Pool.h"
 #include "Core/Array.h"
-#include "Core/Buf.h"
 #include "Core/Queue.h"
+#include "Core/Buf.h"
 #include "Core/List.h"
 #include "Core/RBTree.h"
 #include "Core/Checksum.h"

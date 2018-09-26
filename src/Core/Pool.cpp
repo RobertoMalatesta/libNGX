@@ -10,7 +10,7 @@ namespace ngx::Core {
         }
 
         this -> BlockSize = BlockSize;
-        HeadBlock = MemBlock::CreateMemBlock(BlockSize);
+        HeadBlock = MemoryBlockAllocator::CreateMemoryBlockAllocator(BlockSize);
         CurrentBlock = HeadBlock;
     }
 
@@ -21,7 +21,7 @@ namespace ngx::Core {
         if (Size == 0) {
             return ret;
         }
-        else if (Size >  BlockSize - 4 * sizeof(MemBlock)) {
+        else if (Size >  BlockSize - 4 * sizeof(MemoryBlockAllocator)) {
             ret = malloc(Size);
         }
         else {
@@ -30,9 +30,9 @@ namespace ngx::Core {
 
                 if (ret == nullptr) {
                     if (CurrentBlock -> GetNext() == nullptr) {
-                        CurrentBlock -> SetNext( MemBlock::CreateMemBlock(BlockSize));
+                        CurrentBlock -> SetNext( MemoryBlockAllocator::CreateMemoryBlockAllocator(BlockSize));
                     }
-                    CurrentBlock = CurrentBlock->GetNext();
+                    CurrentBlock = (MemoryBlockAllocator *)CurrentBlock->GetNext();
                 } else {
                     break;
                 }
@@ -45,7 +45,7 @@ namespace ngx::Core {
 
         bool FoundInBlock=false;
 
-        MemBlock *TempBlock = HeadBlock;
+        MemoryBlockAllocator *TempBlock = HeadBlock;
 
         if (nullptr != pointer && nullptr != *pointer) {
 
@@ -55,7 +55,7 @@ namespace ngx::Core {
                     FoundInBlock= true;
                     break;
                 }
-                TempBlock = TempBlock->GetNext();
+                TempBlock = (MemoryBlockAllocator *)TempBlock->GetNext();
             }
             if (!FoundInBlock) {
                 free(*pointer);
@@ -67,7 +67,7 @@ namespace ngx::Core {
 
         int Residual = DefaultPoolResidual;
 
-        MemBlock *Last = HeadBlock, *Current = nullptr /*, *Next = nullptr */, *TempFreeBlockHead = nullptr, *TempFreeBlockTail = nullptr;
+        MemoryBlockAllocator *Last = HeadBlock, *Current = nullptr /*, *Next = nullptr */, *TempFreeBlockHead = nullptr, *TempFreeBlockTail = nullptr;
 
         Current = Last -> GetNext();
 
@@ -93,7 +93,7 @@ namespace ngx::Core {
                     }
                 }
                 else {
-                    delete Current;
+                    MemoryBlockAllocator::FreeMemoryBlockAllocator(&Current);
                 }
             }
             else {
@@ -112,7 +112,7 @@ namespace ngx::Core {
 
     void Pool::Reset() {
 
-        MemBlock *TempMemBlock = HeadBlock;
+        MemoryBlockAllocator *TempMemBlock = HeadBlock;
 
         while (TempMemBlock != nullptr) {
             TempMemBlock -> Reset();
@@ -122,11 +122,11 @@ namespace ngx::Core {
     }
 
     Pool::~Pool() {
-        MemBlock *TempMemBlock = HeadBlock, *Next = nullptr;
+        MemoryBlockAllocator *TempMemBlock = HeadBlock, *Next = nullptr;
 
         while (TempMemBlock != nullptr) {
-            Next = TempMemBlock -> GetNext();
-            MemBlock::FreeMemBlock(&TempMemBlock);
+            Next = (MemoryBlockAllocator *)TempMemBlock -> GetNext();
+            MemoryBlockAllocator::FreeMemoryBlockAllocator(&TempMemBlock);
             TempMemBlock = Next;
         }
         HeadBlock = CurrentBlock = nullptr;

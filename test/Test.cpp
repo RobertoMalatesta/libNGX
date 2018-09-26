@@ -16,8 +16,9 @@ extern int EPollEventDomainTest();
 extern int HttpServerTest();
 int main() {
 
+//	ArrayTest();
 //	MemBlockTest();
-//  PoolTest();
+  PoolTest();
 //	BufTest();
 //	ArrayTest();
 //	TimeTest();
@@ -30,6 +31,6 @@ int main() {
 //	FSTreeTest();
 //	TCPSocketTest();
 //  EPollEventDomainTest();
-	HttpServerTest();
+//	HttpServerTest();
 	return 0;
 }

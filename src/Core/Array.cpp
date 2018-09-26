@@ -10,7 +10,7 @@ namespace ngx::Core {
         this -> Size = 0;
         NAlloc = 0;
 
-        PointerToData = this -> Allocator ->Allocate( Count * Size);
+        PointerToData = Allocator->Allocate( Count * Size);
 
         if (nullptr == PointerToData) {
             return;
