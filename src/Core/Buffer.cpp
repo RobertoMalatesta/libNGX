@@ -2,8 +2,11 @@
 
 using namespace ngx::Core;
 
+Buffer::Buffer(BufferMemoryBlockRecycler *Recycler, size_t BlockSize) {
 
-Buffer::Buffer(size_t BlockSize) {
+    if (Recycler != nullptr && Recycler->GetBlockSize() == BlockSize) {
+        this->Recycler = Recycler;
+    }
 
     HeadBlock = BufferMemoryBlock::CreateBufferMemoryBlock(BlockSize);
 
