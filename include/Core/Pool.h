@@ -2,7 +2,7 @@ namespace ngx::Core {
 
     static int DefaultPoolResidual = 8;
 
-    class Pool : public MemAllocator{
+    class Pool : public MemAllocator, Recyclable{
         private:
             size_t BlockSize;
             MemoryBlockAllocator *HeadBlock, *CurrentBlock;

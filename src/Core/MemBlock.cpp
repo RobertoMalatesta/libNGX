@@ -14,7 +14,7 @@ namespace ngx::Core {
         PointerToData = PointerToHead = nullptr;
     }
 
-    MemoryBlock* MemoryBlock::CreateMemoryBlock(size_t Size) {
+    MemoryBlock* MemoryBlock::Build(size_t Size) {
 
         void *TempPointer = valloc(Size);
 
@@ -25,7 +25,7 @@ namespace ngx::Core {
         return new(TempPointer) MemoryBlock(Size);
     }
 
-    void MemoryBlock::FreeMemoryBlock(MemoryBlock **PointerToBlock) {
+    void MemoryBlock::Destroy(MemoryBlock **PointerToBlock) {
         if (nullptr == PointerToBlock || nullptr == *PointerToBlock) {
             return;
         }
@@ -61,7 +61,7 @@ namespace ngx::Core {
         MemoryBlock::~MemoryBlock();
     }
 
-    MemoryBlockAllocator* MemoryBlockAllocator::CreateMemoryBlockAllocator(size_t Size) {
+    MemoryBlockAllocator* MemoryBlockAllocator::Build(size_t Size) {
         void *TempPointer = valloc(Size);
 
         if (nullptr == TempPointer) {
@@ -71,7 +71,7 @@ namespace ngx::Core {
         return new(TempPointer) MemoryBlockAllocator(Size);
     }
 
-    void MemoryBlockAllocator::FreeMemoryBlockAllocator(MemoryBlockAllocator **PointerToAllocator) {
+    void MemoryBlockAllocator::Destroy(MemoryBlockAllocator **PointerToAllocator) {
         if (nullptr == PointerToAllocator || nullptr == *PointerToAllocator) {
             return;
         }
@@ -103,7 +103,7 @@ namespace ngx::Core {
         }
     }
 
-    BufferMemoryBlock::BufferMemoryBlock(size_t Size) : MemoryBlock(Size) {
+    BufferMemoryBlock::BufferMemoryBlock(size_t Size) : MemoryBlock(Size), Recyclable() {
         TotalSize = Size - sizeof(BufferMemoryBlock);
         FreeSize = TotalSize;
         PointerToHead = (u_char *)this + sizeof(BufferMemoryBlock);
@@ -116,7 +116,7 @@ namespace ngx::Core {
         Start = Pos = End = nullptr;
     }
 
-    BufferMemoryBlock* BufferMemoryBlock::CreateBufferMemoryBlock(size_t Size) {
+    BufferMemoryBlock* BufferMemoryBlock::Build(size_t Size) {
         void *TempPointer = valloc(Size);
 
         if (nullptr == TempPointer) {
@@ -126,7 +126,7 @@ namespace ngx::Core {
         return new(TempPointer) BufferMemoryBlock(Size);
     }
 
-    void BufferMemoryBlock::FreeBufferMemoryBlock(BufferMemoryBlock **PointerToBlock) {
+    void BufferMemoryBlock::Destroy(BufferMemoryBlock **PointerToBlock) {
 
         if (nullptr == PointerToBlock || nullptr == *PointerToBlock) {
             return;

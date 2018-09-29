@@ -6,13 +6,13 @@ namespace ngx::Core {
             size_t FreeSize = 0;
             void *PointerToData = nullptr, *PointerToHead = nullptr;
             void * Magic = nullptr;
-            MemoryBlock *Next;
+
         public:
             MemoryBlock(size_t Size);
             ~MemoryBlock();
 
-            static MemoryBlock *CreateMemoryBlock(size_t Size);
-            static void FreeMemoryBlock(MemoryBlock **PointerToBlock);
+            static MemoryBlock *Build(size_t Size);
+            static void Destroy(MemoryBlock **PointerToBlock);
 
             static MemoryBlock *AddressToMemoryBlock(void *Address, size_t Size);
 
@@ -22,11 +22,11 @@ namespace ngx::Core {
                 PointerToData = PointerToHead;
                 FreeSize = TotalSize;
             }
-            void SetNext(MemoryBlock *Next) { this->Next = Next; }
-            MemoryBlock *GetNext() { return  Next; }
     };
 
-    class MemoryBlockAllocator : public MemoryBlock, MemAllocator {
+    class MemoryBlockAllocator : public MemoryBlock, public MemAllocator {
+        protected:
+            MemoryBlockAllocator *Next;
         public:
             MemoryBlockAllocator(size_t Size);
             ~MemoryBlockAllocator();
@@ -35,28 +35,29 @@ namespace ngx::Core {
             virtual void Free(void **Pointer);
             virtual void GC() { /*Empty Code Block*/ }
 
-            static MemoryBlockAllocator *CreateMemoryBlockAllocator(size_t Size);
-            static void FreeMemoryBlockAllocator(MemoryBlockAllocator **PointerToAllocator);
+            static MemoryBlockAllocator *Build(size_t Size);
+            static void Destroy(MemoryBlockAllocator **PointerToAllocator);
 
-            void SetNext(MemoryBlockAllocator *Next) { this->Next = Next; }
-            MemoryBlockAllocator *GetNext() { return  (MemoryBlockAllocator *)Next; }
+            void SetNextBlock(MemoryBlockAllocator *Next) { this->Next = Next; }
+            MemoryBlockAllocator *GetNextBlock() { return Next; }
     };
 
-    class BufferMemoryBlock : MemoryBlock {
+    class BufferMemoryBlock : public MemoryBlock, public Recyclable {
         protected:
             u_char *Start, *End, *Pos;
+            BufferMemoryBlock *NextBlock;
             friend class Buffer;
         public:
             BufferMemoryBlock(size_t Size);
             ~BufferMemoryBlock();
 
-            bool IsEmpty() { return Pos >= End || Pos < Start; }
+            inline void Reset() { Pos = Start; }
 
-            static BufferMemoryBlock *CreateBufferMemoryBlock(size_t Size);
-            static void FreeBufferMemoryBlock(BufferMemoryBlock **PointerToBlock);
+            static BufferMemoryBlock *Build(size_t Size);
+            static void Destroy(BufferMemoryBlock **PointerToBlock);
 
-            void SetNext(BufferMemoryBlock *Next) { this->Next = Next; }
-            BufferMemoryBlock *GetNext() { return  (BufferMemoryBlock *)Next; }
+            void SetNextBlock(BufferMemoryBlock *Next) { this->NextBlock = Next; }
+            BufferMemoryBlock *GetNextBlock() { return NextBlock; }
     };
 }
 

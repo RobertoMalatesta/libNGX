@@ -15,10 +15,10 @@ namespace ngx::Core {
     class Recylcer {
         protected:
             Recyclable RecycleSentinel;
-            uint64_t RecycleSize = DEFAULT_RECYCLE_SIZE;
+            uint64_t RecycleMaxSize = DEFAULT_RECYCLE_SIZE, RecycleSize = 0 ;
         public:
-            Recylcer(uint64_t RecycleSize, MemAllocator *Allocator): RecycleSentinel() {
-                this -> RecycleSize = RecycleSize;
+            Recylcer(uint64_t RecycleMaxSize, MemAllocator *Allocator): RecycleSentinel() {
+                this -> RecycleMaxSize = RecycleMaxSize;
             }
             Recyclable *Get() {return nullptr;};
             void Put(Recyclable *Item) {};

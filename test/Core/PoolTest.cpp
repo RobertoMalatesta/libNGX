@@ -67,6 +67,7 @@ int PoolTest() {
         pool.Free(&(*it));
     }
 
+    pool.Reset();
     pool.GC();  // GC all free blocks
 
     cout<<"Pool GC Test Done!"<<endl;

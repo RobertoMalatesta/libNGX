@@ -8,7 +8,7 @@ int MemBlockTest() {
 
     cout<<"MemBlock Class Test Start!"<<endl;
 
-	MemoryBlockAllocator *memBlk = MemoryBlockAllocator::CreateMemoryBlockAllocator(4096);
+	MemoryBlockAllocator *memBlk = MemoryBlockAllocator::Build(4096);
 
     cout<<"MemBlockTest AddressToMemBlock Start..."<<endl;
 
@@ -60,7 +60,7 @@ int MemBlockTest() {
 
     memBlk->Free(&pData);
 
-    delete memBlk;
+    MemoryBlockAllocator::Destroy(&memBlk);
 
 	return 0;
 }

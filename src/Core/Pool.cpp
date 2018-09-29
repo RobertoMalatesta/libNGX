@@ -10,7 +10,7 @@ namespace ngx::Core {
         }
 
         this -> BlockSize = BlockSize;
-        HeadBlock = MemoryBlockAllocator::CreateMemoryBlockAllocator(BlockSize);
+        HeadBlock = MemoryBlockAllocator::Build(BlockSize);
         CurrentBlock = HeadBlock;
     }
 
@@ -29,10 +29,10 @@ namespace ngx::Core {
                 ret = CurrentBlock -> Allocate(Size);
 
                 if (ret == nullptr) {
-                    if (CurrentBlock -> GetNext() == nullptr) {
-                        CurrentBlock -> SetNext( MemoryBlockAllocator::CreateMemoryBlockAllocator(BlockSize));
+                    if (CurrentBlock -> GetNextBlock() == nullptr) {
+                        CurrentBlock -> SetNextBlock(MemoryBlockAllocator::Build(BlockSize));
                     }
-                    CurrentBlock = (MemoryBlockAllocator *)CurrentBlock->GetNext();
+                    CurrentBlock = CurrentBlock->GetNextBlock();
                 } else {
                     break;
                 }
@@ -55,7 +55,7 @@ namespace ngx::Core {
                     FoundInBlock= true;
                     break;
                 }
-                TempBlock = (MemoryBlockAllocator *)TempBlock->GetNext();
+                TempBlock = TempBlock->GetNextBlock();
             }
             if (!FoundInBlock) {
                 free(*pointer);
@@ -69,7 +69,7 @@ namespace ngx::Core {
 
         MemoryBlockAllocator *Last = HeadBlock, *Current = nullptr /*, *Next = nullptr */, *TempFreeBlockHead = nullptr, *TempFreeBlockTail = nullptr;
 
-        Current = Last -> GetNext();
+        Current = Last -> GetNextBlock();
 
         if (HeadBlock -> IsFreeBlock()) {
             HeadBlock -> Reset();
@@ -79,8 +79,8 @@ namespace ngx::Core {
 
             if (Current->IsFreeBlock()) {
 
-                Last->SetNext(Current->GetNext());
-                Current->SetNext(nullptr);
+                Last->SetNextBlock(Current->GetNextBlock());
+                Current->SetNextBlock(nullptr);
 
                 if (Residual > 0) {
                     Residual -= 1;
@@ -88,45 +88,59 @@ namespace ngx::Core {
                     if (nullptr == TempFreeBlockTail) {
                         TempFreeBlockHead = TempFreeBlockTail = Current;
                     } else {
-                        TempFreeBlockTail->SetNext(Current);
-                        TempFreeBlockTail = TempFreeBlockTail->GetNext();
+                        TempFreeBlockTail->SetNextBlock(Current);
+                        TempFreeBlockTail = TempFreeBlockTail->GetNextBlock();
                     }
                 }
                 else {
-                    MemoryBlockAllocator::FreeMemoryBlockAllocator(&Current);
+                    MemoryBlockAllocator::Destroy(&Current);
                 }
             }
             else {
                 Last = Current;
             }
-            Current = Last -> GetNext();
+            Current = Last -> GetNextBlock();
         }
 
         if (nullptr == TempFreeBlockHead) {
             return;
         }
 
-        Last -> SetNext(TempFreeBlockHead);
+        Last -> SetNextBlock(TempFreeBlockHead);
         CurrentBlock = HeadBlock;
     };
 
     void Pool::Reset() {
 
-        MemoryBlockAllocator *TempMemBlock = HeadBlock;
+        int Residual = DefaultPoolResidual;
+
+        MemoryBlockAllocator *TempMemBlock = HeadBlock, *NextMemBlock, *NewMemBlockList = nullptr;
 
         while (TempMemBlock != nullptr) {
-            TempMemBlock -> Reset();
-            TempMemBlock = TempMemBlock -> GetNext();
+
+            NextMemBlock = TempMemBlock -> GetNextBlock();
+
+            if (Residual -- > 0) {
+                TempMemBlock -> Reset();
+                TempMemBlock -> SetNextBlock(NewMemBlockList);
+                NewMemBlockList = TempMemBlock;
+            }
+            else {
+                MemoryBlockAllocator::Destroy(&TempMemBlock);
+            }
+
+            TempMemBlock = NextMemBlock;
         }
-        CurrentBlock = HeadBlock;
+        CurrentBlock = HeadBlock = NewMemBlockList;
     }
 
     Pool::~Pool() {
+
         MemoryBlockAllocator *TempMemBlock = HeadBlock, *Next = nullptr;
 
         while (TempMemBlock != nullptr) {
-            Next = (MemoryBlockAllocator *)TempMemBlock -> GetNext();
-            MemoryBlockAllocator::FreeMemoryBlockAllocator(&TempMemBlock);
+            Next = TempMemBlock -> GetNextBlock();
+            MemoryBlockAllocator::Destroy(&TempMemBlock);
             TempMemBlock = Next;
         }
         HeadBlock = CurrentBlock = nullptr;
