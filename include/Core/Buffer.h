@@ -1,5 +1,22 @@
 namespace ngx::Core {
 
+    class BufferMemoryBlock : public MemoryBlock, public Recyclable {
+        protected:
+            u_char *Start, *End, *Pos;
+            BufferMemoryBlock *NextBlock;
+            friend class Buffer;
+            BufferMemoryBlock(size_t Size);
+            ~BufferMemoryBlock();
+        public:
+            inline void Reset() { Pos = Start; }
+
+            static BufferMemoryBlock *Build(size_t Size);
+            static void Destroy(BufferMemoryBlock **PointerToBlock);
+
+            void SetNextBlock(BufferMemoryBlock *Next) { this->NextBlock = Next; }
+            BufferMemoryBlock *GetNextBlock() { return NextBlock; }
+    };
+
     class Buffer : public Resetable{
         protected:
             SpinLock Lock;

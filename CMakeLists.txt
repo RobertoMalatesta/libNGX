@@ -6,7 +6,6 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(SOURCE_FILES
         src/Core/Error.cpp
-        src/Core/MemBlock.cpp
         src/Core/Pool.cpp
         src/Core/Buffer.cpp
         src/Core/Array.cpp
@@ -24,10 +23,15 @@ set(SOURCE_FILES
         src/Core/Connection.cpp
         src/Core/EventDomain.cpp
         src/Core/EPollEventDomain.cpp
-        src/Http/HttpServer.cpp
-        src/Http/Recycler.cpp
         src/Core/Server.cpp
-        src/Http/HttpConnection.cpp)
+        src/Core/SocketEventDomain.cpp
+        src/Http/HttpConnection.cpp
+        src/Http/HttpServer.cpp
+        src/Http/HttpConnectionRecycler.cpp
+        src/Core/MemoryBlock.cpp
+        src/Core/MemoryBlockAllocator.cpp
+        src/Core/BufferMemoryBlock.cpp
+        )
 
 set(TEST_FILES
         test/Test.cpp
@@ -44,9 +48,10 @@ set(TEST_FILES
         test/Core/FSTreeTest.cpp
         test/Core/SocketTest.cpp
         test/Core/EPollEventDomainTest.cpp
-        test/Http/HttpServerTest.cpp
         test/Core/LockTest.cpp
-        test/Core/BufferTest.cpp)
+        test/Core/BufferTest.cpp
+        test/Http/HttpServerTest.cpp
+        )
 
 include_directories(./include)
 
