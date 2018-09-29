@@ -2,9 +2,6 @@ namespace ngx::Core {
 
     using namespace std;
 
-    const int THREAD_WAIT_TIME = 1000;
-    const int THREAD_POOL_SPIN_TIME =50;
-
     typedef void (PromiseCallback)(void *PointerToArguments, ThreadPool *TPool);
 
     class Promise : public Queue {
@@ -18,9 +15,7 @@ namespace ngx::Core {
 
     public:
         Promise();
-
-        Promise(ThreadPool *TPool, Thread *T, PromiseCallback *Callback, void *PointerToArg);
-        Promise(Thread *T, PromiseCallback *Callback, void *PointerToArgs);
+        Promise(ThreadPool *TPool, Thread *T, PromiseCallback *Callback, void *PointerToArgs);
 
         void doPromise();
     };
@@ -28,9 +23,6 @@ namespace ngx::Core {
     class Thread {
 
         private:
-
-            static const uint PoolMemorySize = 409600;
-            static const uint GCRound = 5000;
 
             ThreadPool *TPool = nullptr;
             thread WorkerThread;

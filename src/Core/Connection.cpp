@@ -15,7 +15,6 @@ Socket::Socket(struct sockaddr *SocketAddress, socklen_t SocketLength) {
 Socket::Socket(int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength) {
 
     if (SocketAddress == nullptr || SocketLength <= 0) {
-        SocketFd = -1;
         Active = 0;
         return;
     }
@@ -40,8 +39,8 @@ Listening::Listening(struct sockaddr *SocketAddress, socklen_t SocketLength):
     IsListen = 1;
 }
 
-Listening::Listening(int SocketFd, struct sockaddr *SocketAddr, socklen_t SocketLength) :
-        Socket(SocketFd, SocketAddr, SocketLength) {
+Listening::Listening(int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength) :
+        Socket(SocketFd, SocketAddress, SocketLength) {
     IsListen = 1;
 }
 

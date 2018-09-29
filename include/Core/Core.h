@@ -1,9 +1,11 @@
 #include "ngx.h"
 
 namespace ngx::Core {
+    using namespace ngx::Core::DefaultConfig;
     class Ref;
     class Resetable;
     class Recyclable;
+    class Recycler;
     class MemoryBlock;
     class MemoryBlockAllocator;
     class MemAllocator;
@@ -26,16 +28,18 @@ namespace ngx::Core {
     class TimerTree;
     class FSEntity;
     class FSTree;
+    class Socket;
     class SpinLock;
     class Promise;
     class Thread;
     class ThreadPool;
-    class Connection;
-    class Listening;
-    class Event;
     class EventDomain;
     class SocketEventDomain;
     class EPollEventDomain;
+    class Connection;
+    class Listening;
+    class TCP4Connection;
+    class TCP4Listening;
     class Server;
 }
 
@@ -58,12 +62,14 @@ namespace ngx::Core {
 #include "Core/MemBlock.h"
 #include "Core/Pool.h"
 #include "Core/Buffer.h"
-
 #include "Core/ThreadPool.h"
-#include "Core/Connection.h"
 #include "Core/TimerTree.h"
 #include "Core/FSTree.h"
-#include "Core/DAGScheduler.h"
+
 #include "Core/EventDomain.h"
+#include "Core/Socket.h"
+#include "Core/SocketEventDomain.h"
 #include "Core/EPollEventDomain.h"
+#include "Core/Connection.h"
+#include "Core/DAGScheduler.h"
 #include "Core/Server.h"

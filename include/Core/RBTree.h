@@ -66,18 +66,18 @@ namespace ngx::Core {
 
     class UInt32RBTree: public RBTree {
 
-    protected:
-        UInt32RBTree(MemAllocator *Allocator);
-        ~UInt32RBTree();
-    public:
-        UInt32RBTreeNode* CreateNodeFromAllocator(size_t DataSize, uint32_t Key=0);
-        void FreeNodeFromAllocator(UInt32RBTreeNode **TheRBTreeNode);
+        protected:
+            UInt32RBTree(MemAllocator *Allocator);
+            ~UInt32RBTree();
+        public:
+            UInt32RBTreeNode* CreateNodeFromAllocator(size_t DataSize, uint32_t Key=0);
+            void FreeNodeFromAllocator(UInt32RBTreeNode **TheRBTreeNode);
 
-        static UInt32RBTree* CreateFromAllocator(MemAllocator *ParentAllocator, MemAllocator *Allocator);
-        static void FreeFromAllocator(MemAllocator *ParentAllocator, UInt32RBTree **TheRBTree);
+            static UInt32RBTree* CreateFromAllocator(MemAllocator *ParentAllocator, MemAllocator *Allocator);
+            static void FreeFromAllocator(MemAllocator *ParentAllocator, UInt32RBTree **TheRBTree);
 
-        UInt32RBTreeNode *Find(uint32_t Key);
-    };
+            UInt32RBTreeNode *Find(uint32_t Key);
+        };
 }
 
 // [TODO]

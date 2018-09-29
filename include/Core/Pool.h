@@ -1,6 +1,5 @@
 namespace ngx::Core {
 
-    static int DefaultPoolResidual = 8;
 
     class Pool : public MemAllocator, Recyclable{
         private:

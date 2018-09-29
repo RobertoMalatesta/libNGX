@@ -65,7 +65,7 @@ namespace ngx::Core {
 
     void Pool::GC() {
 
-        int Residual = DefaultPoolResidual;
+        int Residual = DEFAULT_POOL_RESIDUAL;
 
         MemoryBlockAllocator *Last = HeadBlock, *Current = nullptr /*, *Next = nullptr */, *TempFreeBlockHead = nullptr, *TempFreeBlockTail = nullptr;
 
@@ -112,7 +112,7 @@ namespace ngx::Core {
 
     void Pool::Reset() {
 
-        int Residual = DefaultPoolResidual;
+        int Residual = DEFAULT_POOL_RESIDUAL;
 
         MemoryBlockAllocator *TempMemBlock = HeadBlock, *NextMemBlock, *NewMemBlockList = nullptr;
 

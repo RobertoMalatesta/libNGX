@@ -1,9 +1,4 @@
 namespace ngx::Core {
-
-    const int EPOLL_EVENT_BATCH_SIZE = 512;
-    const int EPOLL_EVENT_WAIT_TIME = 10;
-    const int EPOLL_EVENT_MAX_CONNECTION = 32768;
-
     struct EPollEventDomainArgument {
         EPollEventDomain *EventDomain;
         class Listening *Listening;

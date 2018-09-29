@@ -2,7 +2,6 @@
 
 namespace ngx::Core {
 
-    using namespace Config;
     inline void cpuid(uint32_t i, uint32_t *buf) {
 
         if (strcmp(CPU_Module,"I386") == 0) {

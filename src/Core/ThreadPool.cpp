@@ -22,7 +22,7 @@ namespace ngx::Core {
     Thread::Thread(ThreadPool *TPool) :Sentinel(), WorkerThread(Thread::ThreadProcess, this){
 
         this->TPool = TPool;
-        Allocator = new Pool(PoolMemorySize);
+        Allocator = new Pool(THREAD_POOL_MEMORY_SIZE);
         Lock.clear();
     }
 
@@ -50,7 +50,7 @@ namespace ngx::Core {
 
         new(PointerToPromise) Promise(TPool, this, Callback, Argument);
 
-        if (PostCount++ % GCRound == 0) {
+        if (PostCount++ % THREAD_GC_ROUND == 0) {
             Allocator->GC();
         }
 

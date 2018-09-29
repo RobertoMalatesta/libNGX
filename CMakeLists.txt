@@ -26,7 +26,8 @@ set(SOURCE_FILES
         src/Core/EPollEventDomain.cpp
         src/Http/HttpServer.cpp
         src/Http/Recycler.cpp
-        src/Core/Server.cpp)
+        src/Core/Server.cpp
+        src/Http/HttpConnection.cpp)
 
 set(TEST_FILES
         test/Test.cpp
@@ -44,7 +45,8 @@ set(TEST_FILES
         test/Core/SocketTest.cpp
         test/Core/EPollEventDomainTest.cpp
         test/Http/HttpServerTest.cpp
-        test/Core/LockTest.cpp)
+        test/Core/LockTest.cpp
+        test/Core/BufferTest.cpp)
 
 include_directories(./include)
 

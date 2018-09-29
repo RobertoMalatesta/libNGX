@@ -57,7 +57,7 @@ RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength)
         }
         else {
             memcpy(WriteBlock->Pos, PointerToData, DataLength);
-            WriteBlock->Pos += DataLength;
+            WritePosition = (WriteBlock->Pos += DataLength);
             break;
         }
     }
@@ -94,7 +94,7 @@ BufferMemoryBlockRecycler::BufferMemoryBlockRecycler(
         size_t BufferMemoryBlockSize,
         uint64_t RecyclerSize,
         MemAllocator *Allocator ) :
-        Recylcer(RecyclerSize, Allocator){
+        Recycler(RecyclerSize, Allocator){
     this -> BufferMemoryBlockSize = BufferMemoryBlockSize;
 }
 

@@ -5,6 +5,7 @@ extern int LockTest();
 extern int BufTest();
 extern int ArrayTest();
 extern int TimeTest();
+extern int BufferTest();
 extern int ThreadPoolTest();
 extern int HashTest();
 extern int CRCTest();
@@ -18,7 +19,8 @@ int main() {
 
 //	ArrayTest();
 //	MemBlockTest();
-  PoolTest();
+//  PoolTest();
+    BufferTest();
 //	BufTest();
 //	ArrayTest();
 //	TimeTest();
