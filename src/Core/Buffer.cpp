@@ -16,23 +16,24 @@ Buffer::Buffer(BufferMemoryBlockRecycler *Recycler, size_t BlockSize) {
     this->BlockSize = BlockSize;
     CurrentBlock = HeadBlock;
 
-    ReadBlock = WriteBlock = HeadBlock;
-    ReadPosition = WritePosition = HeadBlock->Start;
+    ReadCursor.Block = WriteCursor.Block = HeadBlock;
+    ReadCursor.Position = WriteCursor.Position = HeadBlock->Start;
 }
 
 RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength) {
 
     size_t CurrentBlockFreeSize;
-    BufferMemoryBlock *TempBufferBlock;
+    BufferMemoryBlock *TempBufferBlock, *WriteBlock = WriteCursor.Block;
 
     Lock.Lock();
 
     for (;;) {
 
-        CurrentBlockFreeSize = WriteBlock->End - WriteBlock->Pos;
+        CurrentBlockFreeSize = WriteBlock->End - WriteCursor.Position;
 
         if (DataLength > CurrentBlockFreeSize) {
             if (Recycler == nullptr) {
+
                 TempBufferBlock = BufferMemoryBlock::Build(BlockSize);
             }
             else {
@@ -44,20 +45,20 @@ RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength)
                 return RuntimeError(ENOMEM, "No enough memory!");
             }
 
-            memcpy(WriteBlock->Pos, PointerToData, CurrentBlockFreeSize);
+            memcpy(WriteCursor.Position, PointerToData, CurrentBlockFreeSize);
 
             PointerToData += CurrentBlockFreeSize;
             DataLength -= CurrentBlockFreeSize;
 
-            WriteBlock->Pos = WriteBlock->End;
 
             WriteBlock -> SetNextBlock(TempBufferBlock);
-            WriteBlock = TempBufferBlock;
-            WritePosition = WriteBlock->Start;
+            WriteBlock = WriteCursor.Block = TempBufferBlock;
+            WriteCursor.Position = WriteBlock->Start;
         }
         else {
-            memcpy(WriteBlock->Pos, PointerToData, DataLength);
-            WritePosition = (WriteBlock->Pos += DataLength);
+            memcpy(WriteCursor.Position, PointerToData, DataLength);
+            WriteCursor.Position = (WriteBlock->Pos += DataLength);
+
             break;
         }
     }
@@ -69,18 +70,18 @@ RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength)
 
 u_char Buffer::ReadByte() {
 
-    if (ReadBlock == WriteBlock && ReadPosition == WritePosition) {
+    if (ReadCursor.Block == WriteCursor.Block && ReadCursor.Position == WriteCursor.Position) {
         return 0;
     }
 
     Lock.Lock();
 
-    if (ReadPosition > ReadBlock->End) {
-        ReadBlock = ReadBlock->GetNextBlock();
-        ReadPosition = ReadBlock->Start;
+    if (ReadCursor.Position > ReadCursor.Block->End) {
+        ReadCursor.Block = ReadCursor.Block->GetNextBlock();
+        ReadCursor.Position = ReadCursor.Block->Start;
     }
 
-    u_char Ret = *(ReadPosition ++);
+    u_char Ret = *(ReadCursor.Position ++);
     Lock.Unlock();
 
     return Ret;

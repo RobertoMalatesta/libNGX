@@ -1,5 +1,5 @@
 namespace ngx::Core {
-    class MemoryBlockAllocator : public MemoryBlock, public MemAllocator {
+    class MemoryBlockAllocator : public MemoryBlock, public MemAllocator, public Resetable {
         protected:
             MemoryBlockAllocator *Next;
             MemoryBlockAllocator(size_t Size);
@@ -15,5 +15,10 @@ namespace ngx::Core {
 
             void SetNextBlock(MemoryBlockAllocator *Next) { this->Next = Next; }
             MemoryBlockAllocator *GetNextBlock() { return Next; }
+
+            void Reset() {
+                PointerToData = PointerToHead;
+                FreeSize = TotalSize;
+            };
     };
 }

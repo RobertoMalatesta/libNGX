@@ -5,7 +5,8 @@ namespace ngx::Core {
     MemoryBlock::MemoryBlock(size_t Size) {
         PointerToHead = (u_char *)this + sizeof(MemoryBlock);
         TotalSize = Size - sizeof(MemoryBlock);
-        Reset();
+        PointerToData = PointerToHead;
+        FreeSize = TotalSize;
         Magic = (void *)this;
     }
 

@@ -1,5 +1,5 @@
 namespace ngx::Core {
-    class MemoryBlock {
+    class MemoryBlock{
         protected:
             std::atomic_uint UseCount = {0};
             size_t TotalSize = 0;
@@ -17,10 +17,5 @@ namespace ngx::Core {
 
             bool IsInBlock(void *Address);
             bool IsFreeBlock() { return UseCount == 0; }
-
-            inline void Reset() {
-                PointerToData = PointerToHead;
-                FreeSize = TotalSize;
-            }
     };
 }

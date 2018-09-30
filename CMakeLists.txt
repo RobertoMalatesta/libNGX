@@ -31,7 +31,7 @@ set(SOURCE_FILES
         src/Core/MemoryBlock.cpp
         src/Core/MemoryBlockAllocator.cpp
         src/Core/BufferMemoryBlock.cpp
-        )
+        src/Http/HttpRequestBuffer.cpp)
 
 set(TEST_FILES
         test/Test.cpp
@@ -51,7 +51,7 @@ set(TEST_FILES
         test/Core/LockTest.cpp
         test/Core/BufferTest.cpp
         test/Http/HttpServerTest.cpp
-        )
+        test/Core/CoreTest.cpp test/Http/HttpTest.cpp)
 
 include_directories(./include)
 

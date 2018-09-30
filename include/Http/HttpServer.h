@@ -14,7 +14,7 @@ namespace ngx::Http {
         };
     };
 
-    struct HttpPerformaceUnit {
+    struct HttpPerformanceUnit {
         atomic_uint64_t ConnectionCount = {0};
         atomic_uint64_t ActiveConnecionCount = {0};
         atomic_uint64_t RequestCount = {0};
@@ -31,7 +31,7 @@ namespace ngx::Http {
             static void HttpEventProcessPromise(void *Args, ThreadPool *TPool);
 
             EPollEventDomain EventDomain;
-            HttpPerformaceUnit PerformaceCounters;
+            HttpPerformanceUnit PerformanceCounters;
         public:
             HttpServer(size_t PoolSize, int ThreadCount, int EPollSize, int ConnectionRecycleSize, int BufferRecycleSize);
             RuntimeError HttpServerEventProcess();
