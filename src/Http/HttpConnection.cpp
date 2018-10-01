@@ -59,7 +59,7 @@ void HttpConnection::OnEventFunc(void *Argument, ThreadPool *TPool) {
 
     if (EventDomainArguments->UserArguments[2].UInt & ET_READ) {
         EventDomain->DetachSocket(Connection, SOCK_READ_EVENT);
-        printf("%s:%s\n", __FUNCTION__, Connection->RequestBuffer.WriteDataToBuffer(Connection).GetErrorString());
+        printf("%s:%s\n", __FUNCTION__, Connection->ReadConnection().GetErrorString());
     }
 
     if (EventDomainArguments->UserArguments[2].UInt & ET_WRITE) {
@@ -68,8 +68,21 @@ void HttpConnection::OnEventFunc(void *Argument, ThreadPool *TPool) {
     printf("End Processing Event( FD: %d, EV: 0x%08X )\n", Connection->GetSocketFD(), EventDomainArguments->UserArguments[2].UInt);
 }
 
+
+HttpConnection *HttpConnection::Build(
+        MemAllocator *Allocator,
+        int SocketFd,
+        struct sockaddr *SocketAddress,
+                socklen_t SocketLength) {
+    void *PointerToMemory = Allocator->Allocate(sizeof(HttpConnection));
+
+    if (nullptr == PointerToMemory) {
+        return nullptr;
+    }
+
+    return new (PointerToMemory) HttpConnection(SocketFd, SocketAddress, SocketLength);
+}
+
 void HttpConnection::Reset() {
-
-
-
+    RequestBuffer.Reset();
 }

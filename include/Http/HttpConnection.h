@@ -22,9 +22,16 @@ namespace ngx::Http {
             HttpConnection(struct sockaddr *SocketAddress, socklen_t SocketLength, BufferMemoryBlockRecycler *Recycler = nullptr, size_t BufferBlockSize = BUFFER_DEFAULT_BLOCK_SIZE);
             HttpConnection(int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength, BufferMemoryBlockRecycler *Recycler = nullptr, size_t BufferBlockSize = BUFFER_DEFAULT_BLOCK_SIZE);
             ~HttpConnection();
-            void Reset();
+            inline RuntimeError ReadConnection() {
+                return RequestBuffer.WriteDataToBuffer(this);
+            }
+
+            RuntimeError ProcessRequest();
+
             HttpConnection *Build( MemAllocator *Allocator, int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength);
             void Destroy(MemAllocator *Allocator, HttpConnection **HttpConnection);
+
+            void Reset();
     };
 }
 

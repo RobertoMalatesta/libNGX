@@ -2,6 +2,12 @@
 
 using namespace ngx::Http;
 
+void inline HttpParseRequestLine();
+void inline HttpProcessRequestHeader();
+void inline HttpValidateHost();
+void inline HttpProcessRequestURI();
+void inline ResetState();
+
 HttpRequestBuffer::HttpRequestBuffer(BufferMemoryBlockRecycler *R, size_t BlockSize): Buffer(R, BlockSize) {
 
 }
@@ -66,5 +72,18 @@ RuntimeError HttpRequestBuffer::WriteDataToBuffer(HttpConnection *C) {
     printf("\n");
 
     return RuntimeError(0);
+}
+
+void HttpRequestBuffer::ProcessHttpRequest() {
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 }
 
