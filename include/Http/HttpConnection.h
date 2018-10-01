@@ -12,15 +12,15 @@ namespace ngx::Http {
     class HttpConnection: public TCP4Connection, Resetable {
         protected:
             SpinLock Lock;
-//            HttpRequestBuffer RequestBuffer;
+            HttpRequestBuffer RequestBuffer;
 //            HttpResponseBuffer ResponseBuffer;
             static void OnEventFunc(void *Argument, ThreadPool *TPool);
             static void TriggerRequestHandler(void *Argument, ThreadPool *TPool);
             static void FinalizeRequest(void *Argument, ThreadPool *TPool);
             friend class HttpServer;
         public:
-            HttpConnection(struct sockaddr *SocketAddress, socklen_t SocketLength);
-            HttpConnection(int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength);
+            HttpConnection(struct sockaddr *SocketAddress, socklen_t SocketLength, BufferMemoryBlockRecycler *Recycler = nullptr, size_t BufferBlockSize = BUFFER_DEFAULT_BLOCK_SIZE);
+            HttpConnection(int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength, BufferMemoryBlockRecycler *Recycler = nullptr, size_t BufferBlockSize = BUFFER_DEFAULT_BLOCK_SIZE);
             ~HttpConnection();
             void Reset();
             HttpConnection *Build( MemAllocator *Allocator, int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength);

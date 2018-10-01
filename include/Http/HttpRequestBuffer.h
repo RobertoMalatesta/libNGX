@@ -9,7 +9,7 @@ namespace ngx::Http {
 
     class HttpRequestBuffer : Buffer {
         protected:
-            uint32_t HttpVersion;
+            uint32_t HttpVersion = 0;
             HttpRequestStatus Status = HTTP_IDEL_STATE;
             void HttpParseRequestLine();
             void HttpProcessRequestHeader();

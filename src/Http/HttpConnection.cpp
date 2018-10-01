@@ -3,14 +3,27 @@
 using namespace ngx::Core;
 using namespace ngx::Http;
 
-HttpConnection::HttpConnection(struct sockaddr *SocketAddress, socklen_t SocketLength):
-        TCP4Connection(SocketAddress, SocketLength){
+HttpConnection::HttpConnection(
+        struct sockaddr *SocketAddress,
+                socklen_t SocketLength,
+                BufferMemoryBlockRecycler *Recycler,
+                size_t BufferBlockSize
+                        ):
+        TCP4Connection(SocketAddress, SocketLength),
+        RequestBuffer(Recycler, BufferBlockSize){
     Lock.Unlock();
     OnEvent = & HttpConnection::OnEventFunc;
 }
 
-HttpConnection::HttpConnection(int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength) :
-        TCP4Connection(SocketFd, SocketAddress, SocketLength){
+HttpConnection::HttpConnection(
+        int SocketFd,
+        struct sockaddr *SocketAddress,
+                socklen_t SocketLength,
+        BufferMemoryBlockRecycler *Recycler,
+        size_t BufferBlockSize
+        ) :
+        TCP4Connection(SocketFd, SocketAddress, SocketLength),
+        RequestBuffer(Recycler, BufferBlockSize){
     Lock.Unlock();
     OnEvent = & HttpConnection::OnEventFunc;
 }
@@ -37,6 +50,8 @@ void HttpConnection::OnEventFunc(void *Argument, ThreadPool *TPool) {
         return;
     }
 
+    printf("Start Processing Event( FD: %d, EV: 0x%08X )\n", Connection->GetSocketFD(), EventDomainArguments->UserArguments[2].UInt);
+
     if (EventDomainArguments->UserArguments[2].UInt & ET_CONNECTED) {
         EventDomain->AttachSocket(Connection, SOCK_READ_WRITE_EVENT);
         Server->AttachConnection(Connection);
@@ -44,15 +59,13 @@ void HttpConnection::OnEventFunc(void *Argument, ThreadPool *TPool) {
 
     if (EventDomainArguments->UserArguments[2].UInt & ET_READ) {
         EventDomain->DetachSocket(Connection, SOCK_READ_EVENT);
-        ssize_t n = recv(Connection->GetSocketFD(), buffer, BUFSIZ, 0);
-        cout<< "Read: "<< Connection->GetSocketFD() << "-" << n<< ": " << buffer << endl;
+        printf("%s:%s\n", __FUNCTION__, Connection->RequestBuffer.WriteDataToBuffer(Connection).GetErrorString());
     }
 
     if (EventDomainArguments->UserArguments[2].UInt & ET_WRITE) {
         EventDomain->DetachSocket(Connection, SOCK_WRITE_EVENT);
-        cout<< "Write: "<< Connection->GetSocketFD() << endl;
     }
-    printf("event end: %p, %p\n", EventDomain, Connection);
+    printf("End Processing Event( FD: %d, EV: 0x%08X )\n", Connection->GetSocketFD(), EventDomainArguments->UserArguments[2].UInt);
 }
 
 void HttpConnection::Reset() {

@@ -2,6 +2,14 @@
 
 using namespace ngx::Http;
 
+HttpRequestBuffer::HttpRequestBuffer(BufferMemoryBlockRecycler *R, size_t BlockSize): Buffer(R, BlockSize) {
+
+}
+
+HttpRequestBuffer::~HttpRequestBuffer() {
+
+}
+
 RuntimeError HttpRequestBuffer::WriteDataToBuffer(HttpConnection *C) {
 
     int SocketFd = C->GetSocketFD();
@@ -36,17 +44,26 @@ RuntimeError HttpRequestBuffer::WriteDataToBuffer(HttpConnection *C) {
         RecievedSize = recv(SocketFd, PointerToData, ReadLength, 0);
 
         if (RecievedSize == -1) {
-            if (errno == EAGAIN || RecievedSize == EWOULDBLOCK) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 break;
             }
             else {
                 return RuntimeError(errno, "Failed to read from socket!");
             }
         }
+        else if (RecievedSize > 0) {
+            WriteCursor.Position += RecievedSize;
+        }
         else {
-            WriteCursor.Position += ReadLength;
+            break;
         }
     }
+
+    u_char t_c;
+    while ( (t_c =ReadByte()) != 0) {
+        printf("%c",t_c);
+    }
+    printf("\n");
 
     return RuntimeError(0);
 }
