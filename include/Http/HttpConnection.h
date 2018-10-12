@@ -3,9 +3,14 @@ namespace ngx::Http {
     /*
      * EPollArguments
      *
-     * UserArgument[0] = EpollEventDomain
-     * UserArgument[1] = HttpConnection
-     * UserArgument[2] = EventType
+     * UserArgument[0] = temp arg0
+     * UserArgument[1] = temp arg1
+     * UserArgument[2] = temp arg2
+     * UserArgument[3] = Server
+     * UserArgument[4] = EventDomain
+     * UserArgument[5] = Listening
+     * UserArgument[6] = Connection
+     * UserArgument[7] = EventType
      *
      * */
 
@@ -14,6 +19,7 @@ namespace ngx::Http {
             SpinLock Lock;
             HttpRequestBuffer RequestBuffer;
 //            HttpResponseBuffer ResponseBuffer;
+
             static void OnEventFunc(void *Argument, ThreadPool *TPool);
             static void TriggerRequestHandler(void *Argument, ThreadPool *TPool);
             static void FinalizeRequest(void *Argument, ThreadPool *TPool);
@@ -25,12 +31,9 @@ namespace ngx::Http {
             inline RuntimeError ReadConnection() {
                 return RequestBuffer.WriteDataToBuffer(this);
             }
-
             RuntimeError ProcessRequest();
-
             HttpConnection *Build( MemAllocator *Allocator, int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength);
             void Destroy(MemAllocator *Allocator, HttpConnection **HttpConnection);
-
             void Reset();
     };
 }

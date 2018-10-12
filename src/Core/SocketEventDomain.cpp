@@ -2,7 +2,7 @@
 
 using namespace ngx::Core;
 
-RuntimeError EventDomain::EventDomainProcess(void* PointerToArgument) {
+RuntimeError EventDomain::EventDomainProcess(EventPromiseArgs* PointerToArgument) {
 
     if (nullptr == Timers) {
         return RuntimeError(EINVAL, "Timer init failed, Timer == nullptr!");

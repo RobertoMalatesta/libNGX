@@ -3,6 +3,8 @@ namespace ngx::Core {
     class TCP4Listening: public Listening {
         protected:
             uint Backlog = 1024;
+            PromiseCallback *ReadPromise;
+            PromiseCallback *WritePromise;
         public:
             TCP4Listening(struct sockaddr *SocketAddress, socklen_t SocketLength);
             ~TCP4Listening();

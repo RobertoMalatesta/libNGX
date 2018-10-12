@@ -3,6 +3,10 @@
 using namespace ngx::Core;
 
 Server::Server() : ListeningSentinel(nullptr, 0), ConnectionSentinel(nullptr, 0){
+    ProcessFinished = & Server::OnProcessFinished;
+    NewConnection = & Server::OnNewConnection;
+    ConnectionRead = & Server::OnConnectionRead;
+    ConnectionWrite = & Server::OnConnectionWrite;
     Lock.Unlock();
 }
 

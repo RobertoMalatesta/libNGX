@@ -143,17 +143,26 @@ EventError EPollEventDomain::DetachSocket(Socket *S, SocketEventType Type) {
     return EventError(0);
 }
 
-RuntimeError EPollEventDomain::EventDomainProcess(void *PointerToArgument) {
+RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
+
+    sigset_t sigmask;
 
     int EventCount = -1;
-    sigset_t sigmask;
-    Listening *Listen;
     epoll_event *Events;
-    EPollEventDomainArgument *Arguments;
+
+    void *TempPointer;
+    int TempConnectionFD;
+    SocketAddress *TempSocketAddr;
+    socklen_t TempSocketLength;
+    Socket *TempSocket;
+    EventPromiseArgs *TempEventArguments;
+    Listening *Listen;
+    Connection *C;
+    Server *Server;
 
     /* [TODO] should move to initialize code latter! */
 
-    RuntimeError Error = EventDomain::EventDomainProcess(PointerToArgument);
+    RuntimeError Error = EventDomain::EventDomainProcess(Arguments);
 
     if (Error.GetErrorCode() != 0) {
         return Error;
@@ -166,8 +175,7 @@ RuntimeError EPollEventDomain::EventDomainProcess(void *PointerToArgument) {
         return RuntimeError(ENOENT, "EPollEventDomain initial failed!");
     }
 
-    Arguments = static_cast<EPollEventDomainArgument *>(PointerToArgument);
-    Listen = Arguments->Listening;
+    Listen = static_cast<Listening *>(Arguments->UserArguments[5].Ptr);
 
     if (nullptr == Listen) {
         return RuntimeError(ENOENT, "Listen queue empty!");
@@ -187,7 +195,8 @@ RuntimeError EPollEventDomain::EventDomainProcess(void *PointerToArgument) {
         Waiting.clear();
         return RuntimeError(ENOMEM, "Failed to allocate memory for epoll_event!");
     }
-    Arguments->Events = Events;
+
+    Arguments->UserArguments[0].Ptr = (void *)Events;
 
     AttachSocket(Listen, SOCK_READ_WRITE_EVENT);
     EventCount = epoll_pwait(EPollFD, Events, EPOLL_EVENT_BATCH_SIZE, EPOLL_EVENT_WAIT_TIME, &sigmask);
@@ -207,7 +216,62 @@ RuntimeError EPollEventDomain::EventDomainProcess(void *PointerToArgument) {
             return RuntimeError(0);
         }
     } else {
-        Arguments->EventCount = EventCount;
+        Server = static_cast<class Server *>(Arguments->UserArguments[3].Ptr);
+
+        for (int i=0; i<EventCount; i++) {
+
+            if (Events[i].data.ptr == nullptr) {
+                continue;
+            }
+
+            TempSocket = static_cast<Socket *>(Events[i].data.ptr);
+
+            TempPointer = Allocate((sizeof(EventPromiseArgs)));
+
+            if (TempPointer == nullptr) {
+                continue;
+            }
+
+            memcpy(TempPointer, Arguments, sizeof(EventPromiseArgs));
+
+            TempEventArguments = static_cast<EventPromiseArgs *>(TempPointer);
+            TempEventArguments->UserArguments[7].UInt = 0;
+
+            if (TempSocket->GetSocketFD() == Listen->GetSocketFD()) {
+
+                TempPointer = Allocate(sizeof(SocketAddress));
+
+                if (TempPointer == nullptr) {
+                    continue;
+                }
+
+                TempSocketAddr = static_cast<SocketAddress *>(TempPointer);
+                TempConnectionFD = accept4(Listen->GetSocketFD(), &TempSocketAddr->sockaddr, &TempSocketLength, SOCK_NONBLOCK);
+
+                if ( -1 == TempConnectionFD) {
+                    printf("accept4() failed in HttpEventProcessPromise!\n");
+                }
+
+                TempEventArguments->UserArguments[0].UInt = (uint32_t)TempConnectionFD;
+                TempEventArguments->UserArguments[1].Ptr = (void *)TempSocketAddr;
+                TempEventArguments->UserArguments[2].UInt = TempSocketLength;
+
+                Server->PostNewConnection(TempEventArguments, &TPool);
+            }
+            else {
+                C = (Connection *)TempSocket;
+                TempEventArguments->UserArguments[6].Ptr = C;
+                if (Events[i].events & (EPOLLIN | EPOLLRDHUP)) {
+                    TempEventArguments->UserArguments[7].UInt |= ET_READ;
+                    Server->PostConnectionRead(TempEventArguments, &TPool);
+                }
+                if (Events[i].events & (EPOLLOUT)){
+                    TempEventArguments->UserArguments[7].UInt |= ET_WRITE;
+                    Server->PostConnectionWrite(TempEventArguments, &TPool);
+                }
+            }
+        }
+
         TPool.PostPromise(EventPromise, (void *)Arguments);
     }
 
@@ -233,3 +297,4 @@ void EPollEventDomain::GC() {
     Allocator.GC();
     Lock.Unlock();
 }
+

@@ -9,6 +9,7 @@ HttpServer::HttpServer(size_t PoolSize, int ThreadCount, int EPollSize,
 
 void HttpServer::HttpEventProcessPromise(void *Args, ThreadPool *TPool) {
 
+    void *TempPointer;
     Socket *S;
     HttpConnection *C;
     HttpServer *Server;
@@ -25,8 +26,8 @@ void HttpServer::HttpEventProcessPromise(void *Args, ThreadPool *TPool) {
     }
 
     EventArgument = static_cast<EPollEventDomainArgument *>(Args);
+    Events = (epoll_event *)EventArgument->UserArguments[0].Ptr;
 
-    Events = EventArgument->Events;
     Listening = EventArgument->Listening;
     EventCount = EventArgument->EventCount;
     EventDomain = EventArgument->EventDomain;
@@ -43,16 +44,18 @@ void HttpServer::HttpEventProcessPromise(void *Args, ThreadPool *TPool) {
             continue;
         }
 
-        TempArgument = static_cast<EPollEventDomainArgument *>(EventDomain->Allocate(sizeof(EPollEventDomainArgument)));
+        TempPointer = EventDomain->Allocate((sizeof(EPollEventDomainArgument)));
 
-        if (TempArgument == nullptr) {
+        if (TempPointer == nullptr) {
             continue;
         }
 
-        memcpy(TempArgument, EventArgument, sizeof(EPollEventDomainArgument));
+        TempArgument = static_cast<EPollEventDomainArgument *>(TempPointer);
 
-        TempArgument->UserArguments[0].Ptr = Server;
-        TempArgument->UserArguments[2].UInt = 0;
+        memcpy(TempArgument, EventArgument, sizeof(EPollEventDomainArgument));
+        TempArgument = static_cast<EPollEventDomainArgument *>(EventDomain->Allocate(sizeof(EPollEventDomainArgument)));
+        TempArgument->UserArguments[4].Ptr = Server;
+        TempArgument->UserArguments[6].UInt = 0;
         TempArgument->EventDomain = EventDomain;
 
         if (S->GetSocketFD() == Listening->GetSocketFD()) {
@@ -64,17 +67,17 @@ void HttpServer::HttpEventProcessPromise(void *Args, ThreadPool *TPool) {
             }
 
             C = new HttpConnection(ConnectionFd, (struct sockaddr *)&SocketAddress, SocketLength);
-            TempArgument->UserArguments[1].Ptr = C;
-            TempArgument->UserArguments[2].UInt |= ET_CONNECTED;
+            TempArgument->UserArguments[5].Ptr = C;
+            TempArgument->UserArguments[6].UInt |= ET_CONNECTED;
         }
         else {
             C= (HttpConnection *)S;
-            TempArgument->UserArguments[1].Ptr = C;
+            TempArgument->UserArguments[5].Ptr = C;
             if (Events[i].events & (EPOLLIN | EPOLLRDHUP)) {
-                TempArgument->UserArguments[2].UInt |= ET_READ;
+                TempArgument->UserArguments[6].UInt |= ET_READ;
             }
             if (Events[i].events & (EPOLLOUT)){
-                TempArgument->UserArguments[2].UInt |= ET_WRITE;
+                TempArgument->UserArguments[6].UInt |= ET_WRITE;
             }
         }
         TPool->PostPromise(*C->OnEvent, (void *)TempArgument);
@@ -86,27 +89,30 @@ void HttpServer::HttpEventProcessPromise(void *Args, ThreadPool *TPool) {
 
 RuntimeError HttpServer::HttpServerEventProcess() {
 
+    void *TempPointer;
     Listening *Listen;
+    EventPromiseArgs *Arguments;
 
-    EPollEventDomainArgument *Argument;
+    TempPointer = EventDomain.Allocate(sizeof(EventPromiseArgs));
 
-    Argument = (EPollEventDomainArgument *)EventDomain.Allocate(sizeof(EPollEventDomainArgument));
-    memset(Argument, 0, sizeof(EPollEventDomainArgument));
+    if (TempPointer == nullptr) {
+        return RuntimeError(ENOMEM, "No enough memoey to allocate EventPromiseArgs");
+    }
 
+    memset(TempPointer, 0, sizeof(EventPromiseArgs));
+
+    Arguments = static_cast<EventPromiseArgs *>(TempPointer);
     Listen = DequeueListening();
 
     if (Listen == nullptr) {
-        Lock.Unlock();
         return RuntimeError(ENOENT, "Can not get A Listening from HttpServer!");
     }
 
-    Lock.Lock();
-    Argument->UserArguments[0].Ptr = this;
-    Argument->Listening = Listen;
-    Argument->EventDomain = &EventDomain;
-    Lock.Unlock();
+    Arguments->UserArguments[3].Ptr = (void *)this;
+    Arguments->UserArguments[4].Ptr = (void *)&EventDomain;
+    Arguments->UserArguments[5].Ptr = (void *)Listen;
 
-    RuntimeError Error = EventDomain.EventDomainProcess((void *)Argument);
+    RuntimeError Error = EventDomain.EventDomainProcess(Arguments);
 
     if (Error.GetErrorCode() == 0) {
         EnqueueListening(Listen);

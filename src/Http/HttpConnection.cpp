@@ -11,7 +11,10 @@ HttpConnection::HttpConnection(
                         ):
         TCP4Connection(SocketAddress, SocketLength),
         RequestBuffer(Recycler, BufferBlockSize){
-    Lock.Unlock();
+//    Lock.Unlock();
+//    ConnectedPromise = &HttpConnection::OnConnected;
+//    ReadPromise = &HttpConnection::OnRead;
+//    WritePromise = &HttpConnection::OnWrite;
     OnEvent = & HttpConnection::OnEventFunc;
 }
 
@@ -43,8 +46,8 @@ void HttpConnection::OnEventFunc(void *Argument, ThreadPool *TPool) {
 
     EventDomainArguments = static_cast<EPollEventDomainArgument *>(Argument);
     EventDomain = EventDomainArguments->EventDomain;
-    Connection = static_cast<HttpConnection *>(EventDomainArguments->UserArguments[1].Ptr);
-    Server = static_cast<HttpServer *>(EventDomainArguments->UserArguments[0].Ptr);
+    Connection = static_cast<HttpConnection *>(EventDomainArguments->UserArguments[5].Ptr);
+    Server = static_cast<HttpServer *>(EventDomainArguments->UserArguments[4].Ptr);
 
     if (EventDomain == nullptr || Connection == nullptr) {
         return;
@@ -52,17 +55,17 @@ void HttpConnection::OnEventFunc(void *Argument, ThreadPool *TPool) {
 
     printf("Start Processing Event( FD: %d, EV: 0x%08X )\n", Connection->GetSocketFD(), EventDomainArguments->UserArguments[2].UInt);
 
-    if (EventDomainArguments->UserArguments[2].UInt & ET_CONNECTED) {
+    if (EventDomainArguments->UserArguments[6].UInt & ET_CONNECTED) {
         EventDomain->AttachSocket(Connection, SOCK_READ_WRITE_EVENT);
         Server->AttachConnection(Connection);
     }
 
-    if (EventDomainArguments->UserArguments[2].UInt & ET_READ) {
+    if (EventDomainArguments->UserArguments[6].UInt & ET_READ) {
         EventDomain->DetachSocket(Connection, SOCK_READ_EVENT);
         printf("%s:%s\n", __FUNCTION__, Connection->ReadConnection().GetErrorString());
     }
 
-    if (EventDomainArguments->UserArguments[2].UInt & ET_WRITE) {
+    if (EventDomainArguments->UserArguments[6].UInt & ET_WRITE) {
         EventDomain->DetachSocket(Connection, SOCK_WRITE_EVENT);
     }
     printf("End Processing Event( FD: %d, EV: 0x%08X )\n", Connection->GetSocketFD(), EventDomainArguments->UserArguments[2].UInt);
@@ -86,3 +89,15 @@ HttpConnection *HttpConnection::Build(
 void HttpConnection::Reset() {
     RequestBuffer.Reset();
 }
+
+//void HttpConnection::OnConnected(void *Argument, ThreadPool *TPool) {
+//
+//}
+//
+//void HttpConnection::OnRead(void *Argument, ThreadPool *TPool) {
+//
+//}
+//
+//void HttpConnection::OnWrite(void *Argument, ThreadPool *TPool) {
+//
+//}

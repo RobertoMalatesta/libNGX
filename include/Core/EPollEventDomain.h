@@ -4,7 +4,7 @@ namespace ngx::Core {
         class Listening *Listening;
         epoll_event *Events;
         int EventCount;
-        UserArgument UserArguments[4];
+        UserArgument UserArguments[8];
     };
 
     class EPollEventDomain : public SocketEventDomain, MemAllocator{
@@ -19,7 +19,7 @@ namespace ngx::Core {
 
             EventError AttachSocket(Socket *S, SocketEventType Type);
             EventError DetachSocket(Socket *S, SocketEventType Type);
-            RuntimeError EventDomainProcess(void *PointerToArgument);
+            RuntimeError EventDomainProcess(EventPromiseArgs *PointerToArgument);
 
             void *Allocate(size_t Size);
             void Free(void **Pointer);

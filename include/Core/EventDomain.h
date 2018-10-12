@@ -29,6 +29,10 @@ namespace ngx::Core {
         unsigned int UInt;
     };
 
+    struct EventPromiseArgs {
+        UserArgument UserArguments[8];
+    };
+
     class EventDomain {
         protected:
             Pool Allocator;
@@ -40,6 +44,6 @@ namespace ngx::Core {
             ~EventDomain();
             static void DiscardPromise(void *Argument, ThreadPool *TPool) {};
             RuntimeError PostTimerEvent(uint32_t Seconds, PromiseCallback *Callback, void *Argument);
-            RuntimeError EventDomainProcess(void *PointerToArgument);
+            RuntimeError EventDomainProcess(EventPromiseArgs *PointerToArgument);
     };
 }
