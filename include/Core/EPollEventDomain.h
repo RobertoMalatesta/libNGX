@@ -23,8 +23,8 @@ namespace ngx::Core {
             EPollEventDomain(size_t PoolSize, int ThreadCount, int EPollSize);
             ~EPollEventDomain();
 
-            EventError AttachSocket(Socket *S, SocketEventType Type);
-            EventError DetachSocket(Socket *S, SocketEventType Type);
+            virtual EventError AttachSocket(Socket *S, SocketEventType Type);
+            virtual EventError DetachSocket(Socket *S, SocketEventType Type);
             RuntimeError EventDomainProcess(EventPromiseArgs *PointerToArgument);
 
             void *Allocate(size_t Size);

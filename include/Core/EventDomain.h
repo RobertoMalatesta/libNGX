@@ -21,6 +21,10 @@ namespace ngx::Core {
 
     class EventEntity {
         protected:
+            PromiseCallback  *OnConnected = &DiscardPromise;
+            PromiseCallback  *OnRead = &DiscardPromise;
+            PromiseCallback  *OnWrite = &DiscardPromise;
+            PromiseCallback  *OnClosed = &DiscardPromise;
             PromiseCallback  *OnEvent = &DiscardPromise;
     };
 

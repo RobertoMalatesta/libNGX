@@ -10,28 +10,90 @@ HttpServer::HttpServer(
         int ConnectionRecycleSize,
         int BufferRecycleSize) : Server(),
         EventDomain(PoolSize, ThreadCount, EPollSize) {
-    ProcessFinished = &HttpServer::HttpOnEventProcessFinished;
-    NewConnection = &HttpServer::HttpOnNewConnection;
-    ConnectionRead = &HttpServer::HttpOnConnectionRead;
-    ConnectionWrite = &HttpServer::HttpOnConnectionWrite;
 }
 
-RuntimeError HttpServer::PostProcessFinished(void *Arguments) {
+RuntimeError HttpServer::PostProcessFinished(EventPromiseArgs *Arguments) {
+//    Server->EnqueueListening(Listening);
+//    EventDomain->Free((void **)&Events);
+    EventDomain.Free((void **) &Arguments);
     return RuntimeError(0);
 }
 
-RuntimeError HttpServer::PostNewConnection(void *Arguments) {
+RuntimeError HttpServer::PostNewConnection(EventPromiseArgs *Arguments) {
+
+    int SocketFd;
+    SocketAddress *SockAddr;
+    socklen_t SocketLength;
+    HttpConnection *Connection;
+
+    if (nullptr == Arguments->UserArguments[1].Ptr ||
+        nullptr == Arguments->UserArguments[6].Ptr
+        ) {
+        return RuntimeError(EINVAL);
+    }
+
+    SocketFd = Arguments->UserArguments[0].UInt;
+    SockAddr = static_cast<SocketAddress *>(Arguments->UserArguments[1].Ptr);
+    Connection = static_cast<HttpConnection *>(Arguments->UserArguments[6].Ptr);
+    SocketLength = Arguments->UserArguments->UInt;
+    Connection = new HttpConnection(SocketFd, &SockAddr->sockaddr, SocketLength);
+    Arguments->UserArguments[6].Ptr = (void *)Connection;
+
+    AttachConnection(Connection);
+    EventDomain.PostPromise(Connection->OnConnected, Arguments);
+
     return RuntimeError(0);
 }
 
-RuntimeError HttpServer::PostConnectionRead(void *Arguments) {
+RuntimeError HttpServer::PostConnectionRead(EventPromiseArgs *Arguments) {
+
+    void *TempPointer;
+    HttpConnection *Connection;
+
+    TempPointer = Arguments->UserArguments[6].Ptr;
+
+    if (nullptr == TempPointer) {
+        return RuntimeError(EINVAL);
+    }
+
+    Connection = static_cast<HttpConnection *>(TempPointer);
+    //Detach connection first
+    EventDomain.PostPromise(Connection->OnRead, Arguments);
     return RuntimeError(0);
 }
 
-RuntimeError HttpServer::PostConnectionWrite(void *Arguments) {
+RuntimeError HttpServer::PostConnectionWrite(EventPromiseArgs *Arguments) {
+
+    void *TempPointer;
+    HttpConnection *Connection;
+
+    TempPointer = Arguments->UserArguments[6].Ptr;
+
+    if (nullptr == TempPointer) {
+        return RuntimeError(EINVAL);
+    }
+
+    Connection = static_cast<HttpConnection *>(TempPointer);
+    //Detach connection first
+    EventDomain.PostPromise(Connection->OnWrite, Arguments);
     return RuntimeError(0);
 }
 
+RuntimeError HttpServer::PostConnectionClosed(EventPromiseArgs *Arguments) {
+
+    void *TempPointer;
+    HttpConnection *Connection;
+
+    TempPointer = Arguments->UserArguments[6].Ptr;
+
+    if (nullptr == TempPointer) {
+        return RuntimeError(EINVAL);
+    }
+
+    Connection = static_cast<HttpConnection *>(TempPointer);
+    EventDomain.PostPromise(Connection->OnClosed, Arguments);
+    return RuntimeError(0);
+}
 
 void HttpServer::HttpEventProcessPromise(void *Args, ThreadPool *TPool) {
 
@@ -116,7 +178,7 @@ void HttpServer::HttpEventProcessPromise(void *Args, ThreadPool *TPool) {
 RuntimeError HttpServer::HttpServerEventProcess() {
 
     Listening *Listen;
-    EventPromiseArgs Arguments;
+    EventPromiseArgs Arguments = {0};
 
     memset(&Arguments, 0, sizeof(EventPromiseArgs));
 
@@ -139,16 +201,3 @@ RuntimeError HttpServer::HttpServerEventProcess() {
     return Error;
 }
 
-
-void HttpServer::HttpOnEventProcessFinished(void *Args, ThreadPool *TPool) {
-
-}
-void HttpServer::HttpOnNewConnection(void *Args, ThreadPool *TPool) {
-
-}
-void HttpServer::HttpOnConnectionRead(void *Args, ThreadPool *TPool) {
-
-}
-void HttpServer::HttpOnConnectionWrite(void *Args, ThreadPool *TPool) {
-
-}

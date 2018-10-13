@@ -5,7 +5,7 @@ namespace ngx::Core {
             bool IsSocketReadAttached(Socket *S) {
 
                 if (nullptr == S) {
-                return false;
+                    return false;
                 }
 
                 return S->ReadAttach == 1;
@@ -23,7 +23,6 @@ namespace ngx::Core {
                     return;
                 }
                 S->ReadAttach = (Val == 1)? 1: 0;
-                return;
             }
 
             void SetSocketWriteAttached(Socket *S, int Val) {
@@ -31,12 +30,11 @@ namespace ngx::Core {
                     return;
                 }
                 S->WriteAttach = (Val == 1)? 1: 0;
-                return;
             }
         public:
             SocketEventDomain(size_t PoolSize, int ThreadCount);
-            EventError AttachSocket(Socket *S, SocketEventType Type) { return EventError(0);};
-            EventError DetachSocket(Socket *S, SocketEventType Type) { return EventError(0);};
+            virtual EventError AttachSocket(Socket *S, SocketEventType Type) = 0;
+            virtual EventError DetachSocket(Socket *S, SocketEventType Type) = 0;
     };
 }
 

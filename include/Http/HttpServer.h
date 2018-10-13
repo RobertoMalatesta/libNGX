@@ -13,20 +13,15 @@ namespace ngx::Http {
 
 
     class HttpServer : public Server {
-        private:
-
-            static void HttpOnEventProcessFinished(void *Args, ThreadPool *TPool);
-            static void HttpOnNewConnection(void *Args, ThreadPool *TPool);
-            static void HttpOnConnectionRead(void *Args, ThreadPool *TPool);
-            static void HttpOnConnectionWrite(void *Args, ThreadPool *TPool);
         protected:
 
             static void HttpEventProcessPromise(void *Args, ThreadPool *TPool);
 
-            virtual RuntimeError PostProcessFinished(void *Arguments);
-            virtual RuntimeError PostNewConnection(void *Arguments);
-            virtual RuntimeError PostConnectionRead(void *Arguments);
-            virtual RuntimeError PostConnectionWrite(void *Arguments);
+            virtual RuntimeError PostProcessFinished(EventPromiseArgs *Arguments);
+            virtual RuntimeError PostNewConnection(EventPromiseArgs *Arguments);
+            virtual RuntimeError PostConnectionRead(EventPromiseArgs *Arguments);
+            virtual RuntimeError PostConnectionWrite(EventPromiseArgs *Arguments);
+            virtual RuntimeError PostConnectionClosed(EventPromiseArgs *Arguments);
 
             EPollEventDomain EventDomain;
             HttpPerformanceUnit PerformanceCounters;

@@ -3,14 +3,7 @@
 using namespace ngx::Core;
 
 Server::Server() : ListeningSentinel(nullptr, 0), ConnectionSentinel(nullptr, 0){
-    ProcessFinished = & Server::EmptyPromise;
-    NewConnection = & Server::EmptyPromise;
-    ConnectionRead = & Server::EmptyPromise;
-    ConnectionWrite = & Server::EmptyPromise;
     Lock.Unlock();
-}
-
-void Server::EmptyPromise(void *Arguments, ThreadPool *TPool) {
 }
 
 EventError Server::EnqueueListening(Listening *L) {
@@ -79,18 +72,22 @@ EventError Server::DetachConnection(Connection *C) {
     return EventError(0);
 }
 
-RuntimeError Server::PostProcessFinished(void *Arguments) {
+RuntimeError Server::PostProcessFinished(EventPromiseArgs *) {
     return RuntimeError(EINVAL);
 }
 
-RuntimeError Server::PostNewConnection(void *Arguments) {
+RuntimeError Server::PostNewConnection(EventPromiseArgs *) {
     return RuntimeError(EINVAL);
 }
 
-RuntimeError Server::PostConnectionRead(void *Arguments){
+RuntimeError Server::PostConnectionRead(EventPromiseArgs *){
     return RuntimeError(EINVAL);
 }
 
-RuntimeError Server::PostConnectionWrite(void *Arguments){
+RuntimeError Server::PostConnectionWrite(EventPromiseArgs *){
+    return RuntimeError(EINVAL);
+}
+
+RuntimeError Server::PostConnectionClosed(EventPromiseArgs *){
     return RuntimeError(EINVAL);
 }

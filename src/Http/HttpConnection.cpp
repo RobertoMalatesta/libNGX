@@ -11,8 +11,13 @@ HttpConnection::HttpConnection(
                         ):
         TCP4Connection(SocketAddress, SocketLength),
         RequestBuffer(Recycler, BufferBlockSize){
+
     Lock.Unlock();
-    OnEvent = & HttpConnection::OnEventFunc;
+
+    OnConnected = & HttpConnection::OnConnectedEvent;
+    OnRead = & HttpConnection::OnReadEvent;
+    OnWrite = & HttpConnection::OnWriteEvent;
+    OnClosed = & HttpConnection::OnClosedEvent;
 }
 
 HttpConnection::HttpConnection(
@@ -29,6 +34,106 @@ HttpConnection::HttpConnection(
 }
 
 char buffer[BUFSIZ];
+
+void HttpConnection::OnConnectedEvent(void *Arguments, ThreadPool *TPool) {
+
+    void *TempPointer;
+    HttpServer *Server;
+    EventPromiseArgs *TempArgument;
+    EPollEventDomain *EventDomain;
+    HttpConnection *Connection;
+
+    printf("EnterPromise%s, Arguments: %p\n", __FUNCTION__, Arguments);
+
+    TempArgument = static_cast<EventPromiseArgs *>(Arguments);
+
+    if (TempArgument->UserArguments[3].Ptr == nullptr ||
+        TempArgument->UserArguments[4].Ptr == nullptr ||
+        TempArgument->UserArguments[6].Ptr == nullptr
+        ) {
+        return;
+    }
+    Server = static_cast<HttpServer *>(TempArgument->UserArguments[3].Ptr);
+    EventDomain = static_cast<EPollEventDomain *>(TempArgument->UserArguments[4].Ptr);
+    Connection = static_cast<HttpConnection *>(TempArgument->UserArguments[6].Ptr);
+
+    printf("LeavePromise%s, Arguments: %p\n", __FUNCTION__, Arguments);
+}
+
+void HttpConnection::OnReadEvent(void *Arguments, ThreadPool *TPool) {
+
+    void *TempPointer;
+    HttpServer *Server;
+    EventPromiseArgs *TempArgument;
+    EPollEventDomain *EventDomain;
+    HttpConnection *Connection;
+
+    printf("EnterPromise%s, Arguments: %p\n", __FUNCTION__, Arguments);
+
+    TempArgument = static_cast<EventPromiseArgs *>(Arguments);
+
+    if (TempArgument->UserArguments[3].Ptr == nullptr ||
+        TempArgument->UserArguments[4].Ptr == nullptr ||
+        TempArgument->UserArguments[6].Ptr == nullptr
+        ) {
+        return;
+    }
+    Server = static_cast<HttpServer *>(TempArgument->UserArguments[3].Ptr);
+    EventDomain = static_cast<EPollEventDomain *>(TempArgument->UserArguments[4].Ptr);
+    Connection = static_cast<HttpConnection *>(TempArgument->UserArguments[6].Ptr);
+
+    printf("LeavePromise%s, Arguments: %p\n", __FUNCTION__, Arguments);
+}
+
+void HttpConnection::OnWriteEvent(void *Arguments, ThreadPool *TPool) {
+
+    void *TempPointer;
+    HttpServer *Server;
+    EventPromiseArgs *TempArgument;
+    EPollEventDomain *EventDomain;
+    HttpConnection *Connection;
+
+    printf("EnterPromise%s, Arguments: %p\n", __FUNCTION__, Arguments);
+
+    TempArgument = static_cast<EventPromiseArgs *>(Arguments);
+
+    if (TempArgument->UserArguments[3].Ptr == nullptr ||
+        TempArgument->UserArguments[4].Ptr == nullptr ||
+        TempArgument->UserArguments[6].Ptr == nullptr
+        ) {
+        return;
+    }
+    Server = static_cast<HttpServer *>(TempArgument->UserArguments[3].Ptr);
+    EventDomain = static_cast<EPollEventDomain *>(TempArgument->UserArguments[4].Ptr);
+    Connection = static_cast<HttpConnection *>(TempArgument->UserArguments[6].Ptr);
+
+    printf("LeavePromise%s, Arguments: %p\n", __FUNCTION__, Arguments);
+}
+
+void HttpConnection::OnClosedEvent(void *Arguments, ThreadPool *TPool) {
+
+    void *TempPointer;
+    HttpServer *Server;
+    EventPromiseArgs *TempArgument;
+    EPollEventDomain *EventDomain;
+    HttpConnection *Connection;
+
+    printf("EnterPromise%s, Arguments: %p\n", __FUNCTION__, Arguments);
+
+    TempArgument = static_cast<EventPromiseArgs *>(Arguments);
+
+    if (TempArgument->UserArguments[3].Ptr == nullptr ||
+        TempArgument->UserArguments[4].Ptr == nullptr ||
+        TempArgument->UserArguments[6].Ptr == nullptr
+        ) {
+        return;
+    }
+    Server = static_cast<HttpServer *>(TempArgument->UserArguments[3].Ptr);
+    EventDomain = static_cast<EPollEventDomain *>(TempArgument->UserArguments[4].Ptr);
+    Connection = static_cast<HttpConnection *>(TempArgument->UserArguments[6].Ptr);
+
+    printf("LeavePromise%s, Arguments: %p\n", __FUNCTION__, Arguments);
+}
 
 void HttpConnection::OnEventFunc(void *Argument, ThreadPool *TPool) {
 

@@ -33,7 +33,7 @@ EventError EPollEventDomain::AttachSocket(Socket *S, SocketEventType Type) {
     }
 
     unsigned int EPollCommand = EPOLL_CTL_ADD;
-    struct epoll_event Event;
+    struct epoll_event Event = {0};
     Event.data.ptr = (void *) S;
     Event.events = 0;
 
@@ -270,7 +270,17 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
         }
     }
 
-    Server->PostProcessFinished(Arguments);
+    TempPointer = Allocate(sizeof(EventPromiseArgs));
+
+    if (nullptr == TempPointer) {
+        return RuntimeError(ENOMEM, "No sufficent memoey!");
+    }
+
+    memcpy(TempPointer, (void *)Arguments, sizeof(EventPromiseArgs));
+
+    TempEventArguments = static_cast<EventPromiseArgs *>(TempPointer);
+
+    Server->PostProcessFinished(TempEventArguments);
     return RuntimeError(0);
 }
 
