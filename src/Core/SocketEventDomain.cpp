@@ -2,6 +2,9 @@
 
 using namespace ngx::Core;
 
+SocketEventDomain::SocketEventDomain(size_t PoolSize, int ThreadCount) : EventDomain(PoolSize, ThreadCount) {
+}
+
 RuntimeError EventDomain::EventDomainProcess(EventPromiseArgs* PointerToArgument) {
 
     if (nullptr == Timers) {
@@ -13,5 +16,7 @@ RuntimeError EventDomain::EventDomainProcess(EventPromiseArgs* PointerToArgument
     return RuntimeError(0);
 }
 
-SocketEventDomain::SocketEventDomain(size_t PoolSize, int ThreadCount) : EventDomain(PoolSize, ThreadCount) {
+RuntimeError EventDomain::PostPromise(PromiseCallback *Callback, void *Argument) {
+    TPool.PostPromise(Callback, Argument);
+    return RuntimeError(0);
 }

@@ -2,10 +2,9 @@
 
 using namespace ngx::Core;
 
-EPollEventDomain::EPollEventDomain(size_t PoolSize, int ThreadCount, int EPollSize, PromiseCallback *ProcessPromise) :
+EPollEventDomain::EPollEventDomain(size_t PoolSize, int ThreadCount, int EPollSize) :
         SocketEventDomain(PoolSize, ThreadCount) {
     EPollFD = epoll_create(EPollSize);
-    this->EventPromise = ProcessPromise;
     Lock.Unlock();
 }
 
@@ -157,7 +156,6 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
     Socket *TempSocket;
     EventPromiseArgs *TempEventArguments;
     Listening *Listen;
-    Connection *C;
     Server *Server;
 
     /* [TODO] should move to initialize code latter! */
@@ -176,8 +174,9 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
     }
 
     Listen = static_cast<Listening *>(Arguments->UserArguments[5].Ptr);
+    Server = static_cast<class Server *>(Arguments->UserArguments[3].Ptr);
 
-    if (nullptr == Listen) {
+    if (nullptr == Listen || nullptr == Server) {
         return RuntimeError(ENOENT, "Listen queue empty!");
     }
 
@@ -216,7 +215,6 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
             return RuntimeError(0);
         }
     } else {
-        Server = static_cast<class Server *>(Arguments->UserArguments[3].Ptr);
 
         for (int i=0; i<EventCount; i++) {
 
@@ -225,7 +223,6 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
             }
 
             TempSocket = static_cast<Socket *>(Events[i].data.ptr);
-
             TempPointer = Allocate((sizeof(EventPromiseArgs)));
 
             if (TempPointer == nullptr) {
@@ -256,25 +253,24 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
                 TempEventArguments->UserArguments[1].Ptr = (void *)TempSocketAddr;
                 TempEventArguments->UserArguments[2].UInt = TempSocketLength;
 
-                Server->PostNewConnection(TempEventArguments, &TPool);
+                Server->PostNewConnection(TempEventArguments);
             }
             else {
-                C = (Connection *)TempSocket;
-                TempEventArguments->UserArguments[6].Ptr = C;
+                TempEventArguments->UserArguments[6].Ptr = (void *)TempSocket;
                 if (Events[i].events & (EPOLLIN | EPOLLRDHUP)) {
                     TempEventArguments->UserArguments[7].UInt |= ET_READ;
-                    Server->PostConnectionRead(TempEventArguments, &TPool);
+                    Server->PostConnectionRead(TempEventArguments);
                 }
                 if (Events[i].events & (EPOLLOUT)){
                     TempEventArguments->UserArguments[7].UInt |= ET_WRITE;
-                    Server->PostConnectionWrite(TempEventArguments, &TPool);
+
+                    Server->PostConnectionWrite(TempEventArguments);
                 }
             }
         }
-
-        TPool.PostPromise(EventPromise, (void *)Arguments);
     }
 
+    Server->PostProcessFinished(Arguments);
     return RuntimeError(0);
 }
 

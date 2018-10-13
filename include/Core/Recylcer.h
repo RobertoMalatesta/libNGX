@@ -2,12 +2,13 @@ namespace ngx::Core {
 
     class Resetable {
         public:
-            void Reset() {};
+            virtual void Reset() = 0;
     };
 
     class Recyclable : public Resetable, public Queue {
         public:
             Recyclable(): Queue() {};
+            virtual void Reset() {};
     };
 
     class Recycler {

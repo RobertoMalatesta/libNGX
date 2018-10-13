@@ -1,20 +1,26 @@
 namespace ngx::Core {
-    struct EPollEventDomainArgument {
-        EPollEventDomain *EventDomain;
-        class Listening *Listening;
-        epoll_event *Events;
-        int EventCount;
-        UserArgument UserArguments[8];
-    };
+
+    /*
+     * EPollArguments
+     *
+     * UserArgument[0] = temp arg0
+     * UserArgument[1] = temp arg1
+     * UserArgument[2] = temp arg2
+     * UserArgument[3] = Server
+     * UserArgument[4] = EventDomain
+     * UserArgument[5] = Listening
+     * UserArgument[6] = Connection
+     * UserArgument[7] = EventType
+     *
+     * */
 
     class EPollEventDomain : public SocketEventDomain, MemAllocator{
         protected:
             int EPollFD = -1;
             atomic_flag Waiting = ATOMIC_FLAG_INIT;
-            PromiseCallback *EventPromise;
         public:
 
-            EPollEventDomain(size_t PoolSize, int ThreadCount, int EPollSize, PromiseCallback  *ProcessPromise);
+            EPollEventDomain(size_t PoolSize, int ThreadCount, int EPollSize);
             ~EPollEventDomain();
 
             EventError AttachSocket(Socket *S, SocketEventType Type);

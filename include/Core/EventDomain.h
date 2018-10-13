@@ -44,6 +44,7 @@ namespace ngx::Core {
             ~EventDomain();
             static void DiscardPromise(void *Argument, ThreadPool *TPool) {};
             RuntimeError PostTimerEvent(uint32_t Seconds, PromiseCallback *Callback, void *Argument);
+            RuntimeError PostPromise(PromiseCallback *Callback, void *Argument);
             RuntimeError EventDomainProcess(EventPromiseArgs *PointerToArgument);
     };
 }

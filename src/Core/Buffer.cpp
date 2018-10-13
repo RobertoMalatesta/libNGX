@@ -87,10 +87,6 @@ u_char Buffer::ReadByte() {
     return Ret;
 }
 
-void Buffer::Reset() {
-
-}
-
 BufferMemoryBlockRecycler::BufferMemoryBlockRecycler(
         size_t BufferMemoryBlockSize,
         uint64_t RecyclerSize,

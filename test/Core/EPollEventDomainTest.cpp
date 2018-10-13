@@ -4,20 +4,20 @@ using namespace ngx::Core;
 
 static void HttpEventProcessPromise(void *Args, ThreadPool *TPool) {
 
-    EPollEventDomainArgument *EPollArguments;
-
-    if (nullptr == Args) {
-        return;
-    }
-
-    EPollArguments = static_cast<EPollEventDomainArgument *>(Args);
-    EPollEventDomain *Domain = static_cast<EPollEventDomain *>(EPollArguments->EventDomain);
-    epoll_event *Events = EPollArguments->Events;
-    Listening *Listening = EPollArguments->Listening;
-
-    if (Domain == nullptr || Events == nullptr) {
-        return;
-    }
+//    EPollEventDomainArgument *EPollArguments;
+//
+//    if (nullptr == Args) {
+//        return;
+//    }
+//
+//    EPollArguments = static_cast<EPollEventDomainArgument *>(Args);
+//    EPollEventDomain *Domain = static_cast<EPollEventDomain *>(EPollArguments->EventDomain);
+//    epoll_event *Events = EPollArguments->Events;
+//    Listening *Listening = EPollArguments->Listening;
+//
+//    if (Domain == nullptr || Events == nullptr) {
+//        return;
+//    }
 
 //    Domain->FreeAllocatedMemory((void **)&EPollArguments);
 //    Domain->FreeAllocatedMemory((void **)&Events);
@@ -32,7 +32,7 @@ int EPollEventDomainTest() {
     server_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
     TCP4Listening Listen((sockaddr *)&server_sockaddr, sizeof(server_sockaddr));
-    EPollEventDomain Domain(40960, 4, 31723, &HttpEventProcessPromise);
+    EPollEventDomain Domain(40960, 4, 31723);
 
     Listen.SetPortReuse(true).PrintError();
     Listen.Listen().PrintError();

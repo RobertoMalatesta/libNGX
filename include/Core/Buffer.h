@@ -26,7 +26,7 @@ namespace ngx::Core {
        size_t Length;
     };
 
-    class Buffer : public Resetable{
+    class Buffer : public Resetable {
         protected:
             SpinLock Lock;
             size_t BlockSize = 0;
@@ -37,7 +37,7 @@ namespace ngx::Core {
             Buffer(BufferMemoryBlockRecycler *Recycler, size_t BlockSize = BUFFER_DEFAULT_BLOCK_SIZE);
             RuntimeError WriteDataToBuffer(u_char *PointerToData, size_t DataLength);
             u_char ReadByte();
-            void Reset();
+            virtual void Reset() {};
     };
 
     class BufferMemoryBlockRecycler : public Recycler {

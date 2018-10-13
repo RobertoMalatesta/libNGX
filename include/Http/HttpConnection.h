@@ -1,18 +1,5 @@
 namespace ngx::Http {
 
-    /*
-     * EPollArguments
-     *
-     * UserArgument[0] = temp arg0
-     * UserArgument[1] = temp arg1
-     * UserArgument[2] = temp arg2
-     * UserArgument[3] = Server
-     * UserArgument[4] = EventDomain
-     * UserArgument[5] = Listening
-     * UserArgument[6] = Connection
-     * UserArgument[7] = EventType
-     *
-     * */
 
     class HttpConnection: public TCP4Connection, Resetable {
         protected:

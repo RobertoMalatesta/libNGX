@@ -39,6 +39,6 @@ namespace ngx::Http {
 
             void ProcessHttpRequest();
             RuntimeError WriteDataToBuffer(HttpConnection *C);
-            void Reset();
+            virtual void Reset() {};
     };
 }
