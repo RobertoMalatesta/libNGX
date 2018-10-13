@@ -15,8 +15,6 @@ namespace ngx::Http {
     class HttpServer : public Server {
         protected:
 
-            static void HttpEventProcessPromise(void *Args, ThreadPool *TPool);
-
             virtual RuntimeError PostProcessFinished(EventPromiseArgs *Arguments);
             virtual RuntimeError PostNewConnection(EventPromiseArgs *Arguments);
             virtual RuntimeError PostConnectionRead(EventPromiseArgs *Arguments);

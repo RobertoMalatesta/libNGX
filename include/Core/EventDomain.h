@@ -15,17 +15,16 @@ namespace ngx::Core {
         SOCK_READ_WRITE_EVENT
     } SocketEventType;
 
-    static void DiscardPromise(void *Argument, ThreadPool *TPool) {
-        return;
+    static void DiscardPromise(void *, ThreadPool *) {
+        printf("discard promise!");
     }
 
     class EventEntity {
         protected:
-            PromiseCallback  *OnConnected = &DiscardPromise;
-            PromiseCallback  *OnRead = &DiscardPromise;
-            PromiseCallback  *OnWrite = &DiscardPromise;
-            PromiseCallback  *OnClosed = &DiscardPromise;
-            PromiseCallback  *OnEvent = &DiscardPromise;
+            PromiseCallback  *OnConnected = DiscardPromise;
+            PromiseCallback  *OnRead = DiscardPromise;
+            PromiseCallback  *OnWrite = DiscardPromise;
+            PromiseCallback  *OnClosed = DiscardPromise;
     };
 
     union UserArgument {
@@ -34,7 +33,7 @@ namespace ngx::Core {
     };
 
     struct EventPromiseArgs {
-        UserArgument UserArguments[8];
+        UserArgument UserArguments[12];
     };
 
     class EventDomain {

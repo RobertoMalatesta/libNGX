@@ -173,8 +173,8 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
         return RuntimeError(ENOENT, "EPollEventDomain initial failed!");
     }
 
-    Listen = static_cast<Listening *>(Arguments->UserArguments[5].Ptr);
     Server = static_cast<class Server *>(Arguments->UserArguments[3].Ptr);
+    Listen = static_cast<Listening *>(Arguments->UserArguments[5].Ptr);
 
     if (nullptr == Listen || nullptr == Server) {
         return RuntimeError(ENOENT, "Listen queue empty!");
@@ -259,11 +259,12 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
                 TempEventArguments->UserArguments[6].Ptr = (void *)TempSocket;
                 if (Events[i].events & (EPOLLIN | EPOLLRDHUP)) {
                     TempEventArguments->UserArguments[7].UInt |= ET_READ;
+                    DetachSocket(TempSocket, SOCK_READ_EVENT);
                     Server->PostConnectionRead(TempEventArguments);
                 }
                 if (Events[i].events & (EPOLLOUT)){
                     TempEventArguments->UserArguments[7].UInt |= ET_WRITE;
-
+                    DetachSocket(TempSocket, SOCK_WRITE_EVENT);
                     Server->PostConnectionWrite(TempEventArguments);
                 }
             }

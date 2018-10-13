@@ -7,17 +7,16 @@ HttpConnection::HttpConnection(
         struct sockaddr *SocketAddress,
                 socklen_t SocketLength,
                 BufferMemoryBlockRecycler *Recycler,
-                size_t BufferBlockSize
-                        ):
+                size_t BufferBlockSize):
+
         TCP4Connection(SocketAddress, SocketLength),
         RequestBuffer(Recycler, BufferBlockSize){
 
     Lock.Unlock();
-
-    OnConnected = & HttpConnection::OnConnectedEvent;
-    OnRead = & HttpConnection::OnReadEvent;
-    OnWrite = & HttpConnection::OnWriteEvent;
-    OnClosed = & HttpConnection::OnClosedEvent;
+    OnConnected = HttpConnection::OnConnectedEvent;
+    OnRead = HttpConnection::OnReadEvent;
+    OnWrite = HttpConnection::OnWriteEvent;
+    OnClosed = HttpConnection::OnClosedEvent;
 }
 
 HttpConnection::HttpConnection(
@@ -30,10 +29,12 @@ HttpConnection::HttpConnection(
         TCP4Connection(SocketFd, SocketAddress, SocketLength),
         RequestBuffer(Recycler, BufferBlockSize){
     Lock.Unlock();
-    OnEvent = & HttpConnection::OnEventFunc;
-}
 
-char buffer[BUFSIZ];
+    OnConnected = HttpConnection::OnConnectedEvent;
+    OnRead = HttpConnection::OnReadEvent;
+    OnWrite = HttpConnection::OnWriteEvent;
+    OnClosed = HttpConnection::OnClosedEvent;
+}
 
 void HttpConnection::OnConnectedEvent(void *Arguments, ThreadPool *TPool) {
 
@@ -43,7 +44,7 @@ void HttpConnection::OnConnectedEvent(void *Arguments, ThreadPool *TPool) {
     EPollEventDomain *EventDomain;
     HttpConnection *Connection;
 
-    printf("EnterPromise%s, Arguments: %p\n", __FUNCTION__, Arguments);
+    printf("EnterPromise: Connected, Arguments: %p\n", Arguments);
 
     TempArgument = static_cast<EventPromiseArgs *>(Arguments);
 
@@ -53,11 +54,14 @@ void HttpConnection::OnConnectedEvent(void *Arguments, ThreadPool *TPool) {
         ) {
         return;
     }
+
     Server = static_cast<HttpServer *>(TempArgument->UserArguments[3].Ptr);
     EventDomain = static_cast<EPollEventDomain *>(TempArgument->UserArguments[4].Ptr);
     Connection = static_cast<HttpConnection *>(TempArgument->UserArguments[6].Ptr);
 
-    printf("LeavePromise%s, Arguments: %p\n", __FUNCTION__, Arguments);
+    EventDomain->AttachSocket(Connection, SOCK_READ_WRITE_EVENT);
+
+    printf("LeavePromise: Connected, Arguments: %p\n", Arguments);
 }
 
 void HttpConnection::OnReadEvent(void *Arguments, ThreadPool *TPool) {
@@ -68,7 +72,7 @@ void HttpConnection::OnReadEvent(void *Arguments, ThreadPool *TPool) {
     EPollEventDomain *EventDomain;
     HttpConnection *Connection;
 
-    printf("EnterPromise%s, Arguments: %p\n", __FUNCTION__, Arguments);
+    printf("EnterPromise: Read, Arguments: %p\n", Arguments);
 
     TempArgument = static_cast<EventPromiseArgs *>(Arguments);
 
@@ -78,11 +82,15 @@ void HttpConnection::OnReadEvent(void *Arguments, ThreadPool *TPool) {
         ) {
         return;
     }
+
     Server = static_cast<HttpServer *>(TempArgument->UserArguments[3].Ptr);
     EventDomain = static_cast<EPollEventDomain *>(TempArgument->UserArguments[4].Ptr);
     Connection = static_cast<HttpConnection *>(TempArgument->UserArguments[6].Ptr);
 
-    printf("LeavePromise%s, Arguments: %p\n", __FUNCTION__, Arguments);
+    Connection->ReadConnection();
+    EventDomain->AttachSocket(Connection, SOCK_READ_EVENT);
+
+    printf("LeavePromise: Read, Arguments: %p\n", Arguments);
 }
 
 void HttpConnection::OnWriteEvent(void *Arguments, ThreadPool *TPool) {
@@ -93,7 +101,7 @@ void HttpConnection::OnWriteEvent(void *Arguments, ThreadPool *TPool) {
     EPollEventDomain *EventDomain;
     HttpConnection *Connection;
 
-    printf("EnterPromise%s, Arguments: %p\n", __FUNCTION__, Arguments);
+    printf("EnterPromise: Write, Arguments: %p\n", Arguments);
 
     TempArgument = static_cast<EventPromiseArgs *>(Arguments);
 
@@ -107,7 +115,9 @@ void HttpConnection::OnWriteEvent(void *Arguments, ThreadPool *TPool) {
     EventDomain = static_cast<EPollEventDomain *>(TempArgument->UserArguments[4].Ptr);
     Connection = static_cast<HttpConnection *>(TempArgument->UserArguments[6].Ptr);
 
-    printf("LeavePromise%s, Arguments: %p\n", __FUNCTION__, Arguments);
+    EventDomain->DetachSocket(Connection, SOCK_WRITE_EVENT);
+
+    printf("LeavePromise: Write, Arguments: %p\n", Arguments);
 }
 
 void HttpConnection::OnClosedEvent(void *Arguments, ThreadPool *TPool) {
@@ -118,7 +128,7 @@ void HttpConnection::OnClosedEvent(void *Arguments, ThreadPool *TPool) {
     EPollEventDomain *EventDomain;
     HttpConnection *Connection;
 
-    printf("EnterPromise%s, Arguments: %p\n", __FUNCTION__, Arguments);
+    printf("EnterPromise: Closed, Arguments: %p\n", Arguments);
 
     TempArgument = static_cast<EventPromiseArgs *>(Arguments);
 
@@ -128,49 +138,12 @@ void HttpConnection::OnClosedEvent(void *Arguments, ThreadPool *TPool) {
         ) {
         return;
     }
+
     Server = static_cast<HttpServer *>(TempArgument->UserArguments[3].Ptr);
     EventDomain = static_cast<EPollEventDomain *>(TempArgument->UserArguments[4].Ptr);
     Connection = static_cast<HttpConnection *>(TempArgument->UserArguments[6].Ptr);
 
-    printf("LeavePromise%s, Arguments: %p\n", __FUNCTION__, Arguments);
-}
-
-void HttpConnection::OnEventFunc(void *Argument, ThreadPool *TPool) {
-
-//    HttpServer *Server;
-//    EPollEventDomain *EventDomain;
-//    EPollEventDomainArgument *EventDomainArguments;
-//    HttpConnection *Connection;
-//
-//    if (Argument == nullptr) {
-//        return;
-//    }
-//
-//    EventDomainArguments = static_cast<EPollEventDomainArgument *>(Argument);
-//    EventDomain = EventDomainArguments->EventDomain;
-//    Connection = static_cast<HttpConnection *>(EventDomainArguments->UserArguments[5].Ptr);
-//    Server = static_cast<HttpServer *>(EventDomainArguments->UserArguments[4].Ptr);
-//
-//    if (EventDomain == nullptr || Connection == nullptr) {
-//        return;
-//    }
-//
-//    printf("Start Processing Event( FD: %d, EV: 0x%08X )\n", Connection->GetSocketFD(), EventDomainArguments->UserArguments[2].UInt);
-//
-//    if (EventDomainArguments->UserArguments[6].UInt & ET_CONNECTED) {
-//        EventDomain->AttachSocket(Connection, SOCK_READ_WRITE_EVENT);
-//        Server->AttachConnection(Connection);
-//    }
-//
-//    if (EventDomainArguments->UserArguments[6].UInt & ET_READ) {
-//        EventDomain->DetachSocket(Connection, SOCK_READ_EVENT);
-//        printf("%s:%s\n", __FUNCTION__, Connection->ReadConnection().GetErrorString());
-//    }
-//
-//    if (EventDomainArguments->UserArguments[6].UInt & ET_WRITE) {
-//        EventDomain->DetachSocket(Connection, SOCK_WRITE_EVENT);
-//    }
-//    printf("End Processing Event( FD: %d, EV: 0x%08X )\n", Connection->GetSocketFD(), EventDomainArguments->UserArguments[2].UInt);
+    printf("LeavePromise: Closed, Arguments: %p\n", Arguments);
 }
 
 void HttpConnection::Reset() {
