@@ -62,14 +62,9 @@ void HttpConnection::OnConnectionEvent(void *Arguments, ThreadPool *TPool) {
     if ((Type & ET_READ) != 0) {
 
         HttpRequestBuffer *Buffer = &TempConnection->RequestBuffer;
+
         Buffer->WriteDataToBuffer(TempConnection);
-
-        char c;
-
-        while ((c=Buffer->ReadByte())!= '\0') {
-            printf("%c",c);
-        }
-
+        Buffer->ProcessHttpRequest();
         EventDomain->AttachSocket(TempConnection, SOCK_READ_EVENT);
     }
     if ((Type & ET_WRITE) != 0) {
@@ -78,7 +73,6 @@ void HttpConnection::OnConnectionEvent(void *Arguments, ThreadPool *TPool) {
 
     printf("LeavePromise, Arguments: %p\n", Arguments);
 }
-
 
 void HttpConnection::Reset() {
     RequestBuffer.Reset();

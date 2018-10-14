@@ -11,7 +11,7 @@ namespace ngx::Core {
             };
             int GetErrorCode() { return this->ErrorCode; }
             const char *GetErrorMessage() { return Message; }
-            void PrintError() { printf("BaseError: Unspecfied error!\n"); }
+            virtual void PrintError() { printf("BaseError: Unspecfied error!\n"); }
     };
 
     class RuntimeError : public  Error {
@@ -22,7 +22,7 @@ namespace ngx::Core {
             const char *GetErrorString() {
                 return ErrorCodeToString(ErrorCode);
             }
-            void PrintError() {
+            virtual void PrintError() {
                 printf("RuntimeError: %s, Message: %s\n", ErrorCodeToString(ErrorCode), Message == nullptr? "null": Message);
             }
     };
@@ -33,7 +33,7 @@ namespace ngx::Core {
         public:
             SocketError(int ErrorCode, const char *Message = nullptr):Error(ErrorCode, Message) {};
             const char *GetErrorString() { return ErrorCodeToString(ErrorCode); }
-        void PrintError() {
+        virtual void PrintError() {
                 printf("SocketError: %s, Message: %s\n", ErrorCodeToString(ErrorCode), Message == nullptr? "null": Message);
             }
     };
@@ -43,7 +43,7 @@ namespace ngx::Core {
             static const char *ErrorCodeToString(int ErrorCode);
         public:
             EventError(int ErrorCode, const char *Message = nullptr):Error(ErrorCode, Message) {};
-            void PrintError() {
+            virtual void PrintError() {
                 printf("EventError: %s, Message: %s\n", ErrorCodeToString(ErrorCode), Message == nullptr? "null": Message);
             }
     };

@@ -22,6 +22,8 @@ EventError EPollEventDomain::AttachSocket(Socket *S, SocketEventType Type) {
             Detached = !(ReadAttached || WriteAttached);
     int SocketFD = S->GetSocketFD();
 
+    printf("Attach Socket:%d, Type: %x\n", SocketFD, Type);
+
     if ((Type == SOCK_READ_EVENT && ReadAttached) ||
         (Type == SOCK_WRITE_EVENT && WriteAttached) ||
         (Type == SOCK_READ_WRITE_EVENT && ReadAttached && WriteAttached)
@@ -84,14 +86,15 @@ EventError EPollEventDomain::AttachSocket(Socket *S, SocketEventType Type) {
 EventError EPollEventDomain::DetachSocket(Socket *S, SocketEventType Type) {
 
     bool ReadAttached = IsSocketReadAttached(S),
-            WriteAttached = IsSocketWriteAttached(S),
-            Attached = ReadAttached || WriteAttached;
+         WriteAttached = IsSocketWriteAttached(S),
+         Attached = ReadAttached || WriteAttached;
     int SocketFD = S->GetSocketFD();
+
+    printf("Detach Socket:%d, Type: %x\n", SocketFD, Type);
 
     if ((Type == SOCK_READ_EVENT && !ReadAttached) ||
         (Type == SOCK_WRITE_EVENT && !WriteAttached) ||
-        (Type == SOCK_READ_WRITE_EVENT && !Attached)
-            ) {
+        (Type == SOCK_READ_WRITE_EVENT && !Attached)) {
         return EventError(EALREADY, "Socket already attached!");
     }
 
@@ -103,14 +106,8 @@ EventError EPollEventDomain::DetachSocket(Socket *S, SocketEventType Type) {
     struct epoll_event Event;
     Event.data.ptr = (void *) S;
     Event.events = 0;
-
-    if (ReadAttached) {
-        Event.events |= EPOLLIN | EPOLLRDHUP;
-    }
-
-    if (WriteAttached) {
-        Event.events |= EPOLLOUT;
-    }
+    Event.events |= ReadAttached? EPOLLIN | EPOLLRDHUP : 0;
+    Event.events |= WriteAttached? EPOLLOUT : 0;
 
     switch (Type) {
         case SOCK_READ_EVENT:

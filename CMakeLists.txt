@@ -31,7 +31,7 @@ set(SOURCE_FILES
         src/Core/MemoryBlock.cpp
         src/Core/MemoryBlockAllocator.cpp
         src/Core/BufferMemoryBlock.cpp
-        src/Http/HttpRequestBuffer.cpp)
+        src/Http/HttpRequestBuffer.cpp src/Http/HttpError.cpp)
 
 set(TEST_FILES
         test/Test.cpp

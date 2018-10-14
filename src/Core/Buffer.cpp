@@ -68,25 +68,6 @@ RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength)
     return RuntimeError(0);
 }
 
-u_char Buffer::ReadByte() {
-
-    if (ReadCursor.Block == WriteCursor.Block && ReadCursor.Position == WriteCursor.Position) {
-        return 0;
-    }
-
-    Lock.Lock();
-
-    if (ReadCursor.Position > ReadCursor.Block->End) {
-        ReadCursor.Block = ReadCursor.Block->GetNextBlock();
-        ReadCursor.Position = ReadCursor.Block->Start;
-    }
-
-    u_char Ret = *(ReadCursor.Position ++);
-    Lock.Unlock();
-
-    return Ret;
-}
-
 BufferMemoryBlockRecycler::BufferMemoryBlockRecycler(
         size_t BufferMemoryBlockSize,
         uint64_t RecyclerSize,

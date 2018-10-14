@@ -14,10 +14,10 @@ int BufferTest() {
 
     buffer.WriteDataToBuffer(Text, strlen((char *)Text));
 
-    while ((c=buffer.ReadByte()) != 0) {
-        printf("%c", c);
-    }
-    printf("\n");
+//    while ((c=buffer.ReadByte(buffer)) != 0) {
+//        printf("%c", c);
+//    }
+//    printf("\n");
 
     return 0;
 }
