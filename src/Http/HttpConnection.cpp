@@ -69,7 +69,6 @@ void HttpConnection::OnConnectionEvent(void *Arguments, ThreadPool *TPool) {
         while ((c=Buffer->ReadByte())!= '\0') {
             printf("%c",c);
         }
-        printf("\n");
 
         EventDomain->AttachSocket(TempConnection, SOCK_READ_EVENT);
     }

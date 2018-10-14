@@ -1,4 +1,5 @@
 #include "Core/Core.h"
+#include <sys/epoll.h>
 
 using namespace ngx::Core;
 
@@ -266,6 +267,7 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
             }
             Server->PostConnectionEvent(TempEventArguments);
         }
+        Free((void **)&Events);
     }
 
     TempPointer = Allocate(sizeof(EventPromiseArgs));

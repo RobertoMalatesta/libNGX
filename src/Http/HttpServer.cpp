@@ -13,10 +13,24 @@ HttpServer::HttpServer(
 }
 
 RuntimeError HttpServer::PostProcessFinished(EventPromiseArgs *Arguments) {
-//    Server->EnqueueListening(Listening);
-//    EventDomain->Free((void **)&Events);
-    printf("process finished!");
+
+    HttpServer *TempServer;
+    TCP4Listening *TempListen;
+
     EventDomain.Free((void **) &Arguments);
+
+    if (nullptr == Arguments
+        || nullptr == Arguments->UserArguments[3].Ptr
+        || nullptr == Arguments->UserArguments[5].Ptr
+        ) {
+
+        return RuntimeError(EINVAL);
+    }
+
+    TempServer = static_cast<HttpServer *>(Arguments->UserArguments[3].Ptr);
+    TempListen = static_cast<TCP4Listening *>(Arguments->UserArguments[5].Ptr);
+    TempServer->EnqueueListening(TempListen);
+
     return RuntimeError(0);
 }
 
@@ -43,6 +57,8 @@ RuntimeError HttpServer::PostConnectionEvent(EventPromiseArgs *Arguments) {
         SocketLength = Arguments->UserArguments->UInt;
         TempConnection = new HttpConnection(SocketFd, &SockAddr->sockaddr, SocketLength);
         TempSocket = static_cast<Socket *>(TempConnection);
+
+        EventDomain.Free((void **)SockAddr);
 
         Arguments->UserArguments[6].Ptr = (void *)TempSocket;
         AttachConnection(TempConnection);
