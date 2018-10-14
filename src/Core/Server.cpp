@@ -76,18 +76,6 @@ RuntimeError Server::PostProcessFinished(EventPromiseArgs *) {
     return RuntimeError(EINVAL);
 }
 
-RuntimeError Server::PostNewConnection(EventPromiseArgs *) {
-    return RuntimeError(EINVAL);
-}
-
-RuntimeError Server::PostConnectionRead(EventPromiseArgs *){
-    return RuntimeError(EINVAL);
-}
-
-RuntimeError Server::PostConnectionWrite(EventPromiseArgs *){
-    return RuntimeError(EINVAL);
-}
-
-RuntimeError Server::PostConnectionClosed(EventPromiseArgs *){
+RuntimeError Server::PostConnectionEvent(EventPromiseArgs *) {
     return RuntimeError(EINVAL);
 }

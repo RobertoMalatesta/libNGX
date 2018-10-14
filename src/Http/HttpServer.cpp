@@ -15,83 +15,50 @@ HttpServer::HttpServer(
 RuntimeError HttpServer::PostProcessFinished(EventPromiseArgs *Arguments) {
 //    Server->EnqueueListening(Listening);
 //    EventDomain->Free((void **)&Events);
+    printf("process finished!");
     EventDomain.Free((void **) &Arguments);
     return RuntimeError(0);
 }
 
-RuntimeError HttpServer::PostNewConnection(EventPromiseArgs *Arguments) {
+RuntimeError HttpServer::PostConnectionEvent(EventPromiseArgs *Arguments) {
 
     int SocketFd;
+    void *TempPointer;
+    Socket *TempSocket;
+    HttpConnection *TempConnection;
     SocketAddress *SockAddr;
     socklen_t SocketLength;
-    HttpConnection *Connection;
+    EventType Type;
 
-    if (nullptr == Arguments->UserArguments[1].Ptr) {
-        return RuntimeError(EINVAL);
+    Type = static_cast<EventType>(Arguments->UserArguments[7].UInt);
+
+    if ((Type & ET_CONNECTED) != 0) {
+
+        if (nullptr == Arguments->UserArguments[1].Ptr) {
+            return RuntimeError(EINVAL);
+        }
+
+        SocketFd = Arguments->UserArguments[0].UInt;
+        SockAddr = static_cast<SocketAddress *>(Arguments->UserArguments[1].Ptr);
+        SocketLength = Arguments->UserArguments->UInt;
+        TempConnection = new HttpConnection(SocketFd, &SockAddr->sockaddr, SocketLength);
+        TempSocket = static_cast<Socket *>(TempConnection);
+
+        Arguments->UserArguments[6].Ptr = (void *)TempSocket;
+        AttachConnection(TempConnection);
+    }
+    else {
+
+        TempPointer = Arguments->UserArguments[6].Ptr;
+
+        if (nullptr == TempPointer) {
+            return RuntimeError(EINVAL);
+        }
+        TempSocket = static_cast<Socket *>(TempPointer);
+        TempConnection = (HttpConnection *)TempSocket;
     }
 
-    SocketFd = Arguments->UserArguments[0].UInt;
-    SockAddr = static_cast<SocketAddress *>(Arguments->UserArguments[1].Ptr);
-    SocketLength = Arguments->UserArguments->UInt;
-    Connection = new HttpConnection(SocketFd, &SockAddr->sockaddr, SocketLength);
-    Arguments->UserArguments[6].Ptr = (void *)Connection;
-
-    AttachConnection(Connection);
-    EventDomain.PostPromise(Connection->OnConnected, Arguments);
-
-    return RuntimeError(0);
-}
-
-RuntimeError HttpServer::PostConnectionRead(EventPromiseArgs *Arguments) {
-
-    void *TempPointer;
-    HttpConnection *Connection;
-
-    TempPointer = Arguments->UserArguments[6].Ptr;
-
-    if (nullptr == TempPointer) {
-        return RuntimeError(EINVAL);
-    }
-
-    Connection = static_cast<HttpConnection *>(TempPointer);
-    printf("post read promise\n");
-    EventDomain.PostPromise(Connection->OnRead, Arguments);
-    return RuntimeError(0);
-}
-
-RuntimeError HttpServer::PostConnectionWrite(EventPromiseArgs *Arguments) {
-
-    void *TempPointer;
-    HttpConnection *Connection;
-
-    TempPointer = Arguments->UserArguments[6].Ptr;
-
-    if (nullptr == TempPointer) {
-        return RuntimeError(EINVAL);
-    }
-
-    Connection = static_cast<HttpConnection *>(TempPointer);
-
-    printf("Post write promise: %p\n", Arguments);
-    EventDomain.PostPromise(Connection->OnWrite, Arguments);
-
-    return RuntimeError(0);
-}
-
-RuntimeError HttpServer::PostConnectionClosed(EventPromiseArgs *Arguments) {
-
-    void *TempPointer;
-    HttpConnection *Connection;
-
-    TempPointer = Arguments->UserArguments[6].Ptr;
-
-    if (nullptr == TempPointer) {
-        return RuntimeError(EINVAL);
-    }
-
-    Connection = static_cast<HttpConnection *>(TempPointer);
-    printf("post closed promise\n");
-    EventDomain.PostPromise(Connection->OnClosed, Arguments);
+    EventDomain.PostPromise(TempConnection->OnEventPromise, Arguments);
     return RuntimeError(0);
 }
 

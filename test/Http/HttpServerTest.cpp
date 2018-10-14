@@ -23,7 +23,7 @@ int HttpServerTest() {
     while (Count -- > 0) {
         RuntimeError Error = Server.HttpServerEventProcess();
         Error.PrintError();
-        ForceUSleep(200000);
+        ForceUSleep(100000);
     }
 
     return 0;

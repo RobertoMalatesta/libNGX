@@ -6,11 +6,7 @@ namespace ngx::Http {
             SpinLock Lock;
             HttpRequestBuffer RequestBuffer;
 //            HttpResponseBuffer ResponseBuffer;
-
-            static void OnConnectedEvent(void *Arguments, ThreadPool *TPool);
-            static void OnReadEvent(void *Arguments, ThreadPool *TPool);
-            static void OnWriteEvent(void *Arguments, ThreadPool *TPool);
-            static void OnClosedEvent(void *Arguments, ThreadPool *TPool);
+            static void OnConnectionEvent(void *Arguments, ThreadPool *TPool);
             static void TriggerRequestHandler(void *Argument, ThreadPool *TPool) {}
             static void FinalizeRequest(void *Argument, ThreadPool *TPool) {}
             friend class HttpServer;

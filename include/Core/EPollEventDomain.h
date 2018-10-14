@@ -9,7 +9,7 @@ namespace ngx::Core {
      * UserArgument[3] = Server
      * UserArgument[4] = EventDomain
      * UserArgument[5] = Listening
-     * UserArgument[6] = Connection
+     * UserArgument[6] = Socket
      * UserArgument[7] = EventType
      *
      * */

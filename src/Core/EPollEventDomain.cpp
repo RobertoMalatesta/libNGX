@@ -146,17 +146,16 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
 
     sigset_t sigmask;
 
-    int EventCount = -1;
     epoll_event *Events;
-
+    int EventCount, TempConnectionFD;
     void *TempPointer;
-    int TempConnectionFD;
     SocketAddress *TempSocketAddr;
     socklen_t TempSocketLength;
+
+    Server *Server;
+    Listening *Listen;
     Socket *TempSocket;
     EventPromiseArgs *TempEventArguments;
-    Listening *Listen;
-    Server *Server;
 
     /* [TODO] should move to initialize code latter! */
 
@@ -215,7 +214,6 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
             return RuntimeError(0);
         }
     } else {
-
         for (int i=0; i<EventCount; i++) {
 
             if (Events[i].data.ptr == nullptr) {
@@ -229,7 +227,7 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
                 continue;
             }
 
-            memcpy(TempPointer, Arguments, sizeof(EventPromiseArgs));
+            memcpy(TempPointer, (void *)Arguments, sizeof(EventPromiseArgs));
 
             TempEventArguments = static_cast<EventPromiseArgs *>(TempPointer);
             TempEventArguments->UserArguments[7].UInt = 0;
@@ -245,29 +243,28 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
                 TempSocketAddr = static_cast<SocketAddress *>(TempPointer);
                 TempConnectionFD = accept4(Listen->GetSocketFD(), &TempSocketAddr->sockaddr, &TempSocketLength, SOCK_NONBLOCK);
 
-                if ( -1 == TempConnectionFD) {
+                if (-1 == TempConnectionFD) {
                     printf("accept4() failed in HttpEventProcessPromise!\n");
                 }
 
                 TempEventArguments->UserArguments[0].UInt = (uint32_t)TempConnectionFD;
                 TempEventArguments->UserArguments[1].Ptr = (void *)TempSocketAddr;
                 TempEventArguments->UserArguments[2].UInt = TempSocketLength;
-
-                Server->PostNewConnection(TempEventArguments);
+                TempEventArguments->UserArguments[7].UInt |= ET_CONNECTED;
             }
             else {
-                TempEventArguments->UserArguments[6].Ptr = (void *)TempSocket;
+
+                TempEventArguments->UserArguments[6].Ptr = Events[i].data.ptr;
                 if (Events[i].events & (EPOLLIN | EPOLLRDHUP)) {
                     TempEventArguments->UserArguments[7].UInt |= ET_READ;
                     DetachSocket(TempSocket, SOCK_READ_EVENT);
-                    Server->PostConnectionRead(TempEventArguments);
                 }
                 if (Events[i].events & (EPOLLOUT)){
                     TempEventArguments->UserArguments[7].UInt |= ET_WRITE;
                     DetachSocket(TempSocket, SOCK_WRITE_EVENT);
-                    Server->PostConnectionWrite(TempEventArguments);
                 }
             }
+            Server->PostConnectionEvent(TempEventArguments);
         }
     }
 
