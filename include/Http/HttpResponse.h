@@ -1,0 +1,8 @@
+//
+// Created by didi on 2018/10/16.
+//
+
+#ifndef NGXLIBRARY_HTTPRESPONSE_H
+#define NGXLIBRARY_HTTPRESPONSE_H
+
+#endif //NGXLIBRARY_HTTPRESPONSE_H
