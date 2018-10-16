@@ -4,15 +4,12 @@ namespace ngx::Http {
 
     class HttpRequest {
 
-        /*
-         *  enum Method
-         *  Range URI
-         *  Array *Headers
-         *
-         *
-         *
-         *
-         *
+        /* Resetable
+         * enum Method
+         * Range URI
+         * Array *Headers
+         * Range Data
          * */
+
     };
 }
