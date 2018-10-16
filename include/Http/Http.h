@@ -39,5 +39,4 @@ namespace ngx::Http {
 #include "Http/HttpConnectionRecycler.h"
 #include "Http/HttpBufferMemoryBlockRecycler.h"
 #include "Http/HttpRequestBuffer.h"
-#include "Http/HttpResponseBuffer.h"
 #include "Http/HttpConnection.h"
