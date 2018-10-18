@@ -50,21 +50,24 @@ namespace ngx::Core {
 #include "Core/ArchX86.h"
 #include "Core/LinuxOSUtility.h"
 
+#include "Core/Resetable.h"
+#include "Core/Reference.h"
 #include "Core/Queue.h"
+#include "Core/Recyclable.h"
 #include "Core/Recylcer.h"
 #include "Core/MemAllocator.h"
+#include "Core/Error.h"
+
 #include "Core/MemoryBlock.h"
 #include "Core/MemoryBlockAllocator.h"
-
 #include "Core/Time.h"
-#include "Core/Reference.h"
-#include "Core/Error.h"
 #include "Core/Array.h"
 #include "Core/List.h"
 #include "Core/Hash.h"
 #include "Core/Lock.h"
 #include "Core/RBTree.h"
 #include "Core/Checksum.h"
+#include "Core/FSTree.h"
 
 #include "Core/Pool.h"
 #include "Core/BufferMemoryBlock.h"
@@ -74,8 +77,8 @@ namespace ngx::Core {
 #include "Core/BufferBuilder.h"
 #include "Core/ThreadPool.h"
 #include "Core/TimerTree.h"
-#include "Core/FSTree.h"
 
+#include "Core/EventEntity.h"
 #include "Core/EventDomain.h"
 #include "Core/Socket.h"
 #include "Core/SocketEventDomain.h"

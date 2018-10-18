@@ -1,13 +1,15 @@
 namespace ngx::Core {
 
-    class TCP4Listening: public Listening {
-        protected:
-            uint Backlog = 1024;
+    class Connection: public Socket, public Queue{
         public:
-            TCP4Listening(struct sockaddr *SocketAddress, socklen_t SocketLength);
-            ~TCP4Listening();
-            SocketError Listen();
-            SocketError SetPortReuse(bool Open);
+            Connection(struct sockaddr *SocketAddress, socklen_t SocketLength);
+            Connection(int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength);
+            SocketError Connect() {
+                return SocketError(ENOENT, "Method not implemented!");
+            };
+            SocketError Close() {
+                return SocketError(ENOENT, "Method not implemented!");
+            };
     };
 
 

@@ -1,7 +1,6 @@
 namespace ngx::Core {
-    class MemoryBlock{
+    class MemoryBlock : public Reference{
         protected:
-            std::atomic_uint UseCount = {0};
             size_t TotalSize = 0;
             size_t FreeSize = 0;
             void *PointerToData = nullptr, *PointerToHead = nullptr;
@@ -16,6 +15,6 @@ namespace ngx::Core {
             static MemoryBlock *AddressToMemoryBlock(void *Address, size_t Size);
 
             bool IsInBlock(void *Address);
-            bool IsFreeBlock() { return UseCount == 0; }
+            bool IsFreeBlock() { return GetReference() == 0; }
     };
 }

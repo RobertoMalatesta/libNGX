@@ -42,26 +42,5 @@ namespace ngx::Core {
                 return SocketError(ENOENT, "Method not implemented!");
             }
     };
-
-    class Listening: public Socket, public Queue {
-        public:
-            Listening(struct sockaddr *SocketAddress, socklen_t SocketLength);
-            Listening(int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength);
-            SocketError Listen() {
-                return SocketError(ENOENT, "Method not implemented!");
-            }
-    };
-
-    class Connection: public Socket, public Queue{
-        public:
-            Connection(struct sockaddr *SocketAddress, socklen_t SocketLength);
-            Connection(int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength);
-            SocketError Connect() {
-                return SocketError(ENOENT, "Method not implemented!");
-            };
-            SocketError Close() {
-                return SocketError(ENOENT, "Method not implemented!");
-            };
-    };
 }
 
