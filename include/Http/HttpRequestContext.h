@@ -44,18 +44,18 @@ namespace ngx::Http {
         RL_AlmostDone
     } ;
 
-    class HttpRequestBuffer : public Buffer {
+    class HttpRequestContext {
         protected:
+            SpinLock Lock;
             HttpVersion Version;
             HttpMethod Method;
             HttpRequestState State = HTTP_INIT_STATE;
             HttpRequestLineParseState RequestLineState;
         public:
-            HttpRequestBuffer(BufferMemoryBlockRecycler *R, size_t BlockSize);
-            ~HttpRequestBuffer() = default;
-            HttpError ProcessHttpRequest();
-            HttpError ParseRequestLine();
-            RuntimeError WriteDataToBuffer(HttpConnection *C);
+
             virtual void Reset();
+            HttpError ProcessHttpRequest(Buffer &B);
+            HttpError ParseRequestLine(Buffer &B);
+
     };
 }

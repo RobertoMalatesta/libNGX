@@ -8,63 +8,8 @@ void inline HttpValidateHost();
 void inline HttpProcessRequestURI();
 void inline ResetState();
 
-HttpRequestBuffer::HttpRequestBuffer(BufferMemoryBlockRecycler *R, size_t BlockSize): Buffer(R, BlockSize) {
 
-}
-
-RuntimeError HttpRequestBuffer::WriteDataToBuffer(HttpConnection *C) {
-
-    int SocketFd = C->GetSocketFD();
-    u_char *PointerToData;
-    size_t ReadLength;
-    ssize_t RecievedSize;
-    BufferMemoryBlock *TempBlock;
-
-    while (true) {
-
-        PointerToData = WriteCursor.Position;
-        ReadLength = WriteCursor.Block->End - PointerToData;
-
-        if (ReadLength == 0) {
-
-            if (Recycler == nullptr) {
-                TempBlock = BufferMemoryBlock::Build(BlockSize);
-            }
-            else {
-                TempBlock = Recycler->Get();
-            }
-
-            if (TempBlock == nullptr) {
-                return RuntimeError(ENOMEM, "Can not allocate BufferMemoryBlock when recv()");
-            }
-            WriteCursor.Block->SetNextBlock(TempBlock);
-            WriteCursor.Block = TempBlock;
-            PointerToData = WriteCursor.Position = WriteCursor.Block->Start;
-            ReadLength = WriteCursor.Block->End - PointerToData;
-        }
-
-        RecievedSize = recv(SocketFd, PointerToData, ReadLength, 0);
-
-        if (RecievedSize == -1) {
-            if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                break;
-            }
-            else {
-                return RuntimeError(errno, "Failed to read from socket!");
-            }
-        }
-        else if (RecievedSize > 0) {
-            WriteCursor.Position += RecievedSize;
-        }
-        else {
-            break;
-        }
-    }
-
-    return RuntimeError(0);
-}
-
-HttpError HttpRequestBuffer::ProcessHttpRequest() {
+HttpError HttpRequestContext::ProcessHttpRequest(Buffer &B) {
 
     Lock.Lock();
 
@@ -82,11 +27,15 @@ HttpError HttpRequestBuffer::ProcessHttpRequest() {
     return HttpError(0);
 }
 
-HttpError HttpRequestBuffer::ParseRequestLine() {
+HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
 
     u_char C, C1, C2, C3, C4, C5, C6, C7, C8;
 
-    while (ReadByte(ReadCursor, 0, C)) {
+    BufferCursor ReadCursor;
+
+    ReadCursor = B.GetReadCursor();
+
+    while (B.ReadByte(ReadCursor, 0, C)) {
        switch (RequestLineState) {
            case RL_Start:
                if (C == CR || C == LF)
@@ -96,7 +45,7 @@ HttpError HttpRequestBuffer::ParseRequestLine() {
                }
                RequestLineState = RL_Method;
            case RL_Method:
-               if (ReadBytes4(ReadCursor, 0, C1, C2, C3, C4)) {
+               if (B.ReadBytes4(ReadCursor, 0, C1, C2, C3, C4)) {
                    if (C4 == ' ') {
                        if (C1 == 'G' && C2 == 'E' && C3 == 'T') {
                            Method = GET;
@@ -107,8 +56,8 @@ HttpError HttpRequestBuffer::ParseRequestLine() {
                        else {
                            return HttpError(EINVAL, "Invalid method!");
                        }
-                       ReadCursor = MoveCursor(ReadCursor, 4);
-                   } else if (CmpByte(ReadCursor, 4, ' ')) {
+                       ReadCursor = B.MoveCursor(ReadCursor, 4);
+                   } else if (B.CmpByte(ReadCursor, 4, ' ')) {
                        if (C2 == 'O') {
                            if (C1 == 'P' && C3 == 'S' && C4 == 'T') {
                                Method = POST;
@@ -128,9 +77,9 @@ HttpError HttpRequestBuffer::ParseRequestLine() {
                        else {
                            return HttpError(EINVAL, "Invalid method!");
                        }
-                       ReadCursor = MoveCursor(ReadCursor, 5);
-                   } else if (CmpByte(ReadCursor, 5, ' ')) {
-                       if (!ReadByte(ReadCursor, 4, C5)) {
+                       ReadCursor = B.MoveCursor(ReadCursor, 5);
+                   } else if (B.CmpByte(ReadCursor, 5, ' ')) {
+                       if (!B.ReadByte(ReadCursor, 4, C5)) {
                            return HttpError(EFAULT, "Read failed!");
                        }
                        else if (C1 == 'M' && C2 == 'K' && C3 == 'C' && C4 == 'O' && C5 == 'L') {
@@ -144,9 +93,9 @@ HttpError HttpRequestBuffer::ParseRequestLine() {
                        } else {
                            return HttpError(EINVAL, "Invalid method!");
                        }
-                       ReadCursor = MoveCursor(ReadCursor, 6);
-                   } else if (CmpByte(ReadCursor, 6, ' ')) {
-                       if (!ReadBytes2(ReadCursor, 4, C5, C6)) {
+                       ReadCursor = B.MoveCursor(ReadCursor, 6);
+                   } else if (B.CmpByte(ReadCursor, 6, ' ')) {
+                       if (!B.ReadBytes2(ReadCursor, 4, C5, C6)) {
                            return HttpError(EFAULT, "Read failed!");
                        }
                        else if (C1 == 'D' && C2 == 'E' && C3 == 'L' && C4 == 'E' && C5 == 'T' && C6 == 'E') {
@@ -157,19 +106,19 @@ HttpError HttpRequestBuffer::ParseRequestLine() {
                        } else {
                            return HttpError(EINVAL, "Invalid method!");
                        }
-                   } else if(C1 == 'O' && C2 == 'P' && C3 == 'T' && C4 == 'I' && CmpByte4(ReadCursor, 4, 'O', 'N', 'S', ' ')) {
+                   } else if(C1 == 'O' && C2 == 'P' && C3 == 'T' && C4 == 'I' && B.CmpByte4(ReadCursor, 4, 'O', 'N', 'S', ' ')) {
                         Method = OPTIONS;
                    } else if (C1 == 'P' && C2 == 'R' && C3 == 'O' && C4 == 'P' &&
-                        CmpByte4(ReadCursor, 4, 'F', 'I', 'N', 'D') && CmpByte(ReadCursor, 8, ' ')) {
+                        B.CmpByte4(ReadCursor, 4, 'F', 'I', 'N', 'D') && B.CmpByte(ReadCursor, 8, ' ')) {
                         Method = PROPFIND;
                    } else if (C1 == 'P' && C2 == 'R' && C3 == 'O' && C4 == 'P' &&
-                        CmpByte4(ReadCursor, 4, 'P', 'A', 'T', 'C') && CmpByte2(ReadCursor, 8, 'H', ' ')) {
+                        B.CmpByte4(ReadCursor, 4, 'P', 'A', 'T', 'C') && B.CmpByte2(ReadCursor, 8, 'H', ' ')) {
                         Method = PROPPATCH;
                    }
                    else {
                        return HttpError(EINVAL, "Invalid method!");
                    }
-                   ReadCursor = MoveCursor(ReadCursor, 7);
+                   ReadCursor = B.MoveCursor(ReadCursor, 7);
                    RequestLineState = RL_Space_Before_Uri;
                }
                else {
@@ -186,8 +135,7 @@ HttpError HttpRequestBuffer::ParseRequestLine() {
     return HttpError(0);
 }
 
-void HttpRequestBuffer::Reset() {
+void HttpRequestContext::Reset() {
     State = HTTP_INIT_STATE;
-    Buffer::Reset();
 }
 

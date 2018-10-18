@@ -2,22 +2,95 @@
 
 using namespace ngx::Core;
 
+static inline BufferMemoryBlock *AquireBlock (BufferMemoryBlockRecycler *R, size_t Size) {
+
+    if (R == nullptr) {
+        return BufferMemoryBlock::Build(Size);
+    } else {
+        return R->Get();
+    }
+}
+
+static inline void RecycleBlock (BufferMemoryBlockRecycler *R, BufferMemoryBlock *B) {
+
+    if (R == nullptr) {
+        BufferMemoryBlock::Destroy(&B);
+    } else {
+        R->Put(B);
+    }
+}
+
+void BufferCursor::GetReference() {
+    Block->GetReference();
+}
+
+void BufferCursor::PutReference() {
+    Block->PutReference();
+}
+
+void BufferRange::GetReference() {
+    BufferMemoryBlock *TempBlock;
+
+    TempBlock = LeftBound.Block;
+
+    while (TempBlock != RightBound.Block) {
+        TempBlock->GetReference();
+        TempBlock = TempBlock->GetNextBlock();
+    }
+
+    RightBound.Block->GetReference();
+}
+
+
+void BufferRange::PutReference() {
+    BufferMemoryBlock *TempBlock;
+
+    TempBlock = LeftBound.Block;
+
+    while (TempBlock != RightBound.Block) {
+        TempBlock->PutReference();
+        TempBlock = TempBlock->GetNextBlock();
+    }
+
+    RightBound.Block->PutReference();
+}
+
 Buffer::Buffer(BufferMemoryBlockRecycler *Recycler, size_t BlockSize) {
 
     if (Recycler != nullptr && Recycler->GetBlockSize() == BlockSize) {
         this->Recycler = Recycler;
     }
 
-    HeadBlock = BufferMemoryBlock::Build(BlockSize);
+    HeadBlock = AquireBlock(Recycler, BlockSize);
 
     if (HeadBlock == nullptr) {
         return;
     }
+
     this->BlockSize = BlockSize;
     CurrentBlock = HeadBlock;
-
     ReadCursor.Block = WriteCursor.Block = HeadBlock;
     ReadCursor.Position = WriteCursor.Position = HeadBlock->Start;
+}
+
+Buffer::~Buffer() {
+
+    BufferMemoryBlock *TempBlock, *NextBlock;
+
+    TempBlock = HeadBlock;
+
+    while (TempBlock != nullptr) {
+
+        NextBlock = TempBlock->GetNextBlock();
+
+        RecycleBlock(Recycler, TempBlock);
+
+        TempBlock = NextBlock;
+    }
+
+    ReadCursor.Position = nullptr;
+    ReadCursor.Block = nullptr;
+    WriteCursor = ReadCursor;
 }
 
 RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength) {
@@ -32,13 +105,8 @@ RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength)
         CurrentBlockFreeSize = WriteBlock->End - WriteCursor.Position;
 
         if (DataLength > CurrentBlockFreeSize) {
-            if (Recycler == nullptr) {
 
-                TempBufferBlock = BufferMemoryBlock::Build(BlockSize);
-            }
-            else {
-                TempBufferBlock = Recycler->Get();
-            }
+            TempBufferBlock = AquireBlock(Recycler, BlockSize);
 
             if (TempBufferBlock == nullptr) {
                 Lock.Unlock();
@@ -68,44 +136,115 @@ RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength)
     return RuntimeError(0);
 }
 
-BufferMemoryBlockRecycler::BufferMemoryBlockRecycler(
-        size_t BufferMemoryBlockSize,
-        uint64_t RecyclerSize,
-        MemAllocator *Allocator ) :
-        Recycler(RecyclerSize, Allocator){
-    this -> BufferMemoryBlockSize = BufferMemoryBlockSize;
+RuntimeError Buffer::WriteConnectionToBuffer(Connection *C) {
+
+    int SocketFd = C->GetSocketFD();
+    u_char *PointerToData;
+    size_t ReadLength;
+    ssize_t RecievedSize;
+    BufferMemoryBlock *TempBlock;
+
+    while (true) {
+
+        PointerToData = WriteCursor.Position;
+        ReadLength = WriteCursor.Block->End - PointerToData;
+
+        if (ReadLength == 0) {
+
+            if (Recycler == nullptr) {
+                TempBlock = BufferMemoryBlock::Build(BlockSize);
+            }
+            else {
+                TempBlock = Recycler->Get();
+            }
+
+            if (TempBlock == nullptr) {
+                return RuntimeError(ENOMEM, "Can not allocate BufferMemoryBlock when recv()");
+            }
+            WriteCursor.Block->SetNextBlock(TempBlock);
+            WriteCursor.Block = TempBlock;
+            PointerToData = WriteCursor.Position = WriteCursor.Block->Start;
+            ReadLength = WriteCursor.Block->End - PointerToData;
+        }
+
+        RecievedSize = recv(SocketFd, PointerToData, ReadLength, 0);
+
+        if (RecievedSize == -1) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                break;
+            }
+            else {
+                return RuntimeError(errno, "Failed to read from socket!");
+            }
+        }
+        else if (RecievedSize > 0) {
+            WriteCursor.Position += RecievedSize;
+        }
+        else {
+            break;
+        }
+    }
+
+    return RuntimeError(0);
 }
 
-BufferMemoryBlock* BufferMemoryBlockRecycler::Get() {
+void Buffer::Reset() {
 
-    BufferMemoryBlock *Ret;
-    Lock.Lock();
+    BufferMemoryBlock *TempBlock, *NextBlock;
 
-    if (RecycleSentinel.IsEmpty()) {
-        Ret = BufferMemoryBlock::Build(BufferMemoryBlockSize);
+    TempBlock = HeadBlock;
+
+    while (TempBlock != WriteCursor.Block && TempBlock != nullptr) {
+
+        NextBlock = TempBlock->GetNextBlock();
+        TempBlock->Reset();
+
+        if (Recycler == nullptr) {
+            BufferMemoryBlock::Destroy(&TempBlock);
+        }
+        else {
+            Recycler->Put(TempBlock);
+        }
+
+        TempBlock = NextBlock;
     }
-    else {
-        RecycleSize -= 1;
-        Ret = (BufferMemoryBlock *)RecycleSentinel.GetHead();
-        Ret->Detach();
-    }
 
-    Lock.Unlock();
-    return Ret;
+    WriteCursor.Block->Reset();
+    HeadBlock = WriteCursor.Block;
+    WriteCursor.Position = HeadBlock->Start;
+    ReadCursor = WriteCursor;
 }
 
-void BufferMemoryBlockRecycler::Put(BufferMemoryBlock *Item) {
+void Buffer::GC() {
 
-    Lock.Lock();
+    BufferMemoryBlock *TempBlock, *NextBlock;
 
-    if (RecycleSize >= RecycleMaxSize) {
-        BufferMemoryBlock::Destroy(&Item);
+    TempBlock = HeadBlock, NextBlock = TempBlock->NextBlock;
+
+    while (NextBlock != nullptr && NextBlock != ReadCursor.Block) {
+
+        if (NextBlock->GetReference() == 0) {
+            TempBlock->SetNextBlock(NextBlock->GetNextBlock());
+
+            if (Recycler == nullptr) {
+                BufferMemoryBlock::Destroy(&NextBlock);
+            }
+            else {
+                Recycler->Put(NextBlock);
+            }
+
+            NextBlock = TempBlock->GetNextBlock();
+        }
+        else {
+            TempBlock = NextBlock;
+            NextBlock = TempBlock->GetNextBlock();
+        }
     }
-    else {
-        RecycleSize += 1;
-        Item->Reset();
-        RecycleSentinel.Append(Item);
-    }
 
-    Lock.Unlock();
+    if (HeadBlock->GetReference() == 0) {
+        NextBlock = HeadBlock;
+        HeadBlock = HeadBlock->GetNextBlock();
+        NextBlock->Reset();
+        RecycleBlock(Recycler, NextBlock);
+    }
 }

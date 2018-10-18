@@ -18,4 +18,19 @@ namespace ngx::Core {
             BigSpinlock();
             void Lock();
     };
+
+    class SpinlockGuard {
+
+        protected:
+            SpinLock *Lock;
+        public:
+            SpinlockGuard(SpinLock *Lock) {
+               this->Lock = Lock;
+                Lock->Lock();
+            }
+
+            ~SpinlockGuard() {
+                Lock->Unlock();
+            }
+    };
 };

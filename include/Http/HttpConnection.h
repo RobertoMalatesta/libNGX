@@ -4,7 +4,7 @@ namespace ngx::Http {
     class HttpConnection: public TCP4Connection, Resetable {
         protected:
             SpinLock Lock;
-            HttpRequestBuffer RequestBuffer;
+            HttpRequestContext RequestBuffer;
 //            HttpResponseBuffer ResponseBuffer;
             static void OnConnectionEvent(void *Arguments, ThreadPool *TPool);
             static void TriggerRequestHandler(void *Argument, ThreadPool *TPool) {}

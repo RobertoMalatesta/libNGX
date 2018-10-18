@@ -16,11 +16,11 @@ namespace ngx::Core {
             Recyclable RecycleSentinel;
             uint64_t RecycleMaxSize = DEFAULT_RECYCLE_SIZE, RecycleSize = 0 ;
         public:
-            Recycler(uint64_t RecycleMaxSize, MemAllocator *Allocator): RecycleSentinel() {
+            Recycler(uint64_t RecycleMaxSize): RecycleSentinel() {
                 this -> RecycleMaxSize = RecycleMaxSize;
             }
-            Recyclable *Get() {return nullptr;};
-            void Put(Recyclable *Item) {};
+            virtual Recyclable *Get() {return nullptr;};
+            virtual void Put(Recyclable *Item) {};
     };
 
 }

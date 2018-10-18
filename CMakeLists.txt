@@ -25,14 +25,18 @@ set(SOURCE_FILES
         src/Core/EPollEventDomain.cpp
         src/Core/Server.cpp
         src/Core/SocketEventDomain.cpp
-        src/Http/HttpConnection.cpp
-        src/Http/HttpServer.cpp
-        src/Http/HttpConnectionRecycler.cpp
         src/Core/MemoryBlock.cpp
         src/Core/MemoryBlockAllocator.cpp
         src/Core/BufferMemoryBlock.cpp
-        src/Http/HttpRequestBuffer.cpp
-        src/Http/HttpError.cpp)
+        src/Core/BufferMemoryBlockRecycler.cpp
+        src/Core/BufferBuilder.cpp
+        src/Core/Reference.cpp
+        src/Http/HttpConnection.cpp
+        src/Http/HttpServer.cpp
+        src/Http/HttpConnectionRecycler.cpp
+        src/Http/HttpRequestContext.cpp
+        src/Http/HttpError.cpp
+        )
 
 set(TEST_FILES
         test/Test.cpp
@@ -51,9 +55,10 @@ set(TEST_FILES
         test/Core/EPollEventDomainTest.cpp
         test/Core/LockTest.cpp
         test/Core/BufferTest.cpp
-        test/Http/HttpServerTest.cpp
         test/Core/CoreTest.cpp
-        test/Http/HttpTest.cpp)
+        test/Http/HttpServerTest.cpp
+        test/Http/HttpTest.cpp
+        )
 
 include_directories(./include)
 

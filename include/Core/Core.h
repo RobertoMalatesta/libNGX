@@ -2,7 +2,7 @@
 
 namespace ngx::Core {
     using namespace ngx::Core::DefaultConfig;
-    class Ref;
+    class Reference;
     class Resetable;
     class Recyclable;
     class Recycler;
@@ -11,8 +11,11 @@ namespace ngx::Core {
     class MemAllocator;
     class Pool;
     class Array;
+    class BufferCursor;
+    class BufferRange;
     class Buffer;
     class BufferMemoryBlockRecycler;
+    class BufferBuilder;
     class Queue;
     class Error;
     class RuntimeError;
@@ -30,6 +33,7 @@ namespace ngx::Core {
     class FSTree;
     class Socket;
     class SpinLock;
+    class SpinlockGuard;
     class Promise;
     class Thread;
     class ThreadPool;
@@ -53,7 +57,7 @@ namespace ngx::Core {
 #include "Core/MemoryBlockAllocator.h"
 
 #include "Core/Time.h"
-#include "Core/Ref.h"
+#include "Core/Reference.h"
 #include "Core/Error.h"
 #include "Core/Array.h"
 #include "Core/List.h"
@@ -63,7 +67,11 @@ namespace ngx::Core {
 #include "Core/Checksum.h"
 
 #include "Core/Pool.h"
+#include "Core/BufferMemoryBlock.h"
 #include "Core/Buffer.h"
+#include "Core/BufferAllocator.h"
+#include "Core/BufferMemoryBlockRecycler.h"
+#include "Core/BufferBuilder.h"
 #include "Core/ThreadPool.h"
 #include "Core/TimerTree.h"
 #include "Core/FSTree.h"

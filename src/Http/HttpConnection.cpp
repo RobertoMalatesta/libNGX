@@ -61,7 +61,7 @@ void HttpConnection::OnConnectionEvent(void *Arguments, ThreadPool *TPool) {
     }
     if ((Type & ET_READ) != 0) {
 
-        HttpRequestBuffer *Buffer = &TempConnection->RequestBuffer;
+        HttpRequestContext *Buffer = &TempConnection->RequestBuffer;
 
         Buffer->WriteDataToBuffer(TempConnection);
         Buffer->ProcessHttpRequest();
