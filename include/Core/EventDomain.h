@@ -15,9 +15,6 @@ namespace ngx::Core {
         SOCK_READ_WRITE_EVENT
     } SocketEventType;
 
-    static void DiscardPromise(void *, ThreadPool *) {
-        printf("discard promise!");
-    }
 
     class EventDomain {
         protected:

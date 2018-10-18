@@ -4,7 +4,8 @@ namespace ngx::Http {
     class HttpConnection: public TCP4Connection, Resetable {
         protected:
             SpinLock Lock;
-            HttpRequestContext RequestBuffer;
+            Buffer ReadBuffer;
+	    HttpRequestContext RequestBuffer;
 //            HttpResponseBuffer ResponseBuffer;
             static void OnConnectionEvent(void *Arguments, ThreadPool *TPool);
             static void TriggerRequestHandler(void *Argument, ThreadPool *TPool) {}
@@ -15,7 +16,7 @@ namespace ngx::Http {
             HttpConnection(int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength, BufferMemoryBlockRecycler *Recycler = nullptr, size_t BufferBlockSize = BUFFER_DEFAULT_BLOCK_SIZE);
             ~HttpConnection() = default;
             inline RuntimeError ReadConnection() {
-                return RequestBuffer.WriteDataToBuffer(this);
+                return ReadBuffer.WriteConnectionToBuffer(this);
             }
             RuntimeError ProcessRequest() {
                 return RuntimeError(0);
