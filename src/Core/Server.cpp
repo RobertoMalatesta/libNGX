@@ -54,7 +54,7 @@ EventError Server::AttachConnection(Connection *C) {
     }
 
     Lock.Lock();
-    ConnectionSentinel.Append(C);
+    C->AttachSocket(&ConnectionSentinel);
     Lock.Unlock();
     return EventError(0);
 }
@@ -65,7 +65,7 @@ EventError Server::DetachConnection(Connection *C) {
     }
 
     Lock.Lock();
-    C->Detach();
+    C->DetachSocket();
     Lock.Unlock();
     MaxConnection.fetch_add(1);
 

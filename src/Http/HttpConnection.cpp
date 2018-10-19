@@ -3,30 +3,19 @@
 using namespace ngx::Core;
 using namespace ngx::Http;
 
-HttpConnection::HttpConnection(
-        struct sockaddr *SocketAddress,
-                socklen_t SocketLength,
-                BufferMemoryBlockRecycler *Recycler,
-                size_t BufferBlockSize):
-
-        TCP4Connection(SocketAddress, SocketLength),
-        RequestBuffer(Recycler, BufferBlockSize){
-
-    Lock.Unlock();
+HttpConnection::HttpConnection(Core::SocketAddress *SocketAddress, socklen_t SocketLength, Buffer Buf):
+    Lock(),
+    Recyclable(),
+    ReadBuffer(Buf),
+    TCP4Connection(&SocketAddress->sockaddr, SocketLength) {
     OnEventPromise = HttpConnection::OnConnectionEvent;
 }
 
-HttpConnection::HttpConnection(
-        int SocketFd,
-        struct sockaddr *SocketAddress,
-                socklen_t SocketLength,
-        BufferMemoryBlockRecycler *Recycler,
-        size_t BufferBlockSize
-        ) :
-        TCP4Connection(SocketFd, SocketAddress, SocketLength),
-        RequestBuffer(Recycler, BufferBlockSize){
-
-    Lock.Unlock();
+HttpConnection::HttpConnection( int SocketFd, Core::SocketAddress *SocketAddress, socklen_t SocketLength, Buffer Buf) :
+    Lock(),
+    Recyclable(),
+    ReadBuffer(Buf),
+    TCP4Connection(SocketFd, &SocketAddress->sockaddr, SocketLength) {
     OnEventPromise = HttpConnection::OnConnectionEvent;
 }
 
@@ -60,20 +49,15 @@ void HttpConnection::OnConnectionEvent(void *Arguments, ThreadPool *TPool) {
         EventDomain->AttachSocket(TempConnection, SOCK_READ_WRITE_EVENT);
     }
     if ((Type & ET_READ) != 0) {
-
-        HttpRequestContext *Buffer = &TempConnection->RequestBuffer;
-
-        Buffer->WriteDataToBuffer(TempConnection);
-        Buffer->ProcessHttpRequest();
-        EventDomain->AttachSocket(TempConnection, SOCK_READ_EVENT);
+        Buffer *Buffer = &TempConnection->ReadBuffer;
+        Buffer->WriteConnectionToBuffer(TempConnection);
     }
     if ((Type & ET_WRITE) != 0) {
-        EventDomain->AttachSocket(TempConnection, SOCK_WRITE_EVENT);
     }
 
     printf("LeavePromise, Arguments: %p\n", Arguments);
 }
 
 void HttpConnection::Reset() {
-    RequestBuffer.Reset();
+    ReadBuffer.Reset();
 }

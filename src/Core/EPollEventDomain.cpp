@@ -38,7 +38,7 @@ EventError EPollEventDomain::AttachSocket(Socket *S, SocketEventType Type) {
     unsigned int EPollCommand = EPOLL_CTL_ADD;
     struct epoll_event Event = {0};
     Event.data.ptr = (void *) S;
-    Event.events = 0;
+    Event.events = EPOLLET;
 
     if (!Detached) {
         EPollCommand = EPOLL_CTL_MOD;
@@ -105,7 +105,7 @@ EventError EPollEventDomain::DetachSocket(Socket *S, SocketEventType Type) {
     unsigned int EPollCommand = EPOLL_CTL_DEL;
     struct epoll_event Event;
     Event.data.ptr = (void *) S;
-    Event.events = 0;
+    Event.events = EPOLLET;
     Event.events |= ReadAttached? EPOLLIN | EPOLLRDHUP : 0;
     Event.events |= WriteAttached? EPOLLOUT : 0;
 
@@ -255,11 +255,9 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
                 TempEventArguments->UserArguments[6].Ptr = Events[i].data.ptr;
                 if (Events[i].events & (EPOLLIN | EPOLLRDHUP)) {
                     TempEventArguments->UserArguments[7].UInt |= ET_READ;
-                    DetachSocket(TempSocket, SOCK_READ_EVENT);
                 }
                 if (Events[i].events & (EPOLLOUT)){
                     TempEventArguments->UserArguments[7].UInt |= ET_WRITE;
-                    DetachSocket(TempSocket, SOCK_WRITE_EVENT);
                 }
             }
             Server->PostConnectionEvent(TempEventArguments);

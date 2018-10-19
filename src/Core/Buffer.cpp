@@ -68,9 +68,16 @@ Buffer::Buffer(BufferMemoryBlockRecycler *Recycler, size_t BlockSize) {
     }
 
     this->BlockSize = BlockSize;
-    CurrentBlock = HeadBlock;
     ReadCursor.Block = WriteCursor.Block = HeadBlock;
     ReadCursor.Position = WriteCursor.Position = HeadBlock->Start;
+}
+
+Buffer::Buffer(Buffer &Copy) {
+    Recycler = Copy.Recycler;
+    HeadBlock = Copy.HeadBlock;
+    ReadCursor = ReadCursor;
+    WriteCursor = WriteCursor;
+    Lock.Unlock();
 }
 
 Buffer::~Buffer() {
