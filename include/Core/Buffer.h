@@ -39,7 +39,7 @@ namespace ngx::Core {
             inline BufferCursor MoveCursor(BufferCursor Cursor, uint32_t Count=1) {
 
                 BufferCursor TempCursor = Cursor;
-                SpinlockGuard(&this->Lock);
+                SpinlockGuard LockGuard(&Lock);
 
                 while (Count > 0) {
 

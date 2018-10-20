@@ -55,7 +55,7 @@ RuntimeError HttpServer::PostConnectionEvent(EventPromiseArgs *Arguments) {
         SocketFd = Arguments->UserArguments[0].UInt;
         SockAddr = static_cast<SocketAddress *>(Arguments->UserArguments[1].Ptr);
         SocketLength = Arguments->UserArguments->UInt;
-        TempConnection = new HttpConnection(SocketFd, SockAddr, SocketLength);
+//        TempConnection = new HttpConnection(SocketFd, SockAddr, SocketLength, {0});
         TempSocket = static_cast<Socket *>(TempConnection);
 
         EventDomain.Free((void **)SockAddr);

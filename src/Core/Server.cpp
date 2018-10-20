@@ -2,7 +2,7 @@
 
 using namespace ngx::Core;
 
-Server::Server() : ListeningSentinel(nullptr, 0), ConnectionSentinel(nullptr, 0){
+Server::Server() : ListeningSentinel(), ConnectionSentinel(){
     Lock.Unlock();
 }
 

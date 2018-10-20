@@ -12,7 +12,8 @@ BufferMemoryBlockRecycler::BufferMemoryBlockRecycler(
 BufferMemoryBlock* BufferMemoryBlockRecycler::Get() {
 
     BufferMemoryBlock *Ret;
-    Lock.Lock();
+    
+    SpinlockGuard LockGuard(&Lock);
 
     if (RecycleSentinel.IsEmpty()) {
         Ret = BufferMemoryBlock::Build(BufferMemoryBlockSize);
@@ -23,14 +24,13 @@ BufferMemoryBlock* BufferMemoryBlockRecycler::Get() {
         Ret->Detach();
     }
 
-    Lock.Unlock();
     return Ret;
 }
 
 void BufferMemoryBlockRecycler::Put(BufferMemoryBlock *Item) {
-
-    Lock.Lock();
-
+    
+    SpinlockGuard LockGuard(&Lock);
+    
     if (RecycleSize >= RecycleMaxSize) {
         BufferMemoryBlock::Destroy(&Item);
     }
@@ -39,6 +39,4 @@ void BufferMemoryBlockRecycler::Put(BufferMemoryBlock *Item) {
         Item->Reset();
         RecycleSentinel.Append(Item);
     }
-
-    Lock.Unlock();
 }

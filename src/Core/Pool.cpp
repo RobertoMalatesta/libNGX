@@ -14,6 +14,12 @@ namespace ngx::Core {
         CurrentBlock = HeadBlock;
     }
 
+    Pool::Pool(Pool &Copy) {
+        BlockSize = Copy.BlockSize;
+        HeadBlock = Copy.HeadBlock;
+        CurrentBlock = Copy.CurrentBlock;
+    }
+
     void *Pool::Allocate(size_t Size) {
 
         void *ret = nullptr;

@@ -8,11 +8,11 @@ using namespace ngx::Core;
 int BufferTest() {
 
     u_char c;
-    Buffer buffer(nullptr);
+//c    Buffer buffer(nullptr);
 
-    u_char Text[] = "This is a very long text!";
+//    u_char Text[] = "This is a very long text!";
 
-    buffer.WriteDataToBuffer(Text, strlen((char *)Text));
+//    buffer.WriteDataToBuffer(Text, strlen((char *)Text));
 
 //    while ((c=buffer.ReadByte(buffer)) != 0) {
 //        printf("%c", c);

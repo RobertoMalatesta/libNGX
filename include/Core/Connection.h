@@ -3,9 +3,11 @@ namespace ngx::Core {
     class Connection : public Socket {
     protected:
     public:
-        Connection(struct sockaddr *SocketAddress, socklen_t SocketLength);
+        Connection();
 
-        Connection(int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength);
+        Connection(Core::SocketAddress &SocketAddress, socklen_t SocketLength);
+
+        Connection(int SocketFd, Core::SocketAddress &SocketAddress, socklen_t SocketLength);
 
         virtual SocketError Connect() {
             return SocketError(ENOENT, "Method not implemented!");
@@ -18,12 +20,10 @@ namespace ngx::Core {
 
 
     class TCP4Connection : public Connection {
-    protected:
-        Pool Allocator;
     public:
-        TCP4Connection(struct sockaddr *SocketAddress, socklen_t SocketLength);
+        TCP4Connection(Core::SocketAddress &SocketAddress, socklen_t SocketLength);
 
-        TCP4Connection(int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength);
+        TCP4Connection(int SocketFd, Core::SocketAddress &SocketAddress, socklen_t SocketLength);
 
         virtual SocketError Connect();
 

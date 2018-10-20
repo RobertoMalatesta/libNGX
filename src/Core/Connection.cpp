@@ -6,52 +6,53 @@
 
 using namespace ngx::Core;
 
-Socket::Socket(struct sockaddr *SocketAddress, socklen_t SocketLength) {
+Socket::Socket() {
     this->SocketFd = -1;
-    memcpy((void *)&(this->SocketAddress), SocketAddress, SocketLength);
+    this->SocketAddress = {0};
+    this->SocketLength = {0};
+}
+
+Socket::Socket(Core::SocketAddress &SocketAddress, socklen_t SocketLength) {
+    this->SocketFd = -1;
+    this->SocketAddress = SocketAddress;
     this->SocketLength = SocketLength;
 }
 
-Socket::Socket(int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength) {
+Socket::Socket(int SocketFd, Core::SocketAddress &SocketAddress, socklen_t SocketLength) {
 
-    if (SocketAddress == nullptr || SocketLength <= 0) {
-        Active = 0;
-        return;
-    }
-
-    memcpy((void *)&(this->SocketAddress), SocketAddress, SocketLength);
+    this->SocketAddress = SocketAddress;
     this->SocketLength = SocketLength;
-
-    if (SocketFd == -1) {
-        return;
-    }
-
     this->SocketFd = SocketFd;
-    Active = 1;
+
+    Active = (SocketFd == -1? 0: 1);
 }
 
 int Socket::GetSocketFD() {
     return SocketFd;
 }
 
-Listening::Listening(struct sockaddr *SocketAddress, socklen_t SocketLength):
+Listening::Listening(): Socket() {
+    IsListen = 1;
+}
+
+Listening::Listening(Core::SocketAddress &SocketAddress, socklen_t SocketLength):
         Socket(SocketAddress, SocketLength) {
     IsListen = 1;
 }
 
-Listening::Listening(int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength) :
+Listening::Listening(int SocketFd, Core::SocketAddress &SocketAddress, socklen_t SocketLength) :
         Socket(SocketFd, SocketAddress, SocketLength) {
     IsListen = 1;
 }
 
-TCP4Listening::TCP4Listening(struct sockaddr *SocketAddress, socklen_t SocketLength)
+TCP4Listening::TCP4Listening(Core::SocketAddress &SocketAddress, socklen_t SocketLength)
         : Listening(SocketAddress, SocketLength) {
     SocketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     Type = SOCK_TYPE_STREAM;
     Version = 4;
 
-    if ( 0 == bind(SocketFd, SocketAddress, SocketLength)) {
+    if ( 0 == bind(SocketFd, &SocketAddress.sockaddr, SocketLength)) {
         Active = 1;
     }
 }
@@ -90,20 +91,23 @@ SocketError TCP4Listening::SetPortReuse(bool Open) {
     return SocketError(0);
 }
 
-Connection::Connection(int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength)
+Connection::Connection(): Socket() {
+}
+
+Connection::Connection(int SocketFd, Core::SocketAddress &SocketAddress, socklen_t SocketLength)
         :Socket(SocketFd, SocketAddress, SocketLength) {};
-Connection::Connection(struct sockaddr *SocketAddress, socklen_t SocketLength):
+Connection::Connection(Core::SocketAddress &SocketAddress, socklen_t SocketLength):
         Socket(SocketAddress, SocketLength){}
 
-TCP4Connection::TCP4Connection(int SocketFd, struct sockaddr *SocketAddress, socklen_t SocketLength):
+TCP4Connection::TCP4Connection(int SocketFd, Core::SocketAddress &SocketAddress, socklen_t SocketLength):
         Connection(SocketFd, SocketAddress, SocketLength) {}
 
-TCP4Connection::TCP4Connection(struct sockaddr *SocketAddress, socklen_t SocketLength):
+TCP4Connection::TCP4Connection(Core::SocketAddress &SocketAddress, socklen_t SocketLength):
         Connection(SocketAddress, SocketLength) {
     SocketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     Type = SOCK_TYPE_STREAM;
 
-    if ( 0 == bind(SocketFd, SocketAddress, SocketLength)) {
+    if ( 0 == bind(SocketFd, &SocketAddress.sockaddr, SocketLength)) {
         Active = 1;
     }
 }

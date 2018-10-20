@@ -16,7 +16,7 @@ HttpError HttpRequestContext::ProcessHttpRequest(Buffer &B) {
     switch (State) {
         case HTTP_INIT_STATE:
             RequestLineState = RL_Start;
-            ParseRequestLine();
+            ParseRequestLine(B);
             break;
         default:
             State = HTTP_INIT_STATE;

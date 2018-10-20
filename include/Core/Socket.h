@@ -38,9 +38,10 @@ namespace ngx::Core {
         friend class SocketEventDomain;
 
     public:
-        Socket(struct sockaddr *SocketAddress, socklen_t SocketLength);
+        Socket();
+        Socket(Core::SocketAddress &SocketAddress, socklen_t SocketLength);
 
-        Socket(int ScoketFd, struct sockaddr *SocketAddress, socklen_t SocketLength);
+        Socket(int ScoketFd, Core::SocketAddress &SocketAddress, socklen_t SocketLength);
 
         int GetSocketFD();
 

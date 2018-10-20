@@ -7,11 +7,12 @@ namespace ngx::Http {
 
         static void OnConnectionEvent(void *Arguments, ThreadPool *TPool);
         friend class HttpServer;
+        friend class HttpConnectionRecycler;
 
     public:
-        HttpConnection(Core::SocketAddress *SocketAddress, socklen_t SocketLength, Buffer Buf);
+        HttpConnection(Core::SocketAddress &SocketAddress, socklen_t SocketLength, Buffer &Buf);
 
-        HttpConnection(int SocketFd, Core::SocketAddress *SocketAddress, socklen_t SocketLength, Buffer Buf);
+        HttpConnection(int SocketFd, Core::SocketAddress &SocketAddress, socklen_t SocketLength, Buffer &Buf);
 
         ~HttpConnection() = default;
 
