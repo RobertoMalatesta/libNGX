@@ -36,7 +36,7 @@ set(SOURCE_FILES
         src/Http/HttpConnectionRecycler.cpp
         src/Http/HttpRequestContext.cpp
         src/Http/HttpError.cpp
-        )
+        src/Core/Listening.cpp src/Core/Socket.cpp)
 
 set(TEST_FILES
         test/Test.cpp

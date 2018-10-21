@@ -5,25 +5,25 @@ namespace ngx::Core {
     public:
         Connection();
 
-        Connection(Core::SocketAddress &SocketAddress, socklen_t SocketLength);
+        Connection(struct SocketAddress &SocketAddress);
 
-        Connection(int SocketFd, Core::SocketAddress &SocketAddress, socklen_t SocketLength);
+        Connection(int SocketFd, struct SocketAddress &SocketAddress);
 
         virtual SocketError Connect() {
-            return SocketError(ENOENT, "Method not implemented!");
+            return SocketError(EINVAL, "Method not implement!");
         };
 
         virtual SocketError Close() {
-            return SocketError(ENOENT, "Method not implemented!");
+            return SocketError(EINVAL, "Method not implement!");
         };
     };
 
 
     class TCP4Connection : public Connection {
     public:
-        TCP4Connection(Core::SocketAddress &SocketAddress, socklen_t SocketLength);
+        TCP4Connection(struct SocketAddress &SocketAddress);
 
-        TCP4Connection(int SocketFd, Core::SocketAddress &SocketAddress, socklen_t SocketLength);
+        TCP4Connection(int SocketFd, struct SocketAddress &SocketAddress);
 
         virtual SocketError Connect();
 

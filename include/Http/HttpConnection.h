@@ -10,9 +10,9 @@ namespace ngx::Http {
         friend class HttpConnectionRecycler;
 
     public:
-        HttpConnection(Core::SocketAddress &SocketAddress, socklen_t SocketLength, Buffer &Buf);
+        HttpConnection(Core::SocketAddress &SocketAddress, BufferBuilder &BB);
 
-        HttpConnection(int SocketFd, Core::SocketAddress &SocketAddress, socklen_t SocketLength, Buffer &Buf);
+        HttpConnection(int SocketFd, Core::SocketAddress &SocketAddress, BufferBuilder &BB);
 
         ~HttpConnection() = default;
 

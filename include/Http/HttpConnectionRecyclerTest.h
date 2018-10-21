@@ -2,12 +2,12 @@ namespace ngx::Http {
 
     class HttpConnectionRecycler: public Recycler {
     protected:
+        BufferBuilder BB;
         SpinLock Lock;
-        MemAllocator *Allocator;
 
     public:
-        HttpConnectionRecycler(uint64_t RecyclerSize);
-        virtual HttpConnection *Get(int SocketFD, SocketAddress &SocketAddress, socklen_t SocketLength, Buffer &Buf);
+        HttpConnectionRecycler(size_t BlockSize, uint64_t BufferRecyclerSize, uint64_t RecyclerSize);
+        virtual HttpConnection *Get(int SocketFD, SocketAddress &SocketAddress);
         virtual void Put(HttpConnection *Item);
     };
 }

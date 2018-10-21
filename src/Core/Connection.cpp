@@ -6,108 +6,24 @@
 
 using namespace ngx::Core;
 
-Socket::Socket() {
-    this->SocketFd = -1;
-    this->SocketAddress = {0};
-    this->SocketLength = {0};
-}
-
-Socket::Socket(Core::SocketAddress &SocketAddress, socklen_t SocketLength) {
-    this->SocketFd = -1;
-    this->SocketAddress = SocketAddress;
-    this->SocketLength = SocketLength;
-}
-
-Socket::Socket(int SocketFd, Core::SocketAddress &SocketAddress, socklen_t SocketLength) {
-
-    this->SocketAddress = SocketAddress;
-    this->SocketLength = SocketLength;
-    this->SocketFd = SocketFd;
-
-    Active = (SocketFd == -1? 0: 1);
-}
-
-int Socket::GetSocketFD() {
-    return SocketFd;
-}
-
-Listening::Listening(): Socket() {
-    IsListen = 1;
-}
-
-Listening::Listening(Core::SocketAddress &SocketAddress, socklen_t SocketLength):
-        Socket(SocketAddress, SocketLength) {
-    IsListen = 1;
-}
-
-Listening::Listening(int SocketFd, Core::SocketAddress &SocketAddress, socklen_t SocketLength) :
-        Socket(SocketFd, SocketAddress, SocketLength) {
-    IsListen = 1;
-}
-
-TCP4Listening::TCP4Listening(Core::SocketAddress &SocketAddress, socklen_t SocketLength)
-        : Listening(SocketAddress, SocketLength) {
-    SocketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-
-    Type = SOCK_TYPE_STREAM;
-    Version = 4;
-
-    if ( 0 == bind(SocketFd, &SocketAddress.sockaddr, SocketLength)) {
-        Active = 1;
-    }
-}
-
-TCP4Listening::~TCP4Listening() {
-    if (SocketFd != -1) {
-        close(SocketFd);
-        Active = 0;
-        SocketFd = -1;
-    }
-}
-
-SocketError TCP4Listening::Listen() {
-
-    if (SocketFd == -1) {
-        return SocketError(EINVAL, "Bad Socket!");
-    }
-
-    if (-1 == listen(SocketFd, Backlog)) {
-        return SocketError(errno, "Listen to Socket failed!");
-    }
-    return SocketError(0);
-}
-
-SocketError TCP4Listening::SetPortReuse(bool Open) {
-
-    int Val = Open? 1: 0;
-
-    if ((Open && Reuse) || (!Open && !Reuse)) {
-        return SocketError(EALREADY);
-    }
-
-    if (setsockopt(SocketFd, SOL_SOCKET, SO_REUSEPORT, &Val, sizeof(int))) {
-        return SocketError(errno);
-    }
-    return SocketError(0);
-}
-
 Connection::Connection(): Socket() {
 }
 
-Connection::Connection(int SocketFd, Core::SocketAddress &SocketAddress, socklen_t SocketLength)
-        :Socket(SocketFd, SocketAddress, SocketLength) {};
-Connection::Connection(Core::SocketAddress &SocketAddress, socklen_t SocketLength):
-        Socket(SocketAddress, SocketLength){}
+Connection::Connection(struct SocketAddress &SocketAddress):
+        Socket(SocketAddress){}
 
-TCP4Connection::TCP4Connection(int SocketFd, Core::SocketAddress &SocketAddress, socklen_t SocketLength):
-        Connection(SocketFd, SocketAddress, SocketLength) {}
+Connection::Connection(int SocketFd, struct SocketAddress &SocketAddress)
+        :Socket(SocketFd, SocketAddress) {};
 
-TCP4Connection::TCP4Connection(Core::SocketAddress &SocketAddress, socklen_t SocketLength):
-        Connection(SocketAddress, SocketLength) {
+TCP4Connection::TCP4Connection(int SocketFd, struct SocketAddress &SocketAddress):
+        Connection(SocketFd, SocketAddress) {}
+
+TCP4Connection::TCP4Connection(struct SocketAddress &SocketAddress):
+        Connection(SocketAddress) {
     SocketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     Type = SOCK_TYPE_STREAM;
 
-    if ( 0 == bind(SocketFd, &SocketAddress.sockaddr, SocketLength)) {
+    if ( 0 == bind(SocketFd, &SocketAddress.sockaddr, SocketAddress.SocketLength)) {
         Active = 1;
     }
 }

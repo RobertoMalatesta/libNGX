@@ -6,6 +6,17 @@ BufferBuilder::BufferBuilder(size_t BlockSize, uint64_t RecycleSize):
 BlockSize(BlockSize),
 Recycler(BlockSize, RecycleSize) {}
 
-Buffer BufferBuilder::BuildBuffer() {
-    return Buffer(&Recycler, BlockSize);
+bool BufferBuilder::BuildBuffer(Buffer &Buf) {
+
+    Buf.Recycler = &Recycler;
+    Buf.BlockSize = BlockSize;
+    Buf.HeadBlock = Recycler.Get();
+
+    if (Buf.HeadBlock == nullptr) {
+        return false;
+    }
+
+    Buf.ReadCursor.Block = Buf.WriteCursor.Block = Buf.HeadBlock;
+    Buf.ReadCursor.Position = Buf.WriteCursor.Position = Buf.HeadBlock->Start;
+    return true;
 }

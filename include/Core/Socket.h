@@ -6,18 +6,20 @@ namespace ngx::Core {
         SOCK_TYPE_RESERVED2
     };
 
-    typedef union {
-        struct sockaddr sockaddr;
-        struct sockaddr_in sockaddr_in;
-        struct sockaddr_in6 sockaddr_in6;
-    } SocketAddress;
+    struct SocketAddress {
+        socklen_t SocketLength;
+        union {
+            struct sockaddr sockaddr;
+            struct sockaddr_in sockaddr_in;
+            struct sockaddr_in6 sockaddr_in6;
+        };
+    };
 
     class Socket : protected EventEntity {
     protected:
         Queue QueueSentienl;
         int SocketFd = -1;
         SocketAddress SocketAddress;
-        socklen_t SocketLength;
         atomic_flag EventLock = ATOMIC_FLAG_INIT;
         union {
             struct {
@@ -39,9 +41,9 @@ namespace ngx::Core {
 
     public:
         Socket();
-        Socket(Core::SocketAddress &SocketAddress, socklen_t SocketLength);
+        Socket(struct SocketAddress &SocketAddress);
 
-        Socket(int ScoketFd, Core::SocketAddress &SocketAddress, socklen_t SocketLength);
+        Socket(int SocketFd, struct SocketAddress &SocketAddress);
 
         int GetSocketFD();
 

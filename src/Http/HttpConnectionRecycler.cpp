@@ -2,22 +2,24 @@
 
 using namespace ngx::Http;
 
-HttpConnectionRecycler::HttpConnectionRecycler(uint64_t RecyclerSize) : Recycler(RecyclerSize){}
+HttpConnectionRecycler::HttpConnectionRecycler(size_t BlockSize, uint64_t BufferRecyclerSize, uint64_t RecyclerSize):
+Recycler(RecyclerSize),
+BB(BlockSize, BufferRecyclerSize) {}
 
-HttpConnection* HttpConnectionRecycler::Get(int SocketFD, SocketAddress &SocketAddress,
-                                            socklen_t SocketLength, Buffer &Buf) {
+HttpConnection* HttpConnectionRecycler::Get(int SocketFD, SocketAddress &SocketAddress) {
     HttpConnection *Ret;
     SpinlockGuard LockGuard(&Lock);
-
+    printf("get\n");
     if (RecycleSentinel.IsEmpty()) {
-        Ret = new HttpConnection(SocketFD, SocketAddress, SocketLength, Buf);
+        printf("create\n");
+        Ret = new HttpConnection(SocketFD, SocketAddress, BB);
     }
     else {
         Ret = (HttpConnection *)RecycleSentinel.GetHead();
+        RecycleSize -= 1;
         Ret->Detach();
         Ret->SocketFd = SocketFD;
         Ret->SocketAddress = SocketAddress;
-        Ret->SocketLength = SocketLength;
     }
     return  Ret;
 }
@@ -26,12 +28,13 @@ void HttpConnectionRecycler::Put(HttpConnection *Item) {
 
     SpinlockGuard LockGuard(&Lock);
 
+    Item->Reset();
+
     if (RecycleSize >= RecycleMaxSize) {
         delete Item;
     }
     else {
         RecycleSize += 1;
-        Item->Reset();
         RecycleSentinel.Append(Item);
     }
 }

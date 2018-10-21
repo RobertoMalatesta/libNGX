@@ -10,6 +10,7 @@ EventError Server::EnqueueListening(Listening *L) {
 
     Queue *PQueue;
     Listening *PListen;
+    SpinlockGuard LockGuard(&Lock);
 
     for (PQueue = ListeningSentinel.GetHead(); PQueue != ListeningSentinel.GetSentinel(); PQueue = PQueue->GetNext()) {
         PListen = (Listening *)(PQueue);
@@ -19,26 +20,22 @@ EventError Server::EnqueueListening(Listening *L) {
         }
     }
 
-    Lock.Lock();
     ListeningSentinel.Append(L);
-    Lock.Unlock();
 
     return EventError(0);
 }
 
 Listening *Server::DequeueListening() {
     Listening *Listen;
-    Lock.Lock();
+    SpinlockGuard LockGuard(&Lock);
 
     if (ListeningSentinel.IsEmpty()) {
-        Lock.Unlock();
         return nullptr;
     }
 
     Listen = (Listening *)ListeningSentinel.GetHead();
     Listen->Detach();
 
-    Lock.Unlock();
     return Listen;
 }
 

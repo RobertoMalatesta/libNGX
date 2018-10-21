@@ -6,7 +6,7 @@ namespace ngx::Core {
             BufferMemoryBlockRecycler Recycler;
         public:
             BufferBuilder(size_t BlockSize, uint64_t RecycleSize);
-            Buffer BuildBuffer();
+            bool BuildBuffer(Buffer &Buf);
             BufferAllocator BuildBufferAllocator();
     };
 }

@@ -55,41 +55,20 @@ void BufferRange::PutReference() {
     RightBound.Block->PutReference();
 }
 
-Buffer::Buffer(BufferMemoryBlockRecycler *Recycler, size_t BlockSize) {
-
-    if (Recycler != nullptr && Recycler->GetBlockSize() == BlockSize) {
-        this->Recycler = Recycler;
-    }
-
-    HeadBlock = AquireBlock(Recycler, BlockSize);
-
-    if (HeadBlock == nullptr) {
-        return;
-    }
-
-    this->BlockSize = BlockSize;
-    ReadCursor.Block = WriteCursor.Block = HeadBlock;
-    ReadCursor.Position = WriteCursor.Position = HeadBlock->Start;
-}
-
-Buffer::Buffer(Buffer &Copy) {
-    Recycler = Copy.Recycler;
-    HeadBlock = Copy.HeadBlock;
-    ReadCursor = ReadCursor;
-    WriteCursor = WriteCursor;
-    Lock.Unlock();
-}
-
 Buffer::~Buffer() {
 
     BufferMemoryBlock *TempBlock, *NextBlock;
 
     TempBlock = HeadBlock;
 
+    if ((unsigned long)HeadBlock & 0x00000FFF) {
+        printf("error!");
+    }
+
+    HeadBlock = nullptr;
+
     while (TempBlock != nullptr) {
-
         NextBlock = TempBlock->GetNextBlock();
-
         RecycleBlock(Recycler, TempBlock);
 
         TempBlock = NextBlock;
@@ -216,10 +195,11 @@ void Buffer::Reset() {
         TempBlock = NextBlock;
     }
 
-    WriteCursor.Block->Reset();
-    HeadBlock = WriteCursor.Block;
-    WriteCursor.Position = HeadBlock->Start;
-    ReadCursor = WriteCursor;
+    if (WriteCursor.Block) {
+        WriteCursor.Block->Reset();
+        WriteCursor.Position = WriteCursor.Block->Start;
+        ReadCursor = WriteCursor;
+    }
 }
 
 void Buffer::GC() {

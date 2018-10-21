@@ -26,13 +26,16 @@ static void HttpEventProcessPromise(void *Args, ThreadPool *TPool) {
 
 int EPollEventDomainTest() {
 
-    struct sockaddr_in server_sockaddr;
-    server_sockaddr.sin_family = AF_INET;
-    server_sockaddr.sin_port = htons(8080);
-    server_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    SocketAddress SocketAddress = {.sockaddr_in = server_sockaddr};
+    SocketAddress SocketAddress = {
+            .sockaddr_in = {
+                    .sin_family = AF_INET,
+                    .sin_port = htons(8080),
+                    .sin_addr = htonl(INADDR_ANY)
+            },
+            .SocketLength = sizeof(sockaddr_in)
+    };
 
-    TCP4Listening Listen(SocketAddress, sizeof(server_sockaddr));
+    TCP4Listening Listen(SocketAddress);
     EPollEventDomain Domain(40960, 4, 31723);
 
     Listen.SetPortReuse(true).PrintError();

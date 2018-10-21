@@ -38,8 +38,10 @@ namespace ngx::Core {
     class Thread;
     class ThreadPool;
     class EventDomain;
+    struct SocketAddress;
     class SocketEventDomain;
     class EPollEventDomain;
+    class Socket;
     class Connection;
     class Listening;
     class TCP4Connection;

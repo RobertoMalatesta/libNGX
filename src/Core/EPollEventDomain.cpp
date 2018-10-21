@@ -239,7 +239,7 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
                 }
 
                 TempSocketAddr = static_cast<SocketAddress *>(TempPointer);
-                TempConnectionFD = accept4(Listen->GetSocketFD(), &TempSocketAddr->sockaddr, &TempSocketLength, SOCK_NONBLOCK);
+                TempConnectionFD = accept4(Listen->GetSocketFD(), &TempSocketAddr->sockaddr, &TempSocketAddr->SocketLength, SOCK_NONBLOCK);
 
                 if (-1 == TempConnectionFD) {
                     printf("accept4() failed in HttpEventProcessPromise!\n");
@@ -247,7 +247,6 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
 
                 TempEventArguments->UserArguments[0].UInt = (uint32_t)TempConnectionFD;
                 TempEventArguments->UserArguments[1].Ptr = (void *)TempSocketAddr;
-                TempEventArguments->UserArguments[2].UInt = TempSocketLength;
                 TempEventArguments->UserArguments[7].UInt |= ET_CONNECTED;
             }
             else {

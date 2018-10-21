@@ -5,6 +5,8 @@ namespace ngx::Http {
     class HttpError;
     class HttpServer;
     class HttpConnection;
+    class HttpConnectionRecycler;
+    class HttpConnectionBuilder;
     class HttpRequestContext;
     class HttpResponseBuffer;
     struct HttpPerformanceUnit ;
@@ -35,7 +37,7 @@ namespace ngx::Http {
 }
 
 #include "Http/HttpError.h"
-#include "Http/HttpServer.h"
 #include "Http/HttpConnection.h"
 #include "Http/HttpConnectionRecyclerTest.h"
+#include "Http/HttpServer.h"
 #include "Http/HttpRequestContext.h"

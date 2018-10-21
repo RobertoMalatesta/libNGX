@@ -3,19 +3,20 @@
 using namespace ngx::Core;
 using namespace ngx::Http;
 
-HttpConnection::HttpConnection(Core::SocketAddress &SocketAddress, socklen_t SocketLength, Buffer &Buf):
+HttpConnection::HttpConnection(struct SocketAddress &SocketAddress, BufferBuilder &BB):
     Lock(),
     Recyclable(),
-    ReadBuffer(Buf),
-    TCP4Connection(SocketAddress, SocketLength) {
+    TCP4Connection(SocketAddress) {
+    BB.BuildBuffer(ReadBuffer);
     OnEventPromise = HttpConnection::OnConnectionEvent;
 }
 
-HttpConnection::HttpConnection( int SocketFd, Core::SocketAddress &SocketAddress, socklen_t SocketLength, Buffer &Buf) :
+HttpConnection::HttpConnection( int SocketFd, struct SocketAddress &SocketAddress, BufferBuilder &BB) :
     Lock(),
     Recyclable(),
-    ReadBuffer(Buf),
-    TCP4Connection(SocketFd, SocketAddress, SocketLength) {
+    TCP4Connection(SocketFd, SocketAddress) {
+
+    BB.BuildBuffer(ReadBuffer);
     OnEventPromise = HttpConnection::OnConnectionEvent;
 }
 

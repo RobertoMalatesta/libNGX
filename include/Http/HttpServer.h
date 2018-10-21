@@ -16,12 +16,12 @@ namespace ngx::Http {
         protected:
 
             virtual RuntimeError PostProcessFinished(EventPromiseArgs *Arguments);
-
+            HttpConnectionRecycler ConnectionRecyclers;
             EPollEventDomain EventDomain;
             HttpPerformanceUnit PerformanceCounters;
 
         public:
-            HttpServer(size_t PoolSize, int ThreadCount, int EPollSize, int ConnectionRecycleSize, int BufferRecycleSize);
+            HttpServer(size_t PoolSize, int ThreadCount, int EPollSize, size_t BufferBlockSize, uint64_t ConnectionRecycleSize, uint64_t BufferRecycleSize);
             virtual RuntimeError PostConnectionEvent(EventPromiseArgs *Arguments);
             RuntimeError HttpServerEventProcess();
     };

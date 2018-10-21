@@ -7,10 +7,12 @@ HttpServer::HttpServer(
         size_t PoolSize,
         int ThreadCount,
         int EPollSize,
-        int ConnectionRecycleSize,
-        int BufferRecycleSize) : Server(),
-        EventDomain(PoolSize, ThreadCount, EPollSize) {
-}
+        size_t BufferBlockSize,
+        uint64_t ConnectionRecycleSize,
+        uint64_t BufferRecycleSize) :
+        Server(),
+        ConnectionRecyclers(BufferBlockSize, BufferRecycleSize, ConnectionRecycleSize),
+        EventDomain(PoolSize, ThreadCount, EPollSize) {}
 
 RuntimeError HttpServer::PostProcessFinished(EventPromiseArgs *Arguments) {
 
@@ -41,7 +43,6 @@ RuntimeError HttpServer::PostConnectionEvent(EventPromiseArgs *Arguments) {
     Socket *TempSocket;
     HttpConnection *TempConnection;
     SocketAddress *SockAddr;
-    socklen_t SocketLength;
     EventType Type;
 
     Type = static_cast<EventType>(Arguments->UserArguments[7].UInt);
@@ -54,8 +55,7 @@ RuntimeError HttpServer::PostConnectionEvent(EventPromiseArgs *Arguments) {
 
         SocketFd = Arguments->UserArguments[0].UInt;
         SockAddr = static_cast<SocketAddress *>(Arguments->UserArguments[1].Ptr);
-        SocketLength = Arguments->UserArguments->UInt;
-//        TempConnection = new HttpConnection(SocketFd, SockAddr, SocketLength, {0});
+        TempConnection =  ConnectionRecyclers.Get(SocketFd, *SockAddr);
         TempSocket = static_cast<Socket *>(TempConnection);
 
         EventDomain.Free((void **)SockAddr);
@@ -81,7 +81,7 @@ RuntimeError HttpServer::PostConnectionEvent(EventPromiseArgs *Arguments) {
 RuntimeError HttpServer::HttpServerEventProcess() {
 
     Listening *Listen;
-    EventPromiseArgs Arguments = {0};
+    EventPromiseArgs Arguments = {nullptr};
 
     memset(&Arguments, 0, sizeof(EventPromiseArgs));
 

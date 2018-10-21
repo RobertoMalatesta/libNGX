@@ -27,9 +27,8 @@ namespace ngx::Core {
             BufferCursor ReadCursor, WriteCursor;
             BufferMemoryBlock *HeadBlock = nullptr;
             friend class BufferBuilder;
-            Buffer(BufferMemoryBlockRecycler *Recycler, size_t BlockSize = BUFFER_DEFAULT_BLOCK_SIZE);
         public:
-            Buffer(Buffer &Copy);
+            Buffer() = default;
             ~Buffer();
             RuntimeError WriteDataToBuffer(u_char *PointerToData, size_t DataLength);
             RuntimeError WriteConnectionToBuffer(Connection *C);

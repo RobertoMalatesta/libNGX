@@ -30,7 +30,7 @@ BufferMemoryBlock* BufferMemoryBlockRecycler::Get() {
 void BufferMemoryBlockRecycler::Put(BufferMemoryBlock *Item) {
     
     SpinlockGuard LockGuard(&Lock);
-    
+
     if (RecycleSize >= RecycleMaxSize) {
         BufferMemoryBlock::Destroy(&Item);
     }
