@@ -9,9 +9,7 @@ BB(BlockSize, BufferRecyclerSize) {}
 HttpConnection* HttpConnectionRecycler::Get(int SocketFD, SocketAddress &SocketAddress) {
     HttpConnection *Ret;
     SpinlockGuard LockGuard(&Lock);
-    printf("get\n");
     if (RecycleSentinel.IsEmpty()) {
-        printf("create\n");
         Ret = new HttpConnection(SocketFD, SocketAddress, BB);
     }
     else {

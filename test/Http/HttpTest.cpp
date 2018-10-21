@@ -2,7 +2,7 @@
 extern int HttpServerTest();
 extern int HttpConnectionRecyclerTest();
 int HttpTest() {
-//    HttpServerTest();
-    HttpConnectionRecyclerTest();
+    HttpServerTest();
+//    HttpConnectionRecyclerTest();
     return 0;
 }

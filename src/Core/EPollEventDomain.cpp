@@ -103,11 +103,10 @@ EventError EPollEventDomain::DetachSocket(Socket *S, SocketEventType Type) {
     }
 
     unsigned int EPollCommand = EPOLL_CTL_DEL;
-    struct epoll_event Event;
-    Event.data.ptr = (void *) S;
-    Event.events = EPOLLET;
-    Event.events |= ReadAttached? EPOLLIN | EPOLLRDHUP : 0;
-    Event.events |= WriteAttached? EPOLLOUT : 0;
+    struct epoll_event Event = {
+            .data.ptr = (void *)S,
+            .events = EPOLLET | ((ReadAttached)?EPOLLIN | EPOLLRDHUP : 0) | (WriteAttached ? EPOLLOUT: 0)
+    };
 
     switch (Type) {
         case SOCK_READ_EVENT:
@@ -148,7 +147,6 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
     int EventCount, TempConnectionFD;
     void *TempPointer;
     SocketAddress *TempSocketAddr;
-    socklen_t TempSocketLength;
 
     Server *Server;
     Listening *Listen;
@@ -246,7 +244,7 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
                 }
 
                 TempEventArguments->UserArguments[0].UInt = (uint32_t)TempConnectionFD;
-                TempEventArguments->UserArguments[1].Ptr = (void *)TempSocketAddr;
+                TempEventArguments->UserArguments[1].Ptr = static_cast<void *>(TempSocketAddr);
                 TempEventArguments->UserArguments[7].UInt |= ET_CONNECTED;
             }
             else {
