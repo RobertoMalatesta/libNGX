@@ -9,6 +9,14 @@ namespace ngx::Core {
         PromiseCallback *Callback = nullptr;
         void *Argument = nullptr;
 
+        RBTreeNode *GetLeft() { return this->Left; }
+
+        RBTreeNode *GetRight() { return this->Right; }
+
+        virtual int Compare(TimerTreeNode *Node);
+
+    public:
+
         TimerTreeNode() {};
 
         TimerTreeNode(uint64_t Timestamp, PromiseCallback *Callback, void *Argument) {
@@ -19,13 +27,6 @@ namespace ngx::Core {
 
         ~TimerTreeNode() = default;
 
-        RBTreeNode *GetLeft() { return this->Left; }
-
-        RBTreeNode *GetRight() { return this->Right; }
-
-        virtual int Compare(TimerTreeNode *Node);
-
-    public:
         static RBTreeNode *
         CreateFromAllocator(MemAllocator *Allocator, uint64_t MillSecond, PromiseCallback *Callback, void *Argument);
 

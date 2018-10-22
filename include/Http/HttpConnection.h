@@ -4,6 +4,8 @@ namespace ngx::Http {
     protected:
         SpinLock Lock;
         Buffer ReadBuffer;
+        TimerTreeNode TimerNode;
+        EventPromiseArgs Arguments;
 
         static void OnConnectionEvent(void *Arguments, ThreadPool *TPool);
 

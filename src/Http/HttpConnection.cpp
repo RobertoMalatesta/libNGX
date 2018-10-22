@@ -6,6 +6,7 @@ using namespace ngx::Http;
 HttpConnection::HttpConnection(struct SocketAddress &SocketAddress, BufferBuilder &BB) :
         Lock(),
         Recyclable(),
+        TimerNode(0, HttpConnection::OnConnectionEvent, nullptr),
         TCP4Connection(SocketAddress) {
     BB.BuildBuffer(ReadBuffer);
     OnEventPromise = HttpConnection::OnConnectionEvent;
