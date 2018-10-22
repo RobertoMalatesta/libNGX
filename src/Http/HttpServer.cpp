@@ -24,7 +24,7 @@ RuntimeError HttpServer::PostProcessFinished(EventPromiseArgs *Arguments) {
     if (nullptr == Arguments
         || nullptr == Arguments->UserArguments[3].Ptr
         || nullptr == Arguments->UserArguments[5].Ptr
-        ) {
+            ) {
 
         return RuntimeError(EINVAL);
     }
@@ -55,15 +55,14 @@ RuntimeError HttpServer::PostConnectionEvent(EventPromiseArgs *Arguments) {
 
         SocketFd = Arguments->UserArguments[0].UInt;
         SockAddr = static_cast<SocketAddress *>(Arguments->UserArguments[1].Ptr);
-        TempConnection =  ConnectionRecyclers.Get(SocketFd, *SockAddr);
+        TempConnection = ConnectionRecyclers.Get(SocketFd, *SockAddr);
         TempSocket = static_cast<Socket *>(TempConnection);
 
-        EventDomain.Free((void **)&SockAddr);
+        EventDomain.Free((void **) &SockAddr);
 
-        Arguments->UserArguments[6].Ptr = (void *)TempSocket;
+        Arguments->UserArguments[6].Ptr = (void *) TempSocket;
         AttachConnection(TempConnection);
-    }
-    else {
+    } else {
 
         TempPointer = Arguments->UserArguments[6].Ptr;
 
@@ -71,7 +70,7 @@ RuntimeError HttpServer::PostConnectionEvent(EventPromiseArgs *Arguments) {
             return RuntimeError(EINVAL);
         }
         TempSocket = static_cast<Socket *>(TempPointer);
-        TempConnection = (HttpConnection *)TempSocket;
+        TempConnection = (HttpConnection *) TempSocket;
     }
 
     EventDomain.PostPromise(TempConnection->OnEventPromise, Arguments);
@@ -91,9 +90,9 @@ RuntimeError HttpServer::HttpServerEventProcess() {
         return RuntimeError(ENOENT, "Can not get A Listening from HttpServer!");
     }
 
-    Arguments.UserArguments[3].Ptr = (void *)this;
-    Arguments.UserArguments[4].Ptr = (void *)&EventDomain;
-    Arguments.UserArguments[5].Ptr = (void *)Listen;
+    Arguments.UserArguments[3].Ptr = (void *) this;
+    Arguments.UserArguments[4].Ptr = (void *) &EventDomain;
+    Arguments.UserArguments[5].Ptr = (void *) Listen;
 
     RuntimeError Error = EventDomain.EventDomainProcess(&Arguments);
 

@@ -1,18 +1,18 @@
 #include "Core/Core.h"
 
 namespace ngx::Core {
-    MemoryBlockAllocator::MemoryBlockAllocator(size_t Size): MemoryBlock(Size) {
-        PointerToHead = (u_char *)this + sizeof(MemoryBlockAllocator);
+    MemoryBlockAllocator::MemoryBlockAllocator(size_t Size) : MemoryBlock(Size) {
+        PointerToHead = (u_char *) this + sizeof(MemoryBlockAllocator);
         TotalSize = Size - sizeof(MemoryBlockAllocator);
         Reset();
-        Magic = (void *)this;
+        Magic = (void *) this;
     }
 
     MemoryBlockAllocator::~MemoryBlockAllocator() {
         MemoryBlock::~MemoryBlock();
     }
 
-    MemoryBlockAllocator* MemoryBlockAllocator::Build(size_t Size) {
+    MemoryBlockAllocator *MemoryBlockAllocator::Build(size_t Size) {
         void *TempPointer = valloc(Size);
 
         if (nullptr == TempPointer) {
@@ -27,17 +27,17 @@ namespace ngx::Core {
             return;
         }
 
-        free((void*)*PointerToAllocator);
+        free((void *) *PointerToAllocator);
         *PointerToAllocator = nullptr;
     }
 
-    void* MemoryBlockAllocator::Allocate(size_t Size) {
+    void *MemoryBlockAllocator::Allocate(size_t Size) {
         void *ret = nullptr;
 
         if (FreeSize >= Size) {
             GetReference();
             ret = PointerToData;
-            PointerToData = (u_char *)PointerToData + Size;
+            PointerToData = (u_char *) PointerToData + Size;
             FreeSize -= Size;
         }
 

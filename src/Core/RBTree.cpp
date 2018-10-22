@@ -10,8 +10,8 @@ RBTreeNode *RBTree::Minimum() {
         return Temp;
     }
 
-    while (Temp -> Left != Sentinel) {
-        Temp = Temp -> Left;
+    while (Temp->Left != Sentinel) {
+        Temp = Temp->Left;
     }
 
     return Temp;
@@ -19,7 +19,7 @@ RBTreeNode *RBTree::Minimum() {
 
 RBTree::RBTree(MemAllocator *Allocator) {
 
-    this -> Allocator = Allocator;
+    this->Allocator = Allocator;
 }
 
 void RBTree::RotateLeft(RBTreeNode *Node) {
@@ -37,16 +37,14 @@ void RBTree::RotateLeft(RBTreeNode *Node) {
 
     if (Node == Root) {
         Root = Temp;
-    }
-    else if (Node == Node->Parent->Left) {
-        Node->Parent->Left=Temp;
-    }
-    else {
-        Node->Parent->Right=Temp;
+    } else if (Node == Node->Parent->Left) {
+        Node->Parent->Left = Temp;
+    } else {
+        Node->Parent->Right = Temp;
     }
 
-    Temp->Left=Node;
-    Node->Parent=Temp;
+    Temp->Left = Node;
+    Node->Parent = Temp;
 
 }
 
@@ -57,19 +55,17 @@ void RBTree::RotateRight(RBTreeNode *Node) {
     Temp = Node->Left;
     Node->Left = Temp->Right;
 
-    if (Temp->Right !=Sentinel) {
-        Temp->Right->Parent =Node;
+    if (Temp->Right != Sentinel) {
+        Temp->Right->Parent = Node;
     }
 
     Temp->Parent = Node->Parent;
 
     if (Node == Root) {
         Root = Temp;
-    }
-    else if (Node == Node->Parent->Right) {
+    } else if (Node == Node->Parent->Right) {
         Node->Parent->Right = Temp;
-    }
-    else {
+    } else {
         Node->Parent->Left = Temp;
     }
 
@@ -81,18 +77,18 @@ void RBTree::Insert(RBTreeNode *Node) {
 
     if (Root == Sentinel) {
         Node->Parent = nullptr;
-        Node->Left=Sentinel;
-        Node->Right=Sentinel;
+        Node->Left = Sentinel;
+        Node->Right = Sentinel;
         Node->SetBlack();
-        Root=Node;
+        Root = Node;
         return;
     }
 
     RBTreeNode *Temp = Root, **P = nullptr;
 
-    for ( ;; ) {
+    for (;;) {
 
-        P = (Node->Compare(Temp) > 0) ? &Temp->Left : & Temp->Right;
+        P = (Node->Compare(Temp) > 0) ? &Temp->Left : &Temp->Right;
 
         if (*P == Sentinel) {
             break;
@@ -102,13 +98,13 @@ void RBTree::Insert(RBTreeNode *Node) {
 
     *P = Node;
     Node->Parent = Temp;
-    Node->Left=Sentinel;
-    Node->Right=Sentinel;
+    Node->Left = Sentinel;
+    Node->Right = Sentinel;
     Node->SetRed();
 
     while (Node != Root && Node->Parent->IsRed()) {
 
-        if (Node ->Parent == Node->Parent->Parent->Left) {
+        if (Node->Parent == Node->Parent->Parent->Left) {
 
             Temp = Node->Parent->Parent->Right;
 
@@ -117,8 +113,7 @@ void RBTree::Insert(RBTreeNode *Node) {
                 Temp->SetBlack();
                 Node->Parent->Parent->SetRed();
                 Node = Node->Parent->Parent;
-            }
-            else {
+            } else {
 
                 if (Node == Node->Parent->Right) {
                     Node = Node->Parent;
@@ -129,8 +124,7 @@ void RBTree::Insert(RBTreeNode *Node) {
                 Node->Parent->Parent->SetRed();
                 RotateRight(Node->Parent->Parent);
             }
-        }
-        else {
+        } else {
             Temp = Node->Parent->Parent->Left;
 
             if (Temp->IsRed()) {
@@ -138,11 +132,10 @@ void RBTree::Insert(RBTreeNode *Node) {
                 Temp->SetBlack();
                 Node->Parent->Parent->SetRed();
                 Node = Node->Parent->Parent;
-            }
-            else {
+            } else {
 
                 if (Node == Node->Parent->Left) {
-                    Node=Node->Parent;
+                    Node = Node->Parent;
                     RotateRight(Node);
                 }
                 Node->Parent->SetBlack();
@@ -152,7 +145,7 @@ void RBTree::Insert(RBTreeNode *Node) {
         }
 
     }
-    Root ->SetBlack();
+    Root->SetBlack();
 }
 
 RBTreeNode *RBTree::Next(RBTreeNode *Node) {
@@ -163,13 +156,13 @@ RBTreeNode *RBTree::Next(RBTreeNode *Node) {
 
         Ret = Node->Right;
 
-        while(Ret->Left != Sentinel) {
+        while (Ret->Left != Sentinel) {
             Ret = Ret->Left;
         }
         return Ret;
     }
 
-    for ( ;; ) {
+    for (;;) {
         Parent = Node->Parent;
 
         if (Root == Node) {
@@ -179,7 +172,7 @@ RBTreeNode *RBTree::Next(RBTreeNode *Node) {
         if (Node == Parent->Left) {
             return Parent;
         }
-        Node = Node -> Parent;
+        Node = Node->Parent;
     }
 }
 
@@ -187,25 +180,22 @@ void RBTree::Delete(RBTreeNode *Node) {
 
     RBTreeNode *Subst, *Temp, *W;
 
-    if ( Node->Left == Sentinel) {
+    if (Node->Left == Sentinel) {
         Temp = Node->Right;
         Subst = Node;
-    }
-    else if (Node->Right == Sentinel) {
+    } else if (Node->Right == Sentinel) {
         Temp = Node->Left;
         Subst = Node;
-    }
-    else {
+    } else {
         Subst = Node->Right;
 
         while (Subst->Left != Sentinel) {
             Subst = Subst->Left;
         }
 
-        if (Subst->Left !=Sentinel) {
+        if (Subst->Left != Sentinel) {
             Temp = Subst->Left;
-        }
-        else {
+        } else {
             Temp = Subst->Right;
         }
     }
@@ -221,20 +211,17 @@ void RBTree::Delete(RBTreeNode *Node) {
 
     if (Subst == Subst->Parent->Left) {
         Subst->Parent->Left = Temp;
-    }
-    else {
+    } else {
         Subst->Parent->Right = Temp;
     }
 
     if (Subst == Node) {
         Temp->Parent = Subst->Parent;
-    }
-    else {
+    } else {
 
         if (Subst->Parent == Node) {
             Temp->Parent = Subst;
-        }
-        else {
+        } else {
             Temp->Parent = Subst->Parent;
         }
         Subst->Left = Node->Left;
@@ -244,18 +231,16 @@ void RBTree::Delete(RBTreeNode *Node) {
 
         if (Node == Root) {
             Root = Subst;
-        }
-        else {
+        } else {
             if (Node == Node->Parent->Left) {
                 Node->Parent->Left = Subst;
-            }
-            else {
-                Node->Parent->Right =Subst;
+            } else {
+                Node->Parent->Right = Subst;
             }
         }
 
         if (Subst->Left != Sentinel) {
-            Subst->Left->Parent =Subst;
+            Subst->Left->Parent = Subst;
         }
         if (Subst->Right != Sentinel) {
             Subst->Right->Parent = Subst;
@@ -279,14 +264,13 @@ void RBTree::Delete(RBTreeNode *Node) {
                 W->SetBlack();
                 Temp->Parent->SetRed();
                 RotateLeft(Temp->Parent);
-                W = Temp -> Parent ->Right;
+                W = Temp->Parent->Right;
             }
 
             if (W->Left->IsBlack() && W->Right->IsBlack()) {
                 W->SetRed();
                 Temp = Temp->Parent;
-            }
-            else {
+            } else {
                 if (W->Right->IsBlack()) {
                     W->Left->SetBlack();
                     W->SetRed();
@@ -298,10 +282,9 @@ void RBTree::Delete(RBTreeNode *Node) {
                 Temp->Parent->SetBlack();
                 W->Right->SetBlack();
                 RotateLeft(Temp->Parent);
-                Temp=Root;
+                Temp = Root;
             }
-        }
-        else {
+        } else {
 
             W = Temp->Parent->Left;
 
@@ -315,10 +298,9 @@ void RBTree::Delete(RBTreeNode *Node) {
             if (W->Left->IsBlack() && W->Right->IsBlack()) {
                 W->SetRed();
                 Temp = Temp->Parent;
-            }
-            else {
+            } else {
 
-                if (W->Left -> IsBlack()) {
+                if (W->Left->IsBlack()) {
                     W->Right->SetBlack();
                     W->SetRed();
                     RotateLeft(W);
@@ -341,31 +323,29 @@ RBTreeNode *UInt32RBTreeNode::CreateFromAllocator(MemAllocator *Allocator, size_
     RBTreeNode *Ret = nullptr;
     size_t AllocateSize = DateSize + sizeof(RBTreeNode);
 
-    void *PointerToMemory =  ((nullptr != Allocator)?Allocator->Allocate(AllocateSize):malloc(AllocateSize));
+    void *PointerToMemory = ((nullptr != Allocator) ? Allocator->Allocate(AllocateSize) : malloc(AllocateSize));
 
     if (nullptr == PointerToMemory) {
         return nullptr;
     }
 
-    Ret = new (PointerToMemory) UInt32RBTreeNode();
+    Ret = new(PointerToMemory) UInt32RBTreeNode();
     return Ret;
 }
 
 void UInt32RBTreeNode::FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node) {
 
     if (nullptr != Node && nullptr != *Node) {
-        Allocator ->Free((void **)Node);
+        Allocator->Free((void **) Node);
     }
 }
 
 int UInt32RBTreeNode::Compare(UInt32RBTreeNode *Node) {
-    if ( this->Key == Node->Key) {
+    if (this->Key == Node->Key) {
         return 0;
-    }
-    else if (this->Key > Node->Key) {
+    } else if (this->Key > Node->Key) {
         return 1;
-    }
-    else {
+    } else {
         return -1;
     }
 }
@@ -381,17 +361,17 @@ UInt32RBTree::UInt32RBTree(MemAllocator *Allocator) : RBTree(Allocator) {
     Root = Sentinel = new(PointerToSentinel) UInt32RBTreeNode();
 }
 
-UInt32RBTree::~UInt32RBTree(){
+UInt32RBTree::~UInt32RBTree() {
 
     if (Root != nullptr) {
-        Allocator->Free((void **)&Root);
+        Allocator->Free((void **) &Root);
     }
 
     RBTree::~RBTree();
 }
 
 
-UInt32RBTree* UInt32RBTree::CreateFromAllocator(MemAllocator *ParentAllocator, MemAllocator *Allocator) {
+UInt32RBTree *UInt32RBTree::CreateFromAllocator(MemAllocator *ParentAllocator, MemAllocator *Allocator) {
 
     void *PointerToRBTree = ParentAllocator->Allocate(sizeof(UInt32RBTree));
 
@@ -402,12 +382,12 @@ UInt32RBTree* UInt32RBTree::CreateFromAllocator(MemAllocator *ParentAllocator, M
     return new(PointerToRBTree) UInt32RBTree(Allocator);
 }
 
-void UInt32RBTree::FreeFromAllocator(MemAllocator *ParentAllocator, UInt32RBTree **TheRBTree){
-    (*TheRBTree) -> ~UInt32RBTree();
-    ParentAllocator->Free((void **)TheRBTree);
+void UInt32RBTree::FreeFromAllocator(MemAllocator *ParentAllocator, UInt32RBTree **TheRBTree) {
+    (*TheRBTree)->~UInt32RBTree();
+    ParentAllocator->Free((void **) TheRBTree);
 }
 
-UInt32RBTreeNode* UInt32RBTree::CreateNodeFromAllocator(size_t DataSize, uint32_t Key) {
+UInt32RBTreeNode *UInt32RBTree::CreateNodeFromAllocator(size_t DataSize, uint32_t Key) {
 
     void *PointerToNode = Allocator->Allocate(sizeof(UInt32RBTreeNode) + DataSize);
 
@@ -423,12 +403,12 @@ void UInt32RBTree::FreeNodeFromAllocator(UInt32RBTreeNode **TheRBTreeNode) {
         return;
     }
 
-    Allocator->Free((void **)TheRBTreeNode);
+    Allocator->Free((void **) TheRBTreeNode);
 }
 
 UInt32RBTreeNode *UInt32RBTree::Find(uint32_t Key) {
 
-    auto *Temp = (UInt32RBTreeNode *)Root;
+    auto *Temp = (UInt32RBTreeNode *) Root;
 
     uint32_t TempKey;
 
@@ -442,13 +422,10 @@ UInt32RBTreeNode *UInt32RBTree::Find(uint32_t Key) {
 
         if (Key == TempKey) {
             return Temp;
-        }
-
-        else if (Key > TempKey) {
-            Temp = (UInt32RBTreeNode *)Temp->GetRight();
-        }
-        else {
-            Temp = (UInt32RBTreeNode *)Temp->GetLeft();
+        } else if (Key > TempKey) {
+            Temp = (UInt32RBTreeNode *) Temp->GetRight();
+        } else {
+            Temp = (UInt32RBTreeNode *) Temp->GetLeft();
         }
 
     } while (true);

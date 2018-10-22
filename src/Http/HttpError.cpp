@@ -2,6 +2,6 @@
 
 using namespace ngx::Http;
 
-const char* HttpError::ErrorCodeToString(int ErrorCode) {
+const char *HttpError::ErrorCodeToString(int ErrorCode) {
     return "Unspecified error!";
 }

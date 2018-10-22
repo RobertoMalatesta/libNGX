@@ -1,20 +1,23 @@
 namespace ngx::Core {
-    class MemoryBlock : public Reference{
-        protected:
-            size_t TotalSize = 0;
-            size_t FreeSize = 0;
-            void *PointerToData = nullptr, *PointerToHead = nullptr;
-            void *Magic = nullptr;
-        public:
-            MemoryBlock(size_t Size);
-            ~MemoryBlock();
+    class MemoryBlock : public Reference {
+    protected:
+        size_t TotalSize = 0;
+        size_t FreeSize = 0;
+        void *PointerToData = nullptr, *PointerToHead = nullptr;
+        void *Magic = nullptr;
+    public:
+        MemoryBlock(size_t Size);
 
-            static MemoryBlock *Build(size_t Size);
-            static void Destroy(MemoryBlock **PointerToBlock);
+        ~MemoryBlock();
 
-            static MemoryBlock *AddressToMemoryBlock(void *Address, size_t Size);
+        static MemoryBlock *Build(size_t Size);
 
-            bool IsInBlock(void *Address);
-            bool IsFreeBlock() { return GetReference() == 0; }
+        static void Destroy(MemoryBlock **PointerToBlock);
+
+        static MemoryBlock *AddressToMemoryBlock(void *Address, size_t Size);
+
+        bool IsInBlock(void *Address);
+
+        bool IsFreeBlock() { return GetReference() == 0; }
     };
 }

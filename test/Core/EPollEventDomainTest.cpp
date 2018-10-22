@@ -45,7 +45,7 @@ int EPollEventDomainTest() {
 
     int Count = 500000;
 
-    while (Count -- > 0) {
+    while (Count-- > 0) {
 //        RuntimeError Error = Domain.EventDomainProcess(nullptr);
 
 //        if (Error.GetErrorCode() != 0) {

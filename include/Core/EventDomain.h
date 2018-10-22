@@ -17,17 +17,22 @@ namespace ngx::Core {
 
 
     class EventDomain {
-        protected:
-            Pool Allocator;
-            ThreadPool TPool;
-            TimerTree *Timers;
-            SpinLock Lock;
-        public:
-            EventDomain(size_t PoolSize, int ThreadCount);
-            ~EventDomain();
-            static void DiscardPromise(void *Argument, ThreadPool *TPool) {};
-            RuntimeError PostTimerEvent(uint32_t Seconds, PromiseCallback *Callback, void *Argument);
-            RuntimeError PostPromise(PromiseCallback *Callback, void *Argument);
-            RuntimeError EventDomainProcess(EventPromiseArgs *PointerToArgument);
+    protected:
+        Pool Allocator;
+        ThreadPool TPool;
+        TimerTree *Timers;
+        SpinLock Lock;
+    public:
+        EventDomain(size_t PoolSize, int ThreadCount);
+
+        ~EventDomain();
+
+        static void DiscardPromise(void *Argument, ThreadPool *TPool) {};
+
+        RuntimeError PostTimerEvent(uint32_t Seconds, PromiseCallback *Callback, void *Argument);
+
+        RuntimeError PostPromise(PromiseCallback *Callback, void *Argument);
+
+        RuntimeError EventDomainProcess(EventPromiseArgs *PointerToArgument);
     };
 }

@@ -6,24 +6,24 @@
 
 using namespace ngx::Core;
 
-Connection::Connection(): Socket() {
+Connection::Connection() : Socket() {
 }
 
-Connection::Connection(struct SocketAddress &SocketAddress):
-        Socket(SocketAddress){}
+Connection::Connection(struct SocketAddress &SocketAddress) :
+        Socket(SocketAddress) {}
 
 Connection::Connection(int SocketFd, struct SocketAddress &SocketAddress)
-        :Socket(SocketFd, SocketAddress) {};
+        : Socket(SocketFd, SocketAddress) {};
 
-TCP4Connection::TCP4Connection(int SocketFd, struct SocketAddress &SocketAddress):
+TCP4Connection::TCP4Connection(int SocketFd, struct SocketAddress &SocketAddress) :
         Connection(SocketFd, SocketAddress) {}
 
-TCP4Connection::TCP4Connection(struct SocketAddress &SocketAddress):
+TCP4Connection::TCP4Connection(struct SocketAddress &SocketAddress) :
         Connection(SocketAddress) {
     SocketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     Type = SOCK_TYPE_STREAM;
 
-    if ( 0 == bind(SocketFd, &SocketAddress.sockaddr, SocketAddress.SocketLength)) {
+    if (0 == bind(SocketFd, &SocketAddress.sockaddr, SocketAddress.SocketLength)) {
         Active = 1;
     }
 }
@@ -51,9 +51,9 @@ SocketError TCP4Connection::Close() {
 
 SocketError TCP4Connection::SetNoDelay(bool Open) {
 
-    unsigned int TCPNoDelay = Open? 1: 0;
+    unsigned int TCPNoDelay = Open ? 1 : 0;
 
-    if ((Nodelay == 1 && TCPNoDelay == 1) || (Nodelay==0 && TCPNoDelay == 0)) {
+    if ((Nodelay == 1 && TCPNoDelay == 1) || (Nodelay == 0 && TCPNoDelay == 0)) {
         return SocketError(0, "No delay is already set!");
     }
 

@@ -2,29 +2,41 @@ namespace ngx::Core {
 
     class Queue {
 
-        protected:
-            Queue   *Prev = this,  *Next = this, *Sentinel;
-            void InsertToHead();
-            void InsertToTail();
-        public:
-            Queue();
-            Queue(Queue *Sentinel, bool IsInsertToHead);
+    protected:
+        Queue *Prev = this, *Next = this, *Sentinel;
 
-            bool IsEmpty();
-            Queue *GetHead();
-            Queue *GetNext();
-            Queue *GetPrev();
-            Queue *GetLast();
-            Queue *GetSentinel();
-            Queue * GetMiddle();
+        void InsertToHead();
 
-            void Detach();
-            void Attach();
+        void InsertToTail();
 
-            void Append(Queue *Node);
+    public:
+        Queue();
 
-            void QueueSplit(Queue *Q1, Queue *Node);
-            void Sort( int (*cmp) (Queue *q1, Queue*q2));
+        Queue(Queue *Sentinel, bool IsInsertToHead);
+
+        bool IsEmpty();
+
+        Queue *GetHead();
+
+        Queue *GetNext();
+
+        Queue *GetPrev();
+
+        Queue *GetLast();
+
+        Queue *GetSentinel();
+
+        Queue *GetMiddle();
+
+        void Detach();
+
+        void Attach();
+
+        void Append(Queue *Node);
+
+        void QueueSplit(Queue *Q1, Queue *Node);
+
+        void Sort(int (*cmp)(Queue *q1, Queue *q2));
     };
 
 }

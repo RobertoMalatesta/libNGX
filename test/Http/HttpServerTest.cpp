@@ -10,7 +10,7 @@ int HttpServerTest() {
                     .sin_family = AF_INET,
                     .sin_port = htons(8080),
                     .sin_addr = htonl(INADDR_ANY)
-                    },
+            },
             .SocketLength = sizeof(sockaddr_in)
     };
 
@@ -24,7 +24,7 @@ int HttpServerTest() {
 
     int Count = 500000;
 
-    while (Count -- > 0) {
+    while (Count-- > 0) {
         RuntimeError Error = Server.HttpServerEventProcess();
         Error.PrintError();
         ForceUSleep(100000);

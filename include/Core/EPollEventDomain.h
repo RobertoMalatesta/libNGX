@@ -14,21 +14,26 @@ namespace ngx::Core {
      *
      * */
 
-    class EPollEventDomain : public SocketEventDomain, MemAllocator{
-        protected:
-            int EPollFD = -1;
-            atomic_flag Waiting = ATOMIC_FLAG_INIT;
-        public:
+    class EPollEventDomain : public SocketEventDomain, MemAllocator {
+    protected:
+        int EPollFD = -1;
+        atomic_flag Waiting = ATOMIC_FLAG_INIT;
+    public:
 
-            EPollEventDomain(size_t PoolSize, int ThreadCount, int EPollSize);
-            ~EPollEventDomain();
+        EPollEventDomain(size_t PoolSize, int ThreadCount, int EPollSize);
 
-            virtual EventError AttachSocket(Socket *S, SocketEventType Type);
-            virtual EventError DetachSocket(Socket *S, SocketEventType Type);
-            RuntimeError EventDomainProcess(EventPromiseArgs *PointerToArgument);
+        ~EPollEventDomain();
 
-            void *Allocate(size_t Size);
-            void Free(void **Pointer);
-            void GC();
+        virtual EventError AttachSocket(Socket *S, SocketEventType Type);
+
+        virtual EventError DetachSocket(Socket *S, SocketEventType Type);
+
+        RuntimeError EventDomainProcess(EventPromiseArgs *PointerToArgument);
+
+        void *Allocate(size_t Size);
+
+        void Free(void **Pointer);
+
+        void GC();
     };
 }

@@ -4,57 +4,56 @@ namespace ngx::Core {
     extern uint32_t crc32_table256[];
 
     extern "C" {
-        
-        static inline uint32_t crc(u_char *data, size_t len) {
 
-            uint32_t  sum;
+    static inline uint32_t crc(u_char *data, size_t len) {
 
-            for (sum = 0; len; len--) {
-                sum = sum >> 1 | sum << 31;
-                sum += *data++;
-            }
+        uint32_t sum;
 
-            return sum;
+        for (sum = 0; len; len--) {
+            sum = sum >> 1 | sum << 31;
+            sum += *data++;
         }
 
-        static inline uint32_t crc32_short(u_char *p, size_t len)
-        {
-            u_char    c;
-            uint32_t  crc;
+        return sum;
+    }
 
-            crc = 0xffffffff;
+    static inline uint32_t crc32_short(u_char *p, size_t len) {
+        u_char c;
+        uint32_t crc;
 
-            while (len--) {
-                c = *p++;
-                crc = crc32_table16[(crc ^ (c & 0xf)) & 0xf] ^ (crc >> 4);
-                crc = crc32_table16[(crc ^ (c >> 4)) & 0xf] ^ (crc >> 4);
-            }
+        crc = 0xffffffff;
 
-            return crc ^ 0xffffffff;
+        while (len--) {
+            c = *p++;
+            crc = crc32_table16[(crc ^ (c & 0xf)) & 0xf] ^ (crc >> 4);
+            crc = crc32_table16[(crc ^ (c >> 4)) & 0xf] ^ (crc >> 4);
         }
 
-        static inline uint32_t crc32_long(u_char *p, size_t len) {
-            uint32_t  crc;
+        return crc ^ 0xffffffff;
+    }
 
-            crc = 0xffffffff;
+    static inline uint32_t crc32_long(u_char *p, size_t len) {
+        uint32_t crc;
 
-            while (len--) {
-                crc = crc32_table256[(crc ^ *p++) & 0xff] ^ (crc >> 8);
-            }
+        crc = 0xffffffff;
 
-            return crc ^ 0xffffffff;
+        while (len--) {
+            crc = crc32_table256[(crc ^ *p++) & 0xff] ^ (crc >> 8);
         }
 
-        static inline void crc32_update(uint32_t *crc, u_char *p, size_t len) {
-            uint32_t  c;
+        return crc ^ 0xffffffff;
+    }
 
-            c = *crc;
+    static inline void crc32_update(uint32_t *crc, u_char *p, size_t len) {
+        uint32_t c;
 
-            while (len--) {
-                c = crc32_table256[(c ^ *p++) & 0xff] ^ (c >> 8);
-            }
+        c = *crc;
 
-            *crc = c;
+        while (len--) {
+            c = crc32_table256[(c ^ *p++) & 0xff] ^ (c >> 8);
         }
+
+        *crc = c;
+    }
     }
 }

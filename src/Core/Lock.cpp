@@ -12,7 +12,7 @@ void SpinLock::Unlock() {
     LockAtomic.clear();
 }
 
-BigSpinlock::BigSpinlock(): SpinLock() {}
+BigSpinlock::BigSpinlock() : SpinLock() {}
 
 void BigSpinlock::Lock() {
     while (LockAtomic.test_and_set()) {

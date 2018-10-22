@@ -5,13 +5,13 @@ using namespace ngx::Core;
 void *ListIterator::Next() {
     if (nullptr != CurrentCarriage) {
 
-        if (CurrentCarriage -> NumberOfElements == CurrentIndex) {
-            CurrentCarriage = CurrentCarriage -> Next;
+        if (CurrentCarriage->NumberOfElements == CurrentIndex) {
+            CurrentCarriage = CurrentCarriage->Next;
             CurrentIndex = 0;
         }
 
         if (nullptr != CurrentCarriage) {
-            return ((char *)(CurrentCarriage -> PointerToElements) +(Size * (CurrentIndex++)));
+            return ((char *) (CurrentCarriage->PointerToElements) + (Size * (CurrentIndex++)));
         }
     }
     return nullptr;

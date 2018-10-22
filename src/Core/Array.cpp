@@ -4,26 +4,26 @@ namespace ngx::Core {
 
     Array::Array(Pool *Allocator, size_t Size, uint Count) {
 
-        this -> Allocator = Allocator;
+        this->Allocator = Allocator;
         ElementCount = 0;
         PointerToData = nullptr;
-        this -> Size = 0;
+        this->Size = 0;
         NAlloc = 0;
 
-        PointerToData = Allocator->Allocate( Count * Size);
+        PointerToData = Allocator->Allocate(Count * Size);
 
         if (nullptr == PointerToData) {
             return;
         }
 
-        this -> Size = Size;
+        this->Size = Size;
         NAlloc = Count;
     }
 
     Array::~Array() {
 
         if (Allocator != nullptr && PointerToData != nullptr) {
-            Allocator -> Free(&PointerToData);
+            Allocator->Free(&PointerToData);
             PointerToData = nullptr;
         }
 
@@ -39,7 +39,7 @@ namespace ngx::Core {
 
             void *NewDataPointer;
 
-            NewDataPointer = Allocator ->Allocate( 2 * (Size * NAlloc));
+            NewDataPointer = Allocator->Allocate(2 * (Size * NAlloc));
 
             if (NewDataPointer == nullptr) {
                 return nullptr;
@@ -47,15 +47,15 @@ namespace ngx::Core {
 
             memcpy(NewDataPointer, PointerToData, (Size * NAlloc));
 
-            Allocator -> Free(&PointerToData);
+            Allocator->Free(&PointerToData);
             PointerToData = NewDataPointer;
             NAlloc = 2 * NAlloc;
         }
 
-        u_char *Ret = (u_char *)PointerToData + Size * ElementCount;
+        u_char *Ret = (u_char *) PointerToData + Size * ElementCount;
         ElementCount += 1;
 
-        return  Ret;
+        return Ret;
     }
 
     void *Array::PushN(uint N) {
@@ -64,9 +64,9 @@ namespace ngx::Core {
 
             void *NewDataPointer;
 
-            uint  NewAlloc = 2 * ( N >= NAlloc ? N : NAlloc);
+            uint NewAlloc = 2 * (N >= NAlloc ? N : NAlloc);
 
-            NewDataPointer = Allocator ->Allocate(NewAlloc * Size);
+            NewDataPointer = Allocator->Allocate(NewAlloc * Size);
 
             if (NewDataPointer == nullptr) {
                 return nullptr;
@@ -74,14 +74,14 @@ namespace ngx::Core {
 
             memcpy(NewDataPointer, PointerToData, (Size * ElementCount));
 
-            Allocator -> Free(& PointerToData);
+            Allocator->Free(&PointerToData);
             PointerToData = NewDataPointer;
             NAlloc = NewAlloc;
         }
 
-        u_char *Ret = (u_char *)PointerToData + Size * ElementCount;
+        u_char *Ret = (u_char *) PointerToData + Size * ElementCount;
         ElementCount += N;
 
-        return  Ret;
+        return Ret;
     }
 }

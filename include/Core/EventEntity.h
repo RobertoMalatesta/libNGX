@@ -1,12 +1,12 @@
 namespace ngx::Core {
-    
+
     static void DiscardPromise(void *, ThreadPool *) {
         printf("discard promise!");
     }
 
     class EventEntity {
-        protected:
-            PromiseCallback  *OnEventPromise = DiscardPromise;
+    protected:
+        PromiseCallback *OnEventPromise = DiscardPromise;
     };
 
     union UserArgument {

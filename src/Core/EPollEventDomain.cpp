@@ -86,8 +86,8 @@ EventError EPollEventDomain::AttachSocket(Socket *S, SocketEventType Type) {
 EventError EPollEventDomain::DetachSocket(Socket *S, SocketEventType Type) {
 
     bool ReadAttached = IsSocketReadAttached(S),
-         WriteAttached = IsSocketWriteAttached(S),
-         Attached = ReadAttached || WriteAttached;
+            WriteAttached = IsSocketWriteAttached(S),
+            Attached = ReadAttached || WriteAttached;
     int SocketFD = S->GetSocketFD();
 
     printf("Detach Socket:%d, Type: %x\n", SocketFD, Type);
@@ -104,8 +104,8 @@ EventError EPollEventDomain::DetachSocket(Socket *S, SocketEventType Type) {
 
     unsigned int EPollCommand = EPOLL_CTL_DEL;
     struct epoll_event Event = {
-            .data.ptr = (void *)S,
-            .events = EPOLLET | ((ReadAttached)?EPOLLIN | EPOLLRDHUP : 0) | (WriteAttached ? EPOLLOUT: 0)
+            .data.ptr = (void *) S,
+            .events = EPOLLET | ((ReadAttached) ? EPOLLIN | EPOLLRDHUP : 0) | (WriteAttached ? EPOLLOUT : 0)
     };
 
     switch (Type) {
@@ -131,8 +131,8 @@ EventError EPollEventDomain::DetachSocket(Socket *S, SocketEventType Type) {
         return EventError(errno, "Failed to attach connection to epoll!");
     }
 
-    SetSocketReadAttached(S, (Event.events & (EPOLLIN | EPOLLRDHUP)) == 0 ? 0 : 1 );
-    SetSocketWriteAttached(S, (Event.events & (EPOLLOUT)) == 0 ? 0 : 1 );
+    SetSocketReadAttached(S, (Event.events & (EPOLLIN | EPOLLRDHUP)) == 0 ? 0 : 1);
+    SetSocketWriteAttached(S, (Event.events & (EPOLLOUT)) == 0 ? 0 : 1);
 
     Lock.Unlock();
 
@@ -183,14 +183,14 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
         return RuntimeError(EALREADY, "EPollEventDomain is already waiting for events!");
     }
 
-    Events = (epoll_event *)Allocate(EPOLL_EVENT_BATCH_SIZE * sizeof(epoll_event));
+    Events = (epoll_event *) Allocate(EPOLL_EVENT_BATCH_SIZE * sizeof(epoll_event));
 
     if (nullptr == Events) {
         Waiting.clear();
         return RuntimeError(ENOMEM, "Failed to allocate memory for epoll_event!");
     }
 
-    Arguments->UserArguments[0].Ptr = (void *)Events;
+    Arguments->UserArguments[0].Ptr = (void *) Events;
 
     AttachSocket(Listen, SOCK_READ_WRITE_EVENT);
     EventCount = epoll_pwait(EPollFD, Events, EPOLL_EVENT_BATCH_SIZE, EPOLL_EVENT_WAIT_TIME, &sigmask);
@@ -199,7 +199,7 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
     Waiting.clear();
 
     if (EventCount <= 0) {
-        Free((void **)&Events);
+        Free((void **) &Events);
         if (-1 == EventCount) {
             if (errno == EINTR) {
                 return RuntimeError(0, "Interrupted by signal");
@@ -210,7 +210,7 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
             return RuntimeError(0);
         }
     } else {
-        for (int i=0; i<EventCount; i++) {
+        for (int i = 0; i < EventCount; i++) {
 
             if (Events[i].data.ptr == nullptr) {
                 continue;
@@ -223,7 +223,7 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
                 continue;
             }
 
-            memcpy(TempPointer, (void *)Arguments, sizeof(EventPromiseArgs));
+            memcpy(TempPointer, (void *) Arguments, sizeof(EventPromiseArgs));
 
             TempEventArguments = static_cast<EventPromiseArgs *>(TempPointer);
             TempEventArguments->UserArguments[7].UInt = 0;
@@ -237,29 +237,29 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
                 }
 
                 TempSocketAddr = static_cast<SocketAddress *>(TempPointer);
-                TempConnectionFD = accept4(Listen->GetSocketFD(), &TempSocketAddr->sockaddr, &TempSocketAddr->SocketLength, SOCK_NONBLOCK);
+                TempConnectionFD = accept4(Listen->GetSocketFD(), &TempSocketAddr->sockaddr,
+                                           &TempSocketAddr->SocketLength, SOCK_NONBLOCK);
 
                 if (-1 == TempConnectionFD) {
                     printf("accept4() failed in HttpEventProcessPromise!\n");
                 }
 
-                TempEventArguments->UserArguments[0].UInt = (uint32_t)TempConnectionFD;
+                TempEventArguments->UserArguments[0].UInt = (uint32_t) TempConnectionFD;
                 TempEventArguments->UserArguments[1].Ptr = static_cast<void *>(TempSocketAddr);
                 TempEventArguments->UserArguments[7].UInt |= ET_CONNECTED;
-            }
-            else {
+            } else {
 
                 TempEventArguments->UserArguments[6].Ptr = Events[i].data.ptr;
                 if (Events[i].events & (EPOLLIN | EPOLLRDHUP)) {
                     TempEventArguments->UserArguments[7].UInt |= ET_READ;
                 }
-                if (Events[i].events & (EPOLLOUT)){
+                if (Events[i].events & (EPOLLOUT)) {
                     TempEventArguments->UserArguments[7].UInt |= ET_WRITE;
                 }
             }
             Server->PostConnectionEvent(TempEventArguments);
         }
-        Free((void **)&Events);
+        Free((void **) &Events);
     }
 
     TempPointer = Allocate(sizeof(EventPromiseArgs));
@@ -268,7 +268,7 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
         return RuntimeError(ENOMEM, "No sufficent memoey!");
     }
 
-    memcpy(TempPointer, (void *)Arguments, sizeof(EventPromiseArgs));
+    memcpy(TempPointer, (void *) Arguments, sizeof(EventPromiseArgs));
 
     TempEventArguments = static_cast<EventPromiseArgs *>(TempPointer);
 

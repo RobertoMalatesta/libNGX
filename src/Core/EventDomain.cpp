@@ -2,7 +2,7 @@
 
 using namespace ngx::Core;
 
-EventDomain::EventDomain(size_t PoolSize, int ThreadCount) : Allocator(PoolSize), TPool(ThreadCount){
+EventDomain::EventDomain(size_t PoolSize, int ThreadCount) : Allocator(PoolSize), TPool(ThreadCount) {
     Timers = TimerTree::CreateFromAllocator(&Allocator, &Allocator);
     Lock.Unlock();
 }
