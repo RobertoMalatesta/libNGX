@@ -2,14 +2,22 @@
 
 namespace ngx::Http {
     using namespace ngx::Core;
+
     class HttpError;
+
     class HttpServer;
+
     class HttpConnection;
+
     class HttpConnectionRecycler;
+
     class HttpConnectionBuilder;
+
     class HttpRequestContext;
+
     class HttpResponseBuffer;
-    struct HttpPerformanceUnit ;
+
+    struct HttpPerformanceUnit;
 
     enum HttpVersion {
         HTTP_V1 = 1,

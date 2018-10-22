@@ -13,16 +13,20 @@ namespace ngx::Http {
 
 
     class HttpServer : public Server {
-        protected:
+    protected:
 
-            virtual RuntimeError PostProcessFinished(EventPromiseArgs *Arguments);
-            HttpConnectionRecycler ConnectionRecyclers;
-            EPollEventDomain EventDomain;
-            HttpPerformanceUnit PerformanceCounters;
+        virtual RuntimeError PostProcessFinished(EventPromiseArgs *Arguments);
 
-        public:
-            HttpServer(size_t PoolSize, int ThreadCount, int EPollSize, size_t BufferBlockSize, uint64_t ConnectionRecycleSize, uint64_t BufferRecycleSize);
-            virtual RuntimeError PostConnectionEvent(EventPromiseArgs *Arguments);
-            RuntimeError HttpServerEventProcess();
+        HttpConnectionRecycler ConnectionRecyclers;
+        EPollEventDomain EventDomain;
+        HttpPerformanceUnit PerformanceCounters;
+
+    public:
+        HttpServer(size_t PoolSize, int ThreadCount, int EPollSize, size_t BufferBlockSize,
+                   uint64_t ConnectionRecycleSize, uint64_t BufferRecycleSize);
+
+        virtual RuntimeError PostConnectionEvent(EventPromiseArgs *Arguments);
+
+        RuntimeError HttpServerEventProcess();
     };
 }

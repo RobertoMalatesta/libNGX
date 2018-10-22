@@ -6,7 +6,9 @@ namespace ngx::Http {
         Buffer ReadBuffer;
 
         static void OnConnectionEvent(void *Arguments, ThreadPool *TPool);
+
         friend class HttpServer;
+
         friend class HttpConnectionRecycler;
 
     public:
