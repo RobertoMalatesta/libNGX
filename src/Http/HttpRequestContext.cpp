@@ -2,39 +2,34 @@
 
 using namespace ngx::Http;
 
-void inline HttpParseRequestLine();
-void inline HttpProcessRequestHeader();
-void inline HttpValidateHost();
-void inline HttpProcessRequestURI();
-void inline ResetState();
-
-
 HttpError HttpRequestContext::ProcessHttpRequest(Buffer &B) {
 
-    Lock.Lock();
+    SpinlockGuard LockGuard(&Lock);
+
+    HttpError Error(0);
 
     switch (State) {
         case HTTP_INIT_STATE:
             RequestLineState = RL_Start;
-            ParseRequestLine(B);
+            Error = ParseRequestLine(B);
+            if (Error.GetErrorCode() != 0) {
+                return Error;
+            }
             break;
         default:
             State = HTTP_INIT_STATE;
             return HttpError(EINVAL);
     }
 
-    Lock.Unlock();
     return HttpError(0);
 }
 
 HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
 
+    BufferCursor ReadCursor = B.GetReadCursor();
     u_char C, C1, C2, C3, C4, C5, C6, C7, C8;
 
-    BufferCursor ReadCursor;
-
-    ReadCursor = B.GetReadCursor();
-
+    B.ReadByte(ReadCursor, 0, C);
     while (B.ReadByte(ReadCursor, 0, C)) {
        switch (RequestLineState) {
            case RL_Start:
@@ -50,7 +45,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                        if (C1 == 'G' && C2 == 'E' && C3 == 'T') {
                            Method = GET;
                        }
-                       if (C1 == 'P' && C2 == 'U' && C3 == 'T') {
+                       else if (C1 == 'P' && C2 == 'U' && C3 == 'T') {
                            Method = PUT;
                        }
                        else {
@@ -62,13 +57,13 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                            if (C1 == 'P' && C3 == 'S' && C4 == 'T') {
                                Method = POST;
                            }
-                           if (C1 == 'C' && C3 == 'P' && C4 == 'Y') {
+                           else if (C1 == 'C' && C3 == 'P' && C4 == 'Y') {
                                Method = COPY;
                            }
-                           if (C1 == 'M' && C3 == 'V' && C4 == 'E') {
+                           else if (C1 == 'M' && C3 == 'V' && C4 == 'E') {
                                Method = MOVE;
                            }
-                           if (C1 == 'L' && C3 == 'C' && C4 == 'K') {
+                           else if (C1 == 'L' && C3 == 'C' && C4 == 'K') {
                                Method = LOCK;
                            }
                        } else if (C1 == 'H' && C2 == 'E' && C3 == 'A' && C4 == 'D') {
@@ -126,7 +121,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                }
                break;
            case RL_Space_Before_Uri:
-
+                printf("stuck here!\n");
                break;
            default:
                printf("not handled!");

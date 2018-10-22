@@ -52,9 +52,12 @@ void HttpConnection::OnConnectionEvent(void *Arguments, ThreadPool *TPool) {
     if ((Type & ET_READ) != 0) {
         Buffer *Buffer = &TempConnection->ReadBuffer;
         Buffer->WriteConnectionToBuffer(TempConnection);
+        TempConnection->RequestContext.ProcessHttpRequest(TempConnection->ReadBuffer).PrintError();
     }
     if ((Type & ET_WRITE) != 0) {
+        // Mark the socket as writable and write all data to it!
     }
+
 
     printf("LeavePromise, Arguments: %p\n", Arguments);
 }

@@ -64,10 +64,9 @@ EventError EPollEventDomain::AttachSocket(Socket *S, SocketEventType Type) {
             break;
     }
 
-    Lock.Lock();
+    SpinlockGuard LockGuard(&Lock);
 
     if (-1 == epoll_ctl(EPollFD, EPollCommand, SocketFD, &Event)) {
-        Lock.Unlock();
         return EventError(errno, "Failed to attach connection to epoll!");
     }
 
@@ -79,7 +78,6 @@ EventError EPollEventDomain::AttachSocket(Socket *S, SocketEventType Type) {
         SetSocketWriteAttached(S, 1);
     }
 
-    Lock.Unlock();
     return EventError(0);
 }
 
@@ -103,6 +101,7 @@ EventError EPollEventDomain::DetachSocket(Socket *S, SocketEventType Type) {
     }
 
     unsigned int EPollCommand = EPOLL_CTL_DEL;
+
     struct epoll_event Event = {
             .data.ptr = (void *)S,
             .events = EPOLLET | ((ReadAttached)?EPOLLIN | EPOLLRDHUP : 0) | (WriteAttached ? EPOLLOUT: 0)
@@ -124,17 +123,14 @@ EventError EPollEventDomain::DetachSocket(Socket *S, SocketEventType Type) {
         EPollCommand = EPOLL_CTL_DEL;
     }
 
-    Lock.Lock();
+    SpinlockGuard LockGuard(&Lock);
 
     if (-1 == epoll_ctl(EPollFD, EPollCommand, SocketFD, &Event)) {
-        Lock.Unlock();
         return EventError(errno, "Failed to attach connection to epoll!");
     }
 
     SetSocketReadAttached(S, (Event.events & (EPOLLIN | EPOLLRDHUP)) == 0 ? 0 : 1 );
     SetSocketWriteAttached(S, (Event.events & (EPOLLOUT)) == 0 ? 0 : 1 );
-
-    Lock.Unlock();
 
     return EventError(0);
 }
@@ -278,21 +274,19 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
 
 void *EPollEventDomain::Allocate(size_t Size) {
     void *Pointer;
-    Lock.Lock();
+    SpinlockGuard LockGuard(&Lock);
     Pointer = Allocator.Allocate(Size);
-    Lock.Unlock();
     return Pointer;
 }
 
 void EPollEventDomain::Free(void **Pointer) {
-    Lock.Lock();
+    SpinlockGuard LockGuard(&Lock);
     Allocator.Free(Pointer);
-    Lock.Unlock();
 }
 
 void EPollEventDomain::GC() {
-    Lock.Lock();
+    SpinlockGuard LockGuard(&Lock);
     Allocator.GC();
-    Lock.Unlock();
 }
+
 

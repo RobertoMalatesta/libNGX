@@ -52,7 +52,6 @@ namespace ngx::Http {
             HttpRequestState State = HTTP_INIT_STATE;
             HttpRequestLineParseState RequestLineState;
         public:
-
             virtual void Reset();
             HttpError ProcessHttpRequest(Buffer &B);
             HttpError ParseRequestLine(Buffer &B);

@@ -121,7 +121,7 @@ namespace ngx::Core {
 
             inline bool ReadBytes4(BufferCursor Cursor, uint32_t Offset, u_char &C1, u_char &C2, u_char &C3, u_char &C4) {
 
-                BufferCursor Cur1, Cur4;
+                BufferCursor Cur4;
 
                 Cur4 = MoveCursor(Cursor, Offset + 3);
 
@@ -130,12 +130,12 @@ namespace ngx::Core {
                 }
                 else {
 
-                    C4 = *(Cur1.Position+3);
+                    C4 = *(Cur4.Position);
 
                     if (Cursor.Block == Cur4.Block) {
-                        C1 = *Cur1.Position;
-                        C2 = *(Cur1.Position+1);
-                        C3 = *(Cur1.Position+2);
+                        C1 = *(Cur4.Position - 3);
+                        C2 = *(Cur4.Position - 2);
+                        C3 = *(Cur4.Position - 1);
                     }
                     else {
                         return ReadBytes2(Cursor, Offset, C1, C2) && ReadByte(Cursor, Offset + 2, C3);

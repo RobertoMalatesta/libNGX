@@ -37,7 +37,7 @@ namespace ngx::Http {
 }
 
 #include "Http/HttpError.h"
+#include "Http/HttpRequestContext.h"
 #include "Http/HttpConnection.h"
 #include "Http/HttpConnectionRecyclerTest.h"
 #include "Http/HttpServer.h"
-#include "Http/HttpRequestContext.h"

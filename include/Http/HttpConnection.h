@@ -4,6 +4,7 @@ namespace ngx::Http {
     protected:
         SpinLock Lock;
         Buffer ReadBuffer;
+        HttpRequestContext RequestContext;
 
         static void OnConnectionEvent(void *Arguments, ThreadPool *TPool);
         friend class HttpServer;

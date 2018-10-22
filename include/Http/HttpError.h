@@ -9,6 +9,7 @@ namespace ngx::Http {
                 return ErrorCodeToString(ErrorCode);
             }
             virtual void PrintError() {
+                printf("%d\n", ErrorCode);
                 printf("HttpError: %s, Message: %s\n", ErrorCodeToString(ErrorCode), Message == nullptr? "null": Message);
             }
     };

@@ -61,10 +61,6 @@ Buffer::~Buffer() {
 
     TempBlock = HeadBlock;
 
-    if ((unsigned long)HeadBlock & 0x00000FFF) {
-        printf("error!");
-    }
-
     HeadBlock = nullptr;
 
     while (TempBlock != nullptr) {
@@ -163,11 +159,8 @@ RuntimeError Buffer::WriteConnectionToBuffer(Connection *C) {
                 return RuntimeError(errno, "Failed to read from socket!");
             }
         }
-        else if (RecievedSize > 0) {
+        else if (RecievedSize > 0 && RecievedSize < ReadLength) {
             WriteCursor.Position += RecievedSize;
-        }
-        else {
-            break;
         }
     }
 
