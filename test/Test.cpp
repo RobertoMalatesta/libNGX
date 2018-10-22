@@ -1,5 +1,4 @@
 extern int CoreTest();
-
 extern int HttpTest();
 
 int main() {
