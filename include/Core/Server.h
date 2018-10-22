@@ -1,20 +1,25 @@
 namespace ngx::Core {
 
     class Server {
-        protected:
-            Listening ListeningSentinel;
-            Connection ConnectionSentinel;
-            SpinLock Lock;
-            atomic_uint64_t MaxConnection = {0};
+    protected:
+        Listening ListeningSentinel;
+        Connection ConnectionSentinel;
+        SpinLock Lock;
+        atomic_uint64_t MaxConnection = {0};
 
-        public:
-            Server();
-            EventError EnqueueListening(Listening *L);
-            Listening *DequeueListening();
-            EventError AttachConnection(Connection *C);
-            EventError DetachConnection(Connection *C);
+    public:
+        Server();
 
-            virtual RuntimeError PostProcessFinished(EventPromiseArgs *Arguments);
-            virtual RuntimeError PostConnectionEvent(EventPromiseArgs *Arguments);
+        EventError EnqueueListening(Listening *L);
+
+        Listening *DequeueListening();
+
+        EventError AttachConnection(Connection *C);
+
+        EventError DetachConnection(Connection *C);
+
+        virtual RuntimeError PostProcessFinished(EventPromiseArgs *Arguments);
+
+        virtual RuntimeError PostConnectionEvent(EventPromiseArgs *Arguments);
     };
 }

@@ -2,11 +2,11 @@
 
 using namespace ngx::Core;
 
-Listening::Listening(): Socket() {
+Listening::Listening() : Socket() {
     IsListen = 1;
 }
 
-Listening::Listening(Core::SocketAddress &SocketAddress):
+Listening::Listening(Core::SocketAddress &SocketAddress) :
         Socket(SocketAddress) {
     IsListen = 1;
 }
@@ -23,7 +23,7 @@ TCP4Listening::TCP4Listening(Core::SocketAddress &SocketAddress)
     Type = SOCK_TYPE_STREAM;
     Version = 4;
 
-    if ( 0 == bind(SocketFd, &SocketAddress.sockaddr, SocketAddress.SocketLength)) {
+    if (0 == bind(SocketFd, &SocketAddress.sockaddr, SocketAddress.SocketLength)) {
         Active = 1;
     }
 }
@@ -50,7 +50,7 @@ SocketError TCP4Listening::Listen() {
 
 SocketError TCP4Listening::SetPortReuse(bool Open) {
 
-    int Val = Open? 1: 0;
+    int Val = Open ? 1 : 0;
 
     if ((Open && Reuse) || (!Open && !Reuse)) {
         return SocketError(EALREADY);

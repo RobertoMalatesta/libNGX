@@ -4,29 +4,28 @@ namespace ngx::Core {
 
     inline void cpuid(uint32_t i, uint32_t *buf) {
 
-        if (strcmp(CPU_Module,"I386") == 0) {
+        if (strcmp(CPU_Module, "I386") == 0) {
             __asm__ (
 
             "    mov    %%ebx, %%esi;  "
 
-                    "    cpuid;                "
-                    "    mov    %%eax, (%1);   "
-                    "    mov    %%ebx, 4(%1);  "
-                    "    mov    %%edx, 8(%1);  "
-                    "    mov    %%ecx, 12(%1); "
+            "    cpuid;                "
+            "    mov    %%eax, (%1);   "
+            "    mov    %%ebx, 4(%1);  "
+            "    mov    %%edx, 8(%1);  "
+            "    mov    %%ecx, 12(%1); "
 
-                    "    mov    %%esi, %%ebx;  "
+            "    mov    %%esi, %%ebx;  "
 
             : : "a" (i), "D" (buf) : "ecx", "edx", "esi", "memory" );
-        }
-        else {
-            uint32_t  eax, ebx, ecx, edx;
+        } else {
+            uint32_t eax, ebx, ecx, edx;
 
             __asm__ (
 
             "cpuid"
 
-            : "=a" (eax), "=b" (ebx), "=c" (ecx), "=d" (edx) : "a" (i) );
+            : "=a" (eax), "=b" (ebx), "=c" (ecx), "=d" (edx) : "a" (i));
 
             buf[0] = eax;
             buf[1] = ebx;

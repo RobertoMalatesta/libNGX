@@ -2,9 +2,9 @@
 
 using namespace ngx::Core;
 
-BufferBuilder::BufferBuilder(size_t BlockSize, uint64_t RecycleSize):
-BlockSize(BlockSize),
-Recycler(BlockSize, RecycleSize) {}
+BufferBuilder::BufferBuilder(size_t BlockSize, uint64_t RecycleSize) :
+        BlockSize(BlockSize),
+        Recycler(BlockSize, RecycleSize) {}
 
 bool BufferBuilder::BuildBuffer(Buffer &Buf) {
 

@@ -3,39 +3,38 @@
 using namespace ngx::Core;
 
 int TimerTreeNode::Compare(TimerTreeNode *Node) {
-    if ( this->Timestamp == Node->Timestamp) {
+    if (this->Timestamp == Node->Timestamp) {
         return 0;
-    }
-    else if (this->Timestamp > Node->Timestamp) {
+    } else if (this->Timestamp > Node->Timestamp) {
         return 1;
-    }
-    else {
+    } else {
         return -1;
     }
 }
 
-RBTreeNode *TimerTreeNode::CreateFromAllocator(MemAllocator *Allocator, uint64_t Seconds, PromiseCallback *Callback, void *Argument) {
+RBTreeNode *TimerTreeNode::CreateFromAllocator(MemAllocator *Allocator, uint64_t Seconds, PromiseCallback *Callback,
+                                               void *Argument) {
 
     RBTreeNode *Ret = nullptr;
     size_t AllocateSize = 0 + sizeof(TimerTreeNode);
 
-    void *PointerToMemory =  ((nullptr != Allocator)?Allocator->Allocate(AllocateSize):malloc(AllocateSize));
+    void *PointerToMemory = ((nullptr != Allocator) ? Allocator->Allocate(AllocateSize) : malloc(AllocateSize));
 
     if (nullptr == PointerToMemory) {
         return nullptr;
     }
 
-    Ret = new (PointerToMemory) TimerTreeNode(Seconds, Callback, Argument);
+    Ret = new(PointerToMemory) TimerTreeNode(Seconds, Callback, Argument);
     return Ret;
 }
 
 void TimerTreeNode::FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node) {
     if (nullptr != Node && nullptr != *Node) {
-        Allocator ->Free((void **)Node);
+        Allocator->Free((void **) Node);
     }
 }
 
-TimerTree::TimerTree(MemAllocator *Allocator): RBTree(Allocator) {
+TimerTree::TimerTree(MemAllocator *Allocator) : RBTree(Allocator) {
 
     void *PointerToSentinel = Allocator->Allocate(sizeof(TimerTreeNode));
 
@@ -46,27 +45,27 @@ TimerTree::TimerTree(MemAllocator *Allocator): RBTree(Allocator) {
     Root = Sentinel = new(PointerToSentinel) TimerTreeNode();
 }
 
-TimerTree::~TimerTree()  {
+TimerTree::~TimerTree() {
 
     RBTreeNode *Temp;
 
-    for (RBTreeNode *It = Minimum(); It != nullptr && It != Sentinel; ) {
+    for (RBTreeNode *It = Minimum(); It != nullptr && It != Sentinel;) {
         Temp = It;
         It = Next(It);
         Delete(Temp);
-        Allocator->Free((void **)&Temp);
+        Allocator->Free((void **) &Temp);
     }
 
     Temp = Sentinel;
 
     if (Temp != nullptr) {
-        Allocator->Free((void **)&Temp);
+        Allocator->Free((void **) &Temp);
     }
 
     RBTree::~RBTree();
 };
 
-TimerTree * TimerTree::CreateFromAllocator(MemAllocator *ParentAllocator, MemAllocator *Allocator) {
+TimerTree *TimerTree::CreateFromAllocator(MemAllocator *ParentAllocator, MemAllocator *Allocator) {
     void *PointerToRBTree = ParentAllocator->Allocate(sizeof(TimerTree));
 
     if (nullptr == PointerToRBTree) {
@@ -77,8 +76,8 @@ TimerTree * TimerTree::CreateFromAllocator(MemAllocator *ParentAllocator, MemAll
 }
 
 void TimerTree::FreeFromAllocator(MemAllocator *ParentAllocator, TimerTree **TheRBTree) {
-    (*TheRBTree) -> ~TimerTree();
-    ParentAllocator->Free((void **)TheRBTree);
+    (*TheRBTree)->~TimerTree();
+    ParentAllocator->Free((void **) TheRBTree);
 }
 
 int TimerTree::PostTimerPromise(uint64_t Seconds, PromiseCallback Callback, void *Argument) {
@@ -103,9 +102,9 @@ int TimerTree::QueueExpiredTimer(ThreadPool *TPool) {
 
     uint64_t Timestamp = GetTimeStamp();
 
-    for (It = Minimum(); It != Sentinel && It != nullptr; ) {
+    for (It = Minimum(); It != Sentinel && It != nullptr;) {
 
-        Temp = (TimerTreeNode *)It;
+        Temp = (TimerTreeNode *) It;
         It = Next(It);
 
         if (Temp->Timestamp > Timestamp) {
@@ -115,7 +114,7 @@ int TimerTree::QueueExpiredTimer(ThreadPool *TPool) {
         TPool->PostPromise(Temp->Callback, Temp->Argument);
         Delete(Temp);
 
-        TimerTreeNode::FreeFromAllocator(Allocator, (RBTreeNode **)&Temp);
+        TimerTreeNode::FreeFromAllocator(Allocator, (RBTreeNode **) &Temp);
     }
     return 0;
 }

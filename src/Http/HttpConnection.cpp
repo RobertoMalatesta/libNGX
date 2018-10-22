@@ -3,18 +3,19 @@
 using namespace ngx::Core;
 using namespace ngx::Http;
 
-HttpConnection::HttpConnection(struct SocketAddress &SocketAddress, BufferBuilder &BB):
-    Lock(),
-    Recyclable(),
-    TCP4Connection(SocketAddress) {
+HttpConnection::HttpConnection(struct SocketAddress &SocketAddress, BufferBuilder &BB) :
+        Lock(),
+        Recyclable(),
+        TimerNode(0, HttpConnection::OnConnectionEvent, nullptr),
+        TCP4Connection(SocketAddress) {
     BB.BuildBuffer(ReadBuffer);
     OnEventPromise = HttpConnection::OnConnectionEvent;
 }
 
-HttpConnection::HttpConnection( int SocketFd, struct SocketAddress &SocketAddress, BufferBuilder &BB) :
-    Lock(),
-    Recyclable(),
-    TCP4Connection(SocketFd, SocketAddress) {
+HttpConnection::HttpConnection(int SocketFd, struct SocketAddress &SocketAddress, BufferBuilder &BB) :
+        Lock(),
+        Recyclable(),
+        TCP4Connection(SocketFd, SocketAddress) {
 
     BB.BuildBuffer(ReadBuffer);
     OnEventPromise = HttpConnection::OnConnectionEvent;
@@ -35,13 +36,13 @@ void HttpConnection::OnConnectionEvent(void *Arguments, ThreadPool *TPool) {
     if (TempArgument->UserArguments[3].Ptr == nullptr ||
         TempArgument->UserArguments[4].Ptr == nullptr ||
         TempArgument->UserArguments[6].Ptr == nullptr
-        ) {
+            ) {
         return;
     }
 
     EventDomain = static_cast<EPollEventDomain *>(TempArgument->UserArguments[4].Ptr);
     TempSocket = static_cast<Socket *>(TempArgument->UserArguments[6].Ptr);
-    TempConnection = (HttpConnection *)TempSocket;
+    TempConnection = (HttpConnection *) TempSocket;
     Type = static_cast<EventType>(TempArgument->UserArguments[7].UInt);
 
     printf("Event Type: %x, connection fd: %d\n", Type, TempConnection->GetSocketFD());

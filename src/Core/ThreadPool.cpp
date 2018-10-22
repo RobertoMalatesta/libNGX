@@ -19,7 +19,7 @@ namespace ngx::Core {
         }
     }
 
-    Thread::Thread(ThreadPool *TPool) :Sentinel(), WorkerThread(Thread::ThreadProcess, this){
+    Thread::Thread(ThreadPool *TPool) : Sentinel(), WorkerThread(Thread::ThreadProcess, this) {
 
         this->TPool = TPool;
         Allocator = new Pool(THREAD_POOL_MEMORY_SIZE);
@@ -31,14 +31,14 @@ namespace ngx::Core {
         delete Allocator;
     }
 
-    int Thread::TryPostPromise( PromiseCallback *Callback, void *Argument){
+    int Thread::TryPostPromise(PromiseCallback *Callback, void *Argument) {
 
         if (Lock.test_and_set()) {
             return -1;
         }
 
         if (!Running) {
-            return  0;
+            return 0;
         }
 
         void *PointerToPromise = Allocator->Allocate(sizeof(Promise));
@@ -72,12 +72,12 @@ namespace ngx::Core {
                 this_thread::yield();
             }
 
-            while(!Thread->Sentinel.IsEmpty()) {
+            while (!Thread->Sentinel.IsEmpty()) {
 
                 Node = (Promise *) Thread->Sentinel.GetHead();
                 Node->Detach();
                 Node->doPromise();
-                Thread->Allocator->Free((void **)&Node);
+                Thread->Allocator->Free((void **) &Node);
             }
 
             IsRunnig = Thread->Running;
@@ -99,7 +99,7 @@ namespace ngx::Core {
     ThreadPool::ThreadPool(int NumThread) {
         this->NumThread = NumThread;
 
-        while(NumThread-- > 0) {
+        while (NumThread-- > 0) {
             Threads.push_back(new Thread(this));
         }
     }
@@ -113,7 +113,7 @@ namespace ngx::Core {
 
     void ThreadPool::PostPromise(PromiseCallback *Callback, void *PointerToArg) {
 
-        int RetCode, i=DeliverIndex;
+        int RetCode, i = DeliverIndex;
 
         do {
             RetCode = Threads[(i) % NumThread]->TryPostPromise(Callback, PointerToArg);
@@ -122,7 +122,7 @@ namespace ngx::Core {
                 break;
             }
 
-            if (((i -= RetCode)-DeliverIndex) % NumThread == 0) {
+            if (((i -= RetCode) - DeliverIndex) % NumThread == 0) {
                 usleep(THREAD_POOL_SPIN_TIME);
             }
         } while (true);

@@ -15,7 +15,7 @@ int RBTreeTest() {
 
     Nodes.clear();
 
-    for (uint32_t i = 0 ; i< 10000; i++) {
+    for (uint32_t i = 0; i < 10000; i++) {
         Temp = RBTree->CreateNodeFromAllocator(1, i);
         Nodes.push_back(Temp);
         RBTree->Insert(Temp);
@@ -25,16 +25,16 @@ int RBTreeTest() {
 
     uint32_t Sum = 0;
 
-    for (uint32_t i = 0 ; i< 10001; i++) {
-         Node = RBTree->Find(i);
+    for (uint32_t i = 0; i < 10001; i++) {
+        Node = RBTree->Find(i);
 
-         if (Node != nullptr) {
-             Sum += Node->GetKey();
-         }
+        if (Node != nullptr) {
+            Sum += Node->GetKey();
+        }
     }
 
     for (RBTreeNode *N = RBTree->Minimum(); N != nullptr; N = RBTree->Next(N)) {
-        printf("%u\n", ((UInt32RBTreeNode *)N)->GetKey());
+        printf("%u\n", ((UInt32RBTreeNode *) N)->GetKey());
     }
 
 
@@ -46,8 +46,8 @@ int RBTreeTest() {
 
     Nodes.clear();
 
-    for (int i = 0 ; i< 10000; i++) {
-        Temp = RBTree->CreateNodeFromAllocator(1, (uint32_t)i);
+    for (int i = 0; i < 10000; i++) {
+        Temp = RBTree->CreateNodeFromAllocator(1, (uint32_t) i);
         Nodes.push_back(Temp);
         RBTree->Insert(Temp);
     }

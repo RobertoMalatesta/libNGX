@@ -11,10 +11,12 @@ namespace ngx::Core {
         PromiseCallback *Callback = nullptr;
 
         friend class Thread;
+
         friend class ThreadPool;
 
     public:
         Promise();
+
         Promise(ThreadPool *TPool, Thread *T, PromiseCallback *Callback, void *PointerToArgs);
 
         void doPromise();
@@ -22,23 +24,28 @@ namespace ngx::Core {
 
     class Thread {
 
-        private:
+    private:
 
-            ThreadPool *TPool = nullptr;
-            thread WorkerThread;
-            Pool *Allocator = nullptr;
-            atomic_flag Lock = ATOMIC_FLAG_INIT;
-            bool Running = true;
-            uint PostCount;
-            Promise Sentinel;
-            static void ThreadProcess(Thread *Thread);
-            friend Promise;
+        ThreadPool *TPool = nullptr;
+        thread WorkerThread;
+        Pool *Allocator = nullptr;
+        atomic_flag Lock = ATOMIC_FLAG_INIT;
+        bool Running = true;
+        uint PostCount;
+        Promise Sentinel;
 
-        public:
-            Thread(ThreadPool *TPool);
-            ~Thread();
-            void Stop();
-            int TryPostPromise(PromiseCallback *Callback, void * Argument);
+        static void ThreadProcess(Thread *Thread);
+
+        friend Promise;
+
+    public:
+        Thread(ThreadPool *TPool);
+
+        ~Thread();
+
+        void Stop();
+
+        int TryPostPromise(PromiseCallback *Callback, void *Argument);
     };
 
     class ThreadPool {
@@ -47,11 +54,14 @@ namespace ngx::Core {
         int NumThread;
         int DeliverIndex = 0;
         vector<Thread *> Threads;
+
         friend class Promise;
 
     public:
         ThreadPool(int NumThread = 8);
+
         ~ThreadPool();
+
         void PostPromise(PromiseCallback *Callback, void *PointerToArg);
 
     };

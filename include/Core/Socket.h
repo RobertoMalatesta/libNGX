@@ -41,6 +41,7 @@ namespace ngx::Core {
 
     public:
         Socket();
+
         Socket(struct SocketAddress &SocketAddress);
 
         Socket(int SocketFd, struct SocketAddress &SocketAddress);

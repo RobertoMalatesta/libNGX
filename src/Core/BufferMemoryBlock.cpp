@@ -5,9 +5,9 @@ using namespace ngx::Core;
 BufferMemoryBlock::BufferMemoryBlock(size_t Size) : MemoryBlock(Size), Recyclable() {
     TotalSize = Size - sizeof(BufferMemoryBlock);
     FreeSize = TotalSize;
-    PointerToHead = (u_char *)this + sizeof(BufferMemoryBlock);
+    PointerToHead = (u_char *) this + sizeof(BufferMemoryBlock);
     PointerToData = PointerToHead;
-    Start = Pos = (u_char *)PointerToHead;
+    Start = Pos = (u_char *) PointerToHead;
     End = Start + TotalSize;
 }
 
@@ -15,7 +15,7 @@ BufferMemoryBlock::~BufferMemoryBlock() {
     Start = Pos = End = nullptr;
 }
 
-BufferMemoryBlock* BufferMemoryBlock::Build(size_t Size) {
+BufferMemoryBlock *BufferMemoryBlock::Build(size_t Size) {
     void *TempPointer = valloc(Size);
 
     if (nullptr == TempPointer) {
@@ -31,14 +31,14 @@ void BufferMemoryBlock::Destroy(BufferMemoryBlock **PointerToBlock) {
         return;
     }
 
-    free((void*)*PointerToBlock);
+    free((void *) *PointerToBlock);
     *PointerToBlock = nullptr;
 }
 
 void BufferMemoryBlock::Reset() {
-    PointerToHead = (u_char *)this + sizeof(BufferMemoryBlock);
+    PointerToHead = (u_char *) this + sizeof(BufferMemoryBlock);
     PointerToData = PointerToHead;
-    Start = Pos = (u_char *)PointerToHead;
+    Start = Pos = (u_char *) PointerToHead;
     End = Start + TotalSize;
     NextBlock = nullptr;
 }

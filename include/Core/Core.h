@@ -2,50 +2,95 @@
 
 namespace ngx::Core {
     using namespace ngx::Core::DefaultConfig;
+
     class Reference;
+
     class Resetable;
+
     class Recyclable;
+
     class Recycler;
+
     class MemoryBlock;
+
     class MemoryBlockAllocator;
+
     class MemAllocator;
+
     class Pool;
+
     class Array;
+
     class BufferCursor;
+
     class BufferRange;
+
     class Buffer;
+
     class BufferMemoryBlockRecycler;
+
     class BufferBuilder;
+
     class Queue;
+
     class Error;
+
     class RuntimeError;
+
     class SocketError;
+
     class EventError;
+
     class List;
+
     class ListCarriage;
+
     class ListIterator;
+
     class RBTreeNode;
+
     class RBTree;
+
     class UInt32RBTreeNode;
+
     class UInt32RBTree;
+
     class TimerTree;
+
     class FSEntity;
+
     class FSTree;
+
     class Socket;
+
     class SpinLock;
+
     class SpinlockGuard;
+
     class Promise;
+
     class Thread;
+
     class ThreadPool;
+
     class EventDomain;
+
     struct SocketAddress;
+
     class SocketEventDomain;
+
     class EPollEventDomain;
+
     class Socket;
+
     class Connection;
+
     class Listening;
+
     class TCP4Connection;
+
     class TCP4Listening;
+
     class Server;
 }
 

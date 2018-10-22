@@ -58,7 +58,7 @@ set(TEST_FILES
         test/Core/CoreTest.cpp
         test/Http/HttpServerTest.cpp
         test/Http/HttpTest.cpp
-        test/Http/HttpConnectionRecyclerTest.cpp)
+        test/Http/HttpConnectionRecycler.cpp)
 
 include_directories(./include)
 

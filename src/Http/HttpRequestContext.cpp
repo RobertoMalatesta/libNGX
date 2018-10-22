@@ -2,6 +2,17 @@
 
 using namespace ngx::Http;
 
+void inline HttpParseRequestLine();
+
+void inline HttpProcessRequestHeader();
+
+void inline HttpValidateHost();
+
+void inline HttpProcessRequestURI();
+
+void inline ResetState();
+
+
 HttpError HttpRequestContext::ProcessHttpRequest(Buffer &B) {
 
     SpinlockGuard LockGuard(&Lock);

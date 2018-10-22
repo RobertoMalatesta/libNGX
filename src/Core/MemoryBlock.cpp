@@ -3,11 +3,11 @@
 namespace ngx::Core {
 
     MemoryBlock::MemoryBlock(size_t Size) {
-        PointerToHead = (u_char *)this + sizeof(MemoryBlock);
+        PointerToHead = (u_char *) this + sizeof(MemoryBlock);
         TotalSize = Size - sizeof(MemoryBlock);
         PointerToData = PointerToHead;
         FreeSize = TotalSize;
-        Magic = (void *)this;
+        Magic = (void *) this;
     }
 
     MemoryBlock::~MemoryBlock() {
@@ -15,7 +15,7 @@ namespace ngx::Core {
         PointerToData = PointerToHead = nullptr;
     }
 
-    MemoryBlock* MemoryBlock::Build(size_t Size) {
+    MemoryBlock *MemoryBlock::Build(size_t Size) {
 
         void *TempPointer = valloc(Size);
 
@@ -31,16 +31,16 @@ namespace ngx::Core {
             return;
         }
 
-        free((void*)*PointerToBlock);
+        free((void *) *PointerToBlock);
         *PointerToBlock = nullptr;
     }
 
-    MemoryBlock* MemoryBlock::AddressToMemoryBlock(void *Address, size_t Size) {
+    MemoryBlock *MemoryBlock::AddressToMemoryBlock(void *Address, size_t Size) {
 
-        MemoryBlock * MemBlk;
-        MemBlk = (MemoryBlock *)( (size_t)Address & ~(Size - 1));
+        MemoryBlock *MemBlk;
+        MemBlk = (MemoryBlock *) ((size_t) Address & ~(Size - 1));
 
-        if (nullptr != MemBlk && MemBlk -> Magic ==(void *) MemBlk) {
+        if (nullptr != MemBlk && MemBlk->Magic == (void *) MemBlk) {
             return MemBlk;
         }
 
@@ -48,6 +48,6 @@ namespace ngx::Core {
     }
 
     bool MemoryBlock::IsInBlock(void *Address) {
-        return (Address >= PointerToHead && Address < ((u_char *)PointerToData));
+        return (Address >= PointerToHead && Address < ((u_char *) PointerToData));
     }
 }

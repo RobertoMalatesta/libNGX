@@ -4,10 +4,10 @@ namespace ngx::Core {
 
     uint32_t murmur_hash2(u_char *data, size_t len) {
 
-        uint32_t  h = 0 ^ len, k;
+        uint32_t h = 0 ^len, k;
 
         while (len >= 4) {
-            k  = data[0];
+            k = data[0];
             k |= data[1] << 8;
             k |= data[2] << 16;
             k |= data[3] << 24;

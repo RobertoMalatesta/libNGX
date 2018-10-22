@@ -4,6 +4,7 @@
 
 using namespace ngx::Core;
 using namespace std;
+
 int TCPSocketTest() {
 
     SocketAddress SocketAddress = {
@@ -17,8 +18,8 @@ int TCPSocketTest() {
 
     TCP4Listening Listen(SocketAddress);
 
-    cout<<Listen.SetPortReuse(true).GetErrorString()<<endl;
-    cout<<Listen.Listen().GetErrorString()<<endl;
+    cout << Listen.SetPortReuse(true).GetErrorString() << endl;
+    cout << Listen.Listen().GetErrorString() << endl;
 
     return 0;
 }

@@ -2,7 +2,7 @@
 
 using namespace ngx::Core;
 
-static inline BufferMemoryBlock *AquireBlock (BufferMemoryBlockRecycler *R, size_t Size) {
+static inline BufferMemoryBlock *AquireBlock(BufferMemoryBlockRecycler *R, size_t Size) {
 
     if (R == nullptr) {
         return BufferMemoryBlock::Build(Size);
@@ -11,7 +11,7 @@ static inline BufferMemoryBlock *AquireBlock (BufferMemoryBlockRecycler *R, size
     }
 }
 
-static inline void RecycleBlock (BufferMemoryBlockRecycler *R, BufferMemoryBlock *B) {
+static inline void RecycleBlock(BufferMemoryBlockRecycler *R, BufferMemoryBlock *B) {
 
     if (R == nullptr) {
         BufferMemoryBlock::Destroy(&B);
@@ -101,11 +101,10 @@ RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength)
             DataLength -= CurrentBlockFreeSize;
 
 
-            WriteBlock -> SetNextBlock(TempBufferBlock);
+            WriteBlock->SetNextBlock(TempBufferBlock);
             WriteBlock = WriteCursor.Block = TempBufferBlock;
             WriteCursor.Position = WriteBlock->Start;
-        }
-        else {
+        } else {
             memcpy(WriteCursor.Position, PointerToData, DataLength);
             WriteCursor.Position = (WriteBlock->Pos += DataLength);
 
@@ -135,8 +134,7 @@ RuntimeError Buffer::WriteConnectionToBuffer(Connection *C) {
 
             if (Recycler == nullptr) {
                 TempBlock = BufferMemoryBlock::Build(BlockSize);
-            }
-            else {
+            } else {
                 TempBlock = Recycler->Get();
             }
 
@@ -154,13 +152,13 @@ RuntimeError Buffer::WriteConnectionToBuffer(Connection *C) {
         if (RecievedSize == -1) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 break;
-            }
-            else {
+            } else {
                 return RuntimeError(errno, "Failed to read from socket!");
             }
-        }
-        else if (RecievedSize > 0 && RecievedSize < ReadLength) {
+        } else if (RecievedSize > 0) {
             WriteCursor.Position += RecievedSize;
+        } else {
+            break;
         }
     }
 
@@ -180,8 +178,7 @@ void Buffer::Reset() {
 
         if (Recycler == nullptr) {
             BufferMemoryBlock::Destroy(&TempBlock);
-        }
-        else {
+        } else {
             Recycler->Put(TempBlock);
         }
 
@@ -208,14 +205,12 @@ void Buffer::GC() {
 
             if (Recycler == nullptr) {
                 BufferMemoryBlock::Destroy(&NextBlock);
-            }
-            else {
+            } else {
                 Recycler->Put(NextBlock);
             }
 
             NextBlock = TempBlock->GetNextBlock();
-        }
-        else {
+        } else {
             TempBlock = NextBlock;
             NextBlock = TempBlock->GetNextBlock();
         }

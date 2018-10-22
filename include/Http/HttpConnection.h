@@ -5,9 +5,13 @@ namespace ngx::Http {
         SpinLock Lock;
         Buffer ReadBuffer;
         HttpRequestContext RequestContext;
+        TimerTreeNode TimerNode;
+        EventPromiseArgs Arguments;
 
         static void OnConnectionEvent(void *Arguments, ThreadPool *TPool);
+
         friend class HttpServer;
+
         friend class HttpConnectionRecycler;
 
     public:

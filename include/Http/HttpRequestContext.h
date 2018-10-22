@@ -14,7 +14,7 @@ namespace ngx::Http {
         HTTP_PROCESS_REQUEST_URI,
     };
 
-    enum HttpRequestLineParseState{
+    enum HttpRequestLineParseState {
         RL_Start = 0,
         RL_Method,
         RL_Space_Before_Uri,
@@ -42,19 +42,22 @@ namespace ngx::Http {
         RL_MinorDigit,
         RL_SpaceAfterDigit,
         RL_AlmostDone
-    } ;
+    };
 
     class HttpRequestContext {
-        protected:
-            SpinLock Lock;
-            HttpVersion Version;
-            HttpMethod Method;
-            HttpRequestState State = HTTP_INIT_STATE;
-            HttpRequestLineParseState RequestLineState;
-        public:
-            virtual void Reset();
-            HttpError ProcessHttpRequest(Buffer &B);
-            HttpError ParseRequestLine(Buffer &B);
+    protected:
+        SpinLock Lock;
+        HttpVersion Version;
+        HttpMethod Method;
+        HttpRequestState State = HTTP_INIT_STATE;
+        HttpRequestLineParseState RequestLineState;
+    public:
+
+        virtual void Reset();
+
+        HttpError ProcessHttpRequest(Buffer &B);
+
+        HttpError ParseRequestLine(Buffer &B);
 
     };
 }

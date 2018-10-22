@@ -3,11 +3,5 @@
 int ArrayTest() {
 
 
-
-
-
-
-
-
     return 0;
 }

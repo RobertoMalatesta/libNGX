@@ -2,7 +2,7 @@
 
 using namespace ngx::Core;
 
-Server::Server() : ListeningSentinel(), ConnectionSentinel(){
+Server::Server() : ListeningSentinel(), ConnectionSentinel() {
     Lock.Unlock();
 }
 
@@ -13,7 +13,7 @@ EventError Server::EnqueueListening(Listening *L) {
     SpinlockGuard LockGuard(&Lock);
 
     for (PQueue = ListeningSentinel.GetHead(); PQueue != ListeningSentinel.GetSentinel(); PQueue = PQueue->GetNext()) {
-        PListen = (Listening *)(PQueue);
+        PListen = (Listening *) (PQueue);
 
         if (PListen == L) {
             return EventError(EALREADY, "Listen is already added to the Queue");
@@ -33,7 +33,7 @@ Listening *Server::DequeueListening() {
         return nullptr;
     }
 
-    Listen = (Listening *)ListeningSentinel.GetHead();
+    Listen = (Listening *) ListeningSentinel.GetHead();
     Listen->Detach();
 
     return Listen;

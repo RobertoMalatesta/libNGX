@@ -5,7 +5,7 @@ using namespace ngx::Core;
 SocketEventDomain::SocketEventDomain(size_t PoolSize, int ThreadCount) : EventDomain(PoolSize, ThreadCount) {
 }
 
-RuntimeError EventDomain::EventDomainProcess(EventPromiseArgs* PointerToArgument) {
+RuntimeError EventDomain::EventDomainProcess(EventPromiseArgs *PointerToArgument) {
 
     if (nullptr == Timers) {
         return RuntimeError(EINVAL, "Timer init failed, Timer == nullptr!");

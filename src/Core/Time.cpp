@@ -15,29 +15,31 @@ namespace ngx::Core {
 
     static struct {
         uint64_t Timestamp;
-        char ErrorLogTime [ErrorLogTimeSize];
-        char HttpTime [HttpTimeSize];
-        char HttpLogTime [HttpLogTimeSize];
-        char HttpLogTimeISO8601 [HttpLogTimeISO8601Size];
+        char ErrorLogTime[ErrorLogTimeSize];
+        char HttpTime[HttpTimeSize];
+        char HttpLogTime[HttpLogTimeSize];
+        char HttpLogTimeISO8601[HttpLogTimeISO8601Size];
         char SysLogTime[SysLogTimeSize];
     } TimeStringRingBuffer[NumTimeSlot];
 
-    static const char  *WeekString[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
-    static const char  *MonthString[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                                          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+    static const char *WeekString[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+    static const char *MonthString[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
     static void TimerHandle(int);
+
     static void UpdateTimeString();
 
     static inline int FetchTimeVersion(bool Force = false);
 
     int EnableTimer() {
 
-        struct itimerval  itv = {0};
+        struct itimerval itv = {0};
 
         itv.it_interval.tv_sec = TimeResolution / 1000;
         itv.it_interval.tv_usec = (TimeResolution % 1000) * 1000;
         itv.it_value.tv_sec = TimeResolution / 1000;
-        itv.it_value.tv_usec = (TimeResolution % 1000 ) * 1000;
+        itv.it_value.tv_usec = (TimeResolution % 1000) * 1000;
 
         if (setitimer(ITIMER_REAL, &itv, nullptr) == -1) {
             return -1;
@@ -47,7 +49,7 @@ namespace ngx::Core {
 
     int DisableTimer() {
 
-        struct itimerval  itv = {0};
+        struct itimerval itv = {0};
 
         itv.it_value.tv_sec = 0;
         itv.it_value.tv_usec = 0;
@@ -69,7 +71,7 @@ namespace ngx::Core {
 
     int TimeModuleInit() {
 
-        struct sigaction  sa = {nullptr};
+        struct sigaction sa = {nullptr};
 
         static bool TimeModuleInited = false;
 
@@ -99,7 +101,7 @@ namespace ngx::Core {
 
         uint64_t Ret;
 
-        int Version=FetchTimeVersion();
+        int Version = FetchTimeVersion();
 
         Ret = TimeStringRingBuffer[Version].Timestamp;
 
@@ -108,7 +110,7 @@ namespace ngx::Core {
 
     int WriteErrorLogTime(char *Buf, size_t Size) {
 
-        int Version=FetchTimeVersion();
+        int Version = FetchTimeVersion();
 
 
         if (Size < ErrorLogTimeSize) {
@@ -117,12 +119,12 @@ namespace ngx::Core {
 
         memcpy(Buf, TimeStringRingBuffer[Version].ErrorLogTime, ErrorLogTimeSize);
 
-        return ErrorLogTimeSize-1;
+        return ErrorLogTimeSize - 1;
     }
 
     int WriteHttpTime(char *Buf, size_t Size) {
 
-        int Version=FetchTimeVersion();
+        int Version = FetchTimeVersion();
 
         if (Size < HttpTimeSize) {
             return 0;
@@ -130,12 +132,12 @@ namespace ngx::Core {
 
         memcpy(Buf, TimeStringRingBuffer[Version].HttpTime, HttpTimeSize);
 
-        return HttpTimeSize-1;
+        return HttpTimeSize - 1;
     }
 
     int WriteHttpLogTime(char *Buf, size_t Size) {
 
-        int Version=FetchTimeVersion();
+        int Version = FetchTimeVersion();
 
         if (Size < HttpLogTimeSize) {
             return 0;
@@ -143,12 +145,12 @@ namespace ngx::Core {
 
         memcpy(Buf, TimeStringRingBuffer[Version].HttpLogTime, HttpLogTimeSize);
 
-        return HttpLogTimeSize-1;
+        return HttpLogTimeSize - 1;
     }
 
     int WriteHttpLogTimeISO8601(char *Buf, size_t Size) {
 
-        int Version=FetchTimeVersion();
+        int Version = FetchTimeVersion();
 
         if (Size < HttpLogTimeISO8601Size) {
             return 0;
@@ -156,12 +158,12 @@ namespace ngx::Core {
 
         memcpy(Buf, TimeStringRingBuffer[Version].HttpLogTimeISO8601, HttpLogTimeISO8601Size);
 
-        return HttpLogTimeISO8601Size-1;
+        return HttpLogTimeISO8601Size - 1;
     }
 
     int WriteSysLogTime(char *Buf, size_t Size) {
 
-        int Version=FetchTimeVersion();
+        int Version = FetchTimeVersion();
 
         if (Size < SysLogTimeSize) {
             return 0;
@@ -169,13 +171,13 @@ namespace ngx::Core {
 
         memcpy(Buf, TimeStringRingBuffer[Version].SysLogTime, SysLogTimeSize);
 
-        return SysLogTimeSize-1;
+        return SysLogTimeSize - 1;
     }
 
     static int FetchTimeVersion(bool Force) {
 
-        int Version=0;
-        while(TimestampLock.test_and_set()) {
+        int Version = 0;
+        while (TimestampLock.test_and_set()) {
             RelaxMachine();
         }
 
@@ -191,52 +193,51 @@ namespace ngx::Core {
     }
 
     static void TimerHandle(int) {
-        UpdateTimestamp=true;
+        UpdateTimestamp = true;
     }
 
     static void UpdateTimeString() {
 
-        uint64_t  Ts;
-        TimestampVersion=(TimestampVersion + 1)%NumTimeSlot;
+        uint64_t Ts;
+        TimestampVersion = (TimestampVersion + 1) % NumTimeSlot;
         gettimeofday(&Timestamp, nullptr);
 
-        Ts = (uint64_t)(Timestamp.tv_sec);
+        Ts = (uint64_t) (Timestamp.tv_sec);
         TimeStringRingBuffer[TimestampVersion].Timestamp = Ts;
 
         int Year, Month, MonthDay, Hour, Minute, Second, DayOfWeek, Days, Leap, DayOfYear;
 
-        Days = (int)(Ts / 86400);
-        Second = (int)(Ts % 86400);
+        Days = (int) (Ts / 86400);
+        Second = (int) (Ts % 86400);
 
         if (Days > 2932896) {
             Days = 2932896;
             Second = 86399;
         }
 
-        DayOfWeek = (4+Days) % 7;
+        DayOfWeek = (4 + Days) % 7;
         Hour = Second / 3600;
         Second = Second % 3600;
         Minute = Second / 60;
         Second = Second % 60;
 
         Days = Days - (31 + 28) + 719527;
-        Year = (Days + 2) * 400 / (365 * 400 + 100 - 4 +1);
-        DayOfYear = Days - (365 * Year + Year/4 - Year/100 + Year/400);
+        Year = (Days + 2) * 400 / (365 * 400 + 100 - 4 + 1);
+        DayOfYear = Days - (365 * Year + Year / 4 - Year / 100 + Year / 400);
 
         if (DayOfYear < 0) {
             Leap = (Year % 4 == 0) && (Year % 100 || (Year % 400 == 0));
             DayOfYear = 365 + Leap + DayOfYear;
-            Year --;
+            Year--;
         }
         Month = (DayOfYear + 31) * 10 / 306;
 
         MonthDay = DayOfYear - (367 * Month / 12 - 30) + 1;
 
         if (DayOfYear >= 306) {
-            Year ++;
+            Year++;
             Month -= 10;
-        }
-        else {
+        } else {
             Month += 2;
         }
 
@@ -244,14 +245,14 @@ namespace ngx::Core {
                 "%4d/%02d/%02d %02d:%02d:%02d", Year, Month, MonthDay, Hour, Minute, Second);
         sprintf(TimeStringRingBuffer[TimestampVersion].HttpTime,
                 "%s, %02d %s %4d %02d:%02d:%02d GMT",
-                WeekString[DayOfWeek], MonthDay, MonthString[Month-1], Year, Hour, Minute, Second);
+                WeekString[DayOfWeek], MonthDay, MonthString[Month - 1], Year, Hour, Minute, Second);
         sprintf(TimeStringRingBuffer[TimestampVersion].HttpLogTime,
                 "%02d/%s/%d:%02d:%02d:%02d %c%02i%02i",
-                MonthDay, MonthString[Month-1], Year, Hour, Minute, Second, '+', 8, 0);
+                MonthDay, MonthString[Month - 1], Year, Hour, Minute, Second, '+', 8, 0);
         sprintf(TimeStringRingBuffer[TimestampVersion].HttpLogTimeISO8601,
                 "%4d-%02d-%02dT%02d:%02d:%02d%c%02i:%02i", Year, Month, MonthDay, Hour, Minute, Second, '+', 8, 0);
         sprintf(TimeStringRingBuffer[TimestampVersion].SysLogTime,
-                "%s %2d %02d:%02d:%02d", MonthString[Month-1], MonthDay, Hour, Minute, Second);
+                "%s %2d %02d:%02d:%02d", MonthString[Month - 1], MonthDay, Hour, Minute, Second);
 
         UpdateTimestamp = false;
     }

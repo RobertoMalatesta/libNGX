@@ -7,19 +7,19 @@ Socket::Socket() {
     this->SocketAddress = {0};
 }
 
-Socket::Socket(struct SocketAddress &SocketAddress):
+Socket::Socket(struct SocketAddress &SocketAddress) :
         SocketAddress(SocketAddress) {
     this->SocketFd = -1;
 }
 
-Socket::Socket(int SocketFd, struct SocketAddress &SocketAddress):
+Socket::Socket(int SocketFd, struct SocketAddress &SocketAddress) :
         SocketFd(SocketFd),
         SocketAddress(SocketAddress) {
 
     this->SocketAddress = SocketAddress;
     this->SocketFd = SocketFd;
 
-    Active = (SocketFd == -1? 0: 1);
+    Active = (SocketFd == -1 ? 0 : 1);
 }
 
 int Socket::GetSocketFD() {
