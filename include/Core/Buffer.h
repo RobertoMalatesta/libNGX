@@ -40,8 +40,10 @@ namespace ngx::Core {
 
         RuntimeError WriteConnectionToBuffer(Connection *C);
 
-        inline BufferCursor GetReadCursor() { return ReadCursor; }
-
+        inline BufferCursor GetReadCursor() const { return ReadCursor; }
+        inline void SetReadCursor(BufferCursor &ReadCusror) {
+            this->ReadCursor = ReadCusror;
+        }
         inline BufferCursor MoveCursor(BufferCursor Cursor, uint32_t Count = 1) {
 
             BufferCursor TempCursor = Cursor;

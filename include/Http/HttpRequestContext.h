@@ -1,8 +1,5 @@
 namespace ngx::Http {
 
-    const u_char CR = '\r';
-    const u_char LF = '\n';
-
     enum HttpRequestState {
         HTTP_BAD_REQUEST_STATE = -1,
         HTTP_INIT_STATE,
@@ -46,9 +43,15 @@ namespace ngx::Http {
 
     class HttpRequestContext {
     protected:
+        unsigned int Http_minor;
         SpinLock Lock;
         HttpVersion Version;
         HttpMethod Method;
+        BufferRange URI;
+        BufferRange Schema;
+        BufferRange Host;
+        BufferRange IP;
+        BufferRange Port;
         HttpRequestState State = HTTP_INIT_STATE;
         HttpRequestLineParseState RequestLineState;
     public:

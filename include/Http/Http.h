@@ -1,6 +1,10 @@
 #include "Core/Core.h"
 
 namespace ngx::Http {
+    const char LF = '\n';
+    const char CR = '\r';
+    const char CRLF[] = "\r\n";
+
     using namespace ngx::Core;
 
     class HttpError;
@@ -18,6 +22,7 @@ namespace ngx::Http {
     class HttpResponseBuffer;
 
     struct HttpPerformanceUnit;
+
 
     enum HttpVersion {
         HTTP_V1 = 1,
