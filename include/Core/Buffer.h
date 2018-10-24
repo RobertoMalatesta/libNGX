@@ -1,13 +1,27 @@
 namespace ngx::Core {
 
-    struct BufferCursor {
-
+    class BufferCursor {
+    private:
+        BufferMemoryBlock *BlockRightBound;
+        u_char *PositionRightBound;
+    public:
         BufferMemoryBlock *Block;
         u_char *Position;
 
         void GetReference();
 
         void PutReference();
+
+        BufferCursor &operator+= (size_t Size);
+        BufferCursor &operator++(int);
+
+        BufferCursor operator+(size_t Size);
+        BufferCursor operator-(size_t) = delete;
+        BufferCursor &operator--() = delete;
+        BufferCursor &operator-=(size_t Size) = delete;
+
+        u_char operator*();
+        u_char operator[](uint16_t Offset);
     };
 
     struct BufferRange {

@@ -40,6 +40,10 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
     BufferCursor ReadCursor = B.GetReadCursor();
     u_char C, C1, C2, C3, C4, C5, C6, C7, C8;
 
+    for (BufferCursor BC = B.GetReadCursor(); (C = *BC) != '\0'; BC++) {
+
+    }
+
     B.ReadByte(ReadCursor, 0, C);
     while (B.ReadByte(ReadCursor, 0, C)) {
         switch (RequestLineState) {
@@ -321,8 +325,6 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                 ReadCursor = B.MoveCursor(ReadCursor);
                 break;
             case RL_AfterSlashInUri:
-
-                if ()
 
                 printf("stuck here!\n");
                 break;
