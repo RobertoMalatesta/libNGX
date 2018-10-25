@@ -28,6 +28,58 @@ void BufferCursor::PutReference() {
     Block->PutReference();
 }
 
+BufferCursor& BufferCursor::operator+=(size_t Size) {
+    while (Size > 0) {
+        if ((Position + Size) < Block->End) {
+            if ((Block == BlockRightBound) && (Position + Size) >= PositionRightBound) {
+                Block = nullptr, Position = nullptr;
+            } else {
+                Position += Size;
+            }
+        } else {
+            Size -= (Block->End - Position);
+            Block = Block->GetNextBlock();
+            Position = Block->Start;
+        }
+    }
+    return *this;
+}
+
+BufferCursor& BufferCursor::operator++(int) {
+    return this->operator+=(1);
+}
+
+BufferCursor BufferCursor::operator+(size_t Size) {
+    BufferCursor Cursor = *this;
+    Cursor += Size;
+    return Cursor;
+}
+
+u_char BufferCursor::operator*() {
+    if (Position != nullptr && Block != nullptr) {
+        return *Position;
+    }
+    else {
+        return '\0';
+    }
+}
+
+u_char BufferCursor::operator[](uint16_t Offset) {
+
+
+    if ((Position + Offset) < Block->End) {
+        return *(Position + Offset);
+    } else {
+        BufferCursor Cursor = *this;
+        Cursor += Offset;
+
+        if (Cursor.Block != nullptr && Cursor.Position != nullptr) {
+            return *Cursor.Position;
+        }
+        return  '\0';
+    }
+}
+
 void BufferRange::GetReference() {
     BufferMemoryBlock *TempBlock;
 
