@@ -29,6 +29,10 @@ namespace ngx::Core {
 
     class BufferMemoryBlockRecycler;
 
+    class BufferCursor;
+
+    class BufferRange;
+
     class BufferBuilder;
 
     class Queue;
@@ -119,8 +123,8 @@ namespace ngx::Core {
 #include "Core/Pool.h"
 #include "Core/BufferMemoryBlock.h"
 #include "Core/Buffer.h"
-#include "Core/BufferAllocator.h"
 #include "Core/BufferMemoryBlockRecycler.h"
+#include "Core/BufferAllocator.h"
 #include "Core/BufferBuilder.h"
 #include "Core/ThreadPool.h"
 #include "Core/TimerTree.h"
