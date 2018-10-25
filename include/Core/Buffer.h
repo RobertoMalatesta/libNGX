@@ -1,139 +1,156 @@
-namespace ngx::Core {
+//===- Buffer.h - Buffer to provide block-chained buffer --------*- C++ -*-===//
+//
+//                     The NGX Server Infrastructure
+//
+// This file is distributed under the MIT Open Source License. See LICENSE.TXT
+// for detail.
+//
+//===----------------------------------------------------------------------===//
+//
+//  This file provide Buffer facility to enable block based Buffer
+//
+//===----------------------------------------------------------------------===//
 
-    struct BufferCursor {
+namespace ngx {
+    namespace Core {
 
-        BufferMemoryBlock *Block;
-        u_char *Position;
+        struct BufferCursor {
 
-        void GetReference();
+            BufferMemoryBlock *Block;
+            u_char *Position;
 
-        void PutReference();
-    };
+            void GetReference();
 
-    struct BufferRange {
+            void PutReference();
+        };
 
-        size_t RangeSize;
-        BufferCursor LeftBound;
-        BufferCursor RightBound;
+        struct BufferRange {
 
-        void GetReference();
+            size_t RangeSize;
+            BufferCursor LeftBound;
+            BufferCursor RightBound;
 
-        void PutReference();
-    };
+            void GetReference();
 
-    class Buffer : public Resetable {
-    protected:
-        SpinLock Lock;
-        size_t BlockSize = 0;
-        BufferMemoryBlockRecycler *Recycler = nullptr;
-        BufferCursor ReadCursor, WriteCursor;
-        BufferMemoryBlock *HeadBlock = nullptr;
+            void PutReference();
+        };
 
-        friend class BufferBuilder;
+        class Buffer : public Resetable {
+        protected:
+            SpinLock Lock;
+            size_t BlockSize = 0;
+            BufferMemoryBlockRecycler *Recycler = nullptr;
+            BufferCursor ReadCursor, WriteCursor;
+            BufferMemoryBlock *HeadBlock = nullptr;
 
-    public:
-        Buffer() = default;
+            friend class BufferBuilder;
 
-        ~Buffer();
+        public:
+            Buffer() = default;
 
-        RuntimeError WriteDataToBuffer(u_char *PointerToData, size_t DataLength);
+            ~Buffer();
 
-        RuntimeError WriteConnectionToBuffer(Connection *C);
+            RuntimeError WriteDataToBuffer(u_char *PointerToData, size_t DataLength);
 
-        inline BufferCursor GetReadCursor() const { return ReadCursor; }
-        inline void SetReadCursor(BufferCursor &ReadCusror) {
-            this->ReadCursor = ReadCusror;
-        }
-        inline BufferCursor MoveCursor(BufferCursor Cursor, uint32_t Count = 1) {
+            RuntimeError WriteConnectionToBuffer(Connection *C);
 
-            BufferCursor TempCursor = Cursor;
-            SpinlockGuard LockGuard(&Lock);
+            inline BufferCursor GetReadCursor() const { return ReadCursor; }
 
-            while (Count > 0) {
+            inline void SetReadCursor(BufferCursor &ReadCusror) {
+                this->ReadCursor = ReadCusror;
+            }
 
-                if (TempCursor.Position + Count > TempCursor.Block->End) {
-                    if (TempCursor.Block == WriteCursor.Block) {
-                        TempCursor.Block = nullptr;
-                        TempCursor.Position = nullptr;
-                        break;
+            inline BufferCursor MoveCursor(BufferCursor Cursor, uint32_t Count = 1) {
+
+                BufferCursor TempCursor = Cursor;
+                SpinlockGuard LockGuard(&Lock);
+
+                while (Count > 0) {
+
+                    if (TempCursor.Position + Count > TempCursor.Block->End) {
+                        if (TempCursor.Block == WriteCursor.Block) {
+                            TempCursor.Block = nullptr;
+                            TempCursor.Position = nullptr;
+                            break;
+                        } else {
+                            Count -= TempCursor.Block->End - TempCursor.Position;
+                            TempCursor.Block = TempCursor.Block->GetNextBlock();
+                            TempCursor.Position = TempCursor.Block->Start;
+                        }
                     } else {
-                        Count -= TempCursor.Block->End - TempCursor.Position;
-                        TempCursor.Block = TempCursor.Block->GetNextBlock();
-                        TempCursor.Position = TempCursor.Block->Start;
+                        if (TempCursor.Block == WriteCursor.Block &&
+                            (TempCursor.Position + Count) >= WriteCursor.Position) {
+                            TempCursor.Block = nullptr;
+                            TempCursor.Position = nullptr;
+                            break;
+                        }
+                        TempCursor.Position += Count;
+                        Count = 0;
                     }
-                } else {
-                    if (TempCursor.Block == WriteCursor.Block &&
-                        (TempCursor.Position + Count) >= WriteCursor.Position) {
-                        TempCursor.Block = nullptr;
-                        TempCursor.Position = nullptr;
-                        break;
-                    }
-                    TempCursor.Position += Count;
-                    Count = 0;
                 }
+
+                return TempCursor;
             }
 
-            return TempCursor;
-        }
+            inline bool ReadByte(BufferCursor Cursor, uint32_t Offset, u_char &C1) {
 
-        inline bool ReadByte(BufferCursor Cursor, uint32_t Offset, u_char &C1) {
+                BufferCursor TempCursor = MoveCursor(Cursor, Offset);
 
-            BufferCursor TempCursor = MoveCursor(Cursor, Offset);
-
-            if (TempCursor.Position == nullptr) {
-                return false;
-            }
-
-            C1 = *TempCursor.Position;
-            return true;
-        }
-
-        inline bool CmpByte(BufferCursor Cursor, uint32_t Offset, u_char C1) {
-
-            u_char A1;
-
-            return ReadByte(Cursor, Offset, A1) && A1 == C1;
-        }
-
-        inline bool ReadBytes2(BufferCursor Cursor, uint32_t Offset, u_char &C1, u_char &C2) {
-
-            BufferCursor Cur1, Cur2;
-
-            Cur2 = MoveCursor(Cursor, Offset + 1);
-
-            if (Cur2.Position == nullptr) {
-                return false;
-            } else {
-
-                C2 = *(Cur2.Position);
-
-                if (Cursor.Block == Cur2.Block) {
-                    C1 = *(Cur2.Position - 1);
-                } else {
-                    return ReadByte(Cursor, Offset, C1);
+                if (TempCursor.Position == nullptr) {
+                    return false;
                 }
+
+                C1 = *TempCursor.Position;
                 return true;
             }
-        }
 
-        inline bool CmpByte2(BufferCursor Cursor, uint32_t Offset, u_char C1, u_char C2) {
+            inline bool CmpByte(BufferCursor Cursor, uint32_t Offset, u_char C1) {
 
-            u_char A1, A2;
+                u_char A1;
 
-            return ReadBytes2(Cursor, Offset, A1, A2)
-                   && A1 == C1
-                   && A2 == C2;
-        }
+                return ReadByte(Cursor, Offset, A1) && A1 == C1;
+            }
 
-        inline bool ReadBytes4(BufferCursor Cursor, uint32_t Offset, u_char &C1, u_char &C2, u_char &C3, u_char &C4) {
+            inline bool ReadBytes2(BufferCursor Cursor, uint32_t Offset, u_char &C1, u_char &C2) {
+
+                BufferCursor Cur1, Cur2;
+
+                Cur2 = MoveCursor(Cursor, Offset + 1);
+
+                if (Cur2.Position == nullptr) {
+                    return false;
+                } else {
+
+                    C2 = *(Cur2.Position);
+
+                    if (Cursor.Block == Cur2.Block) {
+                        C1 = *(Cur2.Position - 1);
+                    } else {
+                        return ReadByte(Cursor, Offset, C1);
+                    }
+                    return true;
+                }
+            }
+
+            inline bool CmpByte2(BufferCursor Cursor, uint32_t Offset, u_char C1, u_char C2) {
+
+                u_char A1, A2;
+
+                return ReadBytes2(Cursor, Offset, A1, A2)
+                       && A1 == C1
+                       && A2 == C2;
+            }
+
+            inline bool
+            ReadBytes4(BufferCursor Cursor, uint32_t Offset, u_char &C1, u_char &C2, u_char &C3, u_char &C4) {
 
                 BufferCursor Cur4;
 
-            Cur4 = MoveCursor(Cursor, Offset + 3);
+                Cur4 = MoveCursor(Cursor, Offset + 3);
 
-            if (Cur4.Position == nullptr) {
-                return false;
-            } else {
+                if (Cur4.Position == nullptr) {
+                    return false;
+                } else {
 
                     C4 = *(Cur4.Position);
 
@@ -141,31 +158,31 @@ namespace ngx::Core {
                         C1 = *(Cur4.Position - 3);
                         C2 = *(Cur4.Position - 2);
                         C3 = *(Cur4.Position - 1);
-                    }
-                    else {
+                    } else {
                         return ReadBytes2(Cursor, Offset, C1, C2) && ReadByte(Cursor, Offset + 2, C3);
                     }
                 }
                 return true;
             }
 
-        inline bool CmpByte4(BufferCursor Cursor, uint32_t Offset, u_char C1, u_char C2, u_char C3, u_char C4) {
+            inline bool CmpByte4(BufferCursor Cursor, uint32_t Offset, u_char C1, u_char C2, u_char C3, u_char C4) {
 
-            u_char A1, A2, A3, A4;
+                u_char A1, A2, A3, A4;
 
-            return ReadBytes4(Cursor, Offset, A1, A2, A3, A4)
-                   && A1 == C1
-                   && A2 == C2
-                   && A3 == C3
-                   && A4 == C4;
-        }
+                return ReadBytes4(Cursor, Offset, A1, A2, A3, A4)
+                       && A1 == C1
+                       && A2 == C2
+                       && A3 == C3
+                       && A4 == C4;
+            }
 
-        inline bool HasBytes(uint32_t Count = 1) {
-            return MoveCursor(ReadCursor, 1).Position == nullptr;
-        }
+            inline bool HasBytes(uint32_t Count = 1) {
+                return MoveCursor(ReadCursor, 1).Position == nullptr;
+            }
 
-        virtual void Reset();
+            virtual void Reset();
 
-        virtual void GC();
-    };
+            virtual void GC();
+        };
+    }
 }
