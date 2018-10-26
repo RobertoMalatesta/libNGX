@@ -1,6 +1,4 @@
 namespace ngx::Core {
-
-
     class ListCarriage {
 
     private:

@@ -14,7 +14,7 @@ namespace ngx::Http {
     enum HttpRequestLineParseState {
         RL_Start = 0,
         RL_Method,
-        RL_Space_Before_Uri,
+        RL_Space_Before_URI,
         RL_Schema,
         RL_SchemaSlash,
         RL_SchemaSlashSlash,
@@ -23,16 +23,16 @@ namespace ngx::Http {
         RL_HostEnd,
         RL_HostIpLiterial,
         RL_Port,
-        RL_HostHttp09,
-        RL_AfterSlashInUri,
-        RL_CheckUri,
-        RL_CheckUriHttp09,
-        RL_Uri,
-        RL_Http09,
-        RL_Http_H,
-        RL_Http_HT,
-        RL_Http_HTT,
-        RL_Http_HTTP,
+        RL_HostHTTP09,
+        RL_AfterSlashInURI,
+        RL_CheckURI,
+        RL_CheckURIHTTP09,
+        RL_URI,
+        RL_HTTP09,
+        RL_HTTP_H,
+        RL_HTTP_HT,
+        RL_HTTP_HTT,
+        RL_HTTP_HTTP,
         RL_FirstMajorDigit,
         RL_MajorDigit,
         RL_FirstMinorDigit,
@@ -43,15 +43,22 @@ namespace ngx::Http {
 
     class HttpRequestContext {
     protected:
-        unsigned int Http_minor;
+        unsigned int HttpMinor;
+        unsigned int ComplexURI;
+        unsigned int QuotedURI;
+        unsigned int PlusInURI;
+
         SpinLock Lock;
         HttpVersion Version;
         HttpMethod Method;
         BufferRange URI;
+        BufferRange URIExt;
         BufferRange Schema;
         BufferRange Host;
         BufferRange IP;
         BufferRange Port;
+        BufferRange HTTPProtocol;
+        BufferRange Arguments;
         HttpRequestState State = HTTP_INIT_STATE;
         HttpRequestLineParseState RequestLineState;
     public:

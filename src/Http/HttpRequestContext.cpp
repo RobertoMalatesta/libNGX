@@ -2,15 +2,27 @@
 
 using namespace ngx::Http;
 
-void inline HttpParseRequestLine();
+static uint32_t usual[] = {
+        0xffffdbfe, /* 1111 1111 1111 1111  1101 1011 1111 1110 */
 
-void inline HttpProcessRequestHeader();
+/* ?>=< ;:98 7654 3210  /.-, +*)( '&%$ #"!  */
+        0x7fff37d6, /* 0111 1111 1111 1111  0011 0111 1101 0110 */
 
-void inline HttpValidateHost();
+/* _^]\ [ZYX WVUT SRQP  ONML KJIH GFED CBA@ */
+//#if (NGX_WIN32)
+//        0xefffffff, /* 1110 1111 1111 1111  1111 1111 1111 1111 */
+//#else
+        0xffffffff, /* 1111 1111 1111 1111  1111 1111 1111 1111 */
+//#endif
 
-void inline HttpProcessRequestURI();
+/*  ~}| {zyx wvut srqp  onml kjih gfed cba` */
+        0xffffffff, /* 1111 1111 1111 1111  1111 1111 1111 1111 */
 
-void inline ResetState();
+        0xffffffff, /* 1111 1111 1111 1111  1111 1111 1111 1111 */
+        0xffffffff, /* 1111 1111 1111 1111  1111 1111 1111 1111 */
+        0xffffffff, /* 1111 1111 1111 1111  1111 1111 1111 1111 */
+        0xffffffff  /* 1111 1111 1111 1111  1111 1111 1111 1111 */
+};
 
 
 HttpError HttpRequestContext::ProcessHttpRequest(Buffer &B) {
@@ -37,8 +49,8 @@ HttpError HttpRequestContext::ProcessHttpRequest(Buffer &B) {
 
 HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
 
-    BufferCursor ReadCursor = B.GetReadCursor();
-    u_char C, C1, C2, C3, C4, C5, C6, C7, C8, C9, C10;
+    u_char C, C1, C2, C3, C4, C5, C6, C7, C8, C9;
+    ;
 
     for (BufferCursor BC = B.GetReadCursor(); (C = *BC) != '\0'; BC++) {
         switch (RequestLineState) {
@@ -46,12 +58,12 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                 if (C == CR || C == LF) {
                     break;
                 }
-                if ((C<'A' || C > 'Z') && C != '_' && C != '-') {
+                if ((C < 'A' || C > 'Z') && C != '_' && C != '-') {
                     return HttpError(EINVAL, "Invalid method!");
                 }
                 RequestLineState = RL_Method;
             case RL_Method:
-                C1 = C, C2 = *(BC+1), C3 = *(BC+2), C4 = *(BC+3);
+                C1 = C, C2 = *(BC + 1), C3 = *(BC + 2), C4 = *(BC + 3);
                 if (C4 == ' ') {
                     if (C1 == 'G' && C2 == 'E' && C3 == 'T') {
                         Method = GET;
@@ -61,7 +73,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                         return HttpError(EINVAL, "Invalid method!");
                     }
                     BC += 3;
-                } else if ((C5 = *(BC+4)) == ' ') {
+                } else if ((C5 = *(BC + 4)) == ' ') {
                     if (C2 == 'O') {
                         if (C1 == 'P' && C3 == 'S' && C4 == 'T') {
                             Method = POST;
@@ -78,7 +90,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                         return HttpError(EINVAL, "Invalid method!");
                     }
                     BC += 4;
-                } else if ((C6 = *(BC+5)) == ' ') {
+                } else if ((C6 = *(BC + 5)) == ' ') {
                     if (C1 == 'M' && C2 == 'K' && C3 == 'C' && C4 == 'O' && C5 == 'L') {
                         Method = MKCOL;
                     } else if (C1 == 'P' && C2 == 'A' && C3 == 'T' && C4 == 'C' && C5 == 'H') {
@@ -89,7 +101,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                         return HttpError(EINVAL, "Invalid method!");
                     }
                     BC += 5;
-                } else if ((C7 = *(BC+6)) == ' ') {
+                } else if ((C7 = *(BC + 6)) == ' ') {
                     if (C1 == 'D' && C2 == 'E' && C3 == 'L' && C4 == 'E' && C5 == 'T' && C6 == 'E') {
                         Method = DELETE;
                     } else if (C1 == 'U' && C2 == 'N' && C3 == 'L' && C4 == 'O' && C5 == 'C' && C6 == 'K') {
@@ -98,30 +110,28 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                         return HttpError(EINVAL, "Invalid method!");
                     }
                     BC += 6;
-                }
-                else if (C1 == 'O' && C2 == 'P' && C3 == 'T' && C4 == 'I' &&
-                    C5 == 'O' && C6 == 'N' && C7 == 'S' && (C8=*(BC+7)) == ' ') {
+                } else if (C1 == 'O' && C2 == 'P' && C3 == 'T' && C4 == 'I' &&
+                           C5 == 'O' && C6 == 'N' && C7 == 'S' && (C8 = *(BC + 7)) == ' ') {
                     Method = OPTIONS, BC += 7;
-                }
-                else if (C1 == 'P' && C2 == 'R' && C3 == 'O' && C4 == 'P' &&
-                    C5 == 'F' && C6 == 'I' && C7 == 'N' && C8 == 'D' && (C9=*(BC+8)) == ' ') {
+                } else if (C1 == 'P' && C2 == 'R' && C3 == 'O' && C4 == 'P' &&
+                           C5 == 'F' && C6 == 'I' && C7 == 'N' && C8 == 'D' && (C9 = *(BC + 8)) == ' ') {
                     Method = PROPFIND, BC += 8;
                 } else if (C1 == 'P' && C2 == 'R' && C3 == 'O' && C4 == 'P' &&
-                    C5 == 'P' && C6 == 'A' && C7 == 'T' && C8 == 'C' && C9 == 'H' && (C10=*(BC+9)) == ' ') {
+                           C5 == 'P' && C6 == 'A' && C7 == 'T' && C8 == 'C' && C9 == 'H' && (*(BC + 9)) == ' ') {
                     Method = PROPPATCH, BC += 9;
                 } else {
                     return HttpError(EINVAL, "Invalid method!");
                 }
-                RequestLineState = RL_Space_Before_Uri;
+                RequestLineState = RL_Space_Before_URI;
                 break;
-            case RL_Space_Before_Uri:
+            case RL_Space_Before_URI:
                 if (C == '/') {
                     URI.LeftBound = BC;
-                    RequestLineState = RL_AfterSlashInUri;
+                    RequestLineState = RL_AfterSlashInURI;
                     break;
                 }
 
-                C1 = (u_char)(C | 0x20);
+                C1 = (u_char) (C | 0x20);
 
                 if (C1 >= 'a' && C1 <= 'z') {
                     Schema.LeftBound = BC;
@@ -138,7 +148,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                 break;
             case RL_Schema:
 
-                C1 = (u_char)(C | 0x20);
+                C1 = (u_char) (C | 0x20);
 
                 if (C1 >= 'a' && C1 <= 'z') {
                     break;
@@ -182,7 +192,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                 }
                 RequestLineState = RL_Host;
             case RL_Host:
-                C1 = (u_char)(C | 0x20);
+                C1 = (u_char) (C | 0x20);
                 if (C1 >= 'a' && C1 <= 'z') {
                     break;
                 }
@@ -197,11 +207,11 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                         break;
                     case '/':
                         URI.LeftBound = BC;
-                        RequestLineState = RL_AfterSlashInUri;
+                        RequestLineState = RL_AfterSlashInURI;
                         break;
                     case ' ':
-                        URI.LeftBound = BC+1, URI.RightBound = BC+2;
-                        RequestLineState = RL_CheckUriHttp09;
+                        URI.LeftBound = BC + 1, URI.RightBound = BC + 2;
+                        RequestLineState = RL_CheckURIHTTP09;
                         break;
                     default:
                         return HttpError(EFAULT, "Read failed!");
@@ -248,37 +258,160 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                 switch (C) {
                     case '/':
                         Port.RightBound = URI.LeftBound = BC;
-                        RequestLineState = RL_AfterSlashInUri;
+                        RequestLineState = RL_AfterSlashInURI;
                         break;
                     case ' ':
-                        Port.RightBound = BC, URI.LeftBound = BC+1, URI.RightBound = BC+2;
-                        RequestLineState = RL_HostHttp09;
+                        Port.RightBound = BC, URI.LeftBound = BC + 1, URI.RightBound = BC + 2;
+                        RequestLineState = RL_HostHTTP09;
                         break;
                     default:
                         return HttpError(EFAULT, "Read failed!");
                 }
                 break;
-            case RL_HostHttp09:
+            case RL_HostHTTP09:
                 switch (C) {
                     case ' ':
                         break;
                     case CR:
-                        Http_minor = 9;
+                        HttpMinor = 9;
                         RequestLineState = RL_AlmostDone;
                         break;
                     case LF:
-                        Http_minor = 9;
+                        HttpMinor = 9;
 //                        goto done;
                     case 'H':
-//                        r->http_protocol.data = p;
-//                        state = sw_http_H;i
-                        RequestLineState = RL_Http_H;
+                        HTTPProtocol.LeftBound = BC;
+                        RequestLineState = RL_HTTP_H;
                         break;
                     default:
                         return HttpError(EFAULT, "Read failed!");
                 }
                 break;
-            case RL_AfterSlashInUri:
+            case RL_AfterSlashInURI:
+
+                if (usual[C >> 5] & (1U << (C & 0x1f))) {
+                    RequestLineState = RL_CheckURI;
+                    break;
+                }
+
+                switch (C) {
+                    case ' ':
+                        URI.RightBound = BC;
+                        RequestLineState = RL_CheckURIHTTP09;
+                        break;
+                    case CR:
+                        URI.RightBound = BC;
+                        HttpMinor = 9;
+                        RequestLineState = RL_AlmostDone;
+                        break;
+                    case LF:
+                        URI.RightBound = BC;
+                        HttpMinor = 9;
+//                        goto done;
+                    case '.':
+                        ComplexURI = 1;
+                        RequestLineState = RL_URI;
+                        break;
+                    case '%':
+                        QuotedURI = 1;
+                        RequestLineState = RL_URI;
+                        break;
+                    case '/':
+                        ComplexURI = 1;
+                        RequestLineState = RL_URI;
+                        break;
+                    case '\\':
+#if 0
+                        if (false) {
+                           ComplexURI = 1;
+                           RequestLineState = RL_URI;
+                        }
+#endif
+                        break;
+                    case '?':
+                        Arguments.LeftBound = BC + 1;
+                        RequestLineState = RL_URI;
+                        break;
+                    case '#':
+                        ComplexURI = 1;
+                        RequestLineState = RL_URI;
+                        break;
+                    case '+':
+                        PlusInURI = 1;
+                        break;
+                    case '\0':
+                        return HttpError(EFAULT, "Bad Request!");
+                    default:
+                        RequestLineState = RL_CheckURI;
+                        break;
+                }
+                break;
+                /* check "/", "%" and "\" (Win32) in URI */
+            case RL_CheckURI:
+
+                if (usual[C >> 5] & (1U << (C & 0x1f))) {
+                    break;
+                }
+
+                switch (C) {
+                    case '/':
+#if 0
+                        if (false) {
+//                            if (r->uri_ext == p) {
+//                                r->complex_uri = 1;
+//                                RequestLineState = RL_URI;
+//                                break;
+//                            }
+                        }
+//                        r->uri_ext = NULL;
+#endif
+                        RequestLineState = RL_AfterSlashInURI;
+                        break;
+                    case '.':
+//                        r->uri_ext = p + 1;
+                        break;
+                    case ' ':
+                        URI.RightBound = BC;
+                        RequestLineState = RL_CheckURIHTTP09;
+                        break;
+                    case CR:
+                        URI.RightBound = BC;
+                        HttpMinor = 9;
+                        RequestLineState = RL_AlmostDone;
+                        break;
+                    case LF:
+                        URI.RightBound = BC;
+                        HttpMinor = 9;
+//                        goto done;
+                    case '\\':
+#if 0
+                        if (false) {
+                            ComplexURI = 1;
+                            RequestLineState = RL_AfterSlashInURI;
+                        }
+#endif
+                        break;
+                    case '%':
+                        QuotedURI = 1;
+                        RequestLineState = RL_URI;
+                        break;
+                    case '?':
+                        Arguments.LeftBound = BC+1;
+                        RequestLineState = RL_URI;
+                        break;
+                    case '#':
+                        ComplexURI = 1;
+                        RequestLineState = RL_URI;
+                        break;
+                    case '+':
+                        PlusInURI = 1;
+                        break;
+                    case '\0':
+                    default:
+                        return HttpError(EFAULT, "Bad Request!");
+                    }
+                    break;
+
                 printf("stuck here!\n");
                 break;
             default:
