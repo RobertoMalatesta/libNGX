@@ -25,11 +25,11 @@ namespace ngx {
 
             ~EPollEventDomain();
 
+            virtual RuntimeError EventDomainProcess(EventPromiseArgs *PointerToArgument);
+
             virtual EventError AttachSocket(Socket *S, SocketEventType Type);
 
             virtual EventError DetachSocket(Socket *S, SocketEventType Type);
-
-            RuntimeError EventDomainProcess(EventPromiseArgs *PointerToArgument);
 
             void *Allocate(size_t Size);
 
