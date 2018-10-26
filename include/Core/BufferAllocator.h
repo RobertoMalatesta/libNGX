@@ -1,22 +1,39 @@
-namespace ngx::Core {
+//===- BufferAllocator.h - Buffer to provide buffer memory alloc ---*- C++ -*-===//
+//
+//                     The NGX Server Infrastructure
+//
+// This file is distributed under the MIT Open Source License. See LICENSE.TXT
+// for detail.
+//
+//===-------------------------------------------------------------------------===//
+//
+//  This file provide BufferAllocator to enable create small memory pieces to
+//  hold data temporarily
+//
+//===-------------------------------------------------------------------------===//
 
-    class BufferAllocator : public Resetable {
-        SpinLock Lock;
-        size_t BlockSize = 0;
-        BufferMemoryBlockRecycler *Recycler = nullptr;
-        BufferCursor ReadCursor, WriteCursor;
-        BufferMemoryBlock *HeadBlock = nullptr, *CurrentBlock = nullptr;
+namespace ngx{
+    namespace Core {
 
-        friend class BufferBuilder;
+        class BufferAllocator : public Resetable {
+            SpinLock Lock;
+            size_t BlockSize = 0;
+            BufferMemoryBlockRecycler *Recycler = nullptr;
+            BufferCursor ReadCursor, WriteCursor;
+            BufferMemoryBlock *HeadBlock = nullptr, *CurrentBlock = nullptr;
 
-        BufferAllocator(BufferMemoryBlockRecycler *Recycler, size_t BlockSize = BUFFER_DEFAULT_BLOCK_SIZE);
+            friend class BufferBuilder;
 
-        ~BufferAllocator();
+            BufferAllocator(BufferMemoryBlockRecycler *Recycler, size_t BlockSize = BUFFER_DEFAULT_BLOCK_SIZE);
 
-        BufferRange AllocateBufferRange(size_t Size);
+            ~BufferAllocator();
 
-        void GC();
+            BufferRange AllocateBufferRange(size_t Size);
 
-        void Reset();
-    };
+            void GC();
+
+            void Reset();
+        };
+
+    }
 }
