@@ -1,17 +1,18 @@
 #include "Http/Http.h"
 
-namespace ngx::Http {
+namespace ngx{
+    namespace Http {
 
-    class HttpRequest {
+        class HttpRequest {
 
-        /* HttpConnection
-         * Resetable
-         * enum Method
-         * Range URI
-         * Array *Headers
-         * Range Data
-         *
-         * */
+            /* HttpConnection
+            * Resetable
+            * enum Method
+            * Range URI
+            * Array *Headers
+            * Range Data
+            *
+            * */
 
-    };
-}
+        };
+    }}

@@ -1,9 +1,12 @@
 #include "Http/Http.h"
 
-namespace ngx::Http {
+namespace ngx{
+    namespace Http {
 
-    class ConstResponseEntity {
-        // int Code;
-        // executeEndpoint()
-    };
+        class ConstResponseEntity {
+            // int Code;
+            // executeEndpoint()
+        };
+
+    }
 }

@@ -1,7 +1,10 @@
-namespace ngx::Http {
+namespace ngx{
+    namespace Http {
 
-    class HttpServerBuilder {
+        class HttpServerBuilder {
 
 
-    };
+        };
+
+    }
 }

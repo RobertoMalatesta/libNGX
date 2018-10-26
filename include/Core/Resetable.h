@@ -1,6 +1,9 @@
-namespace ngx::Core {
-    class Resetable {
-    public:
-        virtual void Reset() = 0;
-    };
+namespace ngx{
+    namespace Core {
+        class Resetable {
+        public:
+            virtual void Reset() = 0;
+        };
+
+    }
 }

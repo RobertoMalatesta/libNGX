@@ -1,9 +1,11 @@
-namespace ngx::Core {
-    class Recyclable : public Resetable, public Queue {
-    public:
-        Recyclable() : Queue() {};
+namespace ngx{
+    namespace Core {
+        class Recyclable : public Resetable, public Queue {
+        public:
+            Recyclable() : Queue() {};
 
-        virtual void Reset() {};
-    };
+            virtual void Reset() {};
+        };
+    }
 }
 

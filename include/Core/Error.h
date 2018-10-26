@@ -1,64 +1,67 @@
-namespace ngx::Core {
+namespace ngx{
+    namespace Core {
 
-    class Error {
-    protected:
-        int ErrorCode;
-        const char *Message;
-    public:
-        Error(int ErrorCode, const char *Message = nullptr) {
-            this->ErrorCode = ErrorCode;
-            this->Message = Message;
+        class Error {
+        protected:
+            int ErrorCode;
+            const char *Message;
+        public:
+            Error(int ErrorCode, const char *Message = nullptr) {
+                this->ErrorCode = ErrorCode;
+                this->Message = Message;
+            };
+
+            int GetErrorCode() { return this->ErrorCode; }
+
+            const char *GetErrorMessage() { return Message; }
+
+            virtual void PrintError() { printf("BaseError: Unspecfied error!\n"); }
         };
 
-        int GetErrorCode() { return this->ErrorCode; }
+        class RuntimeError : public Error {
+        private:
+            static const char *ErrorCodeToString(int ErrorCode);
 
-        const char *GetErrorMessage() { return Message; }
+        public:
+            RuntimeError(int ErrorCode, const char *Message = nullptr) : Error(ErrorCode, Message) {};
 
-        virtual void PrintError() { printf("BaseError: Unspecfied error!\n"); }
-    };
+            const char *GetErrorString() {
+                return ErrorCodeToString(ErrorCode);
+            }
 
-    class RuntimeError : public Error {
-    private:
-        static const char *ErrorCodeToString(int ErrorCode);
+            virtual void PrintError() {
+                printf("RuntimeError: %s, Message: %s\n", ErrorCodeToString(ErrorCode),
+                        Message == nullptr ? "null" : Message);
+            }
+        };
 
-    public:
-        RuntimeError(int ErrorCode, const char *Message = nullptr) : Error(ErrorCode, Message) {};
+        class SocketError : public Error {
+        private:
+            static const char *ErrorCodeToString(int ErrorCode);
 
-        const char *GetErrorString() {
-            return ErrorCodeToString(ErrorCode);
-        }
+        public:
+            SocketError(int ErrorCode, const char *Message = nullptr) : Error(ErrorCode, Message) {};
 
-        virtual void PrintError() {
-            printf("RuntimeError: %s, Message: %s\n", ErrorCodeToString(ErrorCode),
-                   Message == nullptr ? "null" : Message);
-        }
-    };
+            const char *GetErrorString() { return ErrorCodeToString(ErrorCode); }
 
-    class SocketError : public Error {
-    private:
-        static const char *ErrorCodeToString(int ErrorCode);
+            virtual void PrintError() {
+                printf("SocketError: %s, Message: %s\n", ErrorCodeToString(ErrorCode),
+                        Message == nullptr ? "null" : Message);
+            }
+        };
 
-    public:
-        SocketError(int ErrorCode, const char *Message = nullptr) : Error(ErrorCode, Message) {};
+        class EventError : public Error {
+        private:
+            static const char *ErrorCodeToString(int ErrorCode);
 
-        const char *GetErrorString() { return ErrorCodeToString(ErrorCode); }
+        public:
+            EventError(int ErrorCode, const char *Message = nullptr) : Error(ErrorCode, Message) {};
 
-        virtual void PrintError() {
-            printf("SocketError: %s, Message: %s\n", ErrorCodeToString(ErrorCode),
-                   Message == nullptr ? "null" : Message);
-        }
-    };
+            virtual void PrintError() {
+                printf("EventError: %s, Message: %s\n", ErrorCodeToString(ErrorCode),
+                        Message == nullptr ? "null" : Message);
+            }
+        };
 
-    class EventError : public Error {
-    private:
-        static const char *ErrorCodeToString(int ErrorCode);
-
-    public:
-        EventError(int ErrorCode, const char *Message = nullptr) : Error(ErrorCode, Message) {};
-
-        virtual void PrintError() {
-            printf("EventError: %s, Message: %s\n", ErrorCodeToString(ErrorCode),
-                   Message == nullptr ? "null" : Message);
-        }
-    };
+    }
 };

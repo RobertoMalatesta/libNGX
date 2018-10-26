@@ -1,6 +1,5 @@
 #include "Http/Http.h"
 
-using namespace ngx::Core;
 using namespace ngx::Http;
 
 HttpServer::HttpServer(

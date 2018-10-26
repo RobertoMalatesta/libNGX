@@ -1,39 +1,43 @@
-namespace ngx::Core {
+namespace ngx {
+    namespace Core {
 
-    using namespace std;
 
-    class SpinLock {
-    protected:
-        atomic_flag LockAtomic = ATOMIC_FLAG_INIT;
-    public:
-        SpinLock() {
-            LockAtomic.clear();
-        }
+        using namespace std;
 
-        void Lock();
+        class SpinLock {
+        protected:
+            atomic_flag LockAtomic = ATOMIC_FLAG_INIT;
+        public:
+            SpinLock() {
+                LockAtomic.clear();
+            }
 
-        void Unlock();
-    };
+            void Lock();
 
-    class BigSpinlock : public SpinLock {
-    public:
-        BigSpinlock();
+            void Unlock();
+        };
 
-        void Lock();
-    };
+        class BigSpinlock : public SpinLock {
+        public:
+            BigSpinlock();
 
-    class SpinlockGuard {
+            void Lock();
+        };
 
-    protected:
-        SpinLock *Lock;
-    public:
-        SpinlockGuard(SpinLock *Lock) {
-            this->Lock = Lock;
-            Lock->Lock();
-        }
+        class SpinlockGuard {
 
-        ~SpinlockGuard() {
-            Lock->Unlock();
-        }
-    };
+        protected:
+            SpinLock *Lock;
+        public:
+            SpinlockGuard(SpinLock *Lock) {
+                this->Lock = Lock;
+                Lock->Lock();
+            }
+
+            ~SpinlockGuard() {
+                Lock->Unlock();
+            }
+        };
+
+    }
 };

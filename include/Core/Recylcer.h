@@ -1,17 +1,20 @@
-namespace ngx::Core {
+namespace ngx{
+    namespace Core {
 
-    class Recycler {
-    protected:
-        Recyclable RecycleSentinel;
-        uint64_t RecycleMaxSize = DEFAULT_RECYCLE_SIZE, RecycleSize = 0;
-    public:
-        Recycler(uint64_t RecycleMaxSize) : RecycleSentinel() {
-            this->RecycleMaxSize = RecycleMaxSize;
-        }
+        class Recycler {
+        protected:
+            Recyclable RecycleSentinel;
+            uint64_t RecycleMaxSize = DEFAULT_RECYCLE_SIZE, RecycleSize = 0;
+        public:
+            Recycler(uint64_t RecycleMaxSize) : RecycleSentinel() {
+                this->RecycleMaxSize = RecycleMaxSize;
+            }
 
-        virtual Recyclable *Get() { return nullptr; };
+            virtual Recyclable *Get() { return nullptr; };
 
-        virtual void Put(Recyclable *Item) {};
-    };
+            virtual void Put(Recyclable *Item) {};
+        };
 
+
+    }
 }

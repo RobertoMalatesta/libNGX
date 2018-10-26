@@ -1,52 +1,54 @@
-namespace ngx::Core {
+namespace ngx{
+    namespace Core {
 
-    class TimerTreeNode : public RBTreeNode {
+        class TimerTreeNode : public RBTreeNode {
 
-        friend class TimerTree;
+            friend class TimerTree;
 
-    protected:
-        uint64_t Timestamp = 0;
-        PromiseCallback *Callback = nullptr;
-        void *Argument = nullptr;
+        protected:
+            uint64_t Timestamp = 0;
+            PromiseCallback *Callback = nullptr;
+            void *Argument = nullptr;
 
-        RBTreeNode *GetLeft() { return this->Left; }
+            RBTreeNode *GetLeft() { return this->Left; }
 
-        RBTreeNode *GetRight() { return this->Right; }
+            RBTreeNode *GetRight() { return this->Right; }
 
-        virtual int Compare(TimerTreeNode *Node);
+            virtual int Compare(TimerTreeNode *Node);
 
-    public:
+        public:
 
-        TimerTreeNode() {};
+            TimerTreeNode() {};
 
-        TimerTreeNode(uint64_t Timestamp, PromiseCallback *Callback, void *Argument) {
-            this->Timestamp = Timestamp;
-            this->Callback = Callback;
-            this->Argument = Argument;
+            TimerTreeNode(uint64_t Timestamp, PromiseCallback *Callback, void *Argument) {
+                this->Timestamp = Timestamp;
+                this->Callback = Callback;
+                this->Argument = Argument;
+            };
+
+            ~TimerTreeNode() = default;
+
+            static RBTreeNode *
+            CreateFromAllocator(MemAllocator *Allocator, uint64_t MillSecond, PromiseCallback *Callback, void *Argument);
+
+            static void FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node);
         };
 
-        ~TimerTreeNode() = default;
+        class TimerTree : public RBTree {
 
-        static RBTreeNode *
-        CreateFromAllocator(MemAllocator *Allocator, uint64_t MillSecond, PromiseCallback *Callback, void *Argument);
+        protected:
+            TimerTree(MemAllocator *Allocator);
 
-        static void FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node);
-    };
+            ~TimerTree();
 
-    class TimerTree : public RBTree {
+        public:
+            static TimerTree *CreateFromAllocator(MemAllocator *ParentAllocator, MemAllocator *Allocator);
 
-    protected:
-        TimerTree(MemAllocator *Allocator);
+            static void FreeFromAllocator(MemAllocator *ParentAllocator, TimerTree **TheRBTree);
 
-        ~TimerTree();
+            int PostTimerPromise(uint64_t MillSecond, PromiseCallback function, void *args);
 
-    public:
-        static TimerTree *CreateFromAllocator(MemAllocator *ParentAllocator, MemAllocator *Allocator);
+            int QueueExpiredTimer(ThreadPool *TPool);
+        };
 
-        static void FreeFromAllocator(MemAllocator *ParentAllocator, TimerTree **TheRBTree);
-
-        int PostTimerPromise(uint64_t MillSecond, PromiseCallback function, void *args);
-
-        int QueueExpiredTimer(ThreadPool *TPool);
-    };
-}
+    }}

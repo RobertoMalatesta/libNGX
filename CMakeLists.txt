@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.7)
 
-project(NgxTest)
-project(NgxLibrary)
+project(NGXTest)
+project(libNGX)
 set(CMAKE_CXX_STANDARD 17)
 
 set(SOURCE_FILES
@@ -64,5 +64,5 @@ include_directories(./include)
 
 LINK_LIBRARIES(-lpthread)
 
-add_executable(NgxTest ${SOURCE_FILES} ${TEST_FILES})
-add_library(NgxLibrary STATIC ${SOURCE_FILES})
+add_executable(NGXTest ${SOURCE_FILES} ${TEST_FILES})
+add_library(libNGX STATIC ${SOURCE_FILES})

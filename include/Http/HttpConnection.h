@@ -1,40 +1,42 @@
-namespace ngx::Http {
+namespace ngx{
+    namespace Http {
 
-    class HttpConnection : public TCP4Connection, public Recyclable {
-    protected:
-        SpinLock Lock;
-        Buffer ReadBuffer;
-        HttpRequestContext RequestContext;
-        TimerTreeNode TimerNode;
-        EventPromiseArgs Arguments;
+        class HttpConnection : public TCP4Connection, public Recyclable {
+        protected:
+            SpinLock Lock;
+            Buffer ReadBuffer;
+            HttpRequestContext RequestContext;
+            TimerTreeNode TimerNode;
+            EventPromiseArgs Arguments;
 
-        static void OnConnectionEvent(void *Arguments, ThreadPool *TPool);
+            static void OnConnectionEvent(void *Arguments, ThreadPool *TPool);
 
-        friend class HttpServer;
+            friend class HttpServer;
 
-        friend class HttpConnectionRecycler;
+            friend class HttpConnectionRecycler;
 
-    public:
-        HttpConnection(Core::SocketAddress &SocketAddress, BufferBuilder &BB);
+        public:
+            HttpConnection(Core::SocketAddress &SocketAddress, BufferBuilder &BB);
 
-        HttpConnection(int SocketFd, Core::SocketAddress &SocketAddress, BufferBuilder &BB);
+            HttpConnection(int SocketFd, Core::SocketAddress &SocketAddress, BufferBuilder &BB);
 
-        ~HttpConnection() = default;
+            ~HttpConnection() = default;
 
-        inline RuntimeError ReadConnection() {
-            return ReadBuffer.WriteConnectionToBuffer(this);
-        }
+            inline RuntimeError ReadConnection() {
+                return ReadBuffer.WriteConnectionToBuffer(this);
+            }
 
-        inline RuntimeError WriteConnection() {
-            return RuntimeError(EINVAL);
-        }
+            inline RuntimeError WriteConnection() {
+                return RuntimeError(EINVAL);
+            }
 
-        RuntimeError ProcessRequest() {
-            return RuntimeError(0);
+            RuntimeError ProcessRequest() {
+                return RuntimeError(0);
+            };
+
+            virtual void Reset();
         };
-
-        virtual void Reset();
-    };
+    }
 }
 
 

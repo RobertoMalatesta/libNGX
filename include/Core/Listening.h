@@ -1,28 +1,31 @@
-namespace ngx::Core {
+namespace ngx{
+    namespace Core {
 
-    class Listening : public Socket, public Queue {
-    public:
-        Listening();
+        class Listening : public Socket, public Queue {
+        public:
+            Listening();
 
-        Listening(struct SocketAddress &SocketAddress);
+            Listening(struct SocketAddress &SocketAddress);
 
-        Listening(int SocketFd, struct SocketAddress &SocketAddress);
+            Listening(int SocketFd, struct SocketAddress &SocketAddress);
 
-        virtual SocketError Listen() {
-            return SocketError(EINVAL, "Method not implement!");
+            virtual SocketError Listen() {
+                return SocketError(EINVAL, "Method not implement!");
+            };
         };
-    };
 
-    class TCP4Listening : public Listening {
-    protected:
-        uint Backlog = 1024;
-    public:
-        TCP4Listening(struct SocketAddress &SocketAddress);
+        class TCP4Listening : public Listening {
+        protected:
+            uint Backlog = 1024;
+        public:
+            TCP4Listening(struct SocketAddress &SocketAddress);
 
-        ~TCP4Listening();
+            ~TCP4Listening();
 
-        virtual SocketError Listen();
+            virtual SocketError Listen();
 
-        SocketError SetPortReuse(bool Open);
-    };
+            SocketError SetPortReuse(bool Open);
+        };
+
+    }
 }

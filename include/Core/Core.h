@@ -1,101 +1,103 @@
 #include "ngx.h"
 
-namespace ngx::Core {
-    using namespace ngx::Core::DefaultConfig;
+namespace ngx{
+    namespace Core {
+        using namespace ngx::Core::DefaultConfig;
 
-    class Reference;
+        class Reference;
 
-    class Resetable;
+        class Resetable;
 
-    class Recyclable;
+        class Recyclable;
 
-    class Recycler;
+        class Recycler;
 
-    class MemoryBlock;
+        class MemoryBlock;
 
-    class MemoryBlockAllocator;
+        class MemoryBlockAllocator;
 
-    class MemAllocator;
+        class MemAllocator;
 
-    class Pool;
+        class Pool;
 
-    class Array;
+        class Array;
 
-    class BufferCursor;
+        class BufferCursor;
 
-    class BufferRange;
+        class BufferRange;
 
-    class Buffer;
+        class Buffer;
 
-    class BufferMemoryBlockRecycler;
+        class BufferMemoryBlockRecycler;
 
-    class BufferCursor;
+        class BufferCursor;
 
-    class BufferRange;
+        class BufferRange;
 
-    class BufferBuilder;
+        class BufferBuilder;
 
-    class Queue;
+        class Queue;
 
-    class Error;
+        class Error;
 
-    class RuntimeError;
+        class RuntimeError;
 
-    class SocketError;
+        class SocketError;
 
-    class EventError;
+        class EventError;
 
-    class List;
+        class List;
 
-    class ListCarriage;
+        class ListCarriage;
 
-    class ListIterator;
+        class ListIterator;
 
-    class RBTreeNode;
+        class RBTreeNode;
 
-    class RBTree;
+        class RBTree;
 
-    class UInt32RBTreeNode;
+        class UInt32RBTreeNode;
 
-    class UInt32RBTree;
+        class UInt32RBTree;
 
-    class TimerTree;
+        class TimerTree;
 
-    class FSEntity;
+        class FSEntity;
 
-    class FSTree;
+        class FSTree;
 
-    class Socket;
+        class Socket;
 
-    class SpinLock;
+        class SpinLock;
 
-    class SpinlockGuard;
+        class SpinlockGuard;
 
-    class Promise;
+        class Promise;
 
-    class Thread;
+        class Thread;
 
-    class ThreadPool;
+        class ThreadPool;
 
-    class EventDomain;
+        class EventDomain;
 
-    struct SocketAddress;
+        struct SocketAddress;
 
-    class SocketEventDomain;
+        class SocketEventDomain;
 
-    class EPollEventDomain;
+        class EPollEventDomain;
 
-    class Socket;
+        class Socket;
 
-    class Connection;
+        class Connection;
 
-    class Listening;
+        class Listening;
 
-    class TCP4Connection;
+        class TCP4Connection;
 
-    class TCP4Listening;
+        class TCP4Listening;
 
-    class Server;
+        class Server;
+    }
 }
 
 #include "Core/ArchX86.h"

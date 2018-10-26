@@ -1,68 +1,70 @@
-namespace ngx::Core {
+namespace ngx{
+    namespace Core {
 
-    using namespace std;
+        using namespace std;
 
-    typedef void (PromiseCallback)(void *PointerToArguments, ThreadPool *TPool);
+        typedef void (PromiseCallback)(void *PointerToArguments, ThreadPool *TPool);
 
-    class Promise : public Queue {
-    private:
-        void *PointerToArg = nullptr;
-        ThreadPool *TPool = nullptr;
-        PromiseCallback *Callback = nullptr;
+        class Promise : public Queue {
+        private:
+            void *PointerToArg = nullptr;
+            ThreadPool *TPool = nullptr;
+            PromiseCallback *Callback = nullptr;
 
-        friend class Thread;
+            friend class Thread;
 
-        friend class ThreadPool;
+            friend class ThreadPool;
 
-    public:
-        Promise();
+        public:
+            Promise();
 
-        Promise(ThreadPool *TPool, Thread *T, PromiseCallback *Callback, void *PointerToArgs);
+            Promise(ThreadPool *TPool, Thread *T, PromiseCallback *Callback, void *PointerToArgs);
 
-        void doPromise();
-    };
+            void doPromise();
+        };
 
-    class Thread {
+        class Thread {
 
-    private:
+        private:
 
-        ThreadPool *TPool = nullptr;
-        thread WorkerThread;
-        Pool *Allocator = nullptr;
-        atomic_flag Lock = ATOMIC_FLAG_INIT;
-        bool Running = true;
-        uint PostCount;
-        Promise Sentinel;
+            ThreadPool *TPool = nullptr;
+            thread WorkerThread;
+            Pool *Allocator = nullptr;
+            atomic_flag Lock = ATOMIC_FLAG_INIT;
+            bool Running = true;
+            uint PostCount;
+            Promise Sentinel;
 
-        static void ThreadProcess(Thread *Thread);
+            static void ThreadProcess(Thread *Thread);
 
-        friend Promise;
+            friend Promise;
 
-    public:
-        Thread(ThreadPool *TPool);
+        public:
+            Thread(ThreadPool *TPool);
 
-        ~Thread();
+            ~Thread();
 
-        void Stop();
+            void Stop();
 
-        int TryPostPromise(PromiseCallback *Callback, void *Argument);
-    };
+            int TryPostPromise(PromiseCallback *Callback, void *Argument);
+        };
 
-    class ThreadPool {
+        class ThreadPool {
 
-    private:
-        int NumThread;
-        int DeliverIndex = 0;
-        vector<Thread *> Threads;
+        private:
+            int NumThread;
+            int DeliverIndex = 0;
+            vector<Thread *> Threads;
 
-        friend class Promise;
+            friend class Promise;
 
-    public:
-        ThreadPool(int NumThread = 8);
+        public:
+            ThreadPool(int NumThread = 8);
 
-        ~ThreadPool();
+            ~ThreadPool();
 
-        void PostPromise(PromiseCallback *Callback, void *PointerToArg);
+            void PostPromise(PromiseCallback *Callback, void *PointerToArg);
 
-    };
+        };
+    }
 }

@@ -1,3 +1,17 @@
+//===- BufferMemoryRecycler.h - Recycler for BufferMemoryBlock -----*- C++ -*-===//
+//
+//                     The NGX Server Infrastructure
+//
+// This file is distributed under the MIT Open Source License. See LICENSE.TXT
+// for detail.
+//
+//===-------------------------------------------------------------------------===//
+//
+//  This file declare a simple recycler of BufferMemoryBlock, which aims to
+//  reduce the count of malloc(2) procedure
+//
+//===-------------------------------------------------------------------------===//
+
 namespace ngx::Core {
 
     class BufferMemoryBlockRecycler : public Recycler {

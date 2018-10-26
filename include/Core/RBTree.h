@@ -1,111 +1,113 @@
-namespace ngx::Core {
+namespace ngx{
+    namespace Core {
 
-    class RBTreeNode {
+        class RBTreeNode {
 
-    protected:
-        RBTreeNode *Left = nullptr, *Right = nullptr, *Parent = nullptr;
-        u_char Color = 0;
+        protected:
+            RBTreeNode *Left = nullptr, *Right = nullptr, *Parent = nullptr;
+            u_char Color = 0;
 
-        bool IsBlack() { return !Color; };
+            bool IsBlack() { return !Color; };
 
-        bool IsRed() { return Color; };
+            bool IsRed() { return Color; };
 
-        void SetBlack() { Color = 0; };
+            void SetBlack() { Color = 0; };
 
-        void SetRed() { Color = 1; };
+            void SetRed() { Color = 1; };
 
-        void CopyColor(RBTreeNode *Node) { if (nullptr != Node) { Color = Node->Color; }};
+            void CopyColor(RBTreeNode *Node) { if (nullptr != Node) { Color = Node->Color; }};
 
-        virtual int Compare(RBTreeNode *Node) { return 0; }
+            virtual int Compare(RBTreeNode *Node) { return 0; }
 
-    public:
-        static RBTreeNode *CreateFromAllocator(MemAllocator *Allocator, size_t DateSize) { return nullptr; };
+        public:
+            static RBTreeNode *CreateFromAllocator(MemAllocator *Allocator, size_t DateSize) { return nullptr; };
 
-        static void FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node) {};
+            static void FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node) {};
 
-        friend class RBTree;
-    };
-
-    class UInt32RBTreeNode : public RBTreeNode {
-
-        friend class UInt32RBTree;
-
-    protected:
-        uint32_t Key = 0;
-        size_t DataSize = 0;
-        u_char Data[0];
-
-        UInt32RBTreeNode() = default;
-
-        UInt32RBTreeNode(size_t DataSize, uint32_t Key) {
-            this->DataSize = DataSize;
-            this->Key = Key;
+            friend class RBTree;
         };
 
-        ~UInt32RBTreeNode() = default;
+        class UInt32RBTreeNode : public RBTreeNode {
 
-        RBTreeNode *GetLeft() { return this->Left; }
+            friend class UInt32RBTree;
 
-        RBTreeNode *GetRight() { return this->Right; }
+        protected:
+            uint32_t Key = 0;
+            size_t DataSize = 0;
+            u_char Data[0];
 
-    public:
+            UInt32RBTreeNode() = default;
 
-        void SetKey(uint32_t Key) { this->Key = Key; };
+            UInt32RBTreeNode(size_t DataSize, uint32_t Key) {
+                this->DataSize = DataSize;
+                this->Key = Key;
+            };
 
-        uint32_t GetKey() { return Key; };
+            ~UInt32RBTreeNode() = default;
 
-        u_char *GetDataPointer() { return this->Data; };
+            RBTreeNode *GetLeft() { return this->Left; }
 
-        virtual int Compare(UInt32RBTreeNode *Node);
+            RBTreeNode *GetRight() { return this->Right; }
 
-        static RBTreeNode *CreateFromAllocator(MemAllocator *Allocator, size_t DateSize);
+        public:
 
-        static void FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node);
-    };
+            void SetKey(uint32_t Key) { this->Key = Key; };
 
-    class RBTree {
+            uint32_t GetKey() { return Key; };
 
-    protected:
-        RBTreeNode *Root;
-        RBTreeNode *Sentinel;
-        MemAllocator *Allocator;
+            u_char *GetDataPointer() { return this->Data; };
 
-        RBTree(MemAllocator *Allocator);
+            virtual int Compare(UInt32RBTreeNode *Node);
 
-        ~RBTree() = default;
+            static RBTreeNode *CreateFromAllocator(MemAllocator *Allocator, size_t DateSize);
 
-        void RotateLeft(RBTreeNode *Node);
+            static void FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node);
+        };
 
-        void RotateRight(RBTreeNode *Node);
+        class RBTree {
 
-    public:
-        void Insert(RBTreeNode *Node);
+        protected:
+            RBTreeNode *Root;
+            RBTreeNode *Sentinel;
+            MemAllocator *Allocator;
 
-        void Delete(RBTreeNode *Node);
+            RBTree(MemAllocator *Allocator);
 
-        RBTreeNode *Next(RBTreeNode *Node);
+            ~RBTree() = default;
 
-        RBTreeNode *Minimum();
-    };
+            void RotateLeft(RBTreeNode *Node);
 
-    class UInt32RBTree : public RBTree {
+            void RotateRight(RBTreeNode *Node);
 
-    protected:
-        UInt32RBTree(MemAllocator *Allocator);
+        public:
+            void Insert(RBTreeNode *Node);
 
-        ~UInt32RBTree();
+            void Delete(RBTreeNode *Node);
 
-    public:
-        UInt32RBTreeNode *CreateNodeFromAllocator(size_t DataSize, uint32_t Key = 0);
+            RBTreeNode *Next(RBTreeNode *Node);
 
-        void FreeNodeFromAllocator(UInt32RBTreeNode **TheRBTreeNode);
+            RBTreeNode *Minimum();
+        };
 
-        static UInt32RBTree *CreateFromAllocator(MemAllocator *ParentAllocator, MemAllocator *Allocator);
+        class UInt32RBTree : public RBTree {
 
-        static void FreeFromAllocator(MemAllocator *ParentAllocator, UInt32RBTree **TheRBTree);
+        protected:
+            UInt32RBTree(MemAllocator *Allocator);
 
-        UInt32RBTreeNode *Find(uint32_t Key);
-    };
+            ~UInt32RBTree();
+
+        public:
+            UInt32RBTreeNode *CreateNodeFromAllocator(size_t DataSize, uint32_t Key = 0);
+
+            void FreeNodeFromAllocator(UInt32RBTreeNode **TheRBTreeNode);
+
+            static UInt32RBTree *CreateFromAllocator(MemAllocator *ParentAllocator, MemAllocator *Allocator);
+
+            static void FreeFromAllocator(MemAllocator *ParentAllocator, UInt32RBTree **TheRBTree);
+
+            UInt32RBTreeNode *Find(uint32_t Key);
+        };
+    }
 }
 
 // [TODO]
