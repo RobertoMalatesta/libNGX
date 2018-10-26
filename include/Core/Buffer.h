@@ -1,41 +1,13 @@
-//===- Buffer.h - Buffer to provide block-chained buffer --------*- C++ -*-===//
-//
-//                     The NGX Server Infrastructure
-//
-// This file is distributed under the MIT Open Source License. See LICENSE.TXT
-// for detail.
-//
-//===----------------------------------------------------------------------===//
-//
-//  This file provide Buffer facility to enable block based Buffer
-//
-//===----------------------------------------------------------------------===//
+namespace ngx::Core {
 
-namespace ngx {
-    namespace Core {
+    struct BufferCursor {
 
-    class BufferCursor {
-    private:
-        BufferMemoryBlock *BlockRightBound;
-        u_char *PositionRightBound;
-    public:
         BufferMemoryBlock *Block;
         u_char *Position;
 
         void GetReference();
 
         void PutReference();
-
-        BufferCursor &operator+= (size_t Size);
-        BufferCursor &operator++(int);
-
-        BufferCursor operator+(size_t Size);
-        BufferCursor operator-(size_t) = delete;
-        BufferCursor &operator--() = delete;
-        BufferCursor &operator-=(size_t Size) = delete;
-
-        u_char operator*();
-        u_char operator[](uint16_t Offset);
     };
 
     struct BufferRange {
