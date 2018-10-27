@@ -8,6 +8,7 @@ HttpConnection::HttpConnection(struct SocketAddress &SocketAddress, BufferBuilde
         Recyclable(),
         TimerNode(0, HttpConnection::OnConnectionEvent, nullptr),
         TCP4Connection(SocketAddress) {
+
     BB.BuildBuffer(ReadBuffer);
     OnEventPromise = HttpConnection::OnConnectionEvent;
 }
@@ -35,8 +36,7 @@ void HttpConnection::OnConnectionEvent(void *Arguments, ThreadPool *TPool) {
 
     if (TempArgument->UserArguments[3].Ptr == nullptr ||
         TempArgument->UserArguments[4].Ptr == nullptr ||
-        TempArgument->UserArguments[6].Ptr == nullptr
-            ) {
+        TempArgument->UserArguments[6].Ptr == nullptr) {
         return;
     }
 
@@ -58,7 +58,6 @@ void HttpConnection::OnConnectionEvent(void *Arguments, ThreadPool *TPool) {
     if ((Type & ET_WRITE) != 0) {
         // Mark the socket as writable and write all data to it!
     }
-
 
     printf("LeavePromise, Arguments: %p\n", Arguments);
 }

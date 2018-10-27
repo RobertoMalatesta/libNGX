@@ -5,38 +5,42 @@ project(libNGX)
 set(CMAKE_CXX_STANDARD 11)
 
 set(SOURCE_FILES
-        src/Core/Error.cpp
-        src/Core/Pool.cpp
-        src/Core/Buffer.cpp
         src/Core/Array.cpp
-        src/Core/Queue.cpp
-        src/Core/List.cpp
-        src/Core/RBTree.cpp
-        src/Core/Hash.cpp
         src/Core/ArchX86.cpp
-        src/Core/Lock.cpp
-        src/Core/Time.cpp
-        src/Core/Checksum.cpp
-        src/Core/ThreadPool.cpp
-        src/Core/TimerTree.cpp
-        src/Core/FSTree.cpp
-        src/Core/Connection.cpp
-        src/Core/EventDomain.cpp
-        src/Core/EPollEventDomain.cpp
-        src/Core/Server.cpp
-        src/Core/SocketEventDomain.cpp
-        src/Core/MemoryBlock.cpp
-        src/Core/MemoryBlockAllocator.cpp
+        src/Core/Buffer.cpp
         src/Core/BufferMemoryBlock.cpp
         src/Core/BufferMemoryBlockRecycler.cpp
         src/Core/BufferBuilder.cpp
+        src/Core/Checksum.cpp
+        src/Core/Connection.cpp
+        src/Core/EPollEventDomain.cpp
+        src/Core/Error.cpp
+        src/Core/EventDomain.cpp
+        src/Core/FSTree.cpp
+        src/Core/Hash.cpp
+        src/Core/List.cpp
+        src/Core/LinuxOSUtility.cpp
+        src/Core/Lock.cpp
+        src/Core/Listening.cpp
+        src/Core/Time.cpp
+        src/Core/ThreadPool.cpp
+        src/Core/TimerTree.cpp
+        src/Core/MemoryBlock.cpp
+        src/Core/MemoryBlockAllocator.cpp
+        src/Core/Pool.cpp
+        src/Core/Queue.cpp
+        src/Core/RBTree.cpp
         src/Core/Reference.cpp
+        src/Core/Server.cpp
+        src/Core/Socket.cpp
+        src/Core/SocketEventDomain.cpp
+        src/Core/StringUtil.cpp
         src/Http/HttpConnection.cpp
         src/Http/HttpServer.cpp
         src/Http/HttpConnectionRecycler.cpp
         src/Http/HttpRequestContext.cpp
         src/Http/HttpError.cpp
-        src/Core/Listening.cpp src/Core/Socket.cpp)
+        )
 
 set(TEST_FILES
         test/Test.cpp
