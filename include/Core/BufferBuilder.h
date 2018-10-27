@@ -14,7 +14,6 @@
 
 namespace ngx{
     namespace Core {
-
         class BufferBuilder {
         protected:
             size_t BlockSize;
@@ -26,6 +25,5 @@ namespace ngx{
 
             BufferAllocator BuildBufferAllocator();
         };
-
     }
 }

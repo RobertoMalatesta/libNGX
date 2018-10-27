@@ -14,7 +14,6 @@
 
 namespace ngx{
     namespace Core {
-
         class BufferAllocator : public Resetable {
             SpinLock Lock;
             size_t BlockSize = 0;
@@ -34,6 +33,5 @@ namespace ngx{
 
             void Reset();
         };
-
     }
 }

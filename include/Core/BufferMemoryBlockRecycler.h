@@ -12,19 +12,20 @@
 //
 //===-------------------------------------------------------------------------===//
 
-namespace ngx::Core {
+namespace ngx{
+    namespace Core {
+        class BufferMemoryBlockRecycler : public Recycler {
+        protected:
+            SpinLock Lock;
+            size_t BufferMemoryBlockSize;
+        public:
+            BufferMemoryBlockRecycler(size_t BufferMemoryBlockSize, uint64_t RecyclerSize);
 
-    class BufferMemoryBlockRecycler : public Recycler {
-    protected:
-        SpinLock Lock;
-        size_t BufferMemoryBlockSize;
-    public:
-        BufferMemoryBlockRecycler(size_t BufferMemoryBlockSize, uint64_t RecyclerSize);
+            size_t GetBlockSize() { return this->BufferMemoryBlockSize; }
 
-        size_t GetBlockSize() { return this->BufferMemoryBlockSize; }
+            virtual BufferMemoryBlock *Get();
 
-        virtual BufferMemoryBlock *Get();
-
-        virtual void Put(BufferMemoryBlock *Item);
-    };
+            virtual void Put(BufferMemoryBlock *Item);
+        };
+    }
 }
