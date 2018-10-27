@@ -41,10 +41,10 @@ HttpError HttpRequestContext::ProcessHttpRequest(Buffer &B) {
             break;
         default:
             State = HTTP_INIT_STATE;
-            return HttpError(EINVAL);
+            return {EINVAL};
     }
 
-    return HttpError(0);
+    return {0};
 }
 
 HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
@@ -59,7 +59,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                     break;
                 }
                 if ((C < 'A' || C > 'Z') && C != '_' && C != '-') {
-                    return HttpError(EINVAL, "Invalid method!");
+                    return {EFAULT, "Invalid method!"};
                 }
                 RequestLineState = RL_Method;
             case RL_Method:
@@ -70,7 +70,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                     } else if (C1 == 'P' && C2 == 'U' && C3 == 'T') {
                         Method = PUT;
                     } else {
-                        return HttpError(EINVAL, "Invalid method!");
+                        return {EFAULT, "Invalid method!"};
                     }
                     BC += 3;
                 } else if ((C5 = *(BC + 4)) == ' ') {
@@ -87,7 +87,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                     } else if (C1 == 'H' && C2 == 'E' && C3 == 'A' && C4 == 'D') {
                         Method = HEAD;
                     } else {
-                        return HttpError(EINVAL, "Invalid method!");
+                        return {EFAULT, "Invalid method!"};
                     }
                     BC += 4;
                 } else if ((C6 = *(BC + 5)) == ' ') {
@@ -98,7 +98,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                     } else if (C1 == 'T' && C2 == 'R' && C3 == 'A' && C4 == 'C' && C5 == 'E') {
                         Method = TRACE;
                     } else {
-                        return HttpError(EINVAL, "Invalid method!");
+                        return {EFAULT, "Invalid method!"};
                     }
                     BC += 5;
                 } else if ((C7 = *(BC + 6)) == ' ') {
@@ -107,7 +107,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                     } else if (C1 == 'U' && C2 == 'N' && C3 == 'L' && C4 == 'O' && C5 == 'C' && C6 == 'K') {
                         Method = UNLOCK;
                     } else {
-                        return HttpError(EINVAL, "Invalid method!");
+                        return {EFAULT, "Invalid method!"};
                     }
                     BC += 6;
                 } else if (C1 == 'O' && C2 == 'P' && C3 == 'T' && C4 == 'I' &&
@@ -120,7 +120,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                            C5 == 'P' && C6 == 'A' && C7 == 'T' && C8 == 'C' && C9 == 'H' && (*(BC + 9)) == ' ') {
                     Method = PROPPATCH, BC += 9;
                 } else {
-                    return HttpError(EINVAL, "Invalid method!");
+                    return {EFAULT, "Invalid method!"};
                 }
                 RequestLineState = RL_Space_Before_URI;
                 break;
@@ -143,7 +143,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                     case ' ':
                         break;
                     default:
-                        return HttpError(EFAULT, "Read failed!");
+                        return {EFAULT, "Bad Request!"};
                 }
                 break;
             case RL_Schema:
@@ -163,7 +163,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                         Schema.RightBound = BC;
                         RequestLineState = RL_SchemaSlash;
                     default:
-                        return HttpError(EFAULT, "Read failed!");
+                        return {EFAULT, "Bad Request!"};
                 }
                 break;
             case RL_SchemaSlash:
@@ -172,7 +172,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                         RequestLineState = RL_SchemaSlashSlash;
                         break;
                     default:
-                        return HttpError(EFAULT, "Read failed!");
+                        return {EFAULT, "Bad Request!"};
                 }
                 break;
             case RL_SchemaSlashSlash:
@@ -181,7 +181,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                         RequestLineState = RL_HostStart;
                         break;
                     default:
-                        return HttpError(EFAULT, "Read failed!");
+                        return {EFAULT, "Bad Request!"};
                 }
                 break;
             case RL_HostStart:
@@ -214,7 +214,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                         RequestLineState = RL_CheckURIHTTP09;
                         break;
                     default:
-                        return HttpError(EFAULT, "Read failed!");
+                        return {EFAULT, "Bad Request!"};
                 }
                 break;
             case RL_HostIpLiterial:
@@ -248,7 +248,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                     case '=':
                         break;
                     default:
-                        return HttpError(EFAULT, "Read failed!");
+                        return {EFAULT, "Bad Request!"};
                 }
                 break;
             case RL_Port:
@@ -265,7 +265,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                         RequestLineState = RL_HostHTTP09;
                         break;
                     default:
-                        return HttpError(EFAULT, "Read failed!");
+                        return {EFAULT, "Bad Request!"};
                 }
                 break;
             case RL_HostHTTP09:
@@ -284,7 +284,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                         RequestLineState = RL_HTTP_H;
                         break;
                     default:
-                        return HttpError(EFAULT, "Read failed!");
+                        return {EFAULT, "Bad Request!"};
                 }
                 break;
             case RL_AfterSlashInURI:
@@ -340,7 +340,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                         PlusInURI = 1;
                         break;
                     case '\0':
-                        return HttpError(EFAULT, "Bad Request!");
+                        return {EFAULT, "Bad Request!"};
                     default:
                         RequestLineState = RL_CheckURI;
                         break;
@@ -408,7 +408,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                         break;
                     case '\0':
                     default:
-                        return HttpError(EFAULT, "Bad Request!");
+                        return {EFAULT, "Bad Request!"};
                     }
                     break;
 
@@ -418,7 +418,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                 printf("not handled!");
         }
     }
-    return HttpError(0);
+    return {0};
 }
 
 void HttpRequestContext::Reset() {

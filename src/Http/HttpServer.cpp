@@ -25,14 +25,14 @@ RuntimeError HttpServer::PostProcessFinished(EventPromiseArgs *Arguments) {
         || nullptr == Arguments->UserArguments[5].Ptr
             ) {
 
-        return RuntimeError(EINVAL);
+        return {EINVAL};
     }
 
     TempServer = static_cast<HttpServer *>(Arguments->UserArguments[3].Ptr);
     TempListen = static_cast<TCP4Listening *>(Arguments->UserArguments[5].Ptr);
     TempServer->EnqueueListening(TempListen);
 
-    return RuntimeError(0);
+    return {0};
 }
 
 RuntimeError HttpServer::PostConnectionEvent(EventPromiseArgs *Arguments) {
@@ -49,7 +49,7 @@ RuntimeError HttpServer::PostConnectionEvent(EventPromiseArgs *Arguments) {
     if ((Type & ET_CONNECTED) != 0) {
 
         if (nullptr == Arguments->UserArguments[1].Ptr) {
-            return RuntimeError(EINVAL);
+            return {EINVAL};
         }
 
         SocketFd = Arguments->UserArguments[0].UInt;
@@ -66,14 +66,14 @@ RuntimeError HttpServer::PostConnectionEvent(EventPromiseArgs *Arguments) {
         TempPointer = Arguments->UserArguments[6].Ptr;
 
         if (nullptr == TempPointer) {
-            return RuntimeError(EINVAL);
+            return {EINVAL};
         }
         TempSocket = static_cast<Socket *>(TempPointer);
         TempConnection = (HttpConnection *) TempSocket;
     }
 
     EventDomain.PostPromise(TempConnection->OnEventPromise, Arguments);
-    return RuntimeError(0);
+    return {0, nullptr};
 }
 
 RuntimeError HttpServer::HttpServerEventProcess() {
@@ -86,7 +86,7 @@ RuntimeError HttpServer::HttpServerEventProcess() {
     Listen = DequeueListening();
 
     if (Listen == nullptr) {
-        return RuntimeError(ENOENT, "Can not get A Listening from HttpServer!");
+        return {ENOENT, "Can not get a Listening from HttpServer"};
     }
 
     Arguments.UserArguments[3].Ptr = (void *) this;
