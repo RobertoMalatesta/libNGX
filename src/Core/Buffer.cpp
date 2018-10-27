@@ -169,6 +169,16 @@ RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength)
     return RuntimeError(0);
 }
 
+Buffer& Buffer::operator<<(BufferCursor &BC) & {
+    ReadCursor = BC;
+    return *this;
+}
+
+Buffer& Buffer::operator>>(BufferCursor &BC) & {
+    BC = ReadCursor;
+    return *this;
+}
+
 RuntimeError Buffer::WriteConnectionToBuffer(Connection *C) {
 
     int SocketFd = C->GetSocketFD();

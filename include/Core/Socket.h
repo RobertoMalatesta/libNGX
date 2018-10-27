@@ -21,7 +21,7 @@ namespace ngx{
             Queue QueueSentienl;
             int SocketFd = -1;
             SocketAddress SocketAddress;
-            atomic_flag EventLock = ATOMIC_FLAG_INIT;
+            std::atomic_flag EventLock = ATOMIC_FLAG_INIT;
             union {
                 struct {
                     unsigned Open: 1;

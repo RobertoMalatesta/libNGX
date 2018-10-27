@@ -11,7 +11,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-namespace ngx{
+namespace ngx {
     namespace Core {
         class BufferCursor {
         private:
@@ -42,7 +42,6 @@ namespace ngx{
             u_char operator[](uint16_t Offset);
         };
 
-
         struct BufferRange {
 
             size_t RangeSize;
@@ -62,6 +61,7 @@ namespace ngx{
             BufferCursor ReadCursor, WriteCursor;
             BufferMemoryBlock *HeadBlock = nullptr;
 
+
             friend class BufferBuilder;
 
         public:
@@ -69,51 +69,49 @@ namespace ngx{
 
             ~Buffer();
 
-            RuntimeError WriteDataToBuffer(u_char *PointerToData, size_t DataLength);
+            Buffer &operator<<(BufferCursor &BC) &;
+
+            Buffer &operator>>(BufferCursor &BC) &;
 
             RuntimeError WriteConnectionToBuffer(Connection *C);
 
-            inline BufferCursor GetReadCursor() const { return ReadCursor; }
+            RuntimeError WriteDataToBuffer(u_char *PointerToData, size_t DataLength);
 
-            inline void SetReadCursor(BufferCursor &ReadCusror) {
-                this->ReadCursor = ReadCusror;
-            }
-
-            inline BufferCursor MoveCursor(BufferCursor Cursor, uint32_t Count = 1) {
-
-                BufferCursor TempCursor = Cursor;
-                SpinlockGuard LockGuard(&Lock);
-
-                while (Count > 0) {
-
-                    if (TempCursor.Position + Count > TempCursor.Block->End) {
-                        if (TempCursor.Block == WriteCursor.Block) {
-                            TempCursor.Block = nullptr;
-                            TempCursor.Position = nullptr;
-                            break;
-                        } else {
-                            Count -= TempCursor.Block->End - TempCursor.Position;
-                            TempCursor.Block = TempCursor.Block->GetNextBlock();
-                            TempCursor.Position = TempCursor.Block->Start;
-                        }
-                    } else {
-                        if (TempCursor.Block == WriteCursor.Block &&
-                        (TempCursor.Position + Count) >= WriteCursor.Position) {
-                            TempCursor.Block = nullptr;
-                            TempCursor.Position = nullptr;
-                            break;
-                        }
-                        TempCursor.Position += Count;
-                        Count = 0;
-                    }
-                }
-
-                return TempCursor;
-            }
+//            inline BufferCursor MoveCursor(BufferCursor Cursor, uint32_t Count = 1) {
+//
+//                BufferCursor TempCursor = Cursor;
+//                SpinlockGuard LockGuard(&Lock);
+//
+//                while (Count > 0) {
+//
+//                    if (TempCursor.Position + Count > TempCursor.Block->End) {
+//                        if (TempCursor.Block == WriteCursor.Block) {
+//                            TempCursor.Block = nullptr;
+//                            TempCursor.Position = nullptr;
+//                            break;
+//                        } else {
+//                            Count -= TempCursor.Block->End - TempCursor.Position;
+//                            TempCursor.Block = TempCursor.Block->GetNextBlock();
+//                            TempCursor.Position = TempCursor.Block->Start;
+//                        }
+//                    } else {
+//                        if (TempCursor.Block == WriteCursor.Block &&
+//                            (TempCursor.Position + Count) >= WriteCursor.Position) {
+//                            TempCursor.Block = nullptr;
+//                            TempCursor.Position = nullptr;
+//                            break;
+//                        }
+//                        TempCursor.Position += Count;
+//                        Count = 0;
+//                    }
+//                }
+//
+//                return TempCursor;
+//            }
 
             inline bool ReadByte(BufferCursor Cursor, uint32_t Offset, u_char &C1) {
 
-                BufferCursor TempCursor = MoveCursor(Cursor, Offset);
+                BufferCursor TempCursor = (Cursor + Offset);
 
                 if (TempCursor.Position == nullptr) {
                     return false;
@@ -132,9 +130,7 @@ namespace ngx{
 
             inline bool ReadBytes2(BufferCursor Cursor, uint32_t Offset, u_char &C1, u_char &C2) {
 
-                BufferCursor Cur1, Cur2;
-
-                Cur2 = MoveCursor(Cursor, Offset + 1);
+                BufferCursor Cur1, Cur2 = (Cursor + Offset + 1);
 
                 if (Cur2.Position == nullptr) {
                     return false;
@@ -156,15 +152,14 @@ namespace ngx{
                 u_char A1, A2;
 
                 return ReadBytes2(Cursor, Offset, A1, A2)
-                && A1 == C1
-                && A2 == C2;
+                       && A1 == C1
+                       && A2 == C2;
             }
 
-            inline bool ReadBytes4(BufferCursor Cursor, uint32_t Offset, u_char &C1, u_char &C2, u_char &C3, u_char &C4) {
+            inline bool
+            ReadBytes4(BufferCursor Cursor, uint32_t Offset, u_char &C1, u_char &C2, u_char &C3, u_char &C4) {
 
-                BufferCursor Cur4;
-
-                Cur4 = MoveCursor(Cursor, Offset + 3);
+                BufferCursor Cur4 = (Cursor + Offset + 3);
 
                 if (Cur4.Position == nullptr) {
                     return false;
@@ -188,14 +183,14 @@ namespace ngx{
                 u_char A1, A2, A3, A4;
 
                 return ReadBytes4(Cursor, Offset, A1, A2, A3, A4)
-                && A1 == C1
-                && A2 == C2
-                && A3 == C3
-                && A4 == C4;
+                       && A1 == C1
+                       && A2 == C2
+                       && A3 == C3
+                       && A4 == C4;
             }
 
             inline bool HasBytes(uint32_t Count = 1) {
-                return MoveCursor(ReadCursor, 1).Position == nullptr;
+                return (ReadCursor + 1).Position == nullptr;
             }
 
             virtual void Reset();

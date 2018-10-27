@@ -69,7 +69,7 @@ void Thread::ThreadProcess(Thread *Thread) {
         usleep(THREAD_WAIT_TIME);
 
         while (Thread->Lock.test_and_set()) {
-            this_thread::yield();
+            std::this_thread::yield();
         }
 
         while (!Thread->Sentinel.IsEmpty()) {

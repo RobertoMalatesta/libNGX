@@ -2,6 +2,7 @@
 
 namespace ngx{
     namespace Http {
+
         const char LF = '\n';
         const char CR = '\r';
         const char CRLF[] = "\r\n";

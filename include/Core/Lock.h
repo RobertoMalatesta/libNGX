@@ -2,11 +2,10 @@ namespace ngx {
     namespace Core {
 
 
-        using namespace std;
 
         class SpinLock {
         protected:
-            atomic_flag LockAtomic = ATOMIC_FLAG_INIT;
+            std::atomic_flag LockAtomic = ATOMIC_FLAG_INIT;
         public:
             SpinLock() {
                 LockAtomic.clear();

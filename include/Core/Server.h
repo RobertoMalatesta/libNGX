@@ -6,7 +6,7 @@ namespace ngx{
             Listening ListeningSentinel;
             Connection ConnectionSentinel;
             SpinLock Lock;
-            atomic_uint64_t MaxConnection = {0};
+            std::atomic_uint64_t MaxConnection = {0};
 
         public:
             Server();

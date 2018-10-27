@@ -18,7 +18,7 @@ namespace ngx {
         class EPollEventDomain : public SocketEventDomain, MemAllocator {
         protected:
             int EPollFD = -1;
-            atomic_flag Waiting = ATOMIC_FLAG_INIT;
+            std::atomic_flag Waiting = ATOMIC_FLAG_INIT;
         public:
 
             EPollEventDomain(size_t PoolSize, int ThreadCount, int EPollSize);

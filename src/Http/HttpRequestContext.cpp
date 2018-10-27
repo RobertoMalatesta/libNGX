@@ -50,9 +50,9 @@ HttpError HttpRequestContext::ProcessHttpRequest(Buffer &B) {
 HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
 
     u_char C, C1, C2, C3, C4, C5, C6, C7, C8, C9;
-    ;
+    BufferCursor BC;
 
-    for (BufferCursor BC = B.GetReadCursor(); (C = *BC) != '\0'; BC++) {
+    for (B >> BC; (C = *BC) != '\0'; BC++) {
         switch (RequestLineState) {
             case RL_Start:
                 if (C == CR || C == LF) {

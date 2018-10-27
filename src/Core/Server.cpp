@@ -45,14 +45,13 @@ EventError Server::AttachConnection(Connection *C) {
         return EventError(EINVAL, "Bad connection!");
     }
 
-    if (MaxConnection.fetch_sub(1) < 0) {
+    if (MaxConnection.fetch_sub(1) <= 0) {
         MaxConnection.fetch_add(1);
         return EventError(ECANCELED, "Connection reaches maximum connection count!");
     }
 
-    Lock.Lock();
+    SpinlockGuard LockGuard(&Lock);
     C->AttachSocket(&ConnectionSentinel);
-    Lock.Unlock();
     return EventError(0);
 }
 
@@ -61,9 +60,8 @@ EventError Server::DetachConnection(Connection *C) {
         return EventError(EINVAL, "Bad connection!");
     }
 
-    Lock.Lock();
+    SpinlockGuard LockGuard(&Lock);
     C->DetachSocket();
-    Lock.Unlock();
     MaxConnection.fetch_add(1);
 
     return EventError(0);

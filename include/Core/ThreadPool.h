@@ -1,8 +1,5 @@
 namespace ngx{
     namespace Core {
-
-        using namespace std;
-
         typedef void (PromiseCallback)(void *PointerToArguments, ThreadPool *TPool);
 
         class Promise : public Queue {
@@ -28,9 +25,9 @@ namespace ngx{
         private:
 
             ThreadPool *TPool = nullptr;
-            thread WorkerThread;
+            std::thread WorkerThread;
             Pool *Allocator = nullptr;
-            atomic_flag Lock = ATOMIC_FLAG_INIT;
+            std::atomic_flag Lock = ATOMIC_FLAG_INIT;
             bool Running = true;
             uint PostCount;
             Promise Sentinel;
@@ -54,7 +51,7 @@ namespace ngx{
         private:
             int NumThread;
             int DeliverIndex = 0;
-            vector<Thread *> Threads;
+            std::vector<Thread *> Threads;
 
             friend class Promise;
 
