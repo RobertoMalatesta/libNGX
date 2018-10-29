@@ -11,7 +11,7 @@ int RBTreeTest() {
 
     UInt32RBTreeNode *Temp;
 
-    vector<UInt32RBTreeNode *> Nodes;
+    std::vector<UInt32RBTreeNode *> Nodes;
 
     Nodes.clear();
 

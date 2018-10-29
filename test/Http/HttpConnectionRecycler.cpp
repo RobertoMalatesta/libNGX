@@ -16,7 +16,7 @@ int HttpConnectionRecyclerTest() {
     HttpConnectionRecycler Recycler(4096, 102400, 5120);
     HttpConnection *C;
 
-    vector<HttpConnection *> Connections;
+    std::vector<HttpConnection *> Connections;
 
     for (int i = 0; i < 102400; i++) {
         C = Recycler.Get(-1, SocketAddress);

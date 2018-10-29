@@ -6,6 +6,7 @@
 using namespace std;
 using namespace ngx::Core;
 
+extern "C" {
 static atomic_flag TimestampLock = ATOMIC_FLAG_INIT;
 static timeval Timestamp;
 static int TimestampVersion;
@@ -52,7 +53,7 @@ int DisableTimer() {
     struct itimerval itv = {0};
 
     itv.it_value.tv_sec = 0;
-    itv.it_value.tv_usec = 0;
+    itv.it_value.tv_usec = 1;
     itv.it_interval = itv.it_value;
 
     if (setitimer(ITIMER_REAL, &itv, nullptr) == -1) {
@@ -250,3 +251,6 @@ static void UpdateTimeString() {
 
     UpdateTimestamp = false;
 }
+
+}
+

@@ -2,14 +2,14 @@ namespace ngx{
     namespace Http {
 
         struct HttpPerformanceUnit {
-            atomic_uint64_t ConnectionCount = {0};
-            atomic_uint64_t ActiveConnecionCount = {0};
-            atomic_uint64_t RequestCount = {0};
-            atomic_uint64_t NormalClosedCount = {0};
-            atomic_uint64_t ErrorClosedCount = {0};
-            atomic_uint64_t ReadingCount = {0};
-            atomic_uint64_t WritingCount = {0};
-            atomic_uint64_t WatingCount = {0};
+            std::atomic_uint64_t ConnectionCount = {0};
+            std::atomic_uint64_t ActiveConnecionCount = {0};
+            std::atomic_uint64_t RequestCount = {0};
+            std::atomic_uint64_t NormalClosedCount = {0};
+            std::atomic_uint64_t ErrorClosedCount = {0};
+            std::atomic_uint64_t ReadingCount = {0};
+            std::atomic_uint64_t WritingCount = {0};
+            std::atomic_uint64_t WatingCount = {0};
         };
 
 

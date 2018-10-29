@@ -6,8 +6,8 @@ using namespace std;
 
 using namespace ngx::Core;
 
-atomic_uint64_t clocks = 1;
-atomic_uint64_t turns = 1;
+atomic_uint64_t clocks = {1};
+atomic_uint64_t turns = {1};
 
 static void func(void *, ThreadPool *) {
 
