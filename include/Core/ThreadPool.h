@@ -1,4 +1,4 @@
-namespace ngx{
+namespace ngx {
     namespace Core {
         typedef void (PromiseCallback)(void *PointerToArguments, ThreadPool *TPool);
 
@@ -26,8 +26,8 @@ namespace ngx{
 
             ThreadPool *TPool = nullptr;
             std::thread WorkerThread;
-            Pool *Allocator = nullptr;
             std::atomic_flag Lock = ATOMIC_FLAG_INIT;
+            Pool Allocator;
             bool Running = true;
             uint PostCount;
             Promise Sentinel;

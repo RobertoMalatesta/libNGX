@@ -1,15 +1,28 @@
+//===- Digest.h - provide digest functions and classes -------------*- C++ -*-===//
+//
+//                     The NGX Server Infrastructure
+//
+// This file is distributed under the MIT Open Source License. See LICENSE.TXT
+// for detail.
+//
+//===-------------------------------------------------------------------------===//
+//
+//  This file contains digest related functions and context classes
+//
+//===-------------------------------------------------------------------------===//
+
 namespace ngx {
     namespace Core {
 
         namespace Md5 {
 
-            constexpr uint32_t F(uint32_t x, uint32_t y, uint32_t z) { return (z) ^ ((x) & ((y) ^ (z))); }
+            inline uint32_t F(uint32_t x, uint32_t y, uint32_t z) { return (z) ^ ((x) & ((y) ^ (z))); }
 
-            constexpr uint32_t G(uint32_t x, uint32_t y, uint32_t z) { return (y) ^ ((z) & ((x) ^ (y))); }
+            inline uint32_t G(uint32_t x, uint32_t y, uint32_t z) { return (y) ^ ((z) & ((x) ^ (y))); }
 
-            constexpr uint32_t H(uint32_t x, uint32_t y, uint32_t z) { return (x) ^ (y) ^ (z); }
+            inline uint32_t H(uint32_t x, uint32_t y, uint32_t z) { return (x) ^ (y) ^ (z); }
 
-            constexpr uint32_t I(uint32_t x, uint32_t y, uint32_t z) { return (y) ^ ((x) | ~(z)); }
+            inline uint32_t I(uint32_t x, uint32_t y, uint32_t z) { return (y) ^ ((x) | ~(z)); }
 
             static uint32_t block[16];
 
@@ -18,7 +31,7 @@ namespace ngx {
             (a) = (((a) << (s)) | (((a) & 0xffffffff) >> (32 - (s))));                \
             (a) += (b)
 
-                    constexpr uint32_t SET(uint32_t n, const u_char *p) {
+            inline uint32_t SET(uint32_t n, const u_char *p) {
 
                 if (LittleEnding && NonAligned) {
                     return (*(uint32_t * ) & p[n * 4]);

@@ -1,3 +1,16 @@
+//===- Error.h - Implement Error classes specification  ------------*- C++ -*-===//
+//
+//                     The NGX Server Infrastructure
+//
+// This file is distributed under the MIT Open Source License. See LICENSE.TXT
+// for detail.
+//
+//===-------------------------------------------------------------------------===//
+//
+//  This file declare Error classes.
+//
+//===-------------------------------------------------------------------------===//
+
 namespace ngx{
     namespace Core {
 

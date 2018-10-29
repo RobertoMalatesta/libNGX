@@ -19,16 +19,13 @@ void Promise::doPromise() {
     }
 }
 
-Thread::Thread(ThreadPool *TPool) : Sentinel(), WorkerThread(Thread::ThreadProcess, this) {
-
+Thread::Thread(ThreadPool *TPool)
+        : Sentinel(), WorkerThread(Thread::ThreadProcess, this), Allocator(THREAD_POOL_MEMORY_SIZE) {
     this->TPool = TPool;
-    Allocator = new Pool(THREAD_POOL_MEMORY_SIZE);
-    Lock.clear();
 }
 
 Thread::~Thread() {
     Stop();
-    delete Allocator;
 }
 
 int Thread::TryPostPromise(PromiseCallback *Callback, void *Argument) {
@@ -41,7 +38,7 @@ int Thread::TryPostPromise(PromiseCallback *Callback, void *Argument) {
         return 0;
     }
 
-    void *PointerToPromise = Allocator->Allocate(sizeof(Promise));
+    void *PointerToPromise = Allocator.Allocate(sizeof(Promise));
 
     if (nullptr == PointerToPromise) {
         Lock.clear();
@@ -51,7 +48,7 @@ int Thread::TryPostPromise(PromiseCallback *Callback, void *Argument) {
     new(PointerToPromise) Promise(TPool, this, Callback, Argument);
 
     if (PostCount++ % THREAD_GC_ROUND == 0) {
-        Allocator->GC();
+        Allocator.GC();
     }
 
     Lock.clear();
@@ -77,7 +74,7 @@ void Thread::ThreadProcess(Thread *Thread) {
             Node = (Promise *) Thread->Sentinel.GetHead();
             Node->Detach();
             Node->doPromise();
-            Thread->Allocator->Free((void **) &Node);
+            Thread->Allocator.Free((void **) &Node);
         }
 
         IsRunnig = Thread->Running;
@@ -93,11 +90,10 @@ void Thread::Stop() {
     Running = false;
     Lock.clear();
     WorkerThread.join();
-    Allocator->GC();
+    Allocator.GC();
 }
 
-ThreadPool::ThreadPool(int NumThread) {
-    this->NumThread = NumThread;
+ThreadPool::ThreadPool(int NumThread) : NumThread(NumThread) {
 
     while (NumThread-- > 0) {
         Threads.push_back(new Thread(this));
@@ -105,6 +101,7 @@ ThreadPool::ThreadPool(int NumThread) {
 }
 
 ThreadPool::~ThreadPool() {
+
     for (Thread *Temp: Threads) {
         delete Temp;
     }

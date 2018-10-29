@@ -22,9 +22,6 @@ set(SOURCE_FILES
         src/Core/LinuxOSUtility.cpp
         src/Core/Lock.cpp
         src/Core/Listening.cpp
-        src/Core/Time.cpp
-        src/Core/ThreadPool.cpp
-        src/Core/TimerTree.cpp
         src/Core/MemoryBlock.cpp
         src/Core/MemoryBlockAllocator.cpp
         src/Core/Pool.cpp
@@ -35,6 +32,9 @@ set(SOURCE_FILES
         src/Core/Socket.cpp
         src/Core/SocketEventDomain.cpp
         src/Core/StringUtil.cpp
+        src/Core/Time.cpp
+        src/Core/ThreadPool.cpp
+        src/Core/TimerTree.cpp
         src/Http/HttpConnection.cpp
         src/Http/HttpServer.cpp
         src/Http/HttpConnectionRecycler.cpp
