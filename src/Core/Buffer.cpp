@@ -144,7 +144,7 @@ RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength)
 
             if (TempBufferBlock == nullptr) {
                 Lock.Unlock();
-                return RuntimeError(ENOMEM, "No enough memory!");
+                return {ENOMEM, "No enough memory!"};
             }
 
             memcpy(WriteCursor.Position, PointerToData, CurrentBlockFreeSize);
@@ -166,7 +166,7 @@ RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength)
 
     Lock.Unlock();
 
-    return RuntimeError(0);
+    return {0};
 }
 
 Buffer& Buffer::operator<<(BufferCursor &BC) & {
@@ -201,7 +201,7 @@ RuntimeError Buffer::WriteConnectionToBuffer(Connection *C) {
             }
 
             if (TempBlock == nullptr) {
-                return RuntimeError(ENOMEM, "Can not allocate BufferMemoryBlock when recv()");
+                return {ENOMEM, "Can not allocate BufferMemoryBlock when recv()"};
             }
             WriteCursor.Block->SetNextBlock(TempBlock);
             WriteCursor.Block = TempBlock;
@@ -215,7 +215,7 @@ RuntimeError Buffer::WriteConnectionToBuffer(Connection *C) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 break;
             } else {
-                return RuntimeError(errno, "Failed to read from socket!");
+                return {errno, "Failed to read from socket!"};
             }
         } else if (RecievedSize > 0) {
             WriteCursor.Position += RecievedSize;
@@ -224,7 +224,7 @@ RuntimeError Buffer::WriteConnectionToBuffer(Connection *C) {
         }
     }
 
-    return RuntimeError(0);
+    return {0};
 }
 
 void Buffer::Reset() {
