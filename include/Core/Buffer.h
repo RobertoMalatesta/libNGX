@@ -27,7 +27,7 @@ namespace ngx {
 
             BufferCursor &operator+=(size_t Size);
 
-            BufferCursor &operator++(int);
+            const BufferCursor operator++(int);
 
             BufferCursor operator+(size_t Size);
 

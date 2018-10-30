@@ -45,8 +45,9 @@ BufferCursor& BufferCursor::operator+=(size_t Size) {
     return *this;
 }
 
-BufferCursor& BufferCursor::operator++(int) {
-    return this->operator+=(1);
+const BufferCursor BufferCursor::operator++(int) {
+    this->operator+=(1);
+    return *this;
 }
 
 BufferCursor BufferCursor::operator+(size_t Size) {
@@ -66,7 +67,6 @@ u_char BufferCursor::operator*() {
 
 u_char BufferCursor::operator[](uint16_t Offset) {
 
-
     if ((Position + Offset) < Block->End) {
         return *(Position + Offset);
     } else {
@@ -76,8 +76,8 @@ u_char BufferCursor::operator[](uint16_t Offset) {
         if (Cursor.Block != nullptr && Cursor.Position != nullptr) {
             return *Cursor.Position;
         }
-        return  '\0';
     }
+    return  '\0';
 }
 
 void BufferRange::GetReference() {

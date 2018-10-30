@@ -44,13 +44,15 @@ namespace ngx{
 
         class HttpRequestContext {
         protected:
+            unsigned int HttpMajor;
             unsigned int HttpMinor;
-            unsigned int ComplexURI;
-            unsigned int QuotedURI;
-            unsigned int PlusInURI;
+            unsigned int ComplexURI:1;
+            unsigned int QuotedURI:1;
+            unsigned int PlusInURI:1;
+            unsigned int SpaceInURI:1;
 
             SpinLock Lock;
-            HttpVersion Version;
+            unsigned int Version;
             HttpMethod Method;
             BufferRange URI;
             BufferRange URIExt;
@@ -60,6 +62,7 @@ namespace ngx{
             BufferRange Port;
             BufferRange HTTPProtocol;
             BufferRange Arguments;
+            BufferRange Request;
             HttpRequestState State = HTTP_INIT_STATE;
             HttpRequestLineParseState RequestLineState;
         public:

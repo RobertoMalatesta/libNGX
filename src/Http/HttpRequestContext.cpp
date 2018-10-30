@@ -50,9 +50,9 @@ HttpError HttpRequestContext::ProcessHttpRequest(Buffer &B) {
 HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
 
     u_char C, C1, C2, C3, C4, C5, C6, C7, C8, C9;
-    BufferCursor BC;
+    BufferCursor BC,LastBC;
 
-    for (B >> BC; (C = *BC) != '\0'; BC++) {
+    for (B >> BC, LastBC = BC; (C = *BC) != '\0'; LastBC = BC++) {
         switch (RequestLineState) {
             case RL_Start:
                 if (C == CR || C == LF) {
@@ -278,7 +278,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                         break;
                     case LF:
                         HttpMinor = 9;
-//                        goto done;
+                        goto done;
                     case 'H':
                         HTTPProtocol.LeftBound = BC;
                         RequestLineState = RL_HTTP_H;
@@ -307,7 +307,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                     case LF:
                         URI.RightBound = BC;
                         HttpMinor = 9;
-//                        goto done;
+                        goto done;
                     case '.':
                         ComplexURI = 1;
                         RequestLineState = RL_URI;
@@ -346,7 +346,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                         break;
                 }
                 break;
-                /* check "/", "%" and "\" (Win32) in URI */
+
             case RL_CheckURI:
 
                 if (usual[C >> 5] & (1U << (C & 0x1f))) {
@@ -382,7 +382,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                     case LF:
                         URI.RightBound = BC;
                         HttpMinor = 9;
-//                        goto done;
+                        goto done;
                     case '\\':
 #if 0
                         if (false) {
@@ -396,7 +396,7 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                         RequestLineState = RL_URI;
                         break;
                     case '?':
-                        Arguments.LeftBound = BC+1;
+                        Arguments.LeftBound = BC + 1;
                         RequestLineState = RL_URI;
                         break;
                     case '#':
@@ -409,14 +409,224 @@ HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
                     case '\0':
                     default:
                         return {EFAULT, "Bad Request!"};
-                    }
-                    break;
-
-                printf("stuck here!\n");
+                }
                 break;
-            default:
-                printf("not handled!");
+
+            case RL_CheckURIHTTP09:
+                switch (C) {
+                    case ' ':
+                        break;
+                    case CR:
+                       HttpMinor = 9;
+                       RequestLineState = RL_AlmostDone;
+                        break;
+                    case LF:
+                        HttpMinor = 9;
+                        goto done;
+                    case 'H':
+                        HTTPProtocol.LeftBound = BC;
+                        RequestLineState = RL_HTTP_H;
+                        break;
+                    default:
+                        SpaceInURI = 1;
+                        RequestLineState = RL_CheckURI;
+                        BC = LastBC;
+                        break;
+                }
+                break;
+
+            case RL_URI:
+
+                if (usual[C >> 5] & (1U << (C & 0x1f))) {
+                    break;
+                }
+
+                switch (C) {
+                    case ' ':
+                        URI.RightBound = BC;
+                        RequestLineState = RL_HTTP09;
+                        break;
+                    case CR:
+                        URI.RightBound = BC;
+                        RequestLineState = RL_HTTP09;
+                        HttpMinor = 9;
+                        RequestLineState = RL_AlmostDone;
+                        break;
+                    case LF:
+                        URI.RightBound = BC;
+                        HttpMinor = 9;
+                        goto done;
+                    case '#':
+                        ComplexURI = 1;
+                        break;
+                    case '\0':
+                        return {EFAULT, "Bad Request!"};
+                }
+                break;
+
+                /* space+ after URI */
+            case RL_HTTP09:
+                switch (C) {
+                    case ' ':
+                        break;
+                    case CR:
+                        HttpMinor = 9;
+                        RequestLineState = RL_AlmostDone;
+                        break;
+                    case LF:
+                        HttpMinor = 9;
+                        goto done;
+                    case 'H':
+                        HTTPProtocol.LeftBound = BC;
+                        RequestLineState = RL_HTTP_H;
+                        break;
+                    default:
+                        SpaceInURI = 1;
+                        RequestLineState = RL_URI;
+                        BC = LastBC;
+                        break;
+                }
+                break;
+            case RL_HTTP_H:
+                switch (C) {
+                    case 'T':
+                        RequestLineState = RL_HTTP_HT;
+                        break;
+                    default:
+                        return {EFAULT, "Bad Request!"};
+                }
+                break;
+
+            case RL_HTTP_HT:
+                switch (C) {
+                    case 'T':
+                        RequestLineState = RL_HTTP_HTT;
+                        break;
+                    default:
+                        return {EFAULT, "Bad Request!"};
+                }
+                break;
+
+            case RL_HTTP_HTT:
+                switch (C) {
+                    case 'P':
+                        RequestLineState = RL_HTTP_HTTP;
+                        break;
+                    default:
+                        return {EFAULT, "Bad Request!"};
+                }
+                break;
+
+            case RL_HTTP_HTTP:
+                switch (C) {
+                    case '/':
+                        RequestLineState = RL_FirstMajorDigit;
+                        break;
+                    default:
+                        return {EFAULT, "Bad Request!"};
+                }
+                break;
+
+            case RL_FirstMajorDigit:
+                if (C < '1' || C > '9') {
+                    return {EFAULT, "Bad Request!"};
+                }
+                HttpMajor = C - '0';
+
+                if (HttpMajor > 1) {
+                    return {EFAULT, "Invalid Version!"};
+                }
+                RequestLineState = RL_MajorDigit;
+                break;
+
+            case RL_MajorDigit:
+                if (C == '.') {
+                    RequestLineState = RL_FirstMinorDigit;
+                    break;
+                }
+
+                if (C < '0' || C > '9') {
+                    return {EFAULT, "Bad Request!"};
+                }
+
+                HttpMajor = HttpMajor * 10 + (C - '0');
+
+                if (HttpMajor > 1) {
+                    return {EFAULT, "Invalid Version!"};
+                }
+                break;
+
+            case RL_FirstMinorDigit:
+                if (C < '0' || C > '9') {
+                    return {EFAULT, "Bad Request!"};
+                }
+
+                HttpMinor = C - '0';
+                RequestLineState = RL_MinorDigit;
+                break;
+
+            case RL_MinorDigit:
+                if (C == CR) {
+                    RequestLineState = RL_AlmostDone;
+                    break;
+                }
+
+                if (C == LF) {
+                    goto done;
+                }
+
+                if (C == ' ') {
+                    RequestLineState = RL_SpaceAfterDigit;
+                    break;
+                }
+
+                if (C < '0' || C > '9') {
+                    return {EFAULT, "Bad Request!"};
+                }
+
+                if (HttpMinor > 99) {
+                    return {EFAULT, "Bad Request!"};
+                }
+
+                HttpMinor = HttpMinor * 10 + (C - '0');
+                break;
+
+            case RL_SpaceAfterDigit:
+                switch (C) {
+                    case ' ':
+                        break;
+                    case CR:
+                        RequestLineState = RL_AlmostDone;
+                        break;
+                    case LF:
+                        goto done;
+                    default:
+                        return {EFAULT, "Bad Request!"};
+                }
+                break;
+
+            case RL_AlmostDone:
+                Request.RightBound = LastBC;
+                switch (C) {
+                    case LF:
+                        goto done;
+                    default:
+                        return {EFAULT, "Bad Request!"};
+                }
+                break;
         }
+    }
+
+    return {EAGAIN, "Broken request in buffer!"};
+
+    done:
+
+    B << BC;
+    Request.RightBound = BC;
+    Version = HttpMajor * 1000 + HttpMinor;
+
+    if (Version == 9 && Method != GET) {
+        return {EFAULT, "Invalid 09 Method!"};
     }
     return {0};
 }
