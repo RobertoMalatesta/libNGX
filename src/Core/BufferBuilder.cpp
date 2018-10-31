@@ -15,8 +15,8 @@ bool BufferBuilder::BuildBuffer(Buffer &Buf) {
     if (Buf.HeadBlock == nullptr) {
         return false;
     }
-
-    Buf.ReadCursor.Block = Buf.WriteCursor.Block = Buf.HeadBlock;
-    Buf.ReadCursor.Position = Buf.WriteCursor.Position = Buf.HeadBlock->Start;
+    Buf.WriteCursor.Block = Buf.HeadBlock;
+    Buf.WriteCursor.Position = Buf.HeadBlock->Start;
+    Buf.ReadCursor << Buf.WriteCursor >> Buf.WriteCursor;
     return true;
 }

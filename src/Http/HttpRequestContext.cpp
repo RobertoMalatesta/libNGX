@@ -50,7 +50,7 @@ HttpError HttpRequestContext::ProcessHttpRequest(Buffer &B) {
 HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
 
     u_char C, C1, C2, C3, C4, C5, C6, C7, C8, C9;
-    BufferCursor BC,LastBC;
+    BoundCursor BC,LastBC;
 
     for (B >> BC, LastBC = BC; (C = *BC) != '\0'; LastBC = BC++) {
         switch (RequestLineState) {

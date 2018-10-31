@@ -59,7 +59,9 @@ int Thread::TryPostPromise(PromiseCallback *Callback, void *Argument) {
 void Thread::ThreadProcess(Thread *Thread) {
 
     Promise *Node;
-    bool IsRunnig = Thread->Running;
+    bool IsRunnig = true;
+
+    usleep(THREAD_WAIT_TIME);
 
     while (IsRunnig) {
 

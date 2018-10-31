@@ -6,7 +6,6 @@
 using namespace std;
 using namespace ngx::Core;
 
-extern "C" {
 static atomic_flag TimestampLock = ATOMIC_FLAG_INIT;
 static timeval Timestamp;
 static int TimestampVersion;
@@ -31,9 +30,7 @@ static void UpdateTimeString();
 
 static inline int FetchTimeVersion(bool Force = false);
 
-extern "C" {
-
-int EnableTimer() {
+int ngx::Core::EnableTimer() {
 
     struct itimerval itv = {0};
 
@@ -46,9 +43,9 @@ int EnableTimer() {
         return -1;
     }
     return 0;
-} ;
+}
 
-int DisableTimer() {
+int ngx::Core::DisableTimer() {
 
     struct itimerval itv = {0};
 
@@ -62,16 +59,15 @@ int DisableTimer() {
     return 0;
 
 }
-}
 
-void ForceUSleep(useconds_t USeconds) {
-    DisableTimer();
+void ngx::Core::ForceUSleep(useconds_t USeconds) {
+//    DisableTimer();
     usleep(USeconds);
     FetchTimeVersion(true);
-    EnableTimer();
+//    EnableTimer();
 }
 
-int TimeModuleInit() {
+int ngx::Core::TimeModuleInit() {
 
     struct sigaction sa = {nullptr};
 
@@ -98,7 +94,7 @@ int TimeModuleInit() {
     return 0;
 }
 
-uint64_t GetTimeStamp() {
+uint64_t ngx::Core::GetTimeStamp() {
 
     uint64_t Ret;
 
@@ -109,7 +105,7 @@ uint64_t GetTimeStamp() {
     return Ret;
 }
 
-int WriteErrorLogTime(char *Buf, size_t Size) {
+int ngx::Core::WriteErrorLogTime(char *Buf, size_t Size) {
 
     int Version = FetchTimeVersion();
 
@@ -122,7 +118,7 @@ int WriteErrorLogTime(char *Buf, size_t Size) {
     return ErrorLogTimeSize - 1;
 }
 
-int WriteHttpTime(char *Buf, size_t Size) {
+int ngx::Core::WriteHttpTime(char *Buf, size_t Size) {
 
     int Version = FetchTimeVersion();
 
@@ -134,7 +130,7 @@ int WriteHttpTime(char *Buf, size_t Size) {
     return HttpTimeSize - 1;
 }
 
-int WriteHttpLogTime(char *Buf, size_t Size) {
+int ngx::Core::WriteHttpLogTime(char *Buf, size_t Size) {
 
     int Version = FetchTimeVersion();
 
@@ -146,7 +142,7 @@ int WriteHttpLogTime(char *Buf, size_t Size) {
     return HttpLogTimeSize - 1;
 }
 
-int WriteHttpLogTimeISO8601(char *Buf, size_t Size) {
+int ngx::Core::WriteHttpLogTimeISO8601(char *Buf, size_t Size) {
 
     int Version = FetchTimeVersion();
 
@@ -158,7 +154,7 @@ int WriteHttpLogTimeISO8601(char *Buf, size_t Size) {
     return HttpLogTimeISO8601Size - 1;
 }
 
-int WriteSysLogTime(char *Buf, size_t Size) {
+int ngx::Core::WriteSysLogTime(char *Buf, size_t Size) {
 
     int Version = FetchTimeVersion();
 
@@ -250,7 +246,5 @@ static void UpdateTimeString() {
             "%s %2d %02d:%02d:%02d", MonthString[Month - 1], MonthDay, Hour, Minute, Second);
 
     UpdateTimestamp = false;
-}
-
 }
 

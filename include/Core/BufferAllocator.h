@@ -18,7 +18,7 @@ namespace ngx{
             SpinLock Lock;
             size_t BlockSize = 0;
             BufferMemoryBlockRecycler *Recycler = nullptr;
-            BufferCursor ReadCursor, WriteCursor;
+            Cursor ReadCursor, WriteCursor;
             BufferMemoryBlock *HeadBlock = nullptr, *CurrentBlock = nullptr;
 
             friend class BufferBuilder;

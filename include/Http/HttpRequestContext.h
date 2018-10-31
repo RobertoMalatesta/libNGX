@@ -54,15 +54,15 @@ namespace ngx{
             SpinLock Lock;
             unsigned int Version;
             HttpMethod Method;
-            BufferRange URI;
-            BufferRange URIExt;
-            BufferRange Schema;
-            BufferRange Host;
-            BufferRange IP;
-            BufferRange Port;
-            BufferRange HTTPProtocol;
-            BufferRange Arguments;
-            BufferRange Request;
+            Range URI;
+            Range URIExt;
+            Range Schema;
+            Range Host;
+            Range IP;
+            Range Port;
+            Range HTTPProtocol;
+            Range Arguments;
+            Range Request;
             HttpRequestState State = HTTP_INIT_STATE;
             HttpRequestLineParseState RequestLineState;
         public:

@@ -20,20 +20,41 @@ static inline void RecycleBlock(BufferMemoryBlockRecycler *R, BufferMemoryBlock 
     }
 }
 
-void BufferCursor::GetReference() {
+bool Cursor::operator~() {
+    return Block == nullptr || Position == nullptr;
+}
+
+u_char Cursor::operator*() {
+    return this->operator~()? (u_char)'\0': *Position;
+}
+
+bool Cursor::operator>(Cursor &Right) {
+    return Block == Right.Block && Position >= Right.Position;
+}
+
+Cursor& Cursor::operator=(Cursor const &Right) {
+    Block = Right.Block, Position = Right.Position;
+    return *this;
+}
+
+void Cursor::GetReference() {
     Block->GetReference();
 }
 
-void BufferCursor::PutReference() {
+void Cursor::PutReference() {
     Block->PutReference();
 }
 
-BufferCursor& BufferCursor::operator+=(size_t Size) {
+BoundCursor BoundCursor::operator+(size_t Size) {
+
+    BoundCursor Ret = *this;
+
     while (Size > 0) {
         if ((Position + Size) < Block->End) {
-            if ((Block == BlockRightBound) && (Position + Size) >= PositionRightBound) {
+            if (this->operator > (Bound)) {
                 Block = nullptr, Position = nullptr;
-            } else {
+            }
+            else {
                 Position += Size;
             }
         } else {
@@ -42,45 +63,49 @@ BufferCursor& BufferCursor::operator+=(size_t Size) {
             Position = Block->Start;
         }
     }
-    return *this;
+    return Ret;
 }
 
-const BufferCursor BufferCursor::operator++(int) {
-    this->operator+=(1);
-    return *this;
-}
+BoundCursor BoundCursor::operator+=(size_t Size) {
 
-BufferCursor BufferCursor::operator+(size_t Size) {
-    BufferCursor Cursor = *this;
-    Cursor += Size;
-    return Cursor;
-}
-
-u_char BufferCursor::operator*() {
-    if (Position != nullptr && Block != nullptr) {
-        return *Position;
-    }
-    else {
-        return '\0';
-    }
-}
-
-u_char BufferCursor::operator[](uint16_t Offset) {
-
-    if ((Position + Offset) < Block->End) {
-        return *(Position + Offset);
-    } else {
-        BufferCursor Cursor = *this;
-        Cursor += Offset;
-
-        if (Cursor.Block != nullptr && Cursor.Position != nullptr) {
-            return *Cursor.Position;
+    BoundCursor Ret = *this;
+    while (Size > 0) {
+        if ((Position + Size) < Block->End) {
+            if (this->operator > (Bound)) {
+                Block = nullptr, Position = nullptr;
+            }
+            else {
+                Position += Size;
+            }
+        } else {
+            Size -= (Block->End - Position);
+            Block = Block->GetNextBlock();
+            Position = Block->Start;
         }
     }
-    return  '\0';
+    return Ret;
 }
 
-void BufferRange::GetReference() {
+const BoundCursor BoundCursor::operator++(int) {
+    return this->operator+=(1);
+}
+
+u_char BoundCursor::operator[](uint16_t Offset) {
+    BoundCursor Target = operator+(Offset);
+    return *Target;
+}
+
+BoundCursor& BoundCursor::operator<<(ngx::Core::Cursor LeftBound) {
+    static_cast<Cursor *>(this)->operator=(LeftBound);
+    return *this;
+}
+
+BoundCursor& BoundCursor::operator>>(ngx::Core::Cursor RightBound) {
+    Bound = RightBound;
+    return *this;
+}
+
+void Range::GetReference() {
     BufferMemoryBlock *TempBlock;
 
     TempBlock = LeftBound.Block;
@@ -94,7 +119,7 @@ void BufferRange::GetReference() {
 }
 
 
-void BufferRange::PutReference() {
+void Range::PutReference() {
     BufferMemoryBlock *TempBlock;
 
     TempBlock = LeftBound.Block;
@@ -118,13 +143,8 @@ Buffer::~Buffer() {
     while (TempBlock != nullptr) {
         NextBlock = TempBlock->GetNextBlock();
         RecycleBlock(Recycler, TempBlock);
-
         TempBlock = NextBlock;
     }
-
-    ReadCursor.Position = nullptr;
-    ReadCursor.Block = nullptr;
-    WriteCursor = ReadCursor;
 }
 
 RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength) {
@@ -132,7 +152,7 @@ RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength)
     size_t CurrentBlockFreeSize;
     BufferMemoryBlock *TempBufferBlock, *WriteBlock = WriteCursor.Block;
 
-    Lock.Lock();
+    SpinlockGuard LockGuard(&Lock);
 
     for (;;) {
 
@@ -143,7 +163,6 @@ RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength)
             TempBufferBlock = AquireBlock(Recycler, BlockSize);
 
             if (TempBufferBlock == nullptr) {
-                Lock.Unlock();
                 return {ENOMEM, "No enough memory!"};
             }
 
@@ -151,7 +170,6 @@ RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength)
 
             PointerToData += CurrentBlockFreeSize;
             DataLength -= CurrentBlockFreeSize;
-
 
             WriteBlock->SetNextBlock(TempBufferBlock);
             WriteBlock = WriteCursor.Block = TempBufferBlock;
@@ -164,17 +182,15 @@ RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength)
         }
     }
 
-    Lock.Unlock();
-
     return {0};
 }
 
-Buffer& Buffer::operator<<(BufferCursor &BC) & {
+Buffer& Buffer::operator<<(BoundCursor &BC) & {
     ReadCursor = BC;
     return *this;
 }
 
-Buffer& Buffer::operator>>(BufferCursor &BC) & {
+Buffer& Buffer::operator>>(BoundCursor &BC) & {
     BC = ReadCursor;
     return *this;
 }
@@ -224,6 +240,8 @@ RuntimeError Buffer::WriteConnectionToBuffer(Connection *C) {
         }
     }
 
+    ReadCursor >> WriteCursor;
+
     return {0};
 }
 
@@ -250,7 +268,8 @@ void Buffer::Reset() {
     if (WriteCursor.Block) {
         WriteCursor.Block->Reset();
         WriteCursor.Position = WriteCursor.Block->Start;
-        ReadCursor = WriteCursor;
+        ReadCursor.Position = ReadCursor.Block->Start;
+        ReadCursor >> WriteCursor;
     }
 }
 

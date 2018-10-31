@@ -22,12 +22,14 @@ int HttpServerTest() {
 
     Server.EnqueueListening(&Listen).PrintError();
 
+    TimeModuleInit();
+
     int Count = 500000;
 
     while (Count-- > 0) {
         RuntimeError Error = Server.HttpServerEventProcess();
         Error.PrintError();
-        ForceUSleep(100000);
+        usleep(100000);
     }
 
     return 0;

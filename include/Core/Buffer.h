@@ -13,40 +13,56 @@
 
 namespace ngx {
     namespace Core {
-        class BufferCursor {
-        private:
-            BufferMemoryBlock *BlockRightBound;
-            u_char *PositionRightBound;
-        public:
+
+        class Cursor {
+        protected:
             BufferMemoryBlock *Block;
             u_char *Position;
+            friend Range;
+            friend Buffer;
+            friend class BufferBuilder;
+        public:
 
             void GetReference();
 
             void PutReference();
 
-            BufferCursor &operator+=(size_t Size);
-
-            const BufferCursor operator++(int);
-
-            BufferCursor operator+(size_t Size);
-
-            BufferCursor operator-(size_t) = delete;
-
-            BufferCursor &operator--() = delete;
-
-            BufferCursor &operator-=(size_t Size) = delete;
-
             u_char operator*();
 
-            u_char operator[](uint16_t Offset);
+            bool operator~();
+
+            bool operator>(Cursor &Right);
+
+            Cursor &operator = (Cursor const &Right);
         };
 
-        struct BufferRange {
+        class BoundCursor : public Cursor {
+        protected:
+            Cursor Bound;
+
+        public:
+            BoundCursor operator+=(size_t Size);
+
+            const BoundCursor operator++(int);
+
+            BoundCursor operator+(size_t Size);
+
+            BoundCursor operator-(size_t) = delete;
+
+            BoundCursor &operator--() = delete;
+
+            BoundCursor &operator-=(size_t Size) = delete;
+
+            u_char operator[](uint16_t Offset);
+
+            BoundCursor &operator>>(Cursor RightBound);
+            BoundCursor &operator<<(Cursor LeftBound);
+        };
+
+        struct Range {
 
             size_t RangeSize;
-            BufferCursor LeftBound;
-            BufferCursor RightBound;
+            BoundCursor LeftBound, RightBound;
 
             void GetReference();
 
@@ -58,7 +74,8 @@ namespace ngx {
             SpinLock Lock;
             size_t BlockSize = 0;
             BufferMemoryBlockRecycler *Recycler = nullptr;
-            BufferCursor ReadCursor, WriteCursor;
+            BoundCursor ReadCursor;
+            Cursor WriteCursor;
             BufferMemoryBlock *HeadBlock = nullptr;
 
 
@@ -69,9 +86,9 @@ namespace ngx {
 
             ~Buffer();
 
-            Buffer &operator<<(BufferCursor &BC) &;
+            Buffer &operator<<(BoundCursor &BC) &;
 
-            Buffer &operator>>(BufferCursor &BC) &;
+            Buffer &operator>>(BoundCursor &BC) &;
 
             RuntimeError WriteConnectionToBuffer(Connection *C);
 
@@ -109,9 +126,9 @@ namespace ngx {
 //                return TempCursor;
 //            }
 
-            inline bool ReadByte(BufferCursor Cursor, uint32_t Offset, u_char &C1) {
+            inline bool ReadByte(BoundCursor Cursor, uint32_t Offset, u_char &C1) {
 
-                BufferCursor TempCursor = (Cursor + Offset);
+                BoundCursor TempCursor = (Cursor + Offset);
 
                 if (TempCursor.Position == nullptr) {
                     return false;
@@ -121,16 +138,16 @@ namespace ngx {
                 return true;
             }
 
-            inline bool CmpByte(BufferCursor Cursor, uint32_t Offset, u_char C1) {
+            inline bool CmpByte(BoundCursor Cursor, uint32_t Offset, u_char C1) {
 
                 u_char A1;
 
                 return ReadByte(Cursor, Offset, A1) && A1 == C1;
             }
 
-            inline bool ReadBytes2(BufferCursor Cursor, uint32_t Offset, u_char &C1, u_char &C2) {
+            inline bool ReadBytes2(BoundCursor Cursor, uint32_t Offset, u_char &C1, u_char &C2) {
 
-                BufferCursor Cur1, Cur2 = (Cursor + Offset + 1);
+                BoundCursor Cur1, Cur2 = (Cursor + Offset + 1);
 
                 if (Cur2.Position == nullptr) {
                     return false;
@@ -147,7 +164,7 @@ namespace ngx {
                 }
             }
 
-            inline bool CmpByte2(BufferCursor Cursor, uint32_t Offset, u_char C1, u_char C2) {
+            inline bool CmpByte2(BoundCursor Cursor, uint32_t Offset, u_char C1, u_char C2) {
 
                 u_char A1, A2;
 
@@ -157,9 +174,9 @@ namespace ngx {
             }
 
             inline bool
-            ReadBytes4(BufferCursor Cursor, uint32_t Offset, u_char &C1, u_char &C2, u_char &C3, u_char &C4) {
+            ReadBytes4(BoundCursor Cursor, uint32_t Offset, u_char &C1, u_char &C2, u_char &C3, u_char &C4) {
 
-                BufferCursor Cur4 = (Cursor + Offset + 3);
+                BoundCursor Cur4 = (Cursor + Offset + 3);
 
                 if (Cur4.Position == nullptr) {
                     return false;
@@ -178,7 +195,7 @@ namespace ngx {
                 return true;
             }
 
-            inline bool CmpByte4(BufferCursor Cursor, uint32_t Offset, u_char C1, u_char C2, u_char C3, u_char C4) {
+            inline bool CmpByte4(BoundCursor Cursor, uint32_t Offset, u_char C1, u_char C2, u_char C3, u_char C4) {
 
                 u_char A1, A2, A3, A4;
 

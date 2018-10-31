@@ -1,6 +1,5 @@
 namespace ngx {
     namespace Core {
-        extern "C" {
         const size_t ErrorLogTimeSize = sizeof("1970/09/28 12:00:00");
         const size_t HttpTimeSize = sizeof("Mon, 28 Sep 1970 06:00:00 GMT");
         const size_t HttpLogTimeSize = sizeof("28/Sep/1970:12:00:00 +0600");
@@ -17,6 +16,5 @@ namespace ngx {
         int WriteHttpLogTime(char *Buf, size_t Size);
         int WriteHttpLogTimeISO8601(char *Buf, size_t Size);
         int WriteSysLogTime(char *Buf, size_t Size);
-        };
     }
 }

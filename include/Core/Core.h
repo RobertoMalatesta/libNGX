@@ -43,9 +43,11 @@ namespace ngx{
 
         class BufferMemoryBlockRecycler;
 
-        class BufferCursor;
+        class Cursor;
 
-        class BufferRange;
+        class BoundCursor;
+
+        class Range;
 
         class BufferBuilder;
 
