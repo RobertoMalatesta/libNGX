@@ -47,6 +47,8 @@ namespace ngx {
 
             BoundCursor &operator-=(size_t Size) = delete;
 
+            bool operator~();
+
             u_char operator[](uint16_t Offset);
 
             BoundCursor &operator=(BoundCursor const &Right);

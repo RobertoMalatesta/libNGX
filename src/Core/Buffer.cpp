@@ -84,6 +84,9 @@ const BoundCursor BoundCursor::operator++(int) {
     return this->operator+=(1);
 }
 
+bool BoundCursor::operator~() {
+    return Block == Bound.Block && Position >= Bound.Position;
+}
 u_char BoundCursor::operator[](uint16_t Offset) {
     BoundCursor Target = operator+(Offset);
     return *Target;
