@@ -17,6 +17,7 @@ bool BufferBuilder::BuildBuffer(Buffer &Buf) {
     }
     Buf.WriteCursor.Block = Buf.HeadBlock;
     Buf.WriteCursor.Position = Buf.HeadBlock->Start;
-    Buf.ReadCursor << Buf.WriteCursor >> Buf.WriteCursor;
+    Buf.ReadCursor.SetLeft(Buf.WriteCursor);
+    Buf.ReadCursor.SetRight(Buf.WriteCursor);
     return true;
 }

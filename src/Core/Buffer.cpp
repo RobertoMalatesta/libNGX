@@ -20,6 +20,10 @@ static inline void RecycleBlock(BufferMemoryBlockRecycler *R, BufferMemoryBlock 
     }
 }
 
+Cursor::Cursor(BufferMemoryBlock *Block, u_char *Position) {
+    this->Block = Block, this->Position = Position;
+}
+
 bool Cursor::operator~() {
     return Block == nullptr || Position == nullptr;
 }
@@ -28,62 +32,52 @@ u_char Cursor::operator*() {
     return this->operator~()? (u_char)'\0': *Position;
 }
 
-bool Cursor::operator>(Cursor &Right) {
-    return Block == Right.Block && Position >= Right.Position;
-}
-
-Cursor& Cursor::operator=(Cursor const &Right) {
+Cursor &Cursor::operator=(Cursor const &Right) {
     Block = Right.Block, Position = Right.Position;
     return *this;
 }
 
-void Cursor::GetReference() {
-    Block->GetReference();
+uint32_t Cursor::IncRef() {
+    if (Block != nullptr) {
+        return Block->IncRef();
+    }
+    return 0;
 }
 
-void Cursor::PutReference() {
-    Block->PutReference();
+uint32_t Cursor::DecRef() {
+    if (Block != nullptr) {
+        return Block->DecRef();
+    }
+    return 0;
 }
 
 BoundCursor BoundCursor::operator+(size_t Size) {
 
-    BoundCursor Ret = *this;
+    BoundCursor R = *this;
 
     while (Size > 0) {
-        if ((Position + Size) < Block->End) {
-            if (this->operator > (Bound)) {
-                Block = nullptr, Position = nullptr;
+        if ((R.Position + Size) < R.Block->End) {
+            if (R.Block == R.Bound.Block && (R.Position + Size) > R.Bound.Position) {
+                R.Block = nullptr, R.Position = nullptr;
             }
             else {
-                Position += Size;
+                R.Position += Size;
+                Size = 0;
             }
         } else {
-            Size -= (Block->End - Position);
-            Block = Block->GetNextBlock();
-            Position = Block->Start;
+            Size -= (R.Block->End - R.Position);
+            R.Block = R.Block->GetNextBlock();
+            R.Position = R.Block->Start;
         }
     }
-    return Ret;
+    return R;
 }
 
 BoundCursor BoundCursor::operator+=(size_t Size) {
 
-    BoundCursor Ret = *this;
-    while (Size > 0) {
-        if ((Position + Size) < Block->End) {
-            if (this->operator > (Bound)) {
-                Block = nullptr, Position = nullptr;
-            }
-            else {
-                Position += Size;
-            }
-        } else {
-            Size -= (Block->End - Position);
-            Block = Block->GetNextBlock();
-            Position = Block->Start;
-        }
-    }
-    return Ret;
+    BoundCursor R = *this;
+    *this = this->operator+(Size);
+    return R;
 }
 
 const BoundCursor BoundCursor::operator++(int) {
@@ -95,41 +89,47 @@ u_char BoundCursor::operator[](uint16_t Offset) {
     return *Target;
 }
 
-BoundCursor& BoundCursor::operator<<(ngx::Core::Cursor LeftBound) {
-    static_cast<Cursor *>(this)->operator=(LeftBound);
+BoundCursor& BoundCursor::operator=(const BoundCursor &Right) {
+    Block = Right.Block, Position = Right.Position;
+    Bound = Right.Bound;
     return *this;
 }
 
-BoundCursor& BoundCursor::operator>>(ngx::Core::Cursor RightBound) {
-    Bound = RightBound;
+BoundCursor &BoundCursor::SetLeft(Cursor &Cursor) {
+    Block = Cursor.Block, Position = Cursor.Position;
     return *this;
 }
 
-void Range::GetReference() {
+BoundCursor& BoundCursor::SetRight(Cursor &Bound) {
+    this->Bound = Bound;
+    return *this;
+}
+
+void Range::IncRef() {
     BufferMemoryBlock *TempBlock;
 
     TempBlock = LeftBound.Block;
 
     while (TempBlock != RightBound.Block) {
-        TempBlock->GetReference();
+        TempBlock->IncRef();
         TempBlock = TempBlock->GetNextBlock();
     }
 
-    RightBound.Block->GetReference();
+    RightBound.Block->IncRef();
 }
 
 
-void Range::PutReference() {
+void Range::DecRef() {
     BufferMemoryBlock *TempBlock;
 
     TempBlock = LeftBound.Block;
 
     while (TempBlock != RightBound.Block) {
-        TempBlock->PutReference();
+        TempBlock->DecRef();
         TempBlock = TempBlock->GetNextBlock();
     }
 
-    RightBound.Block->PutReference();
+    RightBound.Block->DecRef();
 }
 
 Buffer::~Buffer() {
@@ -176,7 +176,7 @@ RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength)
             WriteCursor.Position = WriteBlock->Start;
         } else {
             memcpy(WriteCursor.Position, PointerToData, DataLength);
-            WriteCursor.Position = (WriteBlock->Pos += DataLength);
+            WriteCursor.Position += DataLength;
 
             break;
         }
@@ -239,8 +239,7 @@ RuntimeError Buffer::WriteConnectionToBuffer(Connection *C) {
             break;
         }
     }
-
-    ReadCursor >> WriteCursor;
+    ReadCursor.SetRight(WriteCursor);
 
     return {0};
 }
@@ -268,8 +267,8 @@ void Buffer::Reset() {
     if (WriteCursor.Block) {
         WriteCursor.Block->Reset();
         WriteCursor.Position = WriteCursor.Block->Start;
-        ReadCursor.Position = ReadCursor.Block->Start;
-        ReadCursor >> WriteCursor;
+        ReadCursor.SetLeft(WriteCursor);
+        ReadCursor.SetRight(WriteCursor);
     }
 }
 
@@ -281,7 +280,7 @@ void Buffer::GC() {
 
     while (NextBlock != nullptr && NextBlock != ReadCursor.Block) {
 
-        if (NextBlock->GetReference() == 0) {
+        if (NextBlock->RefCount() == 0) {
             TempBlock->SetNextBlock(NextBlock->GetNextBlock());
 
             if (Recycler == nullptr) {
@@ -297,7 +296,7 @@ void Buffer::GC() {
         }
     }
 
-    if (HeadBlock->GetReference() == 0) {
+    if (HeadBlock->RefCount() == 0) {
         NextBlock = HeadBlock;
         HeadBlock = HeadBlock->GetNextBlock();
         NextBlock->Reset();

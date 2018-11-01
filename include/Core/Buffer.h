@@ -14,33 +14,27 @@
 namespace ngx {
     namespace Core {
 
-        class Cursor {
-        protected:
-            BufferMemoryBlock *Block;
-            u_char *Position;
-            friend Range;
-            friend Buffer;
-            friend class BufferBuilder;
-        public:
+        struct Cursor : public Ref {
+            BufferMemoryBlock *Block = nullptr;
+            u_char *Position = nullptr;
 
-            void GetReference();
+            Cursor() = default;
 
-            void PutReference();
+            Cursor(BufferMemoryBlock *Block, u_char *Position);
+
+            virtual uint32_t IncRef();
+
+            virtual uint32_t DecRef();
 
             u_char operator*();
 
             bool operator~();
 
-            bool operator>(Cursor &Right);
-
-            Cursor &operator = (Cursor const &Right);
+            Cursor &operator=(Cursor const &Right);
         };
 
-        class BoundCursor : public Cursor {
-        protected:
+        struct BoundCursor : public Cursor {
             Cursor Bound;
-
-        public:
             BoundCursor operator+=(size_t Size);
 
             const BoundCursor operator++(int);
@@ -55,8 +49,10 @@ namespace ngx {
 
             u_char operator[](uint16_t Offset);
 
-            BoundCursor &operator>>(Cursor RightBound);
-            BoundCursor &operator<<(Cursor LeftBound);
+            BoundCursor &operator=(BoundCursor const &Right);
+
+            BoundCursor &SetLeft(Cursor &Cursor);
+            BoundCursor &SetRight(Cursor &Bound);
         };
 
         struct Range {
@@ -64,9 +60,9 @@ namespace ngx {
             size_t RangeSize;
             BoundCursor LeftBound, RightBound;
 
-            void GetReference();
+            void IncRef();
 
-            void PutReference();
+            void DecRef();
         };
 
         class Buffer : public Resetable {

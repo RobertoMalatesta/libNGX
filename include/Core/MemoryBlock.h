@@ -19,7 +19,7 @@ namespace ngx{
 
             bool IsInBlock(void *Address);
 
-            bool IsFreeBlock() { return GetReference() == 0; }
+            bool IsFreeBlock() { return RefCount() == 0; }
         };
 
     }

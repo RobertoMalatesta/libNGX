@@ -1,17 +1,23 @@
-namespace ngx{
+namespace ngx {
     namespace Core {
 
-        class Reference {
+        class Ref {
+            virtual uint32_t IncRef() = 0;
+            virtual uint32_t DecRef() = 0;
+        };
+
+        class Reference : Ref {
         protected:
             std::atomic_uint32_t Counter = {0};
         public:
-            uint32_t GetReference();
 
-            uint32_t PutReference();
+            virtual uint32_t IncRef();
 
-            uint32_t ReferenceCount();
+            virtual uint32_t DecRef();
 
-            void ClearReference();
+            virtual uint32_t RefCount();
+
+            virtual void ClearRef();
         };
 
     }

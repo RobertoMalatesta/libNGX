@@ -5,17 +5,11 @@ namespace ngx{
             HTTP_BAD_REQUEST_STATE = -1,
             HTTP_INIT_STATE,
             HTTP_PAESE_METHOD,
-            HTTP_PARSE_SPACE_BEFORE_URI,
-            HTTP_PARSE_SCHEMA,
             HTTP_PARSE_REQUEST_LINE,
-            HTTP_VALIDATE_HOST,
-            HTTP_PROCESS_REQUEST_URI,
             };
 
         enum HttpRequestLineParseState {
-            RL_Start = 0,
-            RL_Method,
-            RL_Space_Before_URI,
+            RL_Space_Before_URI = 0,
             RL_Schema,
             RL_SchemaSlash,
             RL_SchemaSlashSlash,
@@ -64,14 +58,16 @@ namespace ngx{
             Range Arguments;
             Range Request;
             HttpRequestState State = HTTP_INIT_STATE;
-            HttpRequestLineParseState RequestLineState;
+
+            HttpError ParseMethod(Buffer &B);
+            HttpError ParseRequestLine(Buffer &B);
+            HttpError ParseHeaders(Buffer &B);
         public:
 
             virtual void Reset();
 
             HttpError ProcessHttpRequest(Buffer &B);
 
-            HttpError ParseRequestLine(Buffer &B);
 
         };
     }

@@ -36,7 +36,7 @@ void *MemoryBlockAllocator::Allocate(size_t Size) {
     void *ret = nullptr;
 
     if (FreeSize >= Size) {
-        GetReference();
+        IncRef();
         ret = PointerToData;
         PointerToData = (u_char *) PointerToData + Size;
         FreeSize -= Size;
@@ -48,8 +48,8 @@ void *MemoryBlockAllocator::Allocate(size_t Size) {
 void MemoryBlockAllocator::Free(void **Pointer) {
     if (nullptr != Pointer && IsInBlock(*Pointer)) {
         *Pointer = nullptr;
-        PutReference();
-        if ((GetReference() < 0)) {
+        DecRef();
+        if ((RefCount() < 0)) {
             //[UNREACHABLE BRANCH] BUG: Over free, will add log here later
         }
     }

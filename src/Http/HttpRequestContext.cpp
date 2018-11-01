@@ -33,11 +33,23 @@ HttpError HttpRequestContext::ProcessHttpRequest(Buffer &B) {
 
     switch (State) {
         case HTTP_INIT_STATE:
-            RequestLineState = RL_Start;
-            Error = ParseRequestLine(B);
+            State = HTTP_PAESE_METHOD;
+        case HTTP_PAESE_METHOD:
+            Error = ParseMethod(B);
+
             if (Error.GetErrorCode() != 0) {
                 return Error;
             }
+
+            State = HTTP_PARSE_REQUEST_LINE;
+        case HTTP_PARSE_REQUEST_LINE:
+            Error = ParseRequestLine(B);
+
+            if (Error.GetErrorCode() != 0) {
+                return Error;
+            }
+
+            State = HTTP_PARSE_REQUEST_LINE;
             break;
         default:
             State = HTTP_INIT_STATE;
@@ -47,83 +59,96 @@ HttpError HttpRequestContext::ProcessHttpRequest(Buffer &B) {
     return {0};
 }
 
-HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
+HttpError HttpRequestContext::ParseMethod(Buffer &B) {
 
     u_char C, C1, C2, C3, C4, C5, C6, C7, C8, C9;
+    BoundCursor BC;
+
+    for (B >> BC; (C = *BC) != '\0'; BC++) {
+        if (C == CR || C == LF) {
+            continue;
+        }
+        if ((C < 'A' || C > 'Z') && C != '_' && C != '-') {
+            return {EFAULT, "Invalid method!"};
+        }
+        break;
+    }
+
+    C1 = C, C2 = *(BC + 1), C3 = *(BC + 2), C4 = *(BC + 3);
+
+    if (C4 == ' ') {
+        if (C1 == 'G' && C2 == 'E' && C3 == 'T') {
+            Method = GET;
+        } else if (C1 == 'P' && C2 == 'U' && C3 == 'T') {
+            Method = PUT;
+        } else {
+            return {EFAULT, "Invalid method!"};
+        }
+        BC += 3;
+    } else if ((C5 = *(BC + 4)) == ' ') {
+        if (C2 == 'O') {
+            if (C1 == 'P' && C3 == 'S' && C4 == 'T') {
+                Method = POST;
+            } else if (C1 == 'C' && C3 == 'P' && C4 == 'Y') {
+                Method = COPY;
+            } else if (C1 == 'M' && C3 == 'V' && C4 == 'E') {
+                Method = MOVE;
+            } else if (C1 == 'L' && C3 == 'C' && C4 == 'K') {
+                Method = LOCK;
+            }
+        } else if (C1 == 'H' && C2 == 'E' && C3 == 'A' && C4 == 'D') {
+            Method = HEAD;
+        } else {
+            return {EFAULT, "Invalid method!"};
+        }
+        BC += 4;
+    } else if ((C6 = *(BC + 5)) == ' ') {
+        if (C1 == 'M' && C2 == 'K' && C3 == 'C' && C4 == 'O' && C5 == 'L') {
+            Method = MKCOL;
+        } else if (C1 == 'P' && C2 == 'A' && C3 == 'T' && C4 == 'C' && C5 == 'H') {
+            Method = PATCH;
+        } else if (C1 == 'T' && C2 == 'R' && C3 == 'A' && C4 == 'C' && C5 == 'E') {
+            Method = TRACE;
+        } else {
+            return {EFAULT, "Invalid method!"};
+        }
+        BC += 5;
+    } else if ((C7 = *(BC + 6)) == ' ') {
+        if (C1 == 'D' && C2 == 'E' && C3 == 'L' && C4 == 'E' && C5 == 'T' && C6 == 'E') {
+            Method = DELETE;
+        } else if (C1 == 'U' && C2 == 'N' && C3 == 'L' && C4 == 'O' && C5 == 'C' && C6 == 'K') {
+            Method = UNLOCK;
+        } else {
+            return {EFAULT, "Invalid method!"};
+        }
+        BC += 6;
+    } else if (C1 == 'O' && C2 == 'P' && C3 == 'T' && C4 == 'I' &&
+               C5 == 'O' && C6 == 'N' && C7 == 'S' && (C8 = *(BC + 7)) == ' ') {
+        Method = OPTIONS, BC += 7;
+    } else if (C1 == 'P' && C2 == 'R' && C3 == 'O' && C4 == 'P' &&
+               C5 == 'F' && C6 == 'I' && C7 == 'N' && C8 == 'D' && (C9 = *(BC + 8)) == ' ') {
+        Method = PROPFIND, BC += 8;
+    } else if (C1 == 'P' && C2 == 'R' && C3 == 'O' && C4 == 'P' &&
+               C5 == 'P' && C6 == 'A' && C7 == 'T' && C8 == 'C' && C9 == 'H' && (*(BC + 9)) == ' ') {
+        Method = PROPPATCH, BC += 9;
+    } else {
+        return {EFAULT, "Invalid method!"};
+    }
+
+    BC += 1;
+    B << BC;
+
+    return  {0};
+}
+
+HttpError HttpRequestContext::ParseRequestLine(Buffer &B) {
+
+    u_char C, C1;
     BoundCursor BC,LastBC;
+    HttpRequestLineParseState RequestLineState = RL_Space_Before_URI;
 
     for (B >> BC, LastBC = BC; (C = *BC) != '\0'; LastBC = BC++) {
         switch (RequestLineState) {
-            case RL_Start:
-                if (C == CR || C == LF) {
-                    break;
-                }
-                if ((C < 'A' || C > 'Z') && C != '_' && C != '-') {
-                    return {EFAULT, "Invalid method!"};
-                }
-                RequestLineState = RL_Method;
-            case RL_Method:
-                C1 = C, C2 = *(BC + 1), C3 = *(BC + 2), C4 = *(BC + 3);
-                if (C4 == ' ') {
-                    if (C1 == 'G' && C2 == 'E' && C3 == 'T') {
-                        Method = GET;
-                    } else if (C1 == 'P' && C2 == 'U' && C3 == 'T') {
-                        Method = PUT;
-                    } else {
-                        return {EFAULT, "Invalid method!"};
-                    }
-                    BC += 3;
-                } else if ((C5 = *(BC + 4)) == ' ') {
-                    if (C2 == 'O') {
-                        if (C1 == 'P' && C3 == 'S' && C4 == 'T') {
-                            Method = POST;
-                        } else if (C1 == 'C' && C3 == 'P' && C4 == 'Y') {
-                            Method = COPY;
-                        } else if (C1 == 'M' && C3 == 'V' && C4 == 'E') {
-                            Method = MOVE;
-                        } else if (C1 == 'L' && C3 == 'C' && C4 == 'K') {
-                            Method = LOCK;
-                        }
-                    } else if (C1 == 'H' && C2 == 'E' && C3 == 'A' && C4 == 'D') {
-                        Method = HEAD;
-                    } else {
-                        return {EFAULT, "Invalid method!"};
-                    }
-                    BC += 4;
-                } else if ((C6 = *(BC + 5)) == ' ') {
-                    if (C1 == 'M' && C2 == 'K' && C3 == 'C' && C4 == 'O' && C5 == 'L') {
-                        Method = MKCOL;
-                    } else if (C1 == 'P' && C2 == 'A' && C3 == 'T' && C4 == 'C' && C5 == 'H') {
-                        Method = PATCH;
-                    } else if (C1 == 'T' && C2 == 'R' && C3 == 'A' && C4 == 'C' && C5 == 'E') {
-                        Method = TRACE;
-                    } else {
-                        return {EFAULT, "Invalid method!"};
-                    }
-                    BC += 5;
-                } else if ((C7 = *(BC + 6)) == ' ') {
-                    if (C1 == 'D' && C2 == 'E' && C3 == 'L' && C4 == 'E' && C5 == 'T' && C6 == 'E') {
-                        Method = DELETE;
-                    } else if (C1 == 'U' && C2 == 'N' && C3 == 'L' && C4 == 'O' && C5 == 'C' && C6 == 'K') {
-                        Method = UNLOCK;
-                    } else {
-                        return {EFAULT, "Invalid method!"};
-                    }
-                    BC += 6;
-                } else if (C1 == 'O' && C2 == 'P' && C3 == 'T' && C4 == 'I' &&
-                           C5 == 'O' && C6 == 'N' && C7 == 'S' && (C8 = *(BC + 7)) == ' ') {
-                    Method = OPTIONS, BC += 7;
-                } else if (C1 == 'P' && C2 == 'R' && C3 == 'O' && C4 == 'P' &&
-                           C5 == 'F' && C6 == 'I' && C7 == 'N' && C8 == 'D' && (C9 = *(BC + 8)) == ' ') {
-                    Method = PROPFIND, BC += 8;
-                } else if (C1 == 'P' && C2 == 'R' && C3 == 'O' && C4 == 'P' &&
-                           C5 == 'P' && C6 == 'A' && C7 == 'T' && C8 == 'C' && C9 == 'H' && (*(BC + 9)) == ' ') {
-                    Method = PROPPATCH, BC += 9;
-                } else {
-                    return {EFAULT, "Invalid method!"};
-                }
-                RequestLineState = RL_Space_Before_URI;
-                break;
             case RL_Space_Before_URI:
                 if (C == '/') {
                     URI.LeftBound = BC;

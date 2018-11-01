@@ -27,7 +27,7 @@ namespace ngx {
             friend class Buffer;
 
         public:
-            u_char *Start, *End, *Pos;
+            u_char *Start, *End;
 
             static BufferMemoryBlock *Build(size_t Size);
 

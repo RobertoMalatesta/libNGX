@@ -7,12 +7,12 @@ BufferMemoryBlock::BufferMemoryBlock(size_t Size) : MemoryBlock(Size), Recyclabl
     FreeSize = TotalSize;
     PointerToHead = (u_char *) this + sizeof(BufferMemoryBlock);
     PointerToData = PointerToHead;
-    Start = Pos = (u_char *) PointerToHead;
+    Start = (u_char *) PointerToHead;
     End = Start + TotalSize;
 }
 
 BufferMemoryBlock::~BufferMemoryBlock() {
-    Start = Pos = End = nullptr;
+    Start = End = nullptr;
 }
 
 BufferMemoryBlock *BufferMemoryBlock::Build(size_t Size) {
@@ -38,7 +38,7 @@ void BufferMemoryBlock::Destroy(BufferMemoryBlock **PointerToBlock) {
 void BufferMemoryBlock::Reset() {
     PointerToHead = (u_char *) this + sizeof(BufferMemoryBlock);
     PointerToData = PointerToHead;
-    Start = Pos = (u_char *) PointerToHead;
+    Start = (u_char *) PointerToHead;
     End = Start + TotalSize;
     NextBlock = nullptr;
 }
