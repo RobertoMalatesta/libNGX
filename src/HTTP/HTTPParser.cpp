@@ -143,8 +143,8 @@ HTTPError HTTPParser::ParseMethod(Buffer &B, HTTPRequest &R) {
 
 HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
 
-    enum HttpRequestLineParseState {
-        RL_Space_Before_URI = 0,
+    enum HTTPRequestLineParseState {
+        RL_SpaceBeforeURI = 0,
         RL_Schema,
         RL_SchemaSlash,
         RL_SchemaSlashSlash,
@@ -169,15 +169,14 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
         RL_MinorDigit,
         RL_SpaceAfterDigit,
         RL_AlmostDone
-    };
+    } RequestLineState = RL_SpaceBeforeURI;
 
     u_char C, C1;
     BoundCursor BC,LastBC;
-    HttpRequestLineParseState RequestLineState = RL_Space_Before_URI;
 
     for (B >> BC, LastBC = BC; (C = *BC) != '\0'; LastBC = BC++) {
         switch (RequestLineState) {
-            case RL_Space_Before_URI:
+            case RL_SpaceBeforeURI:
                 if (C == '/') {
                     R.URI.LeftBound = BC;
                     RequestLineState = RL_AfterSlashInURI;
@@ -584,9 +583,9 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                 if (C < '1' || C > '9') {
                     return {EFAULT, "Bad Request!"};
                 }
-                R.HttpMajor = C - '0';
+                R.HTTPMajor = C - '0';
 
-                if (R.HttpMajor > 1) {
+                if (R.HTTPMajor > 1) {
                     return {EFAULT, "Invalid Version!"};
                 }
                 RequestLineState = RL_MajorDigit;
@@ -602,9 +601,9 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                     return {EFAULT, "Bad Request!"};
                 }
 
-                R.HttpMajor = R.HttpMajor * 10 + (C - '0');
+                R.HTTPMajor = R.HTTPMajor * 10 + (C - '0');
 
-                if (R.HttpMajor > 1) {
+                if (R.HTTPMajor > 1) {
                     return {EFAULT, "Invalid Version!"};
                 }
                 break;
@@ -676,7 +675,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
 
     B << BC;
     R.Request.RightBound = BC;
-    R.Version = R.HttpMajor * 1000 + R.HTTPMinor;
+    R.Version = R.HTTPMajor * 1000 + R.HTTPMinor;
 
     if (R.Version == 9 && R.Method != GET) {
         return {EFAULT, "Invalid 09 Method!"};

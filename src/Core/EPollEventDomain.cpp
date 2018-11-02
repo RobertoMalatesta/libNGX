@@ -237,7 +237,7 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
                                            &TempSocketAddr->SocketLength, SOCK_NONBLOCK);
 
                 if (-1 == TempConnectionFD) {
-                    printf("accept4() failed in HttpEventProcessPromise!\n");
+                    printf("accept4() failed in EventDomainProcess()!\n");
                 }
 
                 TempEventArguments->UserArguments[0].UInt = (uint32_t) TempConnectionFD;

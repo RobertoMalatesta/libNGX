@@ -3,7 +3,7 @@ namespace ngx{
 
         class HTTPRequest {
         protected:
-            unsigned int HttpMajor;
+            unsigned int HTTPMajor;
             unsigned int HTTPMinor;
             unsigned int ComplexURI:1;
             unsigned int QuotedURI:1;
@@ -12,7 +12,7 @@ namespace ngx{
 
             SpinLock Lock;
             unsigned int Version;
-            HttpMethod Method;
+            HTTPMethod Method;
             Range URI;
             Range URIExt;
             Range Schema;

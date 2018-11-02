@@ -106,17 +106,17 @@
 
 - HTTP Server
 
-    代理 EventDomain, HttpURITree, HTTPConnectionBuilder来实现。
-    EventDomain使用HttpServerBuilder来装配，用于装配 具体的 EventDomain 和 HttpURITree。 并初始化和装配Listening
+    代理 EventDomain, HTTPURITree, HTTPConnectionBuilder来实现。
+    EventDomain使用HTTPServerBuilder来装配，用于装配 具体的 EventDomain 和 HTTPURITree。 并初始化和装配Listening
     HTTPConnectionBuilder 内部代理一个HTTPConnectionRecycler 和 BufferBlockRecycler
     用来装配HTTPConnection。
 
 - HTTPConnectionScheduler
 
-    后续实现，根据当前的状态推动Http的解析和请求处理等，将所有的Promise集中管理。
+    后续实现，根据当前的状态推动HTTP的解析和请求处理等，将所有的Promise集中管理。
 
-- HttpUpstream 模块
-    作为一个节点插入到 HttpURITree上。
+- HTTPUpstream 模块
+    作为一个节点插入到 HTTPURITree上。
 
 ### 构想中的部分
 

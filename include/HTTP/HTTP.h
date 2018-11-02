@@ -29,7 +29,7 @@ namespace ngx {
             HTTP_V2,
         };
 
-        enum HttpMethod {
+        enum HTTPMethod {
             GET,
             PUT,
             POST,

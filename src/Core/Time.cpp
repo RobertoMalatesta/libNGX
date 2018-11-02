@@ -14,9 +14,9 @@ static bool UpdateTimestamp;
 static struct {
     uint64_t Timestamp;
     char ErrorLogTime[ErrorLogTimeSize];
-    char HttpTime[HTTPTimeSize];
-    char HttpLogTime[HTTPLogTimeSize];
-    char HttpLogTimeISO8601[HTTPLogTimeISO8601Size];
+    char HTTPTime[HTTPTimeSize];
+    char HTTPLogTime[HTTPLogTimeSize];
+    char HTTPLogTimeISO8601[HTTPLogTimeISO8601Size];
     char SysLogTime[SysLogTimeSize];
 } TimeStringRingBuffer[NumTimeSlot];
 
@@ -119,7 +119,7 @@ int ngx::Core::WriteHTTPTime(char *Buf, size_t Size) {
         return 0;
     }
 
-    memcpy(Buf, TimeStringRingBuffer[Version].HttpTime, HTTPTimeSize - 1);
+    memcpy(Buf, TimeStringRingBuffer[Version].HTTPTime, HTTPTimeSize - 1);
     return HTTPTimeSize - 1;
 }
 
@@ -131,7 +131,7 @@ int ngx::Core::WriteHTTPLogTime(char *Buf, size_t Size) {
         return 0;
     }
 
-    memcpy(Buf, TimeStringRingBuffer[Version].HttpLogTime, HTTPLogTimeSize - 1);
+    memcpy(Buf, TimeStringRingBuffer[Version].HTTPLogTime, HTTPLogTimeSize - 1);
     return HTTPLogTimeSize - 1;
 }
 
@@ -143,7 +143,7 @@ int ngx::Core::WriteHTTPLogTimeISO8601(char *Buf, size_t Size) {
         return 0;
     }
 
-    memcpy(Buf, TimeStringRingBuffer[Version].HttpLogTimeISO8601, HTTPLogTimeISO8601Size - 1);
+    memcpy(Buf, TimeStringRingBuffer[Version].HTTPLogTimeISO8601, HTTPLogTimeISO8601Size - 1);
     return HTTPLogTimeISO8601Size - 1;
 }
 
@@ -227,13 +227,13 @@ static void UpdateTimeString() {
 
     sprintf(TimeStringRingBuffer[TimestampVersion].ErrorLogTime,
             "%4d/%02d/%02d %02d:%02d:%02d", Year, Month, MonthDay, Hour, Minute, Second);
-    sprintf(TimeStringRingBuffer[TimestampVersion].HttpTime,
+    sprintf(TimeStringRingBuffer[TimestampVersion].HTTPTime,
             "%s, %02d %s %4d %02d:%02d:%02d GMT",
             WeekString[DayOfWeek], MonthDay, MonthString[Month - 1], Year, Hour, Minute, Second);
-    sprintf(TimeStringRingBuffer[TimestampVersion].HttpLogTime,
+    sprintf(TimeStringRingBuffer[TimestampVersion].HTTPLogTime,
             "%02d/%s/%d:%02d:%02d:%02d %c%02i%02i",
             MonthDay, MonthString[Month - 1], Year, Hour, Minute, Second, '+', 8, 0);
-    sprintf(TimeStringRingBuffer[TimestampVersion].HttpLogTimeISO8601,
+    sprintf(TimeStringRingBuffer[TimestampVersion].HTTPLogTimeISO8601,
             "%4d-%02d-%02dT%02d:%02d:%02d%c%02i:%02i", Year, Month, MonthDay, Hour, Minute, Second, '+', 8, 0);
     sprintf(TimeStringRingBuffer[TimestampVersion].SysLogTime,
             "%s %2d %02d:%02d:%02d", MonthString[Month - 1], MonthDay, Hour, Minute, Second);
