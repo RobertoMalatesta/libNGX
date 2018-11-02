@@ -214,6 +214,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                     case ':':
                         R.Schema.RightBound = BC;
                         RequestLineState = RL_SchemaSlash;
+                        break;
                     default:
                         return {EFAULT, "Bad Request!"};
                 }
@@ -500,7 +501,6 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                         break;
                     case CR:
                         R.URI.RightBound = BC;
-                        RequestLineState = RL_HTTP09;
                         R.HTTPMinor = 9;
                         RequestLineState = RL_AlmostDone;
                         break;
