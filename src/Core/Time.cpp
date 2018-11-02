@@ -14,9 +14,9 @@ static bool UpdateTimestamp;
 static struct {
     uint64_t Timestamp;
     char ErrorLogTime[ErrorLogTimeSize];
-    char HttpTime[HttpTimeSize];
-    char HttpLogTime[HttpLogTimeSize];
-    char HttpLogTimeISO8601[HttpLogTimeISO8601Size];
+    char HttpTime[HTTPTimeSize];
+    char HttpLogTime[HTTPLogTimeSize];
+    char HttpLogTimeISO8601[HTTPLogTimeISO8601Size];
     char SysLogTime[SysLogTimeSize];
 } TimeStringRingBuffer[NumTimeSlot];
 
@@ -58,13 +58,6 @@ int ngx::Core::DisableTimer() {
     }
     return 0;
 
-}
-
-void ngx::Core::ForceUSleep(useconds_t USeconds) {
-//    DisableTimer();
-    usleep(USeconds);
-    FetchTimeVersion(true);
-//    EnableTimer();
 }
 
 int ngx::Core::TimeModuleInit() {
@@ -114,44 +107,44 @@ int ngx::Core::WriteErrorLogTime(char *Buf, size_t Size) {
         return 0;
     }
 
-    memcpy(Buf, TimeStringRingBuffer[Version].ErrorLogTime, ErrorLogTimeSize);
+    memcpy(Buf, TimeStringRingBuffer[Version].ErrorLogTime, ErrorLogTimeSize - 1);
     return ErrorLogTimeSize - 1;
 }
 
-int ngx::Core::WriteHttpTime(char *Buf, size_t Size) {
+int ngx::Core::WriteHTTPTime(char *Buf, size_t Size) {
 
     int Version = FetchTimeVersion();
 
-    if (Size < HttpTimeSize) {
+    if (Size < HTTPTimeSize) {
         return 0;
     }
 
-    memcpy(Buf, TimeStringRingBuffer[Version].HttpTime, HttpTimeSize);
-    return HttpTimeSize - 1;
+    memcpy(Buf, TimeStringRingBuffer[Version].HttpTime, HTTPTimeSize - 1);
+    return HTTPTimeSize - 1;
 }
 
-int ngx::Core::WriteHttpLogTime(char *Buf, size_t Size) {
+int ngx::Core::WriteHTTPLogTime(char *Buf, size_t Size) {
 
     int Version = FetchTimeVersion();
 
-    if (Size < HttpLogTimeSize) {
+    if (Size < HTTPLogTimeSize) {
         return 0;
     }
 
-    memcpy(Buf, TimeStringRingBuffer[Version].HttpLogTime, HttpLogTimeSize);
-    return HttpLogTimeSize - 1;
+    memcpy(Buf, TimeStringRingBuffer[Version].HttpLogTime, HTTPLogTimeSize - 1);
+    return HTTPLogTimeSize - 1;
 }
 
-int ngx::Core::WriteHttpLogTimeISO8601(char *Buf, size_t Size) {
+int ngx::Core::WriteHTTPLogTimeISO8601(char *Buf, size_t Size) {
 
     int Version = FetchTimeVersion();
 
-    if (Size < HttpLogTimeISO8601Size) {
+    if (Size < HTTPLogTimeISO8601Size) {
         return 0;
     }
 
-    memcpy(Buf, TimeStringRingBuffer[Version].HttpLogTimeISO8601, HttpLogTimeISO8601Size);
-    return HttpLogTimeISO8601Size - 1;
+    memcpy(Buf, TimeStringRingBuffer[Version].HttpLogTimeISO8601, HTTPLogTimeISO8601Size - 1);
+    return HTTPLogTimeISO8601Size - 1;
 }
 
 int ngx::Core::WriteSysLogTime(char *Buf, size_t Size) {
@@ -162,7 +155,7 @@ int ngx::Core::WriteSysLogTime(char *Buf, size_t Size) {
         return 0;
     }
 
-    memcpy(Buf, TimeStringRingBuffer[Version].SysLogTime, SysLogTimeSize);
+    memcpy(Buf, TimeStringRingBuffer[Version].SysLogTime, SysLogTimeSize - 1);
     return SysLogTimeSize - 1;
 }
 

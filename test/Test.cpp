@@ -1,9 +1,9 @@
 extern int CoreTest();
-extern int HttpTest();
+extern int HTTPTest();
 
 int main() {
 
     CoreTest();
-    HttpTest();
+    HTTPTest();
     return 0;
 }

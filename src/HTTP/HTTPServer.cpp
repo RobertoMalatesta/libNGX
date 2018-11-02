@@ -1,8 +1,8 @@
-#include "Http/Http.h"
+#include "HTTP/HTTP.h"
 
-using namespace ngx::Http;
+using namespace ngx::HTTP;
 
-HttpServer::HttpServer(
+HTTPServer::HTTPServer(
         size_t PoolSize,
         int ThreadCount,
         int EPollSize,
@@ -13,9 +13,9 @@ HttpServer::HttpServer(
         ConnectionRecyclers(BufferBlockSize, BufferRecycleSize, ConnectionRecycleSize),
         EventDomain(PoolSize, ThreadCount, EPollSize) {}
 
-RuntimeError HttpServer::PostProcessFinished(EventPromiseArgs *Arguments) {
+RuntimeError HTTPServer::PostProcessFinished(EventPromiseArgs *Arguments) {
 
-    HttpServer *TempServer;
+    HTTPServer *TempServer;
     TCP4Listening *TempListen;
 
     EventDomain.Free((void **) &Arguments);
@@ -28,19 +28,19 @@ RuntimeError HttpServer::PostProcessFinished(EventPromiseArgs *Arguments) {
         return {EINVAL};
     }
 
-    TempServer = static_cast<HttpServer *>(Arguments->UserArguments[3].Ptr);
+    TempServer = static_cast<HTTPServer *>(Arguments->UserArguments[3].Ptr);
     TempListen = static_cast<TCP4Listening *>(Arguments->UserArguments[5].Ptr);
     TempServer->EnqueueListening(TempListen);
 
     return {0};
 }
 
-RuntimeError HttpServer::PostConnectionEvent(EventPromiseArgs *Arguments) {
+RuntimeError HTTPServer::PostConnectionEvent(EventPromiseArgs *Arguments) {
 
     int SocketFd;
     void *TempPointer;
     Socket *TempSocket;
-    HttpConnection *TempConnection;
+    HTTPConnection *TempConnection;
     SocketAddress *SockAddr;
     EventType Type;
 
@@ -69,14 +69,14 @@ RuntimeError HttpServer::PostConnectionEvent(EventPromiseArgs *Arguments) {
             return {EINVAL};
         }
         TempSocket = static_cast<Socket *>(TempPointer);
-        TempConnection = (HttpConnection *) TempSocket;
+        TempConnection = (HTTPConnection *) TempSocket;
     }
 
     EventDomain.PostPromise(TempConnection->OnEventPromise, Arguments);
     return {0, nullptr};
 }
 
-RuntimeError HttpServer::HttpServerEventProcess() {
+RuntimeError HTTPServer::HTTPServerEventProcess() {
 
     Listening *Listen;
     EventPromiseArgs Arguments = {nullptr};
@@ -86,7 +86,7 @@ RuntimeError HttpServer::HttpServerEventProcess() {
     Listen = DequeueListening();
 
     if (Listen == nullptr) {
-        return {ENOENT, "Can not get a Listening from HttpServer"};
+        return {ENOENT, "Can not get a Listening from HTTPServer"};
     }
 
     Arguments.UserArguments[3].Ptr = (void *) this;

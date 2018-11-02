@@ -23,20 +23,20 @@ int TimeTest() {
         }
 
         {
-            char TimeBuf[HttpTimeSize];
-            WriteHttpTime(TimeBuf, HttpTimeSize);
+            char TimeBuf[HTTPTimeSize];
+            WriteHTTPTime(TimeBuf, HTTPTimeSize);
             printf("%s\n", TimeBuf);
         }
 
         {
-            char TimeBuf[HttpLogTimeSize];
-            WriteHttpLogTime(TimeBuf, HttpLogTimeSize);
+            char TimeBuf[HTTPLogTimeSize];
+            WriteHTTPLogTime(TimeBuf, HTTPLogTimeSize);
             printf("%s\n", TimeBuf);
         }
 
         {
-            char TimeBuf[HttpLogTimeISO8601Size];
-            WriteHttpLogTimeISO8601(TimeBuf, HttpLogTimeISO8601Size);
+            char TimeBuf[HTTPLogTimeISO8601Size];
+            WriteHTTPLogTimeISO8601(TimeBuf, HTTPLogTimeISO8601Size);
             printf("%s\n", TimeBuf);
         }
 
@@ -46,7 +46,7 @@ int TimeTest() {
             printf("%s\n", TimeBuf);
         }
 
-        ForceUSleep(1000 * 1000);
+        usleep(1000 * 1000);
     }
 
     return 0;

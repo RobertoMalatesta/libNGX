@@ -35,11 +35,11 @@ set(SOURCE_FILES
         src/Core/Time.cpp
         src/Core/ThreadPool.cpp
         src/Core/TimerTree.cpp
-        src/Http/HttpConnection.cpp
-        src/Http/HttpServer.cpp
-        src/Http/HttpConnectionRecycler.cpp
-        src/Http/HttpRequestContext.cpp
-        src/Http/HttpError.cpp
+        src/HTTP/HTTPConnection.cpp
+        src/HTTP/HTTPServer.cpp
+        src/HTTP/HTTPConnectionRecycler.cpp
+        src/HTTP/HTTPParser.cpp
+        src/HTTP/HTTPError.cpp
         )
 
 set(TEST_FILES
@@ -60,9 +60,10 @@ set(TEST_FILES
         test/Core/LockTest.cpp
         test/Core/BufferTest.cpp
         test/Core/CoreTest.cpp
-        test/Http/HttpServerTest.cpp
-        test/Http/HttpTest.cpp
-        test/Http/HttpConnectionRecycler.cpp test/Http/RequestLineParseTest.cpp)
+        test/HTTP/HTTPServerTest.cpp
+        test/HTTP/HTTPTest.cpp
+        test/HTTP/HTTPConnectionRecyclerTest.cpp
+        test/HTTP/HTTPParserTest.cpp)
 
 include_directories(./include)
 

@@ -1,18 +1,18 @@
-#include "Http/Http.h"
+#include "HTTP/HTTP.h"
 
-using namespace ngx::Http;
+using namespace ngx::HTTP;
 
-HttpConnectionRecycler::HttpConnectionRecycler(size_t BlockSize, uint64_t BufferRecyclerSize, uint64_t RecyclerSize) :
+HTTPConnectionRecycler::HTTPConnectionRecycler(size_t BlockSize, uint64_t BufferRecyclerSize, uint64_t RecyclerSize) :
         Recycler(RecyclerSize),
         BB(BlockSize, BufferRecyclerSize) {}
 
-HttpConnection *HttpConnectionRecycler::Get(int SocketFD, SocketAddress &SocketAddress) {
-    HttpConnection *Ret;
+HTTPConnection *HTTPConnectionRecycler::Get(int SocketFD, SocketAddress &SocketAddress) {
+    HTTPConnection *Ret;
     SpinlockGuard LockGuard(&Lock);
     if (RecycleSentinel.IsEmpty()) {
-        Ret = new HttpConnection(SocketFD, SocketAddress, BB);
+        Ret = new HTTPConnection(SocketFD, SocketAddress, BB);
     } else {
-        Ret = (HttpConnection *) RecycleSentinel.GetHead();
+        Ret = (HTTPConnection *) RecycleSentinel.GetHead();
         RecycleSize -= 1;
         Ret->Detach();
         Ret->SocketFd = SocketFD;
@@ -21,7 +21,7 @@ HttpConnection *HttpConnectionRecycler::Get(int SocketFD, SocketAddress &SocketA
     return Ret;
 }
 
-void HttpConnectionRecycler::Put(HttpConnection *Item) {
+void HTTPConnectionRecycler::Put(HTTPConnection *Item) {
 
     SpinlockGuard LockGuard(&Lock);
 

@@ -1,7 +1,6 @@
 namespace ngx{
-    namespace Http {
-
-        struct HttpPerformanceUnit {
+    namespace HTTP {
+        struct HTTPPerformanceUnit {
             std::atomic_uint64_t ConnectionCount = {0};
             std::atomic_uint64_t ActiveConnecionCount = {0};
             std::atomic_uint64_t RequestCount = {0};
@@ -12,23 +11,21 @@ namespace ngx{
             std::atomic_uint64_t WatingCount = {0};
         };
 
-
-        class HttpServer : public Server {
+        class HTTPServer : public Server {
         protected:
 
             virtual RuntimeError PostProcessFinished(EventPromiseArgs *Arguments);
-
-            HttpConnectionRecycler ConnectionRecyclers;
+            HTTPConnectionRecycler ConnectionRecyclers;
             EPollEventDomain EventDomain;
-            HttpPerformanceUnit PerformanceCounters;
+            HTTPPerformanceUnit PerformanceCounters;
 
         public:
-            HttpServer(size_t PoolSize, int ThreadCount, int EPollSize, size_t BufferBlockSize,
+            HTTPServer(size_t PoolSize, int ThreadCount, int EPollSize, size_t BufferBlockSize,
                     uint64_t ConnectionRecycleSize, uint64_t BufferRecycleSize);
 
             virtual RuntimeError PostConnectionEvent(EventPromiseArgs *Arguments);
 
-            RuntimeError HttpServerEventProcess();
+            RuntimeError HTTPServerEventProcess();
         };
     }
 }

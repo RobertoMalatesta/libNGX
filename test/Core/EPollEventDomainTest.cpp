@@ -51,8 +51,7 @@ int EPollEventDomainTest() {
 //        if (Error.GetErrorCode() != 0) {
 //            Error.PrintError();
 //        }
-
-        ForceUSleep(500);
+        usleep(500);
     }
 
     return 0;

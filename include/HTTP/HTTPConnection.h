@@ -1,26 +1,26 @@
 namespace ngx{
-    namespace Http {
+    namespace HTTP {
 
-        class HttpConnection : public TCP4Connection, public Recyclable {
+        class HTTPConnection : public TCP4Connection, public Recyclable {
         protected:
             SpinLock Lock;
             Buffer ReadBuffer;
-            HttpRequestContext RequestContext;
             TimerTreeNode TimerNode;
             EventPromiseArgs Arguments;
+            HTTPRequest CurrentRequest;
 
             static void OnConnectionEvent(void *Arguments, ThreadPool *TPool);
 
-            friend class HttpServer;
+            friend class HTTPServer;
 
-            friend class HttpConnectionRecycler;
+            friend class HTTPConnectionRecycler;
 
         public:
-            HttpConnection(Core::SocketAddress &SocketAddress, BufferBuilder &BB);
+            HTTPConnection(Core::SocketAddress &SocketAddress, BufferBuilder &BB);
 
-            HttpConnection(int SocketFd, Core::SocketAddress &SocketAddress, BufferBuilder &BB);
+            HTTPConnection(int SocketFd, Core::SocketAddress &SocketAddress, BufferBuilder &BB);
 
-            ~HttpConnection() = default;
+            ~HTTPConnection() = default;
 
             inline RuntimeError ReadConnection() {
                 return ReadBuffer.WriteConnectionToBuffer(this);

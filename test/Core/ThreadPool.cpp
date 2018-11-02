@@ -34,7 +34,5 @@ int ThreadPoolTest() {
         T.PostPromise(func, (void *) i);
     }
 
-    ForceUSleep(10 * 1000 * 1000);
-
     return 0;
 }

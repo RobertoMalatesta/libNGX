@@ -1,7 +1,5 @@
-#include "Http/Http.h"
-
 namespace ngx{
-    namespace Http {
+    namespace HTTP {
 
         class ConstResponseEntity {
             // int Code;

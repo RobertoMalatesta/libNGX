@@ -1,8 +1,8 @@
-#include "Http/Http.h"
+#include "HTTP/HTTP.h"
 
-using namespace ngx::Http;
+using namespace ngx::HTTP;
 
-int HttpConnectionRecyclerTest() {
+int HTTPConnectionRecyclerTest() {
 
     struct SocketAddress SocketAddress = {
             .sockaddr_in = {
@@ -13,10 +13,10 @@ int HttpConnectionRecyclerTest() {
             .SocketLength = sizeof(sockaddr_in)
     };
 
-    HttpConnectionRecycler Recycler(4096, 102400, 5120);
-    HttpConnection *C;
+    HTTPConnectionRecycler Recycler(4096, 102400, 5120);
+    HTTPConnection *C;
 
-    std::vector<HttpConnection *> Connections;
+    std::vector<HTTPConnection *> Connections;
 
     for (int i = 0; i < 102400; i++) {
         C = Recycler.Get(-1, SocketAddress);
@@ -28,7 +28,7 @@ int HttpConnectionRecyclerTest() {
         }
     }
 
-    for (HttpConnection *Conn : Connections) {
+    for (HTTPConnection *Conn : Connections) {
         Recycler.Put(Conn);
     }
 

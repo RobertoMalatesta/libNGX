@@ -10,7 +10,7 @@ using namespace ngx::Core;
 static void func(void *, ThreadPool *) {
 
     char c[50];
-    WriteHttpTime(c, HttpTimeSize);
+    WriteHTTPTime(c, HTTPTimeSize);
     printf("Timer function: %s\n", c);
 }
 

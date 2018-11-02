@@ -1,5 +1,5 @@
 namespace ngx {
-    namespace Http {
+    namespace HTTP {
         // Filter
         // HttpURINode intrusive node, virtual implement, hot configurable
         //      Implement all kinds of plugins

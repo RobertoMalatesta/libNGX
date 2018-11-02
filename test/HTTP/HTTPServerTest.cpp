@@ -1,9 +1,9 @@
-#include "Http/Http.h"
+#include "HTTP/HTTP.h"
 
 using namespace ngx::Core;
-using namespace ngx::Http;
+using namespace ngx::HTTP;
 
-int HttpServerTest() {
+int HTTPServerTest() {
 
     SocketAddress SocketAddress = {
             .sockaddr_in = {
@@ -15,7 +15,7 @@ int HttpServerTest() {
     };
 
     TCP4Listening Listen(SocketAddress);
-    HttpServer Server(40960, 4, 31728, 40960, 1024, 1024);
+    HTTPServer Server(40960, 4, 31728, 40960, 1024, 1024);
 
     Listen.SetPortReuse(false).PrintError();
     Listen.Listen().PrintError();
@@ -27,7 +27,7 @@ int HttpServerTest() {
     int Count = 500000;
 
     while (Count-- > 0) {
-        RuntimeError Error = Server.HttpServerEventProcess();
+        RuntimeError Error = Server.HTTPServerEventProcess();
         Error.PrintError();
         usleep(100000);
     }

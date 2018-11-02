@@ -1,33 +1,33 @@
-#include "Http/Http.h"
+#include "HTTP/HTTP.h"
 
 using namespace ngx::Core;
-using namespace ngx::Http;
+using namespace ngx::HTTP;
 
-HttpConnection::HttpConnection(struct SocketAddress &SocketAddress, BufferBuilder &BB) :
+HTTPConnection::HTTPConnection(struct SocketAddress &SocketAddress, BufferBuilder &BB) :
         Lock(),
         Recyclable(),
-        TimerNode(0, HttpConnection::OnConnectionEvent, nullptr),
+        TimerNode(0, HTTPConnection::OnConnectionEvent, nullptr),
         TCP4Connection(SocketAddress) {
 
     BB.BuildBuffer(ReadBuffer);
-    OnEventPromise = HttpConnection::OnConnectionEvent;
+    OnEventPromise = HTTPConnection::OnConnectionEvent;
 }
 
-HttpConnection::HttpConnection(int SocketFd, struct SocketAddress &SocketAddress, BufferBuilder &BB) :
+HTTPConnection::HTTPConnection(int SocketFd, struct SocketAddress &SocketAddress, BufferBuilder &BB) :
         Lock(),
         Recyclable(),
         TCP4Connection(SocketFd, SocketAddress) {
 
     BB.BuildBuffer(ReadBuffer);
-    OnEventPromise = HttpConnection::OnConnectionEvent;
+    OnEventPromise = HTTPConnection::OnConnectionEvent;
 }
 
-void HttpConnection::OnConnectionEvent(void *Arguments, ThreadPool *TPool) {
+void HTTPConnection::OnConnectionEvent(void *Arguments, ThreadPool *TPool) {
 
     EventPromiseArgs *TempArgument;
     EPollEventDomain *EventDomain;
     Socket *TempSocket;
-    HttpConnection *TempConnection;
+    HTTPConnection *TempConnection;
     EventType Type;
 
     printf("EnterPromise, Arguments: %p\n", Arguments);
@@ -42,7 +42,7 @@ void HttpConnection::OnConnectionEvent(void *Arguments, ThreadPool *TPool) {
 
     EventDomain = static_cast<EPollEventDomain *>(TempArgument->UserArguments[4].Ptr);
     TempSocket = static_cast<Socket *>(TempArgument->UserArguments[6].Ptr);
-    TempConnection = (HttpConnection *) TempSocket;
+    TempConnection = (HTTPConnection *) TempSocket;
     Type = static_cast<EventType>(TempArgument->UserArguments[7].UInt);
 
     printf("Event Type: %x, connection fd: %d\n", Type, TempConnection->GetSocketFD());
@@ -53,7 +53,7 @@ void HttpConnection::OnConnectionEvent(void *Arguments, ThreadPool *TPool) {
     if ((Type & ET_READ) != 0) {
         Buffer *Buffer = &TempConnection->ReadBuffer;
         Buffer->WriteConnectionToBuffer(TempConnection);
-        TempConnection->RequestContext.ProcessHttpRequest(TempConnection->ReadBuffer).PrintError();
+        HTTPParser::ParseHTTPRequest(TempConnection->ReadBuffer, TempConnection->CurrentRequest);
     }
     if ((Type & ET_WRITE) != 0) {
         // Mark the socket as writable and write all data to it!
@@ -62,6 +62,6 @@ void HttpConnection::OnConnectionEvent(void *Arguments, ThreadPool *TPool) {
     printf("LeavePromise, Arguments: %p\n", Arguments);
 }
 
-void HttpConnection::Reset() {
+void HTTPConnection::Reset() {
     ReadBuffer.Reset();
 }
