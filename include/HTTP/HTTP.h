@@ -60,5 +60,6 @@ namespace ngx {
 #include "HTTP/HTTPRequest.h"
 #include "HTTP/HTTPParser.h"
 #include "HTTP/HTTPConnection.h"
-#include "HTTP/HTTPConnectionRecyclerTest.h"
+#include "HTTP/HTTPConnectionRecycler.h"
+#include "HTTP/HTTPConnectionBuilder.h"
 #include "HTTP/HTTPServer.h"

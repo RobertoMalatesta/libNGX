@@ -4,10 +4,12 @@ namespace ngx{
         class HTTPConnection : public TCP4Connection, public Recyclable {
         protected:
             SpinLock Lock;
+            Pool MemPool;
             Buffer ReadBuffer;
             TimerTreeNode TimerNode;
             EventPromiseArgs Arguments;
             HTTPRequest CurrentRequest;
+            PromiseCallback *OnEventPromise = HTTPConnection::OnConnectionEvent;
 
             static void OnConnectionEvent(void *Arguments, ThreadPool *TPool);
 

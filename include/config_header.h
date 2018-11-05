@@ -3,6 +3,7 @@ namespace ngx{
         namespace DefaultConfig {
             const char CPU_Module[] = "AMD64";
             const char Compiler[] = "Clang 6.0";
+            const uint32_t ARRAY_DEFAULT_COUNT = 32;
             const int EPOLL_EVENT_BATCH_SIZE = 512;
             const int EPOLL_EVENT_WAIT_TIME = 5;
             const int EPOLL_EVENT_MAX_CONNECTION = 32768;

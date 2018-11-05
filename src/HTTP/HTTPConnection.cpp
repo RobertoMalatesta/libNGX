@@ -4,22 +4,17 @@ using namespace ngx::Core;
 using namespace ngx::HTTP;
 
 HTTPConnection::HTTPConnection(struct SocketAddress &SocketAddress, BufferBuilder &BB) :
-        Lock(),
-        Recyclable(),
         TimerNode(0, HTTPConnection::OnConnectionEvent, nullptr),
-        TCP4Connection(SocketAddress) {
-
+        TCP4Connection(SocketAddress),
+        CurrentRequest(&MemPool) {
     BB.BuildBuffer(ReadBuffer);
-    OnEventPromise = HTTPConnection::OnConnectionEvent;
 }
 
 HTTPConnection::HTTPConnection(int SocketFd, struct SocketAddress &SocketAddress, BufferBuilder &BB) :
-        Lock(),
-        Recyclable(),
-        TCP4Connection(SocketFd, SocketAddress) {
-
+        TimerNode(0, HTTPConnection::OnConnectionEvent, nullptr),
+        TCP4Connection(SocketFd, SocketAddress),
+        CurrentRequest(&MemPool) {
     BB.BuildBuffer(ReadBuffer);
-    OnEventPromise = HTTPConnection::OnConnectionEvent;
 }
 
 void HTTPConnection::OnConnectionEvent(void *Arguments, ThreadPool *TPool) {
@@ -64,4 +59,5 @@ void HTTPConnection::OnConnectionEvent(void *Arguments, ThreadPool *TPool) {
 
 void HTTPConnection::Reset() {
     ReadBuffer.Reset();
+    MemPool.Reset();
 }

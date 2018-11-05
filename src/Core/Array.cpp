@@ -2,52 +2,48 @@
 
 using namespace ngx::Core;
 
-Array::Array(Pool *Allocator, size_t Size, uint Count) {
+static inline void * Allocate(MemAllocator *Allocator, size_t Size) {
+    if (Allocator != nullptr) {
+        return Allocator->Allocate(Size);
+    } else {
+        return malloc(Size);
+    }
+}
+
+static inline void Free(MemAllocator *Allocator, void **Pointer) {
+    if (Allocator != nullptr) {
+        return Allocator->Free(Pointer);
+    } else {
+        free(*Pointer);
+        *Pointer = nullptr;
+    }
+}
+
+Array::Array(MemAllocator *Allocator, size_t Size, uint Count) {
 
     this->Allocator = Allocator;
-    ElementCount = 0;
-    PointerToData = nullptr;
-    this->Size = 0;
-    NAlloc = 0;
-
-    PointerToData = Allocator->Allocate(Count * Size);
-
-    if (nullptr == PointerToData) {
-        return;
-    }
-
     this->Size = Size;
-    NAlloc = Count;
+    this->NAlloc = Count;
+
+    PointerToData = Allocate(this->Allocator, Count *Size);
 }
 
 Array::~Array() {
-
-    if (Allocator != nullptr && PointerToData != nullptr) {
-        Allocator->Free(&PointerToData);
-        PointerToData = nullptr;
-    }
-
-    Size = 0;
-    NAlloc = 0;
-    ElementCount = 0;
-    Allocator = nullptr;
+    Free(Allocator, &PointerToData);
 }
 
 void *Array::Push() {
 
     if (ElementCount == NAlloc) {
 
-        void *NewDataPointer;
-
-        NewDataPointer = Allocator->Allocate(2 * (Size * NAlloc));
+        void *NewDataPointer = Allocate(Allocator, 2 * (Size *NAlloc));
 
         if (NewDataPointer == nullptr) {
             return nullptr;
         }
 
         memcpy(NewDataPointer, PointerToData, (Size * NAlloc));
-
-        Allocator->Free(&PointerToData);
+        Free(Allocator, &PointerToData);
         PointerToData = NewDataPointer;
         NAlloc = 2 * NAlloc;
     }
@@ -66,7 +62,7 @@ void *Array::PushN(uint N) {
 
         uint NewAlloc = 2 * (N >= NAlloc ? N : NAlloc);
 
-        NewDataPointer = Allocator->Allocate(NewAlloc * Size);
+        NewDataPointer = Allocate(Allocator, NewAlloc *Size);
 
         if (NewDataPointer == nullptr) {
             return nullptr;
@@ -74,7 +70,7 @@ void *Array::PushN(uint N) {
 
         memcpy(NewDataPointer, PointerToData, (Size * ElementCount));
 
-        Allocator->Free(&PointerToData);
+        Free(Allocator, &PointerToData);
         PointerToData = NewDataPointer;
         NAlloc = NewAlloc;
     }
@@ -84,5 +80,4 @@ void *Array::PushN(uint N) {
 
     return Ret;
 }
-
 

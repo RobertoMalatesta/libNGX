@@ -17,12 +17,12 @@ namespace ngx {
         private:
             uint NAlloc = 0;
             size_t Size = 0;
-            Pool *Allocator;
             uint ElementCount = 0;
-            void *PointerToData;
+            void *PointerToData = nullptr;
+            MemAllocator *Allocator = nullptr;
 
         public:
-            Array(Pool *Allocator, size_t Size, uint Count);
+            Array(MemAllocator *Allocator, size_t Size, uint Count = ARRAY_DEFAULT_COUNT);
 
             ~Array();
 
