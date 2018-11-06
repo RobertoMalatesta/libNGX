@@ -144,42 +144,42 @@ HTTPError HTTPParser::ParseMethod(Buffer &B, HTTPRequest &R) {
 HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
 
     enum HTTPRequestLineParseState {
-        RL_SpaceBeforeURI = 0,
-        RL_Schema,
-        RL_SchemaSlash,
-        RL_SchemaSlashSlash,
-        RL_HostStart,
-        RL_Host,
-        RL_HostEnd,
-        RL_HostIpLiterial,
-        RL_Port,
-        RL_HostHTTP09,
-        RL_AfterSlashInURI,
-        RL_CheckURI,
-        RL_CheckURIHTTP09,
+        RL_SPACEBEFOREURI = 0,
+        RL_SCHEMA,
+        RL_SCHEMASLASH,
+        RL_SCHEMASLASHSLASH,
+        RL_HOSTSTART,
+        RL_HOST,
+        RL_HOSTEND,
+        RL_HOSTIPLITERIAL,
+        RL_PORT,
+        RL_HOSTHTTP09,
+        RL_AFTERSLASHINURI,
+        RL_CHECKURI,
+        RL_CHECKURIHTTP09,
         RL_URI,
         RL_HTTP09,
         RL_HTTP_H,
         RL_HTTP_HT,
         RL_HTTP_HTT,
         RL_HTTP_HTTP,
-        RL_FirstMajorDigit,
-        RL_MajorDigit,
-        RL_FirstMinorDigit,
-        RL_MinorDigit,
-        RL_SpaceAfterDigit,
-        RL_AlmostDone
-    } RequestLineState = RL_SpaceBeforeURI;
+        RL_FIRSTMAJORDIGIT,
+        RL_MAJORDIGIT,
+        RL_FIRSTMINORDIGIT,
+        RL_MINORDIGIT,
+        RL_SPACEAFTERDIGIT,
+        RL_ALMOSTDONE
+    } RequestLineState = RL_SPACEBEFOREURI;
 
     u_char C, C1;
     BoundCursor BC,LastBC;
 
     for (B >> BC, LastBC = BC; (C = *BC) != '\0'; LastBC = BC++) {
         switch (RequestLineState) {
-            case RL_SpaceBeforeURI:
+            case RL_SPACEBEFOREURI:
                 if (C == '/') {
                     R.URI.LeftBound = BC;
-                    RequestLineState = RL_AfterSlashInURI;
+                    RequestLineState = RL_AFTERSLASHINURI;
                     break;
                 }
 
@@ -187,7 +187,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
 
                 if (C1 >= 'a' && C1 <= 'z') {
                     R.Schema.LeftBound = BC;
-                    RequestLineState = RL_Schema;
+                    RequestLineState = RL_SCHEMA;
                     break;
                 }
 
@@ -198,7 +198,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                         return {EFAULT, "Bad Request!"};
                 }
                 break;
-            case RL_Schema:
+            case RL_SCHEMA:
 
                 C1 = (u_char) (C | 0x20);
 
@@ -213,38 +213,38 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                 switch (C) {
                     case ':':
                         R.Schema.RightBound = BC;
-                        RequestLineState = RL_SchemaSlash;
+                        RequestLineState = RL_SCHEMASLASH;
                         break;
                     default:
                         return {EFAULT, "Bad Request!"};
                 }
                 break;
-            case RL_SchemaSlash:
+            case RL_SCHEMASLASH:
                 switch (C) {
                     case '/':
-                        RequestLineState = RL_SchemaSlashSlash;
+                        RequestLineState = RL_SCHEMASLASHSLASH;
                         break;
                     default:
                         return {EFAULT, "Bad Request!"};
                 }
                 break;
-            case RL_SchemaSlashSlash:
+            case RL_SCHEMASLASHSLASH:
                 switch (C) {
                     case '/':
-                        RequestLineState = RL_HostStart;
+                        RequestLineState = RL_HOSTSTART;
                         break;
                     default:
                         return {EFAULT, "Bad Request!"};
                 }
                 break;
-            case RL_HostStart:
+            case RL_HOSTSTART:
                 R.Host.LeftBound = BC;
                 if (C == '[') {
-                    RequestLineState = RL_HostIpLiterial;
+                    RequestLineState = RL_HOSTIPLITERIAL;
                     break;
                 }
-                RequestLineState = RL_Host;
-            case RL_Host:
+                RequestLineState = RL_HOST;
+            case RL_HOST:
                 C1 = (u_char) (C | 0x20);
                 if (C1 >= 'a' && C1 <= 'z') {
                     break;
@@ -252,25 +252,25 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                 if ((C1 >= '0' && C1 <= '0') || C1 == '.' || C1 == '-') {
                     break;
                 }
-            case RL_HostEnd:
+            case RL_HOSTEND:
                 R.Host.RightBound = BC;
                 switch (C) {
                     case ':':
-                        RequestLineState = RL_Port;
+                        RequestLineState = RL_PORT;
                         break;
                     case '/':
                         R.URI.LeftBound = BC;
-                        RequestLineState = RL_AfterSlashInURI;
+                        RequestLineState = RL_AFTERSLASHINURI;
                         break;
                     case ' ':
                         R.URI.LeftBound = BC + 1, R.URI.RightBound = BC + 2;
-                        RequestLineState = RL_CheckURIHTTP09;
+                        RequestLineState = RL_CHECKURIHTTP09;
                         break;
                     default:
                         return {EFAULT, "Bad Request!"};
                 }
                 break;
-            case RL_HostIpLiterial:
+            case RL_HOSTIPLITERIAL:
                 if (C >= '0' && C <= '9') {
                     break;
                 }
@@ -281,7 +281,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                 switch (C1) {
                     case ':':
                     case ']':
-                        RequestLineState = RL_HostEnd;
+                        RequestLineState = RL_HOSTEND;
                         break;
                     case '-':
                     case '.':
@@ -304,30 +304,30 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                         return {EFAULT, "Bad Request!"};
                 }
                 break;
-            case RL_Port:
+            case RL_PORT:
                 if (C >= '0' && C <= '9') {
                     break;
                 }
                 switch (C) {
                     case '/':
                         R.Port.RightBound = R.URI.LeftBound = BC;
-                        RequestLineState = RL_AfterSlashInURI;
+                        RequestLineState = RL_AFTERSLASHINURI;
                         break;
                     case ' ':
                         R.Port.RightBound = BC, R.URI.LeftBound = BC + 1, R.URI.RightBound = BC + 2;
-                        RequestLineState = RL_HostHTTP09;
+                        RequestLineState = RL_HOSTHTTP09;
                         break;
                     default:
                         return {EFAULT, "Bad Request!"};
                 }
                 break;
-            case RL_HostHTTP09:
+            case RL_HOSTHTTP09:
                 switch (C) {
                     case ' ':
                         break;
                     case CR:
                         R.HTTPMinor = 9;
-                        RequestLineState = RL_AlmostDone;
+                        RequestLineState = RL_ALMOSTDONE;
                         break;
                     case LF:
                         R.HTTPMinor = 9;
@@ -340,22 +340,22 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                         return {EFAULT, "Bad Request!"};
                 }
                 break;
-            case RL_AfterSlashInURI:
+            case RL_AFTERSLASHINURI:
 
                 if (usual[C >> 5] & (1U << (C & 0x1f))) {
-                    RequestLineState = RL_CheckURI;
+                    RequestLineState = RL_CHECKURI;
                     break;
                 }
 
                 switch (C) {
                     case ' ':
                         R.URI.RightBound = BC;
-                        RequestLineState = RL_CheckURIHTTP09;
+                        RequestLineState = RL_CHECKURIHTTP09;
                         break;
                     case CR:
                         R.URI.RightBound = BC;
                         R.HTTPMinor = 9;
-                        RequestLineState = RL_AlmostDone;
+                        RequestLineState = RL_ALMOSTDONE;
                         break;
                     case LF:
                         R.URI.RightBound = BC;
@@ -395,12 +395,12 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                     case '\0':
                         return {EFAULT, "Bad Request!"};
                     default:
-                        RequestLineState = RL_CheckURI;
+                        RequestLineState = RL_CHECKURI;
                         break;
                 }
                 break;
 
-            case RL_CheckURI:
+            case RL_CHECKURI:
 
                 if (usual[C >> 5] & (1U << (C & 0x1f))) {
                     break;
@@ -418,19 +418,19 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                         }
 //                        r->uri_ext = NULL;
 #endif
-                        RequestLineState = RL_AfterSlashInURI;
+                        RequestLineState = RL_AFTERSLASHINURI;
                         break;
                     case '.':
 //                        r->uri_ext = p + 1;
                         break;
                     case ' ':
                         R.URI.RightBound = BC;
-                        RequestLineState = RL_CheckURIHTTP09;
+                        RequestLineState = RL_CHECKURIHTTP09;
                         break;
                     case CR:
                         R.URI.RightBound = BC;
                         R.HTTPMinor = 9;
-                        RequestLineState = RL_AlmostDone;
+                        RequestLineState = RL_ALMOSTDONE;
                         break;
                     case LF:
                         R.URI.RightBound = BC;
@@ -465,13 +465,13 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                 }
                 break;
 
-            case RL_CheckURIHTTP09:
+            case RL_CHECKURIHTTP09:
                 switch (C) {
                     case ' ':
                         break;
                     case CR:
                        R.HTTPMinor = 9;
-                       RequestLineState = RL_AlmostDone;
+                       RequestLineState = RL_ALMOSTDONE;
                         break;
                     case LF:
                         R.HTTPMinor = 9;
@@ -482,7 +482,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                         break;
                     default:
                         R.SpaceInURI = 1;
-                        RequestLineState = RL_CheckURI;
+                        RequestLineState = RL_CHECKURI;
                         BC = LastBC;
                         break;
                 }
@@ -502,7 +502,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                     case CR:
                         R.URI.RightBound = BC;
                         R.HTTPMinor = 9;
-                        RequestLineState = RL_AlmostDone;
+                        RequestLineState = RL_ALMOSTDONE;
                         break;
                     case LF:
                         R.URI.RightBound = BC;
@@ -523,7 +523,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                         break;
                     case CR:
                         R.HTTPMinor = 9;
-                        RequestLineState = RL_AlmostDone;
+                        RequestLineState = RL_ALMOSTDONE;
                         break;
                     case LF:
                         R.HTTPMinor = 9;
@@ -572,14 +572,14 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
             case RL_HTTP_HTTP:
                 switch (C) {
                     case '/':
-                        RequestLineState = RL_FirstMajorDigit;
+                        RequestLineState = RL_FIRSTMAJORDIGIT;
                         break;
                     default:
                         return {EFAULT, "Bad Request!"};
                 }
                 break;
 
-            case RL_FirstMajorDigit:
+            case RL_FIRSTMAJORDIGIT:
                 if (C < '1' || C > '9') {
                     return {EFAULT, "Bad Request!"};
                 }
@@ -588,12 +588,12 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                 if (R.HTTPMajor > 1) {
                     return {EFAULT, "Invalid Version!"};
                 }
-                RequestLineState = RL_MajorDigit;
+                RequestLineState = RL_MAJORDIGIT;
                 break;
 
-            case RL_MajorDigit:
+            case RL_MAJORDIGIT:
                 if (C == '.') {
-                    RequestLineState = RL_FirstMinorDigit;
+                    RequestLineState = RL_FIRSTMINORDIGIT;
                     break;
                 }
 
@@ -608,18 +608,18 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                 }
                 break;
 
-            case RL_FirstMinorDigit:
+            case RL_FIRSTMINORDIGIT:
                 if (C < '0' || C > '9') {
                     return {EFAULT, "Bad Request!"};
                 }
 
                 R.HTTPMinor = C - '0';
-                RequestLineState = RL_MinorDigit;
+                RequestLineState = RL_MINORDIGIT;
                 break;
 
-            case RL_MinorDigit:
+            case RL_MINORDIGIT:
                 if (C == CR) {
-                    RequestLineState = RL_AlmostDone;
+                    RequestLineState = RL_ALMOSTDONE;
                     break;
                 }
 
@@ -628,7 +628,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                 }
 
                 if (C == ' ') {
-                    RequestLineState = RL_SpaceAfterDigit;
+                    RequestLineState = RL_SPACEAFTERDIGIT;
                     break;
                 }
 
@@ -643,12 +643,12 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                 R.HTTPMinor = R.HTTPMinor * 10 + (C - '0');
                 break;
 
-            case RL_SpaceAfterDigit:
+            case RL_SPACEAFTERDIGIT:
                 switch (C) {
                     case ' ':
                         break;
                     case CR:
-                        RequestLineState = RL_AlmostDone;
+                        RequestLineState = RL_ALMOSTDONE;
                         break;
                     case LF:
                         goto done;
@@ -657,7 +657,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                 }
                 break;
 
-            case RL_AlmostDone:
+            case RL_ALMOSTDONE:
                 R.Request.RightBound = LastBC;
                 switch (C) {
                     case LF:
@@ -686,14 +686,14 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
 HTTPError HTTPParser::ParseHeaders(Buffer &B, HTTPRequest &R) {
 
     enum HTTPHeaderParseState {
-        HDR_start = 0,
-        HDR_name,
-        HDR_space_before_value,
-        HDR_value,
-        HDR_space_after_value,
-        HDR_ignore_line,
-        HDR_almost_done,
-        HDR_header_almost_done
+        HDR_START = 0,
+        HDR_NAME,
+        HDR_SPACE_BEFORE_VALUE,
+        HDR_VALUE,
+        HDR_SPACE_AFTER_VALUE,
+        HDR_IGNORE_LINE,
+        HDR_ALMOST_DONE,
+        HDR_HEADER_ALMOST_DONE
     };
 
     return {0};

@@ -49,8 +49,5 @@ void MemoryBlockAllocator::Free(void **Pointer) {
     if (nullptr != Pointer && IsInBlock(*Pointer)) {
         *Pointer = nullptr;
         DecRef();
-        if ((RefCount() < 0)) {
-            //[UNREACHABLE BRANCH] BUG: Over free, will add log here later
-        }
     }
 }
