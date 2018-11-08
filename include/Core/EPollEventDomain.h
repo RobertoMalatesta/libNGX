@@ -27,7 +27,7 @@ namespace ngx {
 //         UserArgument[7] = EventType
 //===-------------------------------------------------------------------------===//
 
-        class EPollEventDomain : public SocketEventDomain, MemAllocator {
+        class EPollEventDomain : public SocketEventDomain {
         protected:
             int EPollFD = -1;
             std::atomic_flag Waiting = ATOMIC_FLAG_INIT;
@@ -42,13 +42,6 @@ namespace ngx {
             virtual EventError AttachSocket(Socket *S, SocketEventType Type);
 
             virtual EventError DetachSocket(Socket *S, SocketEventType Type);
-
-            void *Allocate(size_t Size);
-
-            void Free(void **Pointer);
-
-            void GC();
         };
-
     }
 }

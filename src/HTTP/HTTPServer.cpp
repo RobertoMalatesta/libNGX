@@ -18,13 +18,6 @@ RuntimeError HTTPServer::PostProcessFinished(EventPromiseArgs &Arguments) {
     HTTPServer *TempServer;
     TCP4Listening *TempListen;
 
-    EventDomain.Free((void **) &Arguments);
-
-    if (nullptr == Arguments.UserArguments[3].Ptr ||
-        nullptr == Arguments.UserArguments[5].Ptr ) {
-        return {EINVAL};
-    }
-
     TempServer = static_cast<HTTPServer *>(Arguments.UserArguments[3].Ptr);
     TempListen = static_cast<TCP4Listening *>(Arguments.UserArguments[5].Ptr);
     TempServer->EnqueueListening(TempListen);

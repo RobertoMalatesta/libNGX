@@ -243,22 +243,3 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs &Argument) {
 
     return {0};
 }
-
-void *EPollEventDomain::Allocate(size_t Size) {
-    void *Pointer;
-    SpinlockGuard LockGuard(&Lock);
-    Pointer = Allocator.Allocate(Size);
-    return Pointer;
-}
-
-void EPollEventDomain::Free(void **Pointer) {
-    SpinlockGuard LockGuard(&Lock);
-    Allocator.Free(Pointer);
-}
-
-void EPollEventDomain::GC() {
-    SpinlockGuard LockGuard(&Lock);
-    Allocator.GC();
-}
-
-
