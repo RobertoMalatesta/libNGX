@@ -9,7 +9,7 @@ static sigset_t epoll_sig_mask = {0};
 EPollEventDomain::EPollEventDomain(size_t PoolSize, int ThreadCount, int EPollSize) :
         SocketEventDomain(PoolSize, ThreadCount) {
 
-    if (SignalSetInited == false) {
+    if (!SignalSetInited) {
         sigemptyset(&epoll_sig_mask);
         sigaddset(&epoll_sig_mask, SIGALRM);
         SignalSetInited = true;
