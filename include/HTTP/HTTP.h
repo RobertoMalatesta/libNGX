@@ -16,6 +16,7 @@ namespace ngx {
         class HTTPConnection;
 
         class HTTPConnectionRecycler;
+        class HTTPConnectionBuilder;
 
         class HTTPParser;
 

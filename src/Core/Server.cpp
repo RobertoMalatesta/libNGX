@@ -16,13 +16,13 @@ EventError Server::EnqueueListening(Listening *L) {
         PListen = (Listening *) (PQueue);
 
         if (PListen == L) {
-            return EventError(EALREADY, "Listen is already added to the Queue");
+            return {EALREADY, "Listen is already added to the Queue"};
         }
     }
 
     ListeningSentinel.Append(L);
 
-    return EventError(0);
+    return {0};
 }
 
 Listening *Server::DequeueListening() {
@@ -42,35 +42,35 @@ Listening *Server::DequeueListening() {
 EventError Server::AttachConnection(Connection *C) {
 
     if (C == nullptr || C->GetSocketFD() == -1) {
-        return EventError(EINVAL, "Bad connection!");
+        return {EINVAL, "Bad connection!"};
     }
 
     if (MaxConnection.fetch_sub(1) <= 0) {
         MaxConnection.fetch_add(1);
-        return EventError(ECANCELED, "Connection reaches maximum connection count!");
+        return {ECANCELED, "Connection reaches maximum connection count!"};
     }
 
     SpinlockGuard LockGuard(&Lock);
     C->AttachSocket(&ConnectionSentinel);
-    return EventError(0);
+    return {0};
 }
 
 EventError Server::DetachConnection(Connection *C) {
     if (C == nullptr || C->GetSocketFD() == -1) {
-        return EventError(EINVAL, "Bad connection!");
+        return {EINVAL, "Bad connection!"};
     }
 
     SpinlockGuard LockGuard(&Lock);
     C->DetachSocket();
     MaxConnection.fetch_add(1);
 
-    return EventError(0);
+    return {EINVAL};
 }
 
-RuntimeError Server::PostProcessFinished(EventPromiseArgs *) {
-    return RuntimeError(EINVAL);
+RuntimeError Server::PostProcessFinished(EventPromiseArgs &) {
+    return {EINVAL};
 }
 
-RuntimeError Server::PostConnectionEvent(EventPromiseArgs *) {
-    return RuntimeError(EINVAL);
+RuntimeError Server::PostConnectionEvent(EventPromiseArgs &) {
+    return {EINVAL};
 }

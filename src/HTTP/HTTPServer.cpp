@@ -10,78 +10,63 @@ HTTPServer::HTTPServer(
         uint64_t ConnectionRecycleSize,
         uint64_t BufferRecycleSize) :
         Server(),
-        ConnectionRecyclers(BufferBlockSize, BufferRecycleSize, ConnectionRecycleSize),
+        ConnectionBuilder(BufferBlockSize, BufferRecycleSize, ConnectionRecycleSize),
         EventDomain(PoolSize, ThreadCount, EPollSize) {}
 
-RuntimeError HTTPServer::PostProcessFinished(EventPromiseArgs *Arguments) {
+RuntimeError HTTPServer::PostProcessFinished(EventPromiseArgs &Arguments) {
 
     HTTPServer *TempServer;
     TCP4Listening *TempListen;
 
     EventDomain.Free((void **) &Arguments);
 
-    if (nullptr == Arguments
-        || nullptr == Arguments->UserArguments[3].Ptr
-        || nullptr == Arguments->UserArguments[5].Ptr
-            ) {
-
+    if (nullptr == Arguments.UserArguments[3].Ptr ||
+        nullptr == Arguments.UserArguments[5].Ptr ) {
         return {EINVAL};
     }
 
-    TempServer = static_cast<HTTPServer *>(Arguments->UserArguments[3].Ptr);
-    TempListen = static_cast<TCP4Listening *>(Arguments->UserArguments[5].Ptr);
+    TempServer = static_cast<HTTPServer *>(Arguments.UserArguments[3].Ptr);
+    TempListen = static_cast<TCP4Listening *>(Arguments.UserArguments[5].Ptr);
     TempServer->EnqueueListening(TempListen);
 
     return {0};
 }
 
-RuntimeError HTTPServer::PostConnectionEvent(EventPromiseArgs *Arguments) {
+RuntimeError HTTPServer::PostConnectionEvent(EventPromiseArgs &Argument) {
 
-    int SocketFd;
-    void *TempPointer;
-    Socket *TempSocket;
-    HTTPConnection *TempConnection;
-    SocketAddress *SockAddr;
-    EventType Type;
+    EventType TargetType;
+    HTTPServer *TargetServer;
+    Listening *TargetListening;
+    HTTPConnection *TargetConnection;
+    SocketAddress *TargetSocketAddress;
+    EPollEventDomain *TargetEventDomain;
 
-    Type = static_cast<EventType>(Arguments->UserArguments[7].UInt);
+    TargetConnection = static_cast<HTTPConnection *>(Argument.UserArguments[6].Ptr);
+    TargetType = static_cast<EventType>(Argument.UserArguments[7].UInt);
 
-    if ((Type & ET_CONNECTED) != 0) {
+    if ((TargetType & ET_CONNECTED) != 0) {
 
-        if (nullptr == Arguments->UserArguments[1].Ptr) {
-            return {EINVAL};
-        }
+        int SocketFD = Argument.UserArguments[0].UInt;
 
-        SocketFd = Arguments->UserArguments[0].UInt;
-        SockAddr = static_cast<SocketAddress *>(Arguments->UserArguments[1].Ptr);
-        TempConnection = ConnectionRecyclers.Get(SocketFd, *SockAddr);
-        TempSocket = static_cast<Socket *>(TempConnection);
-
-        EventDomain.Free((void **) &SockAddr);
-
-        Arguments->UserArguments[6].Ptr = (void *) TempSocket;
-        AttachConnection(TempConnection);
-    } else {
-
-        TempPointer = Arguments->UserArguments[6].Ptr;
-
-        if (nullptr == TempPointer) {
-            return {EINVAL};
-        }
-        TempSocket = static_cast<Socket *>(TempPointer);
-        TempConnection = (HTTPConnection *) TempSocket;
+        TargetServer = static_cast<HTTPServer *>(Argument.UserArguments[3].Ptr);
+        TargetListening = static_cast<Listening *>(Argument.UserArguments[5].Ptr);
+        TargetEventDomain = static_cast<EPollEventDomain *>(Argument.UserArguments[4].Ptr);
+        TargetSocketAddress = static_cast<SocketAddress *>(Argument.UserArguments[1].Ptr);
+        TargetConnection = ConnectionBuilder.Get(SocketFD, TargetSocketAddress, TargetServer, TargetListening, TargetEventDomain);
+        AttachConnection(TargetConnection);
     }
-
-    EventDomain.PostPromise(TempConnection->OnEventPromise, Arguments);
+    TargetConnection->Event = TargetType;
+    TargetConnection->Lock.Lock();
+    EventDomain.PostPromise(*TargetConnection->OnEventPromise, static_cast<void *>(TargetConnection));
     return {0, nullptr};
 }
 
 RuntimeError HTTPServer::HTTPServerEventProcess() {
 
     Listening *Listen;
-    EventPromiseArgs Arguments = {nullptr};
+    EventPromiseArgs Argument = {nullptr};
 
-    memset(&Arguments, 0, sizeof(EventPromiseArgs));
+    memset(&Argument, 0, sizeof(EventPromiseArgs));
 
     Listen = DequeueListening();
 
@@ -89,11 +74,11 @@ RuntimeError HTTPServer::HTTPServerEventProcess() {
         return {ENOENT, "Can not get a Listening from HTTPServer"};
     }
 
-    Arguments.UserArguments[3].Ptr = (void *) this;
-    Arguments.UserArguments[4].Ptr = (void *) &EventDomain;
-    Arguments.UserArguments[5].Ptr = (void *) Listen;
+    Argument.UserArguments[3].Ptr = static_cast<void *>(this);
+    Argument.UserArguments[4].Ptr = static_cast<void *>(&EventDomain);
+    Argument.UserArguments[5].Ptr = (void *) Listen;
 
-    RuntimeError Error = EventDomain.EventDomainProcess(&Arguments);
+    RuntimeError Error = EventDomain.EventDomainProcess(Argument);
 
     if (Error.GetErrorCode() == 0) {
         EnqueueListening(Listen);

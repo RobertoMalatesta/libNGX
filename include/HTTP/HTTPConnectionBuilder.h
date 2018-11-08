@@ -13,21 +13,38 @@
 
 namespace ngx {
     namespace HTTP {
-        class HTTPConnectionBuidler {
+        class HTTPConnectionBuilder {
         protected:
+            BufferBuilder BB;
             HTTPConnectionRecycler BackendRecycler;
             unsigned TCPNoDelay: 1;
-            unsigned TCPNoPush: 1;
+            unsigned TCPNoPush:1;
             uint32_t ReadBufferSize = 8 * 1024 * 1024;
             uint32_t WriteBufferSize = 8 * 1024 * 1024;
             uint32_t ReadTimeout = 1 * 60;
             uint32_t WriteTimeout = 1 * 60;
 
         public:
-            HTTPError SetTCPNoDelay(bool Open);
-            HTTPError SetTCPNoPush(bool Open);
-            HTTPError SetReadBufferSize();
-            HTTPConnection *Get();
+            HTTPConnectionBuilder(size_t BufferBlockSize, uint64_t BufferRecyclerSize, size_t ConnectionRecyclerSize);
+
+            inline HTTPError SetTCPNoDelay(bool Open) {
+                TCPNoDelay = (Open) ? 1 : 0;
+                return {0};
+            }
+
+            inline HTTPError SetTCPNoPush(bool Open) {
+                TCPNoPush = (Open) ? 1 : 0;
+                return {0};
+            };
+
+            inline HTTPError SetReadBufferSize(uint32_t Size) {
+                ReadBufferSize = Size;
+                return {0};
+            };
+
+            HTTPConnection *Get(int SocketFD, SocketAddress *SocketAddress, HTTPServer *Server, Listening *Listening,
+                                SocketEventDomain *EventDomain);
+
             void Put(HTTPConnection *C);
         };
     }

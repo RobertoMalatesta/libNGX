@@ -14,8 +14,8 @@ namespace ngx{
         class HTTPServer : public Server {
         protected:
 
-            virtual RuntimeError PostProcessFinished(EventPromiseArgs *Arguments);
-            HTTPConnectionRecycler ConnectionRecyclers;
+            virtual RuntimeError PostProcessFinished(EventPromiseArgs &Arguments);
+            HTTPConnectionBuilder ConnectionBuilder;
             EPollEventDomain EventDomain;
             HTTPPerformanceUnit PerformanceCounters;
 
@@ -23,7 +23,7 @@ namespace ngx{
             HTTPServer(size_t PoolSize, int ThreadCount, int EPollSize, size_t BufferBlockSize,
                     uint64_t ConnectionRecycleSize, uint64_t BufferRecycleSize);
 
-            virtual RuntimeError PostConnectionEvent(EventPromiseArgs *Arguments);
+            virtual RuntimeError PostConnectionEvent(EventPromiseArgs &Argument);
 
             RuntimeError HTTPServerEventProcess();
         };

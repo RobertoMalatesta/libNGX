@@ -60,6 +60,8 @@ namespace ngx{
             inline void DetachSocket() {
                 QueueSentienl.Detach();
             }
+
+            virtual void Achor() {};
         };
     }
 }

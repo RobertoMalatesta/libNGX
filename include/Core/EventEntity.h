@@ -16,7 +16,7 @@ namespace ngx{
         };
 
         struct EventPromiseArgs {
-            UserArgument UserArguments[12];
+            UserArgument UserArguments[8];
         };
     }
 }

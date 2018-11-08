@@ -37,7 +37,7 @@ namespace ngx {
 
             ~EPollEventDomain();
 
-            virtual RuntimeError EventDomainProcess(EventPromiseArgs *PointerToArgument);
+            virtual RuntimeError EventDomainProcess(EventPromiseArgs &Argument);
 
             virtual EventError AttachSocket(Socket *S, SocketEventType Type);
 

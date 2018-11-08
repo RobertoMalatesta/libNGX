@@ -2,28 +2,24 @@
 
 using namespace ngx::HTTP;
 
-HTTPConnectionRecycler::HTTPConnectionRecycler(size_t BlockSize, uint64_t BufferRecyclerSize, uint64_t RecyclerSize) :
-        Recycler(RecyclerSize),
-        BB(BlockSize, BufferRecyclerSize) {}
+HTTPConnectionRecycler::HTTPConnectionRecycler(uint64_t RecyclerSize) :
+        Recycler(RecyclerSize){}
 
-HTTPConnection *HTTPConnectionRecycler::Get(int SocketFD, SocketAddress &SocketAddress) {
+HTTPConnection *HTTPConnectionRecycler::Get(int SocketFD, SocketAddress &TargetSocketAddress) {
     HTTPConnection *Ret;
-    SpinlockGuard LockGuard(&Lock);
+
     if (RecycleSentinel.IsEmpty()) {
-        Ret = new HTTPConnection(SocketFD, SocketAddress, BB);
+        Ret = new HTTPConnection(SocketFD, TargetSocketAddress);
     } else {
         Ret = (HTTPConnection *) RecycleSentinel.GetHead();
         RecycleSize -= 1;
         Ret->Detach();
-        Ret->SocketFd = SocketFD;
-        Ret->SocketAddress = SocketAddress;
+        Ret->SetSocketAddress(SocketFD, TargetSocketAddress);
     }
     return Ret;
 }
 
 void HTTPConnectionRecycler::Put(HTTPConnection *Item) {
-
-    SpinlockGuard LockGuard(&Lock);
 
     Item->Reset();
 

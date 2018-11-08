@@ -34,7 +34,7 @@ namespace ngx{
 
             RuntimeError PostPromise(PromiseCallback *Callback, void *Argument);
 
-            virtual RuntimeError EventDomainProcess(EventPromiseArgs *PointerToArgument);
+            virtual RuntimeError EventDomainProcess(EventPromiseArgs &Argument);
         };
     }
 }

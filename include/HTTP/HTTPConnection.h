@@ -7,20 +7,26 @@ namespace ngx{
             Pool MemPool;
             Buffer ReadBuffer;
             TimerTreeNode TimerNode;
-            EventPromiseArgs Arguments;
             HTTPRequest CurrentRequest;
+
+            EventType Event;
+            HTTPServer *ParentServer;
+            Listening *ParentListeing;
+            SocketEventDomain *ParentEventDomain;
+
             PromiseCallback *OnEventPromise = HTTPConnection::OnConnectionEvent;
 
-            static void OnConnectionEvent(void *Arguments, ThreadPool *TPool);
+            RuntimeError SetSocketAddress(int SocketFD, struct SocketAddress &TargetSocketAddress);
+
+            static void OnConnectionEvent(void *PointerToConnection, ThreadPool *TPool);
+
+            HTTPConnection(Core::SocketAddress &SocketAddress);
+            HTTPConnection(int SocketFd, Core::SocketAddress &SocketAddress);
 
             friend class HTTPServer;
-
             friend class HTTPConnectionRecycler;
-
+            friend class HTTPConnectionBuilder;
         public:
-            HTTPConnection(Core::SocketAddress &SocketAddress, BufferBuilder &BB);
-
-            HTTPConnection(int SocketFd, Core::SocketAddress &SocketAddress, BufferBuilder &BB);
 
             ~HTTPConnection() = default;
 

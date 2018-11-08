@@ -3,58 +3,51 @@
 using namespace ngx::Core;
 using namespace ngx::HTTP;
 
-HTTPConnection::HTTPConnection(struct SocketAddress &SocketAddress, BufferBuilder &BB) :
+HTTPConnection::HTTPConnection(struct SocketAddress &SocketAddress) :
         TimerNode(0, HTTPConnection::OnConnectionEvent, nullptr),
         TCP4Connection(SocketAddress),
         CurrentRequest(&MemPool) {
-    BB.BuildBuffer(ReadBuffer);
 }
 
-HTTPConnection::HTTPConnection(int SocketFd, struct SocketAddress &SocketAddress, BufferBuilder &BB) :
+HTTPConnection::HTTPConnection(int SocketFd, struct SocketAddress &SocketAddress) :
         TimerNode(0, HTTPConnection::OnConnectionEvent, nullptr),
         TCP4Connection(SocketFd, SocketAddress),
         CurrentRequest(&MemPool) {
-    BB.BuildBuffer(ReadBuffer);
 }
 
-void HTTPConnection::OnConnectionEvent(void *Arguments, ThreadPool *TPool) {
+void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *TPool) {
 
-    EventPromiseArgs *TempArgument;
-    EPollEventDomain *EventDomain;
-    Socket *TempSocket;
-    HTTPConnection *TempConnection;
     EventType Type;
+    HTTPConnection *TargetConnection;
+    SocketEventDomain *EventDomain;
 
-    printf("EnterPromise, Arguments: %p\n", Arguments);
+    printf("EnterPromise, PointerToConnection: %p\n", PointerToConnection);
 
-    TempArgument = static_cast<EventPromiseArgs *>(Arguments);
+    TargetConnection = static_cast<HTTPConnection *>(PointerToConnection);
+    EventDomain = TargetConnection->ParentEventDomain;
+    Type = TargetConnection->Event;
 
-    if (TempArgument->UserArguments[3].Ptr == nullptr ||
-        TempArgument->UserArguments[4].Ptr == nullptr ||
-        TempArgument->UserArguments[6].Ptr == nullptr) {
-        return;
-    }
-
-    EventDomain = static_cast<EPollEventDomain *>(TempArgument->UserArguments[4].Ptr);
-    TempSocket = static_cast<Socket *>(TempArgument->UserArguments[6].Ptr);
-    TempConnection = (HTTPConnection *) TempSocket;
-    Type = static_cast<EventType>(TempArgument->UserArguments[7].UInt);
-
-    printf("Event Type: %x, connection fd: %d\n", Type, TempConnection->GetSocketFD());
+    printf("Event Type: %x, connection fd: %d\n", Type, TargetConnection->GetSocketFD());
 
     if ((Type & ET_CONNECTED) != 0) {
-        EventDomain->AttachSocket(TempConnection, SOCK_READ_WRITE_EVENT);
+        EventDomain->AttachSocket(TargetConnection, SOCK_READ_WRITE_EVENT);
     }
     if ((Type & ET_READ) != 0) {
-        Buffer *Buffer = &TempConnection->ReadBuffer;
-        Buffer->WriteConnectionToBuffer(TempConnection);
-        HTTPParser::ParseHTTPRequest(TempConnection->ReadBuffer, TempConnection->CurrentRequest);
+        Buffer *Buffer = &TargetConnection->ReadBuffer;
+        Buffer->WriteConnectionToBuffer(TargetConnection);
+        HTTPParser::ParseHTTPRequest(TargetConnection->ReadBuffer, TargetConnection->CurrentRequest);
     }
     if ((Type & ET_WRITE) != 0) {
         // Mark the socket as writable and write all data to it!
     }
 
-    printf("LeavePromise, Arguments: %p\n", Arguments);
+    printf("LeavePromise, PointerToConnection: %p\n", PointerToConnection);
+}
+
+RuntimeError HTTPConnection::SetSocketAddress(int SocketFD, struct SocketAddress &TargetSocketAddress) {
+    this->SocketFd = SocketFD;
+    this->SocketAddress = TargetSocketAddress;
+    return {0};
 }
 
 void HTTPConnection::Reset() {

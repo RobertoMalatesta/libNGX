@@ -2,7 +2,7 @@
 
 using namespace ngx::HTTP;
 
-static uint32_t usual[] = {
+const uint32_t usual[] = {
         0xffffdbfe, /* 1111 1111 1111 1111  1101 1011 1111 1110 */
 
 /* ?>=< ;:98 7654 3210  /.-, +*)( '&%$ #"!  */
@@ -23,7 +23,6 @@ static uint32_t usual[] = {
         0xffffffff, /* 1111 1111 1111 1111  1111 1111 1111 1111 */
         0xffffffff  /* 1111 1111 1111 1111  1111 1111 1111 1111 */
 };
-
 
 HTTPError HTTPParser::ParseHTTPRequest(Buffer &B, HTTPRequest &R) {
 
@@ -84,7 +83,7 @@ HTTPError HTTPParser::ParseMethod(Buffer &B, HTTPRequest &R) {
         } else {
             return {EFAULT, "Invalid method!"};
         }
-        BC += 3;
+        BC += 4;
     } else if ((C5 = *(BC + 4)) == ' ') {
         if (C2 == 'O') {
             if (C1 == 'P' && C3 == 'S' && C4 == 'T') {
@@ -101,7 +100,7 @@ HTTPError HTTPParser::ParseMethod(Buffer &B, HTTPRequest &R) {
         } else {
             return {EFAULT, "Invalid method!"};
         }
-        BC += 4;
+        BC += 5;
     } else if ((C6 = *(BC + 5)) == ' ') {
         if (C1 == 'M' && C2 == 'K' && C3 == 'C' && C4 == 'O' && C5 == 'L') {
             R.Method = MKCOL;
@@ -112,7 +111,7 @@ HTTPError HTTPParser::ParseMethod(Buffer &B, HTTPRequest &R) {
         } else {
             return {EFAULT, "Invalid method!"};
         }
-        BC += 5;
+        BC += 6;
     } else if ((C7 = *(BC + 6)) == ' ') {
         if (C1 == 'D' && C2 == 'E' && C3 == 'L' && C4 == 'E' && C5 == 'T' && C6 == 'E') {
             R.Method = DELETE;
@@ -121,21 +120,20 @@ HTTPError HTTPParser::ParseMethod(Buffer &B, HTTPRequest &R) {
         } else {
             return {EFAULT, "Invalid method!"};
         }
-        BC += 6;
+        BC += 7;
     } else if (C1 == 'O' && C2 == 'P' && C3 == 'T' && C4 == 'I' &&
                C5 == 'O' && C6 == 'N' && C7 == 'S' && (C8 = *(BC + 7)) == ' ') {
-        R.Method = OPTIONS, BC += 7;
+        R.Method = OPTIONS, BC += 8;
     } else if (C1 == 'P' && C2 == 'R' && C3 == 'O' && C4 == 'P' &&
                C5 == 'F' && C6 == 'I' && C7 == 'N' && C8 == 'D' && (C9 = *(BC + 8)) == ' ') {
-        R.Method = PROPFIND, BC += 8;
+        R.Method = PROPFIND, BC += 9;
     } else if (C1 == 'P' && C2 == 'R' && C3 == 'O' && C4 == 'P' &&
                C5 == 'P' && C6 == 'A' && C7 == 'T' && C8 == 'C' && C9 == 'H' && (*(BC + 9)) == ' ') {
-        R.Method = PROPPATCH, BC += 9;
+        R.Method = PROPPATCH, BC += 10;
     } else {
         return {EFAULT, "Invalid method!"};
     }
 
-    BC += 1;
     B << BC;
 
     return  {0};

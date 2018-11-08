@@ -13,7 +13,7 @@ int HTTPConnectionRecyclerTest() {
             .SocketLength = sizeof(sockaddr_in)
     };
 
-    HTTPConnectionRecycler Recycler(4096, 102400, 5120);
+    HTTPConnectionRecycler Recycler(4096);
     HTTPConnection *C;
 
     std::vector<HTTPConnection *> Connections;

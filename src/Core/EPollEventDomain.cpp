@@ -3,10 +3,19 @@
 
 using namespace ngx::Core;
 
+static bool SignalSetInited = false;
+static sigset_t epoll_sig_mask = {0};
+
 EPollEventDomain::EPollEventDomain(size_t PoolSize, int ThreadCount, int EPollSize) :
         SocketEventDomain(PoolSize, ThreadCount) {
+
+    if (SignalSetInited == false) {
+        sigemptyset(&epoll_sig_mask);
+        sigaddset(&epoll_sig_mask, SIGALRM);
+        SignalSetInited = true;
+    }
+
     EPollFD = epoll_create(EPollSize);
-    Lock.Unlock();
 }
 
 EPollEventDomain::~EPollEventDomain() {
@@ -28,16 +37,16 @@ EventError EPollEventDomain::AttachSocket(Socket *S, SocketEventType Type) {
         (Type == SOCK_WRITE_EVENT && WriteAttached) ||
         (Type == SOCK_READ_WRITE_EVENT && ReadAttached && WriteAttached)
             ) {
-        return EventError(EALREADY, "Socket already attached!");
+        return {EALREADY, "Socket already attached!"};
     }
 
     if (EPollFD == -1 || SocketFD == -1) {
-        return EventError(-1, "Bad Socket Descriptor!");
+        return {-1, "Bad Socket Descriptor!"};
     }
 
     unsigned int EPollCommand = EPOLL_CTL_ADD;
     struct epoll_event Event = {0};
-    Event.data.ptr = (void *) S;
+    Event.data.ptr = static_cast<void *> (S);
     Event.events = EPOLLET;
 
     if (!Detached) {
@@ -67,7 +76,7 @@ EventError EPollEventDomain::AttachSocket(Socket *S, SocketEventType Type) {
     SpinlockGuard LockGuard(&Lock);
 
     if (-1 == epoll_ctl(EPollFD, EPollCommand, SocketFD, &Event)) {
-        return EventError(errno, "Failed to attach connection to epoll!");
+        return {errno, "Failed to attach connection to epoll!"};
     }
 
     if (Event.events | (EPOLLIN | EPOLLRDHUP)) {
@@ -78,7 +87,7 @@ EventError EPollEventDomain::AttachSocket(Socket *S, SocketEventType Type) {
         SetSocketWriteAttached(S, 1);
     }
 
-    return EventError(0);
+    return {0};
 }
 
 EventError EPollEventDomain::DetachSocket(Socket *S, SocketEventType Type) {
@@ -93,17 +102,17 @@ EventError EPollEventDomain::DetachSocket(Socket *S, SocketEventType Type) {
     if ((Type == SOCK_READ_EVENT && !ReadAttached) ||
         (Type == SOCK_WRITE_EVENT && !WriteAttached) ||
         (Type == SOCK_READ_WRITE_EVENT && !Attached)) {
-        return EventError(EALREADY, "Socket already attached!");
+        return {EALREADY, "Socket already attached!"};
     }
 
     if (EPollFD == -1 || SocketFD == -1) {
-        return EventError(-1, "Bad Socket Descriptor!");
+        return {-1, "Bad Socket Descriptor!"};
     }
 
     unsigned int EPollCommand = EPOLL_CTL_DEL;
 
     struct epoll_event Event = {
-            .data.ptr = (void *) S,
+            .data.ptr = static_cast<void *> (S),
             .events = EPOLLET | ((ReadAttached) ? EPOLLIN | EPOLLRDHUP : 0) | (WriteAttached ? EPOLLOUT : 0)
     };
 
@@ -126,150 +135,113 @@ EventError EPollEventDomain::DetachSocket(Socket *S, SocketEventType Type) {
     SpinlockGuard LockGuard(&Lock);
 
     if (-1 == epoll_ctl(EPollFD, EPollCommand, SocketFD, &Event)) {
-        return EventError(errno, "Failed to attach connection to epoll!");
+        return {errno, "Failed to attach connection to epoll!"};
     }
 
     SetSocketReadAttached(S, (Event.events & (EPOLLIN | EPOLLRDHUP)) == 0 ? 0 : 1);
     SetSocketWriteAttached(S, (Event.events & (EPOLLOUT)) == 0 ? 0 : 1);
 
-    return EventError(0);
+    return {0};
 }
 
-RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs *Arguments) {
-
-    sigset_t sigmask;
-
-    epoll_event *Events;
-    int EventCount, TempConnectionFD;
-    void *TempPointer;
-    SocketAddress *TempSocketAddr;
+RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs &Argument) {
 
     Server *Server;
     Listening *Listen;
-    Socket *TempSocket;
-    EventPromiseArgs *TempEventArguments;
+    SocketAddress TempAddress = {0};
+    int EventCount, TempConnectionFD;
+    epoll_event Events[EPOLL_EVENT_BATCH_SIZE];
 
     /* [TODO] should move to initialize code latter! */
 
-    RuntimeError Error = EventDomain::EventDomainProcess(Arguments);
+    RuntimeError Error = EventDomain::EventDomainProcess(Argument);
 
     if (Error.GetErrorCode() != 0) {
         return Error;
     }
 
-    sigemptyset(&sigmask);
-    sigaddset(&sigmask, SIGALRM);
-
     if (-1 == EPollFD) {
-        return RuntimeError(ENOENT, "EPollEventDomain initial failed!");
+        return {ENOENT, "EPollEventDomain initial failed!"};
     }
 
-    Server = static_cast<class Server *>(Arguments->UserArguments[3].Ptr);
-    Listen = static_cast<Listening *>(Arguments->UserArguments[5].Ptr);
+    Server = static_cast<class Server *>(Argument.UserArguments[3].Ptr);
+    Listen = static_cast<Listening *>(Argument.UserArguments[5].Ptr);
 
     if (nullptr == Listen || nullptr == Server) {
-        return RuntimeError(ENOENT, "Listen queue empty!");
+        return {ENOENT, "Listen queue empty!"};
     }
 
     if (-1 == Listen->GetSocketFD()) {
-        return RuntimeError(EINVAL, "Invalid socket fd!");
+        return {EINVAL, "Invalid socket fd!"};
     }
 
     if (Waiting.test_and_set()) {
-        return RuntimeError(EALREADY, "EPollEventDomain is already waiting for events!");
+        return {EALREADY, "EPollEventDomain is already waiting for events!"};
     }
-
-    Events = (epoll_event *) Allocate(EPOLL_EVENT_BATCH_SIZE * sizeof(epoll_event));
-
-    if (nullptr == Events) {
-        Waiting.clear();
-        return RuntimeError(ENOMEM, "Failed to allocate memory for epoll_event!");
-    }
-
-    Arguments->UserArguments[0].Ptr = (void *) Events;
 
     AttachSocket(Listen, SOCK_READ_WRITE_EVENT);
-    EventCount = epoll_pwait(EPollFD, Events, EPOLL_EVENT_BATCH_SIZE, EPOLL_EVENT_WAIT_TIME, &sigmask);
+    EventCount = epoll_pwait(EPollFD, Events, EPOLL_EVENT_BATCH_SIZE, EPOLL_EVENT_WAIT_TIME, &epoll_sig_mask);
     DetachSocket(Listen, SOCK_READ_WRITE_EVENT);
 
     Waiting.clear();
 
-    if (EventCount <= 0) {
-        Free((void **) &Events);
-        if (-1 == EventCount) {
-            if (errno == EINTR) {
-                return RuntimeError(0, "Interrupted by signal");
-            } else {
-                return RuntimeError(errno, "epoll_wait() failed!");
-            }
-        } else if (EventCount == 0) {
-            return RuntimeError(0);
+    if (-1 == EventCount) {
+        if (errno == EINTR) {
+            return {0, "Interrupted by signal"};
+        } else {
+            return {errno, "epoll_wait() failed!"};
         }
+    } else if (0 == EventCount) {
+        return {0};
+    } else if (EventCount < -1) {
+        return {errno, "epoll_wait() failed!"};
     } else {
+
         for (int i = 0; i < EventCount; i++) {
 
             if (Events[i].data.ptr == nullptr) {
                 continue;
             }
 
-            TempSocket = static_cast<Socket *>(Events[i].data.ptr);
-            TempPointer = Allocate((sizeof(EventPromiseArgs)));
-
-            if (TempPointer == nullptr) {
-                continue;
-            }
-
-            memcpy(TempPointer, (void *) Arguments, sizeof(EventPromiseArgs));
-
-            TempEventArguments = static_cast<EventPromiseArgs *>(TempPointer);
-            TempEventArguments->UserArguments[7].UInt = 0;
+            auto *TempSocket = static_cast<Socket *>(Events[i].data.ptr);
+            Argument.UserArguments[7].UInt = 0;
 
             if (TempSocket->GetSocketFD() == Listen->GetSocketFD()) {
 
-                TempPointer = Allocate(sizeof(SocketAddress));
-
-                if (TempPointer == nullptr) {
-                    continue;
-                }
-
-                TempSocketAddr = static_cast<SocketAddress *>(TempPointer);
-                TempConnectionFD = accept4(Listen->GetSocketFD(), &TempSocketAddr->sockaddr,
-                                           &TempSocketAddr->SocketLength, SOCK_NONBLOCK);
+                TempConnectionFD = accept4(Listen->GetSocketFD(), &TempAddress.sockaddr,
+                                           &TempAddress.SocketLength, SOCK_NONBLOCK);
 
                 if (-1 == TempConnectionFD) {
                     printf("accept4() failed in EventDomainProcess()!\n");
                 }
 
-                TempEventArguments->UserArguments[0].UInt = (uint32_t) TempConnectionFD;
-                TempEventArguments->UserArguments[1].Ptr = static_cast<void *>(TempSocketAddr);
-                TempEventArguments->UserArguments[7].UInt |= ET_CONNECTED;
+                Argument.UserArguments[0].UInt = (uint32_t) TempConnectionFD;
+                Argument.UserArguments[1].Ptr = static_cast<void *>(&TempAddress);
+                Argument.UserArguments[6].Ptr = nullptr;
+                Argument.UserArguments[7].UInt |= ET_CONNECTED;
             } else {
+                Argument.UserArguments[6].Ptr = static_cast<void *>(TempSocket);
 
-                TempEventArguments->UserArguments[6].Ptr = Events[i].data.ptr;
                 if (Events[i].events & (EPOLLIN | EPOLLRDHUP)) {
-                    TempEventArguments->UserArguments[7].UInt |= ET_READ;
+                    Argument.UserArguments[7].UInt |= ET_READ;
                 }
+
                 if (Events[i].events & (EPOLLOUT)) {
-                    TempEventArguments->UserArguments[7].UInt |= ET_WRITE;
+                    Argument.UserArguments[7].UInt |= ET_WRITE;
                 }
             }
-            Server->PostConnectionEvent(TempEventArguments);
+            Server->PostConnectionEvent(Argument);
         }
-        Free((void **) &Events);
     }
 
-    TempPointer = Allocate(sizeof(EventPromiseArgs));
+    Argument.UserArguments[0].UInt = 0;
+    Argument.UserArguments[1].UInt = 0;
+    Argument.UserArguments[6].UInt = 0;
+    Argument.UserArguments[7].UInt = 0;
 
-    if (nullptr == TempPointer) {
-        return RuntimeError(ENOMEM, "No sufficent memoey!");
-    }
+    Server->PostProcessFinished(Argument);
 
-    memcpy(TempPointer, (void *) Arguments, sizeof(EventPromiseArgs));
-
-    TempEventArguments = static_cast<EventPromiseArgs *>(TempPointer);
-
-    Server->PostProcessFinished(TempEventArguments);
-    return RuntimeError(0);
+    return {0};
 }
 
 void *EPollEventDomain::Allocate(size_t Size) {

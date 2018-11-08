@@ -19,9 +19,9 @@ namespace ngx{
 
             EventError DetachConnection(Connection *C);
 
-            virtual RuntimeError PostProcessFinished(EventPromiseArgs *Arguments);
+            virtual RuntimeError PostProcessFinished(EventPromiseArgs &Argument);
 
-            virtual RuntimeError PostConnectionEvent(EventPromiseArgs *Arguments);
+            virtual RuntimeError PostConnectionEvent(EventPromiseArgs &Argument);
         };
     }
 }
