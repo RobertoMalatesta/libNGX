@@ -29,6 +29,8 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *TP
 
     printf("Event Type: %x, connection fd: %d\n", Type, TargetConnection->GetSocketFD());
 
+    TargetConnection->Lock.Unlock();
+
     if ((Type & ET_CONNECTED) != 0) {
         EventDomain->AttachSocket(TargetConnection, SOCK_READ_WRITE_EVENT);
     }
