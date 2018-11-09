@@ -8,13 +8,14 @@ int MemBlockTest() {
 
     cout << "MemBlock Class Test Start!" << endl;
 
-    MemoryBlockAllocator *memBlk = MemoryBlockAllocator::Build(4096);
+    MemoryBlockAllocator *memBlk;
+    MemoryBlockAllocator::Build(memBlk, 4096);
 
     cout << "MemBlockTest AddressToMemBlock Start..." << endl;
 
     for (int i = 0; i < PageSize; i++) {
         void *pData = (char *) memBlk + i;
-        MemoryBlock *thisBlk = MemoryBlock::AddressToMemoryBlock(pData, PageSize);
+        BasicMemoryBlock *thisBlk = BasicMemoryBlock::AddressToMemoryBlock(pData, PageSize);
 
         if (thisBlk != memBlk) {
             cout << "MemBlockTest AddressToMemBlock Failed!" << endl;

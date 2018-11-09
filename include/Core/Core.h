@@ -14,7 +14,7 @@
 #include "ngx.h"
 #include "Core/MetaClass/MetaClass.h"
 
-namespace ngx{
+namespace ngx {
     namespace Core {
 
         using namespace ngx::Core::MetaClass;
@@ -22,17 +22,15 @@ namespace ngx{
 
         class Reference;
 
-        class Resetable;
-
         class Recyclable;
 
         class Recycler;
 
-        class MemoryBlock;
+        class BasicMemoryBlock;
 
         class MemoryBlockAllocator;
 
-        class MemAllocator;
+        class BufferMemoryBlock;
 
         class Pool;
 
@@ -121,15 +119,13 @@ namespace ngx{
 #include "Core/ArchX86.h"
 #include "Core/LinuxOSUtility.h"
 
-#include "Core/Resetable.h"
 #include "Core/Reference.h"
 #include "Core/Queue.h"
 #include "Core/Recyclable.h"
 #include "Core/Recylcer.h"
-#include "Core/MemAllocator.h"
 #include "Core/Error.h"
 
-#include "Core/MemoryBlock.h"
+#include "Core/BasicMemoryBlock.h"
 #include "Core/MemoryBlockAllocator.h"
 #include "Core/Time.h"
 #include "Core/Array.h"

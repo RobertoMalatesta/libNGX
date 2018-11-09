@@ -3,7 +3,7 @@ namespace ngx {
         namespace MetaClass {
 
             template<class T, int ALIGNMENT = 4096>
-            class BuildAlign {
+            class AlignBuild {
             public:
                 static int Build(T *&Item, size_t Size) {
 

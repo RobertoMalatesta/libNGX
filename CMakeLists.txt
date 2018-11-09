@@ -22,12 +22,11 @@ set(SOURCE_FILES
         src/Core/LinuxOSUtility.cpp
         src/Core/Lock.cpp
         src/Core/Listening.cpp
-        src/Core/MemoryBlock.cpp
         src/Core/MemoryBlockAllocator.cpp
         src/Core/Pool.cpp
         src/Core/Queue.cpp
         src/Core/RBTree.cpp
-        src/Core/Reference.cpp
+        src/Core/Ref.cpp
         src/Core/Server.cpp
         src/Core/Socket.cpp
         src/Core/SocketEventDomain.cpp
@@ -40,7 +39,7 @@ set(SOURCE_FILES
         src/HTTP/HTTPConnectionRecycler.cpp
         src/HTTP/HTTPParser.cpp
         src/HTTP/HTTPError.cpp
-        src/HTTP/HTTPConnectionBuilder.cpp)
+        src/HTTP/HTTPConnectionBuilder.cpp src/Core/BasicMemoryBlock.cpp)
 
 set(TEST_FILES
         test/Test.cpp

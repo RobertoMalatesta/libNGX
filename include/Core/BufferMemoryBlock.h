@@ -16,7 +16,7 @@ namespace ngx {
 
     namespace Core {
 
-    class BufferMemoryBlock : public MemoryBlock, public Recyclable{
+    class BufferMemoryBlock : public BasicMemoryBlock, public Recyclable, public AlignBuild<BufferMemoryBlock>{
         protected:
             BufferMemoryBlock *NextBlock = nullptr;
 

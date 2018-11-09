@@ -2,7 +2,7 @@
 
 using namespace ngx::Core;
 
-BufferMemoryBlock::BufferMemoryBlock(size_t Size) : MemoryBlock(Size), Recyclable() {
+BufferMemoryBlock::BufferMemoryBlock(size_t Size) : BasicMemoryBlock(Size), Recyclable() {
     TotalSize = Size - sizeof(BufferMemoryBlock);
     FreeSize = TotalSize;
     PointerToHead = (u_char *) this + sizeof(BufferMemoryBlock);

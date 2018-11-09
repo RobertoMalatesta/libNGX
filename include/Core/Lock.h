@@ -11,16 +11,16 @@ namespace ngx {
                 LockAtomic.clear();
             }
 
-            void Lock();
+            virtual void Lock();
 
-            void Unlock();
+            virtual void Unlock();
         };
 
         class BigSpinlock : public SpinLock {
         public:
             BigSpinlock();
 
-            void Lock();
+            virtual void Lock();
         };
 
         class SpinlockGuard {

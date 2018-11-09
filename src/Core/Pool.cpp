@@ -10,7 +10,7 @@ Pool::Pool(size_t BlockSize) {
     }
 
     this->BlockSize = BlockSize;
-    HeadBlock = MemoryBlockAllocator::Build(BlockSize);
+    MemoryBlockAllocator::Build(HeadBlock, BlockSize);
     CurrentBlock = HeadBlock;
 }
 
@@ -23,6 +23,7 @@ Pool::Pool(Pool &Copy) {
 void *Pool::Allocate(size_t Size) {
 
     void *ret = nullptr;
+    MemoryBlockAllocator *TempAllocator;
 
     if (Size == 0) {
         return ret;
@@ -34,7 +35,8 @@ void *Pool::Allocate(size_t Size) {
 
             if (ret == nullptr) {
                 if (CurrentBlock->GetNextBlock() == nullptr) {
-                    CurrentBlock->SetNextBlock(MemoryBlockAllocator::Build(BlockSize));
+                    MemoryBlockAllocator::Build(TempAllocator, BlockSize);
+                    CurrentBlock->SetNextBlock(TempAllocator);
                 }
                 CurrentBlock = CurrentBlock->GetNextBlock();
             } else {

@@ -2,7 +2,7 @@
 
 using namespace ngx::Core;
 
-MemoryBlockAllocator::MemoryBlockAllocator(size_t Size) : MemoryBlock(Size) {
+MemoryBlockAllocator::MemoryBlockAllocator(size_t Size) : BasicMemoryBlock(Size) {
     PointerToHead = (u_char *) this + sizeof(MemoryBlockAllocator);
     TotalSize = Size - sizeof(MemoryBlockAllocator);
     Reset();
@@ -10,26 +10,7 @@ MemoryBlockAllocator::MemoryBlockAllocator(size_t Size) : MemoryBlock(Size) {
 }
 
 MemoryBlockAllocator::~MemoryBlockAllocator() {
-    MemoryBlock::~MemoryBlock();
-}
-
-MemoryBlockAllocator *MemoryBlockAllocator::Build(size_t Size) {
-    void *TempPointer = valloc(Size);
-
-    if (nullptr == TempPointer) {
-        return nullptr;
-    }
-
-    return new(TempPointer) MemoryBlockAllocator(Size);
-}
-
-void MemoryBlockAllocator::Destroy(MemoryBlockAllocator* &PointerToAllocator) {
-    if (nullptr == PointerToAllocator) {
-        return;
-    }
-
-    free((void *) PointerToAllocator);
-    PointerToAllocator = nullptr;
+    BasicMemoryBlock::~BasicMemoryBlock();
 }
 
 void *MemoryBlockAllocator::Allocate(size_t Size) {

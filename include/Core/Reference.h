@@ -1,11 +1,5 @@
 namespace ngx {
     namespace Core {
-
-        class Ref {
-            virtual uint32_t IncRef() = 0;
-            virtual uint32_t DecRef() = 0;
-        };
-
         class Reference : Ref {
         protected:
             std::atomic_uint32_t Counter = {0};
@@ -19,6 +13,5 @@ namespace ngx {
 
             virtual void ClearRef();
         };
-
     }
 }
