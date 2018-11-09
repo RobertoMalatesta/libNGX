@@ -61,8 +61,9 @@ BoundCursor BoundCursor::operator+(size_t Size) {
 
     while (Size > 0) {
         if ((R.Position + Size) < R.Block->End) {
-            if (R.Block == R.Bound.Block && (R.Position + Size) > R.Bound.Position) {
+            if (R.Block == R.Bound.Block && (R.Position + Size) >= R.Bound.Position) {
                 R.Block = nullptr, R.Position = nullptr;
+                break;
             }
             else {
                 R.Position += Size;
@@ -159,8 +160,6 @@ RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength)
     size_t CurrentBlockFreeSize;
     BufferMemoryBlock *TempBufferBlock, *WriteBlock = WriteCursor.Block;
 
-    SpinlockGuard LockGuard(&Lock);
-
     for (;;) {
 
         CurrentBlockFreeSize = WriteBlock->End - WriteCursor.Position;
@@ -170,6 +169,7 @@ RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength)
             TempBufferBlock = AquireBlock(Recycler, BlockSize);
 
             if (TempBufferBlock == nullptr) {
+                ReadCursor.SetRight(WriteCursor);
                 return {ENOMEM, "No enough memory!"};
             }
 
@@ -184,11 +184,11 @@ RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength)
         } else {
             memcpy(WriteCursor.Position, PointerToData, DataLength);
             WriteCursor.Position += DataLength;
-
             break;
         }
     }
 
+    ReadCursor.SetRight(WriteCursor);
     return {0};
 }
 

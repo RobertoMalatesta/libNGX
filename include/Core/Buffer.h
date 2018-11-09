@@ -69,7 +69,6 @@ namespace ngx {
 
         class Buffer : public Resetable {
         protected:
-            SpinLock Lock;
             size_t BlockSize = 0;
             BufferMemoryBlockRecycler *Recycler = nullptr;
             BoundCursor ReadCursor;
@@ -91,38 +90,6 @@ namespace ngx {
             RuntimeError WriteConnectionToBuffer(Connection *C);
 
             RuntimeError WriteDataToBuffer(u_char *PointerToData, size_t DataLength);
-
-//            inline BufferCursor MoveCursor(BufferCursor Cursor, uint32_t Count = 1) {
-//
-//                BufferCursor TempCursor = Cursor;
-//                SpinlockGuard LockGuard(&Lock);
-//
-//                while (Count > 0) {
-//
-//                    if (TempCursor.Position + Count > TempCursor.Block->End) {
-//                        if (TempCursor.Block == WriteCursor.Block) {
-//                            TempCursor.Block = nullptr;
-//                            TempCursor.Position = nullptr;
-//                            break;
-//                        } else {
-//                            Count -= TempCursor.Block->End - TempCursor.Position;
-//                            TempCursor.Block = TempCursor.Block->GetNextBlock();
-//                            TempCursor.Position = TempCursor.Block->Start;
-//                        }
-//                    } else {
-//                        if (TempCursor.Block == WriteCursor.Block &&
-//                            (TempCursor.Position + Count) >= WriteCursor.Position) {
-//                            TempCursor.Block = nullptr;
-//                            TempCursor.Position = nullptr;
-//                            break;
-//                        }
-//                        TempCursor.Position += Count;
-//                        Count = 0;
-//                    }
-//                }
-//
-//                return TempCursor;
-//            }
 
             inline bool ReadByte(BoundCursor Cursor, uint32_t Offset, u_char &C1) {
 

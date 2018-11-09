@@ -16,22 +16,18 @@ namespace ngx {
 
     namespace Core {
 
-    class BufferMemoryBlock : public BasicMemoryBlock, public Recyclable, public AlignBuild<BufferMemoryBlock>{
+        class BufferMemoryBlock : public BasicMemoryBlock, public Recyclable, public AlignBuild<BufferMemoryBlock> {
         protected:
             BufferMemoryBlock *NextBlock = nullptr;
-
-            BufferMemoryBlock(size_t Size);
-
-            ~BufferMemoryBlock();
 
             friend class Buffer;
 
         public:
             u_char *Start, *End;
 
-            static int Build(BufferMemoryBlock* &Item, size_t Size);
+            BufferMemoryBlock(size_t Size);
 
-            static int Destroy(BufferMemoryBlock* &Item);
+            ~BufferMemoryBlock();
 
             void SetNextBlock(BufferMemoryBlock *Next) { this->NextBlock = Next; }
 
@@ -39,6 +35,5 @@ namespace ngx {
 
             virtual void Reset();
         };
-
     }
 }
