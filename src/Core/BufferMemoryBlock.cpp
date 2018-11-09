@@ -15,24 +15,29 @@ BufferMemoryBlock::~BufferMemoryBlock() {
     Start = End = nullptr;
 }
 
-BufferMemoryBlock *BufferMemoryBlock::Build(size_t Size) {
+int BufferMemoryBlock::Build(BufferMemoryBlock* &Item, size_t Size) {
+
     void *TempPointer = valloc(Size);
 
     if (nullptr == TempPointer) {
-        return nullptr;
+        return errno;
     }
 
-    return new(TempPointer) BufferMemoryBlock(Size);
+    Item = new(TempPointer) BufferMemoryBlock(Size);
+
+    return 0;
 }
 
-void BufferMemoryBlock::Destroy(BufferMemoryBlock **PointerToBlock) {
+int BufferMemoryBlock::Destroy(BufferMemoryBlock* &Item) {
 
-    if (nullptr == PointerToBlock || nullptr == *PointerToBlock) {
-        return;
+    if (nullptr == Item) {
+        return 0;
     }
 
-    free((void *) *PointerToBlock);
-    *PointerToBlock = nullptr;
+    free((void *) Item);
+    Item = nullptr;
+
+    return 0;
 }
 
 void BufferMemoryBlock::Reset() {

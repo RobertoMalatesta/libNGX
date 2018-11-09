@@ -23,13 +23,13 @@ MemoryBlockAllocator *MemoryBlockAllocator::Build(size_t Size) {
     return new(TempPointer) MemoryBlockAllocator(Size);
 }
 
-void MemoryBlockAllocator::Destroy(MemoryBlockAllocator **PointerToAllocator) {
-    if (nullptr == PointerToAllocator || nullptr == *PointerToAllocator) {
+void MemoryBlockAllocator::Destroy(MemoryBlockAllocator* &PointerToAllocator) {
+    if (nullptr == PointerToAllocator) {
         return;
     }
 
-    free((void *) *PointerToAllocator);
-    *PointerToAllocator = nullptr;
+    free((void *) PointerToAllocator);
+    PointerToAllocator = nullptr;
 }
 
 void *MemoryBlockAllocator::Allocate(size_t Size) {

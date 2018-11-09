@@ -1,6 +1,6 @@
 namespace ngx{
     namespace Core {
-        class MemoryBlock : public Reference {
+        class MemoryBlock : public Reference, public BuildAlign<MemoryBlock> {
         protected:
             size_t TotalSize = 0;
             size_t FreeSize = 0;
@@ -10,10 +10,6 @@ namespace ngx{
             MemoryBlock(size_t Size);
 
             ~MemoryBlock();
-
-            static MemoryBlock *Build(size_t Size);
-
-            static void Destroy(MemoryBlock **PointerToBlock);
 
             static MemoryBlock *AddressToMemoryBlock(void *Address, size_t Size);
 

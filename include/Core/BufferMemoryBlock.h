@@ -16,7 +16,7 @@ namespace ngx {
 
     namespace Core {
 
-        class BufferMemoryBlock : public MemoryBlock, public Recyclable {
+    class BufferMemoryBlock : public MemoryBlock, public Recyclable{
         protected:
             BufferMemoryBlock *NextBlock = nullptr;
 
@@ -29,9 +29,9 @@ namespace ngx {
         public:
             u_char *Start, *End;
 
-            static BufferMemoryBlock *Build(size_t Size);
+            static int Build(BufferMemoryBlock* &Item, size_t Size);
 
-            static void Destroy(BufferMemoryBlock **PointerToBlock);
+            static int Destroy(BufferMemoryBlock* &Item);
 
             void SetNextBlock(BufferMemoryBlock *Next) { this->NextBlock = Next; }
 

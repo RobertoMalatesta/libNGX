@@ -15,26 +15,6 @@ MemoryBlock::~MemoryBlock() {
     PointerToData = PointerToHead = nullptr;
 }
 
-MemoryBlock *MemoryBlock::Build(size_t Size) {
-
-    void *TempPointer = valloc(Size);
-
-    if (nullptr == TempPointer) {
-        return nullptr;
-    }
-
-    return new(TempPointer) MemoryBlock(Size);
-}
-
-void MemoryBlock::Destroy(MemoryBlock **PointerToBlock) {
-    if (nullptr == PointerToBlock || nullptr == *PointerToBlock) {
-        return;
-    }
-
-    free((void *) *PointerToBlock);
-    *PointerToBlock = nullptr;
-}
-
 MemoryBlock *MemoryBlock::AddressToMemoryBlock(void *Address, size_t Size) {
 
     MemoryBlock *MemBlk;

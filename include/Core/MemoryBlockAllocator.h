@@ -18,7 +18,7 @@ namespace ngx{
 
             static MemoryBlockAllocator *Build(size_t Size);
 
-            static void Destroy(MemoryBlockAllocator **PointerToAllocator);
+            static void Destroy(MemoryBlockAllocator* &PointerToAllocator);
 
             void SetNextBlock(MemoryBlockAllocator *Next) { this->Next = Next; }
 

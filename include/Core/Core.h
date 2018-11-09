@@ -12,9 +12,12 @@
 //===-------------------------------------------------------------------------===//
 
 #include "ngx.h"
+#include "Core/MetaClass/MetaClass.h"
 
 namespace ngx{
     namespace Core {
+
+        using namespace ngx::Core::MetaClass;
         using namespace ngx::Core::DefaultConfig;
 
         class Reference;

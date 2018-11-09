@@ -25,7 +25,7 @@ namespace ngx {
             uint32_t WriteTimeout = 1 * 60;
 
         public:
-            HTTPConnectionBuilder(size_t BufferBlockSize, uint64_t BufferRecyclerSize, size_t ConnectionRecyclerSize);
+            HTTPConnectionBuilder(size_t BufferBlockSize, uint64_t BufferRecyclerSize, uint64_t ConnectionRecyclerSize);
 
             inline HTTPError SetTCPNoDelay(bool Open) {
                 TCPNoDelay = (Open) ? 1 : 0;

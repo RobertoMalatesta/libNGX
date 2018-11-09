@@ -96,7 +96,7 @@ void Pool::GC() {
                     TempFreeBlockTail = TempFreeBlockTail->GetNextBlock();
                 }
             } else {
-                MemoryBlockAllocator::Destroy(&Current);
+                MemoryBlockAllocator::Destroy(Current);
             }
         } else {
             Last = Current;
@@ -127,7 +127,7 @@ void Pool::Reset() {
             TempMemBlock->SetNextBlock(NewMemBlockList);
             NewMemBlockList = TempMemBlock;
         } else {
-            MemoryBlockAllocator::Destroy(&TempMemBlock);
+            MemoryBlockAllocator::Destroy(TempMemBlock);
         }
 
         TempMemBlock = NextMemBlock;
@@ -141,7 +141,7 @@ Pool::~Pool() {
 
     while (TempMemBlock != nullptr) {
         Next = TempMemBlock->GetNextBlock();
-        MemoryBlockAllocator::Destroy(&TempMemBlock);
+        MemoryBlockAllocator::Destroy(TempMemBlock);
         TempMemBlock = Next;
     }
     HeadBlock = CurrentBlock = nullptr;

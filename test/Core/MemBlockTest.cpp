@@ -58,7 +58,7 @@ int MemBlockTest() {
 
     memBlk->Free(&pData);
 
-    MemoryBlockAllocator::Destroy(&memBlk);
+    MemoryBlockAllocator::Destroy(memBlk);
 
     return 0;
 }

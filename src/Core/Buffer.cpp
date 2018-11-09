@@ -4,17 +4,21 @@ using namespace ngx::Core;
 
 static inline BufferMemoryBlock *AquireBlock(BufferMemoryBlockRecycler *R, size_t Size) {
 
+    BufferMemoryBlock *Ret = nullptr;
+
     if (R == nullptr) {
-        return BufferMemoryBlock::Build(Size);
+        BufferMemoryBlock::Build(Ret,Size);
     } else {
-        return R->Get();
+        Ret = R->Get();
     }
+
+    return Ret;
 }
 
 static inline void RecycleBlock(BufferMemoryBlockRecycler *R, BufferMemoryBlock *B) {
 
     if (R == nullptr) {
-        BufferMemoryBlock::Destroy(&B);
+        BufferMemoryBlock::Destroy(B);
     } else {
         R->Put(B);
     }
@@ -214,7 +218,7 @@ RuntimeError Buffer::WriteConnectionToBuffer(Connection *C) {
         if (ReadLength == 0) {
 
             if (Recycler == nullptr) {
-                TempBlock = BufferMemoryBlock::Build(BlockSize);
+                BufferMemoryBlock::Build(TempBlock, BlockSize);
             } else {
                 TempBlock = Recycler->Get();
             }
@@ -259,7 +263,7 @@ void Buffer::Reset() {
         TempBlock->Reset();
 
         if (Recycler == nullptr) {
-            BufferMemoryBlock::Destroy(&TempBlock);
+            BufferMemoryBlock::Destroy(TempBlock);
         } else {
             Recycler->Put(TempBlock);
         }
@@ -287,7 +291,7 @@ void Buffer::GC() {
             TempBlock->SetNextBlock(NextBlock->GetNextBlock());
 
             if (Recycler == nullptr) {
-                BufferMemoryBlock::Destroy(&NextBlock);
+                BufferMemoryBlock::Destroy(NextBlock);
             } else {
                 Recycler->Put(NextBlock);
             }
