@@ -54,6 +54,7 @@ namespace ngx {
             HTTP_INIT_STATE,
             HTTP_PAESE_METHOD,
             HTTP_PARSE_REQUEST_LINE,
+            HTTP_PARSE_HEADER,
         };
     }
 }

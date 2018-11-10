@@ -62,7 +62,15 @@ HTTPError HTTPParser::ParseHTTPRequest(Buffer &B, HTTPRequest &R) {
                 return Error;
             }
 
-            R.State = HTTP_PARSE_REQUEST_LINE;
+            R.State = HTTP_PARSE_HEADER;
+            break;
+        case HTTP_PARSE_HEADER:
+
+            do {
+                Error = ParseHTTPRequest(B, R);
+            } while(Error.GetErrorCode() == 0 && Error.GetErrorMessage() == nullptr);
+
+            R.State = HTTP_INIT_STATE;
             break;
         default:
             R.State = HTTP_INIT_STATE;
