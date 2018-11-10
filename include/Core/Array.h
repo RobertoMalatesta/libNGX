@@ -17,14 +17,24 @@ namespace ngx {
         private:
             uint NAlloc = 0;
             size_t Size = 0;
-            uint ElementCount = 0;
-            void *PointerToData = nullptr;
+            uint32_t ElementCount = 0;
+            u_char *PointerToData = nullptr;
             MemAllocator *Allocator = nullptr;
 
         public:
-            Array(MemAllocator *Allocator, size_t Size, uint Count = ARRAY_DEFAULT_COUNT);
+            Array(MemAllocator *Allocator, size_t Size, uint32_t Count = ARRAY_DEFAULT_COUNT);
 
             ~Array();
+
+            void *operator [] (uint32_t Index) {
+
+                if (PointerToData == nullptr || Index >= ElementCount) {
+                    return nullptr;
+                }
+
+                return PointerToData + (Index * Size);
+
+            }
 
             void *Push();
 

@@ -3,6 +3,7 @@
 using namespace ngx::Core;
 
 static inline void * Allocate(MemAllocator *Allocator, size_t Size) {
+
     if (Allocator != nullptr) {
         return Allocator->Allocate(Size);
     } else {
@@ -10,12 +11,13 @@ static inline void * Allocate(MemAllocator *Allocator, size_t Size) {
     }
 }
 
-static inline void Free(MemAllocator *Allocator, void **Pointer) {
+static inline void Free(MemAllocator *Allocator, void *&Pointer) {
+
     if (Allocator != nullptr) {
         return Allocator->Free(Pointer);
     } else {
-        free(*Pointer);
-        *Pointer = nullptr;
+        free(Pointer);
+        Pointer = nullptr;
     }
 }
 
@@ -25,11 +27,11 @@ Array::Array(MemAllocator *Allocator, size_t Size, uint Count) {
     this->Size = Size;
     this->NAlloc = Count;
 
-    PointerToData = Allocate(this->Allocator, Count *Size);
+    PointerToData = (u_char *)Allocate(this->Allocator, Count *Size);
 }
 
 Array::~Array() {
-    Free(Allocator, &PointerToData);
+    Free(Allocator, (void * &)PointerToData);
 }
 
 void *Array::Push() {
@@ -43,8 +45,8 @@ void *Array::Push() {
         }
 
         memcpy(NewDataPointer, PointerToData, (Size * NAlloc));
-        Free(Allocator, &PointerToData);
-        PointerToData = NewDataPointer;
+        Free(Allocator, (void * &) PointerToData);
+        PointerToData = (u_char *)NewDataPointer;
         NAlloc = 2 * NAlloc;
     }
 
@@ -60,7 +62,7 @@ void *Array::PushN(uint N) {
 
         void *NewDataPointer;
 
-        uint NewAlloc = 2 * (N >= NAlloc ? N : NAlloc);
+        uint32_t NewAlloc = 2 * (N >= NAlloc ? N : NAlloc);
 
         NewDataPointer = Allocate(Allocator, NewAlloc *Size);
 
@@ -70,8 +72,8 @@ void *Array::PushN(uint N) {
 
         memcpy(NewDataPointer, PointerToData, (Size * ElementCount));
 
-        Free(Allocator, &PointerToData);
-        PointerToData = NewDataPointer;
+        Free(Allocator, (void * & )PointerToData);
+        PointerToData = (u_char *)NewDataPointer;
         NAlloc = NewAlloc;
     }
 

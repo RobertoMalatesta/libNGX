@@ -55,6 +55,85 @@ namespace ngx {
 
             BoundCursor &SetLeft(Cursor &Cursor);
             BoundCursor &SetRight(Cursor &Bound);
+
+            inline bool ReadByte(uint32_t Offset, u_char &C1) {
+
+                BoundCursor TempCursor = (*this + Offset);
+
+                if (TempCursor.Position == nullptr) {
+                    return false;
+                }
+
+                C1 = *TempCursor.Position;
+                return true;
+            }
+
+            inline bool CmpByte(uint32_t Offset, u_char C1) {
+
+                u_char A1;
+                return this->ReadByte(Offset, A1) && A1 == C1;
+            }
+
+            inline bool ReadBytes2(uint32_t Offset, u_char &C1, u_char &C2) {
+
+                BoundCursor Cur1, Cur2 = (*this + (Offset + 1));
+
+                if (Cur2.Position == nullptr) {
+                    return false;
+                } else {
+
+                    C2 = *(Cur2.Position);
+
+                    if (Block == Cur2.Block) {
+                        C1 = *(Cur2.Position - 1);
+                    } else {
+                        return this -> ReadByte(Offset, C1);
+                    }
+                    return true;
+                }
+            }
+
+            inline bool CmpByte2(uint32_t Offset, u_char C1, u_char C2) {
+
+                u_char A1, A2;
+
+                return this->ReadBytes2(Offset, A1, A2)
+                       && A1 == C1
+                       && A2 == C2;
+            }
+
+            inline bool ReadBytes4(uint32_t Offset, u_char &C1, u_char &C2, u_char &C3, u_char &C4) {
+
+                BoundCursor Cur4 = (*this + (Offset + 3));
+
+                if (Cur4.Position == nullptr) {
+                    return false;
+                } else {
+
+                    C4 = *(Cur4.Position);
+
+                    if (Block == Cur4.Block) {
+                        C1 = *(Cur4.Position - 3);
+                        C2 = *(Cur4.Position - 2);
+                        C3 = *(Cur4.Position - 1);
+                    } else {
+                        return this->ReadBytes2(Offset, C1, C2) && this->ReadByte(Offset + 2, C3);
+                    }
+                }
+                return true;
+            }
+
+            inline bool CmpByte4(uint32_t Offset, u_char C1, u_char C2, u_char C3, u_char C4) {
+
+                u_char A1, A2, A3, A4;
+
+                return this->ReadBytes4(Offset, A1, A2, A3, A4)
+                       && A1 == C1
+                       && A2 == C2
+                       && A3 == C3
+                       && A4 == C4;
+            }
+
         };
 
         struct Range {
@@ -65,6 +144,18 @@ namespace ngx {
             void IncRef();
 
             void DecRef();
+        };
+
+        struct HashRange: Range{
+            uint32_t Code;
+            uint32_t Hash(uint32_t Code = 0) {
+                if (Code != 0) {
+                    this->Code = Code;
+                }
+                return this->Code;
+            };
+
+            HashRange(): Range(), Code(0){}
         };
 
         class Buffer : public Resetable {
@@ -90,86 +181,6 @@ namespace ngx {
             RuntimeError WriteConnectionToBuffer(Connection *C);
 
             RuntimeError WriteDataToBuffer(u_char *PointerToData, size_t DataLength);
-
-            inline bool ReadByte(BoundCursor Cursor, uint32_t Offset, u_char &C1) {
-
-                BoundCursor TempCursor = (Cursor + Offset);
-
-                if (TempCursor.Position == nullptr) {
-                    return false;
-                }
-
-                C1 = *TempCursor.Position;
-                return true;
-            }
-
-            inline bool CmpByte(BoundCursor Cursor, uint32_t Offset, u_char C1) {
-
-                u_char A1;
-
-                return ReadByte(Cursor, Offset, A1) && A1 == C1;
-            }
-
-            inline bool ReadBytes2(BoundCursor Cursor, uint32_t Offset, u_char &C1, u_char &C2) {
-
-                BoundCursor Cur1, Cur2 = (Cursor + Offset + 1);
-
-                if (Cur2.Position == nullptr) {
-                    return false;
-                } else {
-
-                    C2 = *(Cur2.Position);
-
-                    if (Cursor.Block == Cur2.Block) {
-                        C1 = *(Cur2.Position - 1);
-                    } else {
-                        return ReadByte(Cursor, Offset, C1);
-                    }
-                    return true;
-                }
-            }
-
-            inline bool CmpByte2(BoundCursor Cursor, uint32_t Offset, u_char C1, u_char C2) {
-
-                u_char A1, A2;
-
-                return ReadBytes2(Cursor, Offset, A1, A2)
-                       && A1 == C1
-                       && A2 == C2;
-            }
-
-            inline bool
-            ReadBytes4(BoundCursor Cursor, uint32_t Offset, u_char &C1, u_char &C2, u_char &C3, u_char &C4) {
-
-                BoundCursor Cur4 = (Cursor + Offset + 3);
-
-                if (Cur4.Position == nullptr) {
-                    return false;
-                } else {
-
-                    C4 = *(Cur4.Position);
-
-                    if (Cursor.Block == Cur4.Block) {
-                        C1 = *(Cur4.Position - 3);
-                        C2 = *(Cur4.Position - 2);
-                        C3 = *(Cur4.Position - 1);
-                    } else {
-                        return ReadBytes2(Cursor, Offset, C1, C2) && ReadByte(Cursor, Offset + 2, C3);
-                    }
-                }
-                return true;
-            }
-
-            inline bool CmpByte4(BoundCursor Cursor, uint32_t Offset, u_char C1, u_char C2, u_char C3, u_char C4) {
-
-                u_char A1, A2, A3, A4;
-
-                return ReadBytes4(Cursor, Offset, A1, A2, A3, A4)
-                       && A1 == C1
-                       && A2 == C2
-                       && A3 == C3
-                       && A4 == C4;
-            }
 
             inline bool HasBytes(uint32_t Count = 1) {
                 return (ReadCursor + 1).Position == nullptr;

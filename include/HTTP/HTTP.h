@@ -3,9 +3,10 @@
 namespace ngx {
     namespace HTTP {
 
-        const char LF = '\n';
-        const char CR = '\r';
-        const char CRLF[] = "\r\n";
+        const u_char LF = '\n';
+        const u_char CR = '\r';
+        const u_char CRLF[] = "\r\n";
+        const bool DEFAULT_HTTP_ALLOW_UNDERSCORE = true;
 
         using namespace ngx::Core;
 

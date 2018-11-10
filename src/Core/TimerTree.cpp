@@ -30,7 +30,7 @@ RBTreeNode *TimerTreeNode::CreateFromAllocator(MemAllocator *Allocator, uint64_t
 
 void TimerTreeNode::FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node) {
     if (nullptr != Node && nullptr != *Node) {
-        Allocator->Free((void **) Node);
+        Allocator->Free((void *&) *Node);
     }
 }
 
@@ -53,13 +53,13 @@ TimerTree::~TimerTree() {
         Temp = It;
         It = Next(It);
         Delete(Temp);
-        Allocator->Free((void **) &Temp);
+        Allocator->Free((void *&) Temp);
     }
 
     Temp = Sentinel;
 
     if (Temp != nullptr) {
-        Allocator->Free((void **) &Temp);
+        Allocator->Free((void *&) Temp);
     }
 
     RBTree::~RBTree();
@@ -77,7 +77,7 @@ TimerTree *TimerTree::CreateFromAllocator(MemAllocator *ParentAllocator, MemAllo
 
 void TimerTree::FreeFromAllocator(MemAllocator *ParentAllocator, TimerTree **TheRBTree) {
     (*TheRBTree)->~TimerTree();
-    ParentAllocator->Free((void **) TheRBTree);
+    ParentAllocator->Free((void *&) *TheRBTree);
 }
 
 int TimerTree::PostTimerPromise(uint64_t Seconds, PromiseCallback Callback, void *Argument) {

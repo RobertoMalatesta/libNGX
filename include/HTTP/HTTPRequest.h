@@ -1,10 +1,16 @@
 namespace ngx{
     namespace HTTP {
 
+        struct HTTPHeader {
+            Range Header;
+            HashRange Name;
+            Range Value;
+            bool Valid;
+            HTTPHeader():Header(), Name(),Value(), Valid(true) {}
+        };
+
         class HTTPRequest {
         protected:
-            unsigned int HTTPMajor;
-            unsigned int HTTPMinor;
             unsigned int ComplexURI:1;
             unsigned int QuotedURI:1;
             unsigned int PlusInURI:1;
@@ -28,7 +34,7 @@ namespace ngx{
         friend class HTTPParser;
 
         public:
-            HTTPRequest(MemAllocator *Allocator):Headers(Allocator, sizeof(Range)), ArgumentList(Allocator, sizeof(Range)){};
+            HTTPRequest(MemAllocator *Allocator):Headers(Allocator, sizeof(HTTPHeader)), ArgumentList(Allocator, sizeof(Range)){};
             /* HTTPConnection
             * Resetable
             * enum Method
@@ -37,6 +43,5 @@ namespace ngx{
             * Range Data
             *
             * */
-
         };
     }}

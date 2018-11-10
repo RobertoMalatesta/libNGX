@@ -11,15 +11,15 @@ int PoolTest() {
 
     void *p1 = pool.Allocate(100);          // Test if Pool can allocate small object
     cout << "Pool Allocate p1=" << p1 << endl;
-    pool.Free(&p1);
+    pool.Free(p1);
 
     p1 = pool.Allocate(1000);               // Test if Pool can allocate medium object
     cout << "Pool Allocate p2=" << p1 << endl;
-    pool.Free(&p1);
+    pool.Free(p1);
 
     p1 = pool.Allocate(1000);              // Test if Pool can allocate big object
     cout << "Pool Allocate p3=" << p1 << endl;
-    pool.Free(&p1);
+    pool.Free(p1);
 
     cout << "Pool Allocate Done!" << endl;
     cout << "Pool GC Test Start!" << endl;
@@ -32,7 +32,7 @@ int PoolTest() {
         void *pData = pool.Allocate((size_t) i);
 
         if (i % 2 == 0) {
-            pool.Free(&pData);
+            pool.Free(pData);
         } else {
             PointerList.push_back(pData);
         }
@@ -40,7 +40,7 @@ int PoolTest() {
     pool.GC();  // Call GC to destroy free blocks
 
     for (auto &it : PointerList) { // Free all the rest objects
-        pool.Free(&it);
+        pool.Free(it);
     }
 
     pool.GC();  // Call GC to destroy free blocks, now the Pool returns to the origin state
@@ -50,7 +50,7 @@ int PoolTest() {
         void *pData = pool.Allocate((size_t) i);
 
         if (i % 2 == 0) {
-            pool.Free(&pData);
+            pool.Free(pData);
         } else {
             PointerList.push_back(pData);
         }
@@ -59,10 +59,10 @@ int PoolTest() {
 
     p1 = pool.Allocate(1000);   // Try to allocate a new object;
     cout << "Pool Allocate after GC p4=" << p1 << endl;
-    pool.Free(&p1);
+    pool.Free(p1);
 
     for (auto it = PointerList.begin(); it != PointerList.end(); it++) { // Free all object
-        pool.Free(&(*it));
+        pool.Free((*it));
     }
 
     pool.Reset();

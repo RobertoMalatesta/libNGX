@@ -18,7 +18,7 @@ int BufferTest() {
     buffer.WriteDataToBuffer(Text, sizeof(Text) - 1);
     buffer >> Cursor;
 
-    while (buffer.ReadByte(Cursor, 0, c)) {
+    while (Cursor.ReadByte(0, c)) {
         printf("%c", c);
         Cursor += 1;
     }

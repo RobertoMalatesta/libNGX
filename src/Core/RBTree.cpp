@@ -336,7 +336,7 @@ RBTreeNode *UInt32RBTreeNode::CreateFromAllocator(MemAllocator *Allocator, size_
 void UInt32RBTreeNode::FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node) {
 
     if (nullptr != Node && nullptr != *Node) {
-        Allocator->Free((void **) Node);
+        Allocator->Free((void *&) *Node);
     }
 }
 
@@ -364,7 +364,7 @@ UInt32RBTree::UInt32RBTree(MemAllocator *Allocator) : RBTree(Allocator) {
 UInt32RBTree::~UInt32RBTree() {
 
     if (Root != nullptr) {
-        Allocator->Free((void **) &Root);
+        Allocator->Free((void *&) Root);
     }
 
     RBTree::~RBTree();
@@ -384,7 +384,7 @@ UInt32RBTree *UInt32RBTree::CreateFromAllocator(MemAllocator *ParentAllocator, M
 
 void UInt32RBTree::FreeFromAllocator(MemAllocator *ParentAllocator, UInt32RBTree **TheRBTree) {
     (*TheRBTree)->~UInt32RBTree();
-    ParentAllocator->Free((void **) TheRBTree);
+    ParentAllocator->Free((void *&) *TheRBTree);
 }
 
 UInt32RBTreeNode *UInt32RBTree::CreateNodeFromAllocator(size_t DataSize, uint32_t Key) {
@@ -403,7 +403,7 @@ void UInt32RBTree::FreeNodeFromAllocator(UInt32RBTreeNode **TheRBTreeNode) {
         return;
     }
 
-    Allocator->Free((void **) TheRBTreeNode);
+    Allocator->Free((void *&) *TheRBTreeNode);
 }
 
 UInt32RBTreeNode *UInt32RBTree::Find(uint32_t Key) {

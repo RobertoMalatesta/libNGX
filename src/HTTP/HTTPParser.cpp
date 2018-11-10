@@ -4,26 +4,40 @@ using namespace ngx::HTTP;
 
 const uint32_t usual[] = {
         0xffffdbfe, /* 1111 1111 1111 1111  1101 1011 1111 1110 */
-
-/* ?>=< ;:98 7654 3210  /.-, +*)( '&%$ #"!  */
+        /* ?>=< ;:98 7654 3210  /.-, +*)( '&%$ #"!  */
         0x7fff37d6, /* 0111 1111 1111 1111  0011 0111 1101 0110 */
-
-/* _^]\ [ZYX WVUT SRQP  ONML KJIH GFED CBA@ */
+        /* _^]\ [ZYX WVUT SRQP  ONML KJIH GFED CBA@ */
 //#if (NGX_WIN32)
 //        0xefffffff, /* 1110 1111 1111 1111  1111 1111 1111 1111 */
 //#else
         0xffffffff, /* 1111 1111 1111 1111  1111 1111 1111 1111 */
 //#endif
-
-/*  ~}| {zyx wvut srqp  onml kjih gfed cba` */
+        /*  ~}| {zyx wvut srqp  onml kjih gfed cba` */
         0xffffffff, /* 1111 1111 1111 1111  1111 1111 1111 1111 */
-
         0xffffffff, /* 1111 1111 1111 1111  1111 1111 1111 1111 */
         0xffffffff, /* 1111 1111 1111 1111  1111 1111 1111 1111 */
         0xffffffff, /* 1111 1111 1111 1111  1111 1111 1111 1111 */
         0xffffffff  /* 1111 1111 1111 1111  1111 1111 1111 1111 */
 };
 
+const u_char LowerCase[] =
+        "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+        "\0\0\0\0\0\0\0\0\0\0\0\0\0-\0\0" "0123456789\0\0\0\0\0\0"
+        "\0abcdefghijklmnopqrstuvwxyz\0\0\0\0\0"
+        "\0abcdefghijklmnopqrstuvwxyz\0\0\0\0\0"
+        "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+        "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+        "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+        "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
+
+const char BadRequestErrorString[] = "Bad Request!";
+const char BadVersionErrorString[] = "Bad HTTP Version!";
+const char InvalidMethodErrorString[] = "Invalid Method!";
+const char InvalidHeaderErrorString[] = "Invalid Header!";
+const char BrokenRequestErrorString[] = "Broken Request in buffer!";
+const char BrokenHeaderErrorString[] = "Broken Header in buffer!";
+const char NoMoreHeaderErrorString[] = "No more header!";
+const char HeaderNoMemoryErrorString[] = "No sufficient memory to store header indexer";
 HTTPError HTTPParser::ParseHTTPRequest(Buffer &B, HTTPRequest &R) {
 
     SpinlockGuard LockGuard(&R.Lock);
@@ -68,7 +82,7 @@ HTTPError HTTPParser::ParseMethod(Buffer &B, HTTPRequest &R) {
             continue;
         }
         if ((C < 'A' || C > 'Z') && C != '_' && C != '-') {
-            return {EFAULT, "Invalid method!"};
+            return {EFAULT, InvalidMethodErrorString};
         }
         break;
     }
@@ -81,7 +95,7 @@ HTTPError HTTPParser::ParseMethod(Buffer &B, HTTPRequest &R) {
         } else if (C1 == 'P' && C2 == 'U' && C3 == 'T') {
             R.Method = PUT;
         } else {
-            return {EFAULT, "Invalid method!"};
+            return {EFAULT, InvalidMethodErrorString};
         }
         BC += 4;
     } else if ((C5 = *(BC + 4)) == ' ') {
@@ -98,7 +112,7 @@ HTTPError HTTPParser::ParseMethod(Buffer &B, HTTPRequest &R) {
         } else if (C1 == 'H' && C2 == 'E' && C3 == 'A' && C4 == 'D') {
             R.Method = HEAD;
         } else {
-            return {EFAULT, "Invalid method!"};
+            return {EFAULT, InvalidMethodErrorString};
         }
         BC += 5;
     } else if ((C6 = *(BC + 5)) == ' ') {
@@ -109,7 +123,7 @@ HTTPError HTTPParser::ParseMethod(Buffer &B, HTTPRequest &R) {
         } else if (C1 == 'T' && C2 == 'R' && C3 == 'A' && C4 == 'C' && C5 == 'E') {
             R.Method = TRACE;
         } else {
-            return {EFAULT, "Invalid method!"};
+            return {EFAULT, InvalidMethodErrorString};
         }
         BC += 6;
     } else if ((C7 = *(BC + 6)) == ' ') {
@@ -118,7 +132,7 @@ HTTPError HTTPParser::ParseMethod(Buffer &B, HTTPRequest &R) {
         } else if (C1 == 'U' && C2 == 'N' && C3 == 'L' && C4 == 'O' && C5 == 'C' && C6 == 'K') {
             R.Method = UNLOCK;
         } else {
-            return {EFAULT, "Invalid method!"};
+            return {EFAULT, InvalidMethodErrorString};
         }
         BC += 7;
     } else if (C1 == 'O' && C2 == 'P' && C3 == 'T' && C4 == 'I' &&
@@ -131,12 +145,12 @@ HTTPError HTTPParser::ParseMethod(Buffer &B, HTTPRequest &R) {
                C5 == 'P' && C6 == 'A' && C7 == 'T' && C8 == 'C' && C9 == 'H' && (*(BC + 9)) == ' ') {
         R.Method = PROPPATCH, BC += 10;
     } else {
-        return {EFAULT, "Invalid method!"};
+        return {EFAULT, InvalidMethodErrorString};
     }
 
     B << BC;
 
-    return  {0};
+    return {0};
 }
 
 HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
@@ -170,7 +184,8 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
     } RequestLineState = RL_SPACEBEFOREURI;
 
     u_char C, C1;
-    BoundCursor BC,LastBC;
+    unsigned int HTTPMajor = 0, HTTPMinor = 0;
+    BoundCursor BC, LastBC;
 
     for (B >> BC, LastBC = BC; (C = *BC) != '\0'; LastBC = BC++) {
         switch (RequestLineState) {
@@ -193,7 +208,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                     case ' ':
                         break;
                     default:
-                        return {EFAULT, "Bad Request!"};
+                        return {EFAULT, BadRequestErrorString};
                 }
                 break;
             case RL_SCHEMA:
@@ -214,7 +229,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                         RequestLineState = RL_SCHEMASLASH;
                         break;
                     default:
-                        return {EFAULT, "Bad Request!"};
+                        return {EFAULT, BadRequestErrorString};
                 }
                 break;
             case RL_SCHEMASLASH:
@@ -223,7 +238,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                         RequestLineState = RL_SCHEMASLASHSLASH;
                         break;
                     default:
-                        return {EFAULT, "Bad Request!"};
+                        return {EFAULT, BadRequestErrorString};
                 }
                 break;
             case RL_SCHEMASLASHSLASH:
@@ -232,7 +247,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                         RequestLineState = RL_HOSTSTART;
                         break;
                     default:
-                        return {EFAULT, "Bad Request!"};
+                        return {EFAULT, BadRequestErrorString};
                 }
                 break;
             case RL_HOSTSTART:
@@ -265,7 +280,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                         RequestLineState = RL_CHECKURIHTTP09;
                         break;
                     default:
-                        return {EFAULT, "Bad Request!"};
+                        return {EFAULT, BadRequestErrorString};
                 }
                 break;
             case RL_HOSTIPLITERIAL:
@@ -299,7 +314,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                     case '=':
                         break;
                     default:
-                        return {EFAULT, "Bad Request!"};
+                        return {EFAULT, BadRequestErrorString};
                 }
                 break;
             case RL_PORT:
@@ -316,7 +331,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                         RequestLineState = RL_HOSTHTTP09;
                         break;
                     default:
-                        return {EFAULT, "Bad Request!"};
+                        return {EFAULT, BadRequestErrorString};
                 }
                 break;
             case RL_HOSTHTTP09:
@@ -324,18 +339,18 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                     case ' ':
                         break;
                     case CR:
-                        R.HTTPMinor = 9;
+                        HTTPMinor = 9;
                         RequestLineState = RL_ALMOSTDONE;
                         break;
                     case LF:
-                        R.HTTPMinor = 9;
+                        HTTPMinor = 9;
                         goto done;
                     case 'H':
                         R.HTTPProtocol.LeftBound = BC;
                         RequestLineState = RL_HTTP_H;
                         break;
                     default:
-                        return {EFAULT, "Bad Request!"};
+                        return {EFAULT, BadRequestErrorString};
                 }
                 break;
             case RL_AFTERSLASHINURI:
@@ -352,12 +367,12 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                         break;
                     case CR:
                         R.URI.RightBound = BC;
-                        R.HTTPMinor = 9;
+                        HTTPMinor = 9;
                         RequestLineState = RL_ALMOSTDONE;
                         break;
                     case LF:
                         R.URI.RightBound = BC;
-                        R.HTTPMinor = 9;
+                        HTTPMinor = 9;
                         goto done;
                     case '.':
                         R.ComplexURI = 1;
@@ -391,7 +406,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                         R.PlusInURI = 1;
                         break;
                     case '\0':
-                        return {EFAULT, "Bad Request!"};
+                        return {EFAULT, BadRequestErrorString};
                     default:
                         RequestLineState = RL_CHECKURI;
                         break;
@@ -427,12 +442,12 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                         break;
                     case CR:
                         R.URI.RightBound = BC;
-                        R.HTTPMinor = 9;
+                        HTTPMinor = 9;
                         RequestLineState = RL_ALMOSTDONE;
                         break;
                     case LF:
                         R.URI.RightBound = BC;
-                        R.HTTPMinor = 9;
+                        HTTPMinor = 9;
                         goto done;
                     case '\\':
 #if 0
@@ -459,7 +474,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                         break;
                     case '\0':
                     default:
-                        return {EFAULT, "Bad Request!"};
+                        return {EFAULT, BadRequestErrorString};
                 }
                 break;
 
@@ -468,11 +483,11 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                     case ' ':
                         break;
                     case CR:
-                       R.HTTPMinor = 9;
-                       RequestLineState = RL_ALMOSTDONE;
+                        HTTPMinor = 9;
+                        RequestLineState = RL_ALMOSTDONE;
                         break;
                     case LF:
-                        R.HTTPMinor = 9;
+                        HTTPMinor = 9;
                         goto done;
                     case 'H':
                         R.HTTPProtocol.LeftBound = BC;
@@ -499,18 +514,18 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                         break;
                     case CR:
                         R.URI.RightBound = BC;
-                        R.HTTPMinor = 9;
+                        HTTPMinor = 9;
                         RequestLineState = RL_ALMOSTDONE;
                         break;
                     case LF:
                         R.URI.RightBound = BC;
-                        R.HTTPMinor = 9;
+                        HTTPMinor = 9;
                         goto done;
                     case '#':
                         R.ComplexURI = 1;
                         break;
                     case '\0':
-                        return {EFAULT, "Bad Request!"};
+                        return {EFAULT, BadRequestErrorString};
                 }
                 break;
 
@@ -520,11 +535,11 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                     case ' ':
                         break;
                     case CR:
-                        R.HTTPMinor = 9;
+                        HTTPMinor = 9;
                         RequestLineState = RL_ALMOSTDONE;
                         break;
                     case LF:
-                        R.HTTPMinor = 9;
+                        HTTPMinor = 9;
                         goto done;
                     case 'H':
                         R.HTTPProtocol.LeftBound = BC;
@@ -543,7 +558,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                         RequestLineState = RL_HTTP_HT;
                         break;
                     default:
-                        return {EFAULT, "Bad Request!"};
+                        return {EFAULT, BadRequestErrorString};
                 }
                 break;
 
@@ -553,7 +568,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                         RequestLineState = RL_HTTP_HTT;
                         break;
                     default:
-                        return {EFAULT, "Bad Request!"};
+                        return {EFAULT, BadRequestErrorString};
                 }
                 break;
 
@@ -563,7 +578,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                         RequestLineState = RL_HTTP_HTTP;
                         break;
                     default:
-                        return {EFAULT, "Bad Request!"};
+                        return {EFAULT, BadRequestErrorString};
                 }
                 break;
 
@@ -573,18 +588,18 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                         RequestLineState = RL_FIRSTMAJORDIGIT;
                         break;
                     default:
-                        return {EFAULT, "Bad Request!"};
+                        return {EFAULT, BadRequestErrorString};
                 }
                 break;
 
             case RL_FIRSTMAJORDIGIT:
                 if (C < '1' || C > '9') {
-                    return {EFAULT, "Bad Request!"};
+                    return {EFAULT, BadRequestErrorString};
                 }
-                R.HTTPMajor = C - '0';
+                HTTPMajor = C - '0';
 
-                if (R.HTTPMajor > 1) {
-                    return {EFAULT, "Invalid Version!"};
+                if (HTTPMajor > 1) {
+                    return {EFAULT, BadVersionErrorString};
                 }
                 RequestLineState = RL_MAJORDIGIT;
                 break;
@@ -596,22 +611,22 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                 }
 
                 if (C < '0' || C > '9') {
-                    return {EFAULT, "Bad Request!"};
+                    return {EFAULT, BadRequestErrorString};
                 }
 
-                R.HTTPMajor = R.HTTPMajor * 10 + (C - '0');
+                HTTPMajor = HTTPMajor * 10 + (C - '0');
 
-                if (R.HTTPMajor > 1) {
-                    return {EFAULT, "Invalid Version!"};
+                if (HTTPMajor > 1) {
+                    return {EFAULT, BadVersionErrorString};
                 }
                 break;
 
             case RL_FIRSTMINORDIGIT:
                 if (C < '0' || C > '9') {
-                    return {EFAULT, "Bad Request!"};
+                    return {EFAULT, BadRequestErrorString};
                 }
 
-                R.HTTPMinor = C - '0';
+                HTTPMinor = C - '0';
                 RequestLineState = RL_MINORDIGIT;
                 break;
 
@@ -631,14 +646,14 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                 }
 
                 if (C < '0' || C > '9') {
-                    return {EFAULT, "Bad Request!"};
+                    return {EFAULT, BadRequestErrorString};
                 }
 
-                if (R.HTTPMinor > 99) {
-                    return {EFAULT, "Bad Request!"};
+                if (HTTPMinor > 99) {
+                    return {EFAULT, BadRequestErrorString};
                 }
 
-                R.HTTPMinor = R.HTTPMinor * 10 + (C - '0');
+                HTTPMinor = HTTPMinor * 10 + (C - '0');
                 break;
 
             case RL_SPACEAFTERDIGIT:
@@ -651,7 +666,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                     case LF:
                         goto done;
                     default:
-                        return {EFAULT, "Bad Request!"};
+                        return {EFAULT, BadRequestErrorString};
                 }
                 break;
 
@@ -661,27 +676,27 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                     case LF:
                         goto done;
                     default:
-                        return {EFAULT, "Bad Request!"};
+                        return {EFAULT, BadRequestErrorString};
                 }
                 break;
         }
     }
 
-    return {EAGAIN, "Broken request in buffer!"};
+    return {EAGAIN, BrokenRequestErrorString};
 
     done:
 
     B << BC;
     R.Request.RightBound = BC;
-    R.Version = R.HTTPMajor * 1000 + R.HTTPMinor;
+    R.Version = HTTPMajor * 1000 + HTTPMinor;
 
     if (R.Version == 9 && R.Method != GET) {
-        return {EFAULT, "Invalid 09 Method!"};
+        return {EFAULT, BadVersionErrorString};
     }
     return {0};
 }
 
-HTTPError HTTPParser::ParseHeaders(Buffer &B, HTTPRequest &R) {
+HTTPError HTTPParser::ParseHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderScore) {
 
     enum HTTPHeaderParseState {
         HDR_START = 0,
@@ -694,6 +709,211 @@ HTTPError HTTPParser::ParseHeaders(Buffer &B, HTTPRequest &R) {
         HDR_HEADER_ALMOST_DONE
     };
 
-    return {0};
+    u_char C, C1;
+    bool NoMoreHeader = false;
+
+    BoundCursor BC;
+    HTTPHeaderParseState State = HDR_START;
+
+    HTTPHeader Header;
+
+    for (B >> BC; (C = *BC) != '\0'; BC++) {
+
+        switch (State) {
+            case HDR_START:
+
+                Header.Header.LeftBound = BC;
+                Header.Name.LeftBound = BC;
+                Header.Valid = true;
+
+                switch (C) {
+                    case CR:
+                        Header.Header.RightBound = BC;
+                        State = HDR_HEADER_ALMOST_DONE;
+                        break;
+                    case LF:
+                        Header.Header.RightBound = BC;
+                        NoMoreHeader = true;
+                        goto done;
+                        break;
+                    default:
+                        State = HDR_NAME;
+                        C1 = LowerCase[C];
+
+                        if (C1) {
+                            break;
+                        }
+
+                        if (C == '_') {
+                            if (AllowUnderScore) {
+                                break;
+                            } else {
+                                Header.Valid = false;
+                            }
+                            break;
+                        }
+
+                        if (C == '\0') {
+                            return {EINVAL, InvalidHeaderErrorString};
+                        }
+
+                        Header.Valid = false;
+                        break;
+                }
+                break;
+            case HDR_NAME:
+                C1 = LowerCase[C];
+
+                if (C1) {
+                    break;
+                }
+
+                if (C == '_') {
+                    if (AllowUnderScore) {
+                        break;
+                    } else {
+                        Header.Valid = false;
+                    }
+                    break;
+                }
+
+                if (C == ':') {
+                    Header.Name.RightBound = BC;
+                    State = HDR_SPACE_BEFORE_VALUE;
+                    break;
+                }
+
+                if (C == CR) {
+                    Header.Name.RightBound = BC;
+                    Header.Header.LeftBound = BC;
+                    Header.Header.RightBound = BC;
+                    State = HDR_ALMOST_DONE;
+                    break;
+                }
+
+                if (C == LF) {
+                    Header.Name.RightBound = BC;
+                    Header.Header.LeftBound = BC;
+                    Header.Header.RightBound = BC;
+                    goto done;
+                }
+
+                if (C == '/') {
+                    if (Header.Name.LeftBound.CmpByte4(0, 'H', 'T', 'T', 'P')) {
+                        State = HDR_IGNORE_LINE;
+                        break;
+                    }
+                }
+
+                if (C == '\0') {
+                    return {EINVAL, InvalidHeaderErrorString};
+                }
+
+                Header.Valid = false;
+                break;
+
+            case HDR_SPACE_BEFORE_VALUE:
+
+                switch (C) {
+                    case ' ':
+                        break;
+                    case CR:
+                        Header.Header.LeftBound = BC;
+                        Header.Header.RightBound = BC;
+                        State = HDR_ALMOST_DONE;
+                        break;
+                    case LF:
+                        Header.Header.LeftBound = BC;
+                        Header.Header.RightBound = BC;
+                        goto done;
+                    case '\0':
+                        return {EINVAL, InvalidHeaderErrorString};
+                    default:
+                        Header.Header.LeftBound = BC;
+                        State = HDR_VALUE;
+                        break;
+                }
+                break;
+            case HDR_VALUE:
+                switch (C) {
+                    case ' ':
+                        Header.Header.RightBound = BC;
+                        State = HDR_SPACE_AFTER_VALUE;
+                        break;
+                    case CR:
+                        Header.Header.RightBound = BC;
+                        State = HDR_ALMOST_DONE;
+                        break;
+                    case LF:
+                        Header.Header.RightBound = BC;
+                        goto done;
+                    case '\0':
+                        return {EINVAL, InvalidHeaderErrorString};
+                }
+                break;
+            case HDR_SPACE_AFTER_VALUE:
+                switch (C) {
+                    case ' ':
+                        break;
+                    case CR:
+                        State = HDR_ALMOST_DONE;
+                        break;
+                    case LF:
+                        goto done;
+                    case '\0':
+                        return {EINVAL, InvalidHeaderErrorString};
+                    default:
+                        State = HDR_VALUE;
+                        break;
+                }
+                break;
+            case HDR_IGNORE_LINE:
+                switch (C) {
+                    case LF:
+                        State = HDR_START;
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            case HDR_ALMOST_DONE:
+                switch (C) {
+                    case LF:
+                        goto done;
+                    case CR:
+                        break;
+                    default:
+                        return {EINVAL, InvalidHeaderErrorString};
+                }
+                break;
+            case HDR_HEADER_ALMOST_DONE:
+                switch (C) {
+                    case LF:
+                        NoMoreHeader = true;
+                        goto done;
+                    default:
+                        return {EINVAL, InvalidHeaderErrorString};
+                }
+        }
+    }
+
+    return {EAGAIN, BrokenHeaderErrorString};
+
+    done:
+
+    B << BC;
+
+    void *TempPointer;
+    HTTPHeader *TempHeader;
+    TempPointer = R.Headers.Push();
+
+    if (TempPointer == nullptr) {
+        return {ENOMEM, HeaderNoMemoryErrorString};
+    }
+
+    TempHeader = static_cast<HTTPHeader *>(TempPointer);
+    *TempHeader = Header;
+
+    return {0, NoMoreHeader ? NoMoreHeaderErrorString : nullptr};
 }
 

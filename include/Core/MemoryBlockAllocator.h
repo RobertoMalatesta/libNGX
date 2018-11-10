@@ -14,7 +14,7 @@ namespace ngx {
 
             virtual void *Allocate(size_t Size);
 
-            virtual void Free(void **Pointer);
+            virtual void Free(void* &Pointer);
 
             virtual void GC() { /*Empty Code Block*/ }
 

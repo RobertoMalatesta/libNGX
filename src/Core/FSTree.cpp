@@ -23,7 +23,7 @@ RBTreeNode *FSEntity::CreateFromAllocator(MemAllocator *Allocator, size_t DateSi
 
 void FSEntity::FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node) {
     if (nullptr != Node && nullptr != *Node) {
-        Allocator->Free((void **) Node);
+        Allocator->Free((void * &) *Node);
     }
 }
 
@@ -88,13 +88,13 @@ FSTree::~FSTree() {
         Temp = It;
         It = Next(It);
         Delete(Temp);
-        Allocator->Free((void **) &Temp);
+        Allocator->Free((void *&) Temp);
     }
 
     Temp = Sentinel;
 
     if (Temp != nullptr) {
-        Allocator->Free((void **) &Temp);
+        Allocator->Free((void *&) Temp);
     }
 
     RBTree::~RBTree();
@@ -178,6 +178,6 @@ FSTree *FSTree::CreateFromAllocator(MemAllocator *ParentAllocator, MemAllocator 
 void FSTree::FreeFromAllocator(MemAllocator *ParentAllocator, FSTree **TheFSTree) {
     if (nullptr != TheFSTree && nullptr != *TheFSTree) {
         (*TheFSTree)->~FSTree();
-        ParentAllocator->Free((void **) TheFSTree);
+        ParentAllocator->Free((void *&) *TheFSTree);
     }
 }

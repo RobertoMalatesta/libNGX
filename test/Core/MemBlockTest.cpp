@@ -32,7 +32,7 @@ int MemBlockTest() {
 
     for (int i = 0; i < 40; i++) {
         pData = memBlk->Allocate(100);
-        memBlk->Free(&pData);
+        memBlk->Free(pData);
     }
 
     cout << "MemBlockTest Allocate OK!" << endl;
@@ -57,7 +57,7 @@ int MemBlockTest() {
         cout << "MemBlockTest Reset Failed!" << endl;
     }
 
-    memBlk->Free(&pData);
+    memBlk->Free(pData);
 
     MemoryBlockAllocator::Destroy(memBlk);
 

@@ -47,16 +47,16 @@ void *Pool::Allocate(size_t Size) {
     return ret;
 }
 
-void Pool::Free(void **pointer) {
+void Pool::Free(void* &pointer) {
 
     bool FoundInBlock = false;
 
     MemoryBlockAllocator *TempBlock = HeadBlock;
 
-    if (nullptr != pointer && nullptr != *pointer) {
+    if (nullptr != pointer) {
 
         while (nullptr != TempBlock) {
-            if (TempBlock->IsInBlock(*pointer)) {
+            if (TempBlock->IsInBlock(pointer)) {
                 TempBlock->Free(pointer);
                 FoundInBlock = true;
                 break;
@@ -64,7 +64,7 @@ void Pool::Free(void **pointer) {
             TempBlock = TempBlock->GetNextBlock();
         }
         if (!FoundInBlock) {
-            free(*pointer);
+            free(pointer);
         }
     }
 }

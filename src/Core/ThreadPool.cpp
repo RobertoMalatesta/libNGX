@@ -76,7 +76,7 @@ void Thread::ThreadProcess(Thread *Thread) {
             Node = (Promise *) Thread->Sentinel.GetHead();
             Node->Detach();
             Node->doPromise();
-            Thread->Allocator.Free((void **) &Node);
+            Thread->Allocator.Free((void *&) Node);
         }
 
         IsRunnig = Thread->Running;
