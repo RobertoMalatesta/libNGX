@@ -1,11 +1,12 @@
-namespace ngx{
+namespace ngx {
     namespace HTTP {
 
         struct HTTPHeader {
             HashRange Name;
             Range Value;
             bool Valid;
-            HTTPHeader():Name(),Value(), Valid(true) {}
+
+            HTTPHeader() : Name(), Value(), Valid(true) {}
         };
 
         class HTTPRequest {
@@ -19,20 +20,24 @@ namespace ngx{
             unsigned int Version;
             HTTPMethod Method;
             Range URI;
-            Range URIExt;
+            BoundCursor URIExt;
+            BoundCursor Port;
+            BoundCursor HTTPProtocol;
+            BoundCursor Argument;
+            BoundCursor Content;
             Range Schema;
             Range Host;
             Range IP;
-            Range Port;
-            Range HTTPProtocol;
-            Range Arguments;
             Range Request;
             Array Headers;
+            Array ArgumentList;
             HTTPRequestState State = HTTP_INIT_STATE;
-        friend class HTTPParser;
+
+            friend class HTTPParser;
 
         public:
-            HTTPRequest(MemAllocator *Allocator):Headers(Allocator, sizeof(HTTPHeader)){};
+            HTTPRequest(MemAllocator *Allocator) : Headers(Allocator, sizeof(HTTPHeader)),
+                                                   ArgumentList(Allocator, sizeof(Range)) {};
             /* HTTPConnection
             * Resetable
             * enum Method
@@ -42,4 +47,5 @@ namespace ngx{
             *
             * */
         };
-    }}
+    }
+}

@@ -36,6 +36,9 @@ namespace ngx {
                 Block = Right.Block, Position = Right.Position;
                 return *this;
             }
+            inline bool operator==(Cursor const &Right) {
+                return Block == Right.Block && Position == Right.Position;
+            }
         };
 
         struct BoundCursor : public Cursor {
@@ -75,7 +78,6 @@ namespace ngx {
 
             inline const BoundCursor operator++(int) {
                 BoundCursor Ret = *this;
-
                 *this = this->operator+(1);
                 return Ret;
             }

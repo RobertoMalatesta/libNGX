@@ -30,6 +30,7 @@ const u_char LowerCase[] =
         "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
         "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 
+const char BadURIErrorString[] = "Bad URI!";
 const char BadRequestErrorString[] = "Bad Request!";
 const char BadVersionErrorString[] = "Bad HTTP Version!";
 const char InvalidMethodErrorString[] = "Invalid Method!";
@@ -75,15 +76,22 @@ HTTPError HTTPParser::ParseHTTPRequest(Buffer &B, HTTPRequest &R) {
                 R.State = HTTP_BAD_REQUEST_STATE;
                 break;
             } else {
-                R.State = HTTP_VALIDATE_URI;
+                R.State = HTTP_HEADER_DONE;
             }
-            ValidateURI(R);
+            break;
         case HTTP_VALIDATE_URI:
+            Error = ValidateURI(R);
+
+            if (Error.GetCode() != 0) {
+                R.State = HTTP_BAD_REQUEST_STATE;
+                break;
+            } else {
+                R.State = HTTP_INIT_STATE;
+            }
+            break;
         case HTTP_VALIDATE_COMPLEX_URI:
         case HTTP_READ_DATA:
-
         case HTTP_READ_CHUNK:
-
         case HTTP_BAD_REQUEST_STATE:
         default:
             Error = {EINVAL, BadRequestErrorString};
@@ -108,6 +116,8 @@ HTTPError HTTPParser::ParseMethod(Buffer &B, HTTPRequest &R) {
         }
         break;
     }
+
+    R.Request.LeftBound = BC;
 
     C1 = (*BC), C2 = *(BC + 1), C3 = *(BC + 2), C4 = *(BC + 3);
 
@@ -346,11 +356,11 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                 }
                 switch (C) {
                     case '/':
-                        R.Port.RightBound = R.URI.LeftBound = BC;
+                        R.Port = R.URI.LeftBound = BC;
                         RequestLineState = RL_AFTERSLASHINURI;
                         break;
                     case ' ':
-                        R.Port.RightBound = BC, R.URI.LeftBound = BC + 1, R.URI.RightBound = BC + 2;
+                        R.Port = BC, R.URI.LeftBound = BC + 1, R.URI.RightBound = BC + 2;
                         RequestLineState = RL_HOSTHTTP09;
                         break;
                     default:
@@ -369,7 +379,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                         HTTPMinor = 9;
                         goto done;
                     case 'H':
-                        R.HTTPProtocol.LeftBound = BC;
+                        R.HTTPProtocol = BC;
                         RequestLineState = RL_HTTP_H;
                         break;
                     default:
@@ -418,7 +428,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
 #endif
                         break;
                     case '?':
-                        R.Arguments.LeftBound = BC + 1;
+                        R.Argument = BC + 1;
                         RequestLineState = RL_URI;
                         break;
                     case '#':
@@ -485,7 +495,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                         RequestLineState = RL_URI;
                         break;
                     case '?':
-                        R.Arguments.LeftBound = BC + 1;
+                        R.Argument = BC + 1;
                         RequestLineState = RL_URI;
                         break;
                     case '#':
@@ -513,7 +523,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                         HTTPMinor = 9;
                         goto done;
                     case 'H':
-                        R.HTTPProtocol.LeftBound = BC;
+                        R.HTTPProtocol = BC;
                         RequestLineState = RL_HTTP_H;
                         break;
                     default:
@@ -565,7 +575,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                         HTTPMinor = 9;
                         goto done;
                     case 'H':
-                        R.HTTPProtocol.LeftBound = BC;
+                        R.HTTPProtocol = BC;
                         RequestLineState = RL_HTTP_H;
                         break;
                     default:
@@ -947,13 +957,132 @@ HTTPError HTTPParser::ParseHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderSco
 
 HTTPError HTTPParser::ValidateURI(HTTPRequest &R) {
 
+    enum URI_PARSE_STATE {
+        URI_START = 0,
+        URI_AFTER_SLASH_IN_URI,
+        URI_CHECK_URI,
+        URI_URI
+    };
+
     Range URI = R.URI;
     BoundCursor BC = URI.GetBoundCurosr();
+    URI_PARSE_STATE State = URI_START;
 
-    for (u_char  C, C1; C = *BC, !!BC; BC ++) {
-        printf("%c", C);
+    for (u_char C, C1; C = *BC, !!BC; BC++) {
+        switch (State) {
+            case URI_START:
+                if (C != '/') {
+                    return {EINVAL, BadURIErrorString};
+                }
+                State = URI_AFTER_SLASH_IN_URI;
+                break;
+            case URI_AFTER_SLASH_IN_URI:
+                if (usual[C >> 5] & (1U << (C & 0x1F))) {
+                    State = URI_CHECK_URI;
+                    break;
+                }
+                switch (C) {
+                    case ' ':
+                        R.SpaceInURI = 1;
+                        State = URI_CHECK_URI;
+                        break;
+                    case '.':
+                        R.ComplexURI = 1;
+                        State = URI_URI;
+                        break;
+                    case '%':
+                        R.QuotedURI = 1;
+                        State = URI_URI;
+                        break;
+                    case '/':
+                        R.ComplexURI = 1;
+                        State = URI_URI;
+                        break;
+#if 0
+                    case '\\':
+                        R.ComplexURI = 1;
+                        State = URI_URI;
+                        break;
+#endif
+                    case '?':
+                        R.Argument = BC + 1;
+                        State = URI_URI;
+                        break;
+                    case '#':
+                        R.ComplexURI = 1;
+                        State = URI_URI;
+                        break;
+                    case '+':
+                        R.PlusInURI = 1;
+                        break;
+                    default:
+                        State = URI_CHECK_URI;
+                        break;
+                }
+                break;
+            case URI_CHECK_URI:
+                if (usual[C >> 5] & (1U << (C & 0x1F))) {
+                    break;
+                }
+
+                switch (C) {
+                    case '/':
+#if 0
+                        if ( R.URIExt == BC) {
+                            R.ComplexURI = 1;
+                            State = URI_URI;
+                            break;
+                        }
+#endif
+                        R.URIExt.Block = nullptr;
+                        R.URIExt.Position = nullptr;
+                        State = URI_AFTER_SLASH_IN_URI;
+                        break;
+                    case '.':
+                        R.URIExt = BC + 1;
+                        break;
+                    case ' ':
+                        R.SpaceInURI = 1;
+                        break;
+#if 0
+                    case '\\':
+                        R.ComplexURI = 1;
+                        State = URI_AFTER_SLASH_IN_URI;
+                        break;
+#endif
+                    case '%':
+                        R.QuotedURI = 1;
+                        State = URI_URI;
+                        break;
+                    case '?':
+                        R.Argument = BC + 1;
+                        State = URI_URI;
+                        break;
+                    case '#':
+                        R.ComplexURI = 1;
+                        State = URI_URI;
+                        break;
+                    case '+':
+                        R.PlusInURI = 1;
+                        break;
+                }
+                break;
+
+            case URI_URI:
+
+                if (usual[C >> 5] & (1U << (C << 0x1F))) {
+                    break;
+                }
+                switch (C) {
+                    case ' ':
+                        R.SpaceInURI = 1;
+                        break;
+                    case '#':
+                        R.ComplexURI = 1;
+                        break;
+                }
+                break;
+        }
     }
-    printf("\n");
-
     return {0};
 }

@@ -6,13 +6,28 @@ using namespace ngx::HTTP;
 HTTPConnection::HTTPConnection(struct SocketAddress &SocketAddress) :
         TimerNode(0, HTTPConnection::OnConnectionEvent, nullptr),
         TCP4Connection(SocketAddress),
-        CurrentRequest(&MemPool) {
+        Request(&MemPool) {
 }
 
 HTTPConnection::HTTPConnection(int SocketFd, struct SocketAddress &SocketAddress) :
         TimerNode(0, HTTPConnection::OnConnectionEvent, nullptr),
         TCP4Connection(SocketFd, SocketAddress),
-        CurrentRequest(&MemPool) {
+        Request(&MemPool) {
+}
+
+void HTTPConnection::OnCloseConnection(void *PointerToConnection, ThreadPool *TPool){
+
+    HTTPConnection *TargetConnection;
+    HTTPServer *Server;
+
+    printf("EnterPromise OnCloseConnection, PointerToConnection: %p\n", PointerToConnection);
+
+    TargetConnection = static_cast<HTTPConnection *>(PointerToConnection);
+    Server = TargetConnection->ParentServer;
+
+    Server->CloseConnection(TargetConnection);
+
+    printf("LeavePromise OnClose Connection, PointerToConnection: %p\n", PointerToConnection);
 }
 
 void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *TPool) {
@@ -37,11 +52,20 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *TP
     if ((Type & ET_READ) != 0) {
         Buffer *Buffer = &TargetConnection->ReadBuffer;
         Buffer->WriteConnectionToBuffer(TargetConnection);
-        HTTPParser::ParseHTTPRequest(TargetConnection->ReadBuffer, TargetConnection->CurrentRequest);
+        HTTPParser::ParseHTTPRequest(TargetConnection->ReadBuffer, TargetConnection->Request);
+
+        const u_char Content[] = "HTTP/1.1 200 OK\r\nServer: NGX(TestServer)\nContent-Length: 12\r\n\nHello World!";
+
+
+        EventDomain->DetachSocket(TargetConnection, SOCK_READ_WRITE_EVENT);
+        write(TargetConnection->GetSocketFD(), Content, sizeof(Content) - 1);
+        EventDomain->PostTimerEvent(1, HTTPConnection::OnCloseConnection, TargetConnection);
     }
     if ((Type & ET_WRITE) != 0) {
         // Mark the socket as writable and write all data to it!
     }
+
+
 
     printf("LeavePromise, PointerToConnection: %p\n", PointerToConnection);
 }
@@ -53,6 +77,12 @@ RuntimeError HTTPConnection::SetSocketAddress(int SocketFD, struct SocketAddress
 }
 
 void HTTPConnection::Reset() {
+
+    if (SocketFd != -1) {
+        close(SocketFd);
+        SocketFd = -1;
+    }
+
     ReadBuffer.Reset();
     MemPool.Reset();
 }

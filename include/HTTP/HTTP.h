@@ -55,6 +55,7 @@ namespace ngx {
             HTTP_PAESE_METHOD,
             HTTP_PARSE_REQUEST_LINE,
             HTTP_PARSE_HEADER,
+            HTTP_HEADER_DONE,
             HTTP_VALIDATE_URI,
             HTTP_VALIDATE_COMPLEX_URI,
             HTTP_READ_DATA,

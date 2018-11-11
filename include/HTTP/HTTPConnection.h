@@ -7,7 +7,7 @@ namespace ngx{
             Pool MemPool;
             Buffer ReadBuffer;
             TimerTreeNode TimerNode;
-            HTTPRequest CurrentRequest;
+            HTTPRequest Request;
 
             EventType Event;
             HTTPServer *ParentServer;
@@ -18,6 +18,7 @@ namespace ngx{
 
             RuntimeError SetSocketAddress(int SocketFD, struct SocketAddress &TargetSocketAddress);
 
+            static void OnCloseConnection(void *PointerToConnection, ThreadPool *TPool);
             static void OnConnectionEvent(void *PointerToConnection, ThreadPool *TPool);
 
             HTTPConnection(Core::SocketAddress &SocketAddress);

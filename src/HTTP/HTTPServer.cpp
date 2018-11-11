@@ -78,3 +78,11 @@ RuntimeError HTTPServer::HTTPServerEventProcess() {
     return EventDomain.EventDomainProcess(Argument);
 }
 
+RuntimeError HTTPServer::CloseConnection(HTTPConnection *&Connection) {
+
+    Connection->Reset();
+    ConnectionBuilder.Put(Connection);
+    Connection = nullptr;
+
+    return {0};
+}
