@@ -77,9 +77,11 @@ HTTPError HTTPParser::ParseHTTPRequest(Buffer &B, HTTPRequest &R) {
             } else {
                 R.State = HTTP_VALIDATE_URI;
             }
+            ValidateURI(R);
         case HTTP_VALIDATE_URI:
         case HTTP_VALIDATE_COMPLEX_URI:
         case HTTP_READ_DATA:
+
         case HTTP_READ_CHUNK:
 
         case HTTP_BAD_REQUEST_STATE:
@@ -93,8 +95,8 @@ HTTPError HTTPParser::ParseHTTPRequest(Buffer &B, HTTPRequest &R) {
 
 HTTPError HTTPParser::ParseMethod(Buffer &B, HTTPRequest &R) {
 
-    u_char C, C1, C2, C3, C4, C5, C6, C7, C8, C9;
     BoundCursor BC;
+    u_char C, C1, C2, C3, C4, C5, C6, C7, C8, C9;
 
     for (B >> BC; C = *BC, !!BC; BC++) {
 
@@ -107,7 +109,7 @@ HTTPError HTTPParser::ParseMethod(Buffer &B, HTTPRequest &R) {
         break;
     }
 
-    C1 = (C = *BC), C2 = *(BC + 1), C3 = *(BC + 2), C4 = *(BC + 3);
+    C1 = (*BC), C2 = *(BC + 1), C3 = *(BC + 2), C4 = *(BC + 3);
 
     if (C4 == ' ') {
         if (C1 == 'G' && C2 == 'E' && C3 == 'T') {
@@ -731,15 +733,15 @@ HTTPError HTTPParser::ParseHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderSco
         HDR_HEADER_ALMOST_DONE
     };
 
-    u_char C, C1;
     bool NoMoreHeader = false;
 
     BoundCursor BC;
+    HTTPHeader Header;
     HTTPHeaderParseState State = HDR_START;
 
-    HTTPHeader Header;
+    B >> BC;
 
-    for (B >> BC; C = *BC, !!BC; BC++) {
+    for (u_char C, C1; C = *BC, !!BC; BC++) {
 
         switch (State) {
             case HDR_START:
@@ -943,3 +945,15 @@ HTTPError HTTPParser::ParseHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderSco
     }
 }
 
+HTTPError HTTPParser::ValidateURI(HTTPRequest &R) {
+
+    Range URI = R.URI;
+    BoundCursor BC = URI.GetBoundCurosr();
+
+    for (u_char  C, C1; C = *BC, !!BC; BC ++) {
+        printf("%c", C);
+    }
+    printf("\n");
+
+    return {0};
+}

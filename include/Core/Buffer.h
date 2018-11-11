@@ -20,41 +20,90 @@ namespace ngx {
 
             Cursor() = default;
 
-            Cursor(BufferMemoryBlock *Block, u_char *Position);
-
             virtual uint32_t IncRef();
 
             virtual uint32_t DecRef();
 
-            virtual u_char operator*();
+            u_char operator*() {
+                return (!*this)? (u_char)'\0': *Position;
+            }
 
-            virtual bool operator!();
+            inline bool operator!() {
+                return Block == nullptr || Position == nullptr;
+            }
 
-            Cursor &operator=(Cursor const &Right);
+            inline Cursor &operator=(Cursor const &Right) {
+                Block = Right.Block, Position = Right.Position;
+                return *this;
+            }
         };
 
         struct BoundCursor : public Cursor {
             Cursor Bound;
-            virtual BoundCursor operator+=(size_t Size);
 
-            virtual BoundCursor operator++();
-            virtual const BoundCursor operator++(int);
+            inline BoundCursor operator+(size_t Size) {
+                BoundCursor R = *this;
 
-            virtual BoundCursor operator+(size_t Size);
+                while (Size > 0) {
+                    if ((R.Position + Size) < R.Block->End) {
+                        if (R.Block == R.Bound.Block && (R.Position + Size) >= R.Bound.Position) {
+                            R.Block = nullptr, R.Position = nullptr;
+                            break;
+                        }
+                        else {
+                            R.Position += Size;
+                            Size = 0;
+                        }
+                    } else {
+                        Size -= (R.Block->End - R.Position);
+                        R.Block = R.Block->GetNextBlock();
+                        R.Position = R.Block->Start;
+                    }
+                }
+                return R;
+            }
 
-            virtual BoundCursor operator-(size_t) = delete;
+            inline BoundCursor operator+=(size_t Size) {
+                BoundCursor R = *this;
+                *this = this->operator+(Size);
+                return R;
+            }
 
-            virtual BoundCursor &operator--() = delete;
+            inline BoundCursor operator++() {
+                return *this = this -> operator+(1);
+            }
 
-            virtual BoundCursor &operator-=(size_t Size) = delete;
+            inline const BoundCursor operator++(int) {
+                BoundCursor Ret = *this;
 
-            virtual bool operator!();
+                *this = this->operator+(1);
+                return Ret;
+            }
 
-            u_char operator[](uint16_t Offset);
+            inline bool operator!() {
+                return (Block == nullptr && Position == nullptr)
+                       || (Block == Bound.Block && Position >= Bound.Position);
+            }
 
-            BoundCursor &operator=(BoundCursor const &Right);
+            inline u_char operator[](uint16_t Offset) {
+                BoundCursor Target = operator+(Offset);
+                return *Target;
+            }
+
+            inline BoundCursor &operator=(BoundCursor const &Right) {
+                Block = Right.Block, Position = Right.Position;
+                Bound = Right.Bound;
+                return *this;
+            }
+
+            inline BoundCursor operator-(size_t) = delete;
+
+            inline BoundCursor &operator--() = delete;
+
+            inline BoundCursor &operator-=(size_t Size) = delete;
 
             BoundCursor &SetLeft(Cursor &Cursor);
+
             BoundCursor &SetRight(Cursor &Bound);
 
             inline bool ReadByte(uint32_t Offset, u_char &C1) {
@@ -88,7 +137,7 @@ namespace ngx {
                     if (Block == Cur2.Block) {
                         C1 = *(Cur2.Position - 1);
                     } else {
-                        return this -> ReadByte(Offset, C1);
+                        return this->ReadByte(Offset, C1);
                     }
                     return true;
                 }
@@ -155,8 +204,9 @@ namespace ngx {
             }
         };
 
-        struct HashRange: Range{
+        struct HashRange : Range {
             uint32_t Code;
+
             uint32_t Hash(uint32_t Code = 0) {
                 if (Code != 0) {
                     this->Code = Code;
@@ -164,7 +214,7 @@ namespace ngx {
                 return this->Code;
             };
 
-            HashRange(): Range(), Code(0){}
+            HashRange() : Range(), Code(0) {}
         };
 
         class Buffer : public Resetable {

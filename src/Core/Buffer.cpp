@@ -24,23 +24,6 @@ static inline void RecycleBlock(BufferMemoryBlockRecycler *R, BufferMemoryBlock 
     }
 }
 
-Cursor::Cursor(BufferMemoryBlock *Block, u_char *Position) {
-    this->Block = Block, this->Position = Position;
-}
-
-bool Cursor::operator!() {
-    return Block == nullptr || Position == nullptr;
-}
-
-u_char Cursor::operator*() {
-    return (!*this)? (u_char)'\0': *Position;
-}
-
-Cursor &Cursor::operator=(Cursor const &Right) {
-    Block = Right.Block, Position = Right.Position;
-    return *this;
-}
-
 uint32_t Cursor::IncRef() {
     if (Block != nullptr) {
         return Block->IncRef();
@@ -53,61 +36,6 @@ uint32_t Cursor::DecRef() {
         return Block->DecRef();
     }
     return 0;
-}
-
-BoundCursor BoundCursor::operator+(size_t Size) {
-
-    BoundCursor R = *this;
-
-    while (Size > 0) {
-        if ((R.Position + Size) < R.Block->End) {
-            if (R.Block == R.Bound.Block && (R.Position + Size) >= R.Bound.Position) {
-                R.Block = nullptr, R.Position = nullptr;
-                break;
-            }
-            else {
-                R.Position += Size;
-                Size = 0;
-            }
-        } else {
-            Size -= (R.Block->End - R.Position);
-            R.Block = R.Block->GetNextBlock();
-            R.Position = R.Block->Start;
-        }
-    }
-    return R;
-}
-
-BoundCursor BoundCursor::operator+=(size_t Size) {
-    BoundCursor R = *this;
-    *this = this->operator+(Size);
-    return R;
-}
-
-BoundCursor BoundCursor::operator++() {
-    return *this = this -> operator+(1);
-}
-
-const BoundCursor BoundCursor::operator++(int) {
-    BoundCursor Ret = *this;
-
-    *this = this->operator+(1);
-    return Ret;
-}
-
-bool BoundCursor::operator!() {
-    return (Block == nullptr && Position == nullptr)
-            || (Block == Bound.Block && Position >= Bound.Position);
-}
-u_char BoundCursor::operator[](uint16_t Offset) {
-    BoundCursor Target = operator+(Offset);
-    return *Target;
-}
-
-BoundCursor& BoundCursor::operator=(const BoundCursor &Right) {
-    Block = Right.Block, Position = Right.Position;
-    Bound = Right.Bound;
-    return *this;
 }
 
 BoundCursor &BoundCursor::SetLeft(Cursor &Cursor) {

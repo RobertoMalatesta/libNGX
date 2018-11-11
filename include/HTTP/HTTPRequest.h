@@ -28,12 +28,11 @@ namespace ngx{
             Range Arguments;
             Range Request;
             Array Headers;
-            Array ArgumentList;
             HTTPRequestState State = HTTP_INIT_STATE;
         friend class HTTPParser;
 
         public:
-            HTTPRequest(MemAllocator *Allocator):Headers(Allocator, sizeof(HTTPHeader)), ArgumentList(Allocator, sizeof(Range)){};
+            HTTPRequest(MemAllocator *Allocator):Headers(Allocator, sizeof(HTTPHeader)){};
             /* HTTPConnection
             * Resetable
             * enum Method
