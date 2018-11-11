@@ -35,12 +35,15 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *TP
     EventType Type;
     HTTPConnection *TargetConnection;
     SocketEventDomain *EventDomain;
+    HTTPServer *TargetServer;
 
     printf("EnterPromise, PointerToConnection: %p\n", PointerToConnection);
 
     TargetConnection = static_cast<HTTPConnection *>(PointerToConnection);
-    EventDomain = TargetConnection->ParentEventDomain;
+
     Type = TargetConnection->Event;
+    EventDomain = TargetConnection->ParentEventDomain;
+    TargetServer = TargetConnection->ParentServer;
 
     printf("Event Type: %x, connection fd: %d\n", Type, TargetConnection->GetSocketFD());
 
@@ -56,16 +59,13 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *TP
 
         const u_char Content[] = "HTTP/1.1 200 OK\r\nServer: NGX(TestServer)\nContent-Length: 12\r\n\nHello World!";
 
-
         EventDomain->DetachSocket(TargetConnection, SOCK_READ_WRITE_EVENT);
         write(TargetConnection->GetSocketFD(), Content, sizeof(Content) - 1);
-        EventDomain->PostTimerEvent(1, HTTPConnection::OnCloseConnection, TargetConnection);
+        TargetServer->CloseConnection(TargetConnection);
     }
     if ((Type & ET_WRITE) != 0) {
         // Mark the socket as writable and write all data to it!
     }
-
-
 
     printf("LeavePromise, PointerToConnection: %p\n", PointerToConnection);
 }

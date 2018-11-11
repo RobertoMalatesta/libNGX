@@ -1,3 +1,4 @@
+#include <netinet/tcp.h>
 #include "HTTP/HTTP.h"
 
 using namespace ngx::HTTP;
@@ -18,6 +19,9 @@ HTTPConnection *HTTPConnectionBuilder::Get(int SocketFD, SocketAddress *SocketAd
     if (Connection == nullptr) {
         return nullptr;
     }
+
+    int Open = 1;
+    setsockopt(SocketFD, IPPROTO_TCP, TCP_NODELAY, (void *)&Open, sizeof((Open)));
 
     Connection->ParentServer = Server;
     Connection->ParentListeing = Listening;

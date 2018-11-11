@@ -24,13 +24,12 @@ int HTTPServerTest() {
 
     TimeModuleInit();
 
-    int Count = 500000;
+    RuntimeError Error{0};
 
-    while (Count-- > 0) {
-        RuntimeError Error = Server.HTTPServerEventProcess();
-        Error.PrintError();
-        usleep(100000);
-    }
+    do {
+        Error = Server.HTTPServerEventProcess();
+
+    } while( Error.GetCode() == 0);
 
     return 0;
 }

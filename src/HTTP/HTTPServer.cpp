@@ -79,10 +79,9 @@ RuntimeError HTTPServer::HTTPServerEventProcess() {
 }
 
 RuntimeError HTTPServer::CloseConnection(HTTPConnection *&Connection) {
-
+    EventDomain.DetachSocket(Connection, SOCK_READ_WRITE_EVENT);
     Connection->Reset();
     ConnectionBuilder.Put(Connection);
     Connection = nullptr;
-
     return {0};
 }
