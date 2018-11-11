@@ -18,8 +18,8 @@ int TCPSocketTest() {
 
     TCP4Listening Listen(SocketAddress);
 
-    cout << Listen.SetPortReuse(true).GetErrorString() << endl;
-    cout << Listen.Listen().GetErrorString() << endl;
+    cout << Listen.SetPortReuse(true).GetError() << endl;
+    cout << Listen.Listen().GetError() << endl;
 
     return 0;
 }

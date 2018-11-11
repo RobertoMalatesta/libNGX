@@ -48,7 +48,7 @@ int EPollEventDomainTest() {
     while (Count-- > 0) {
 //        RuntimeError Error = Domain.EventDomainProcess(nullptr);
 
-//        if (Error.GetErrorCode() != 0) {
+//        if (Error.GetCode() != 0) {
 //            Error.PrintError();
 //        }
         usleep(500);

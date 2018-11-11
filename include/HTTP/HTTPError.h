@@ -3,17 +3,17 @@ namespace ngx{
 
         class HTTPError : public Error {
         private:
-            static const char *ErrorCodeToString(int ErrorCode);
+            static const char *ErrorCodeToError(int ErrorCode);
 
         public:
             HTTPError(int ErrorCode, const char *Message = nullptr) : Error(ErrorCode, Message) {};
 
-            const char *GetErrorString() {
-                return ErrorCodeToString(ErrorCode);
+            const char *GetError() {
+                return ErrorCodeToError(ErrorCode);
             }
 
             virtual void PrintError() {
-                printf("HTTPError: %s, Message: %s\n", ErrorCodeToString(ErrorCode), Message == nullptr ? "null" : Message);
+                printf("HTTPError: %s, Message: %s\n", ErrorCodeToError(ErrorCode), Message == nullptr ? "null" : Message);
             }
         };
     }

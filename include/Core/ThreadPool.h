@@ -27,10 +27,10 @@ namespace ngx {
             ThreadPool *TPool = nullptr;
             std::thread WorkerThread;
             std::atomic_flag Lock = ATOMIC_FLAG_INIT;
+            Promise Sentinel;
             Pool Allocator;
             bool Running = true;
-            uint PostCount;
-            Promise Sentinel;
+            uint32_t PostCount;
 
             static void ThreadProcess(Thread *Thread);
 

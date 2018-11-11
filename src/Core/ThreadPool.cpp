@@ -73,7 +73,7 @@ void Thread::ThreadProcess(Thread *Thread) {
 
         while (!Thread->Sentinel.IsEmpty()) {
 
-            Node = (Promise *) Thread->Sentinel.GetHead();
+            Node = static_cast<Promise *> (Thread->Sentinel.GetHead());
             Node->Detach();
             Node->doPromise();
             Thread->Allocator.Free((void *&) Node);

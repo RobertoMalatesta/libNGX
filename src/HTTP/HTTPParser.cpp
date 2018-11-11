@@ -38,6 +38,7 @@ const char BrokenRequestErrorString[] = "Broken Request in buffer!";
 const char BrokenHeaderErrorString[] = "Broken Header in buffer!";
 const char NoMoreHeaderErrorString[] = "No more header!";
 const char HeaderNoMemoryErrorString[] = "No sufficient memory to store header indexer";
+
 HTTPError HTTPParser::ParseHTTPRequest(Buffer &B, HTTPRequest &R) {
 
     SpinlockGuard LockGuard(&R.Lock);
@@ -50,34 +51,44 @@ HTTPError HTTPParser::ParseHTTPRequest(Buffer &B, HTTPRequest &R) {
         case HTTP_PAESE_METHOD:
             Error = ParseMethod(B, R);
 
-            if (Error.GetErrorCode() != 0) {
-                return Error;
+            if (Error.GetCode() != 0) {
+                R.State = HTTP_BAD_REQUEST_STATE;
+                break;
+            } else {
+                R.State = HTTP_PARSE_REQUEST_LINE;
             }
-
-            R.State = HTTP_PARSE_REQUEST_LINE;
         case HTTP_PARSE_REQUEST_LINE:
             Error = ParseRequestLine(B, R);
 
-            if (Error.GetErrorCode() != 0) {
-                return Error;
+            if (Error.GetCode() != 0) {
+                R.State = HTTP_BAD_REQUEST_STATE;
+                break;
+            } else {
+                R.State = HTTP_PARSE_HEADER;
             }
-
-            R.State = HTTP_PARSE_HEADER;
-            break;
         case HTTP_PARSE_HEADER:
-
             do {
-                Error = ParseHTTPRequest(B, R);
-            } while(Error.GetErrorCode() == 0 && Error.GetErrorMessage() == nullptr);
+                Error = ParseHeaders(B, R);
+            } while (Error.GetCode() == 0 && Error.CodeMessage() == nullptr);
 
-            R.State = HTTP_INIT_STATE;
-            break;
+            if (Error.GetCode() != 0) {
+                R.State = HTTP_BAD_REQUEST_STATE;
+                break;
+            } else {
+                R.State = HTTP_VALIDATE_URI;
+            }
+        case HTTP_VALIDATE_URI:
+        case HTTP_VALIDATE_COMPLEX_URI:
+        case HTTP_READ_DATA:
+        case HTTP_READ_CHUNK:
+
+        case HTTP_BAD_REQUEST_STATE:
         default:
-            R.State = HTTP_INIT_STATE;
-            return {EINVAL};
+            Error = {EINVAL, BadRequestErrorString};
+            break;
     }
 
-    return {0};
+    return Error;
 }
 
 HTTPError HTTPParser::ParseMethod(Buffer &B, HTTPRequest &R) {
@@ -85,7 +96,8 @@ HTTPError HTTPParser::ParseMethod(Buffer &B, HTTPRequest &R) {
     u_char C, C1, C2, C3, C4, C5, C6, C7, C8, C9;
     BoundCursor BC;
 
-    for (B >> BC; (C = *BC) != '\0'; BC++) {
+    for (B >> BC; C = *BC, !!BC; BC++) {
+
         if (C == CR || C == LF) {
             continue;
         }
@@ -95,7 +107,7 @@ HTTPError HTTPParser::ParseMethod(Buffer &B, HTTPRequest &R) {
         break;
     }
 
-    C1 = C, C2 = *(BC + 1), C3 = *(BC + 2), C4 = *(BC + 3);
+    C1 = (C = *BC), C2 = *(BC + 1), C3 = *(BC + 2), C4 = *(BC + 3);
 
     if (C4 == ' ') {
         if (C1 == 'G' && C2 == 'E' && C3 == 'T') {
@@ -195,7 +207,8 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
     unsigned int HTTPMajor = 0, HTTPMinor = 0;
     BoundCursor BC, LastBC;
 
-    for (B >> BC, LastBC = BC; (C = *BC) != '\0'; LastBC = BC++) {
+    for (B >> BC, LastBC = BC; C = *BC, !!BC; LastBC = BC++) {
+
         switch (RequestLineState) {
             case RL_SPACEBEFOREURI:
                 if (C == '/') {
@@ -694,6 +707,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
 
     done:
 
+    BC += 1;
     B << BC;
     R.Request.RightBound = BC;
     R.Version = HTTPMajor * 1000 + HTTPMinor;
@@ -725,22 +739,22 @@ HTTPError HTTPParser::ParseHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderSco
 
     HTTPHeader Header;
 
-    for (B >> BC; (C = *BC) != '\0'; BC++) {
+    for (B >> BC; C = *BC, !!BC; BC++) {
 
         switch (State) {
             case HDR_START:
 
-                Header.Header.LeftBound = BC;
+                Header.Value.LeftBound = BC;
                 Header.Name.LeftBound = BC;
                 Header.Valid = true;
 
                 switch (C) {
                     case CR:
-                        Header.Header.RightBound = BC;
+                        Header.Value.RightBound = BC;
                         State = HDR_HEADER_ALMOST_DONE;
                         break;
                     case LF:
-                        Header.Header.RightBound = BC;
+                        Header.Value.RightBound = BC;
                         NoMoreHeader = true;
                         goto done;
                         break;
@@ -793,16 +807,16 @@ HTTPError HTTPParser::ParseHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderSco
 
                 if (C == CR) {
                     Header.Name.RightBound = BC;
-                    Header.Header.LeftBound = BC;
-                    Header.Header.RightBound = BC;
+                    Header.Value.LeftBound = BC;
+                    Header.Value.RightBound = BC;
                     State = HDR_ALMOST_DONE;
                     break;
                 }
 
                 if (C == LF) {
                     Header.Name.RightBound = BC;
-                    Header.Header.LeftBound = BC;
-                    Header.Header.RightBound = BC;
+                    Header.Value.LeftBound = BC;
+                    Header.Value.RightBound = BC;
                     goto done;
                 }
 
@@ -826,18 +840,18 @@ HTTPError HTTPParser::ParseHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderSco
                     case ' ':
                         break;
                     case CR:
-                        Header.Header.LeftBound = BC;
-                        Header.Header.RightBound = BC;
+                        Header.Value.LeftBound = BC;
+                        Header.Value.RightBound = BC;
                         State = HDR_ALMOST_DONE;
                         break;
                     case LF:
-                        Header.Header.LeftBound = BC;
-                        Header.Header.RightBound = BC;
+                        Header.Value.LeftBound = BC;
+                        Header.Value.RightBound = BC;
                         goto done;
                     case '\0':
                         return {EINVAL, InvalidHeaderErrorString};
                     default:
-                        Header.Header.LeftBound = BC;
+                        Header.Value.LeftBound = BC;
                         State = HDR_VALUE;
                         break;
                 }
@@ -845,15 +859,15 @@ HTTPError HTTPParser::ParseHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderSco
             case HDR_VALUE:
                 switch (C) {
                     case ' ':
-                        Header.Header.RightBound = BC;
+                        Header.Value.RightBound = BC;
                         State = HDR_SPACE_AFTER_VALUE;
                         break;
                     case CR:
-                        Header.Header.RightBound = BC;
+                        Header.Value.RightBound = BC;
                         State = HDR_ALMOST_DONE;
                         break;
                     case LF:
-                        Header.Header.RightBound = BC;
+                        Header.Value.RightBound = BC;
                         goto done;
                     case '\0':
                         return {EINVAL, InvalidHeaderErrorString};
@@ -909,19 +923,23 @@ HTTPError HTTPParser::ParseHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderSco
 
     done:
 
+    BC += 1;
     B << BC;
 
-    void *TempPointer;
-    HTTPHeader *TempHeader;
-    TempPointer = R.Headers.Push();
+    if (!NoMoreHeader) {
+        void *TempPointer;
+        HTTPHeader *TempHeader;
+        TempPointer = R.Headers.Push();
 
-    if (TempPointer == nullptr) {
-        return {ENOMEM, HeaderNoMemoryErrorString};
+        if (TempPointer == nullptr) {
+            return {ENOMEM, HeaderNoMemoryErrorString};
+        }
+
+        TempHeader = static_cast<HTTPHeader *>(TempPointer);
+        *TempHeader = Header;
+        return {0};
+    } else {
+        return {0, NoMoreHeaderErrorString};
     }
-
-    TempHeader = static_cast<HTTPHeader *>(TempPointer);
-    *TempHeader = Header;
-
-    return {0, NoMoreHeader ? NoMoreHeaderErrorString : nullptr};
 }
 

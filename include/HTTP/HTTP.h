@@ -55,6 +55,14 @@ namespace ngx {
             HTTP_PAESE_METHOD,
             HTTP_PARSE_REQUEST_LINE,
             HTTP_PARSE_HEADER,
+            HTTP_VALIDATE_URI,
+            HTTP_VALIDATE_COMPLEX_URI,
+            HTTP_READ_DATA,
+            HTTP_READ_CHUNK,
+        };
+
+        enum HTTPResponseState {
+
         };
     }
 }

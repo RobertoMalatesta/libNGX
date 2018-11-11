@@ -2,11 +2,10 @@ namespace ngx{
     namespace HTTP {
 
         struct HTTPHeader {
-            Range Header;
             HashRange Name;
             Range Value;
             bool Valid;
-            HTTPHeader():Header(), Name(),Value(), Valid(true) {}
+            HTTPHeader():Name(),Value(), Valid(true) {}
         };
 
         class HTTPRequest {

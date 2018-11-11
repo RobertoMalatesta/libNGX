@@ -25,6 +25,10 @@ RuntimeError HTTPServer::PostProcessFinished(EventPromiseArgs &Arguments) {
     return {0};
 }
 
+void TestPromise(void *, ThreadPool *) {
+    printf("dummy promise!\n");
+}
+
 RuntimeError HTTPServer::PostConnectionEvent(EventPromiseArgs &Argument) {
 
     EventType TargetType;
@@ -71,12 +75,6 @@ RuntimeError HTTPServer::HTTPServerEventProcess() {
     Argument.UserArguments[4].Ptr = static_cast<void *>(&EventDomain);
     Argument.UserArguments[5].Ptr = (void *) Listen;
 
-    RuntimeError Error = EventDomain.EventDomainProcess(Argument);
-
-    if (Error.GetErrorCode() == 0) {
-        EnqueueListening(Listen);
-    }
-
-    return Error;
+    return EventDomain.EventDomainProcess(Argument);
 }
 

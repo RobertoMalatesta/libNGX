@@ -28,12 +28,12 @@ Cursor::Cursor(BufferMemoryBlock *Block, u_char *Position) {
     this->Block = Block, this->Position = Position;
 }
 
-bool Cursor::operator~() {
+bool Cursor::operator!() {
     return Block == nullptr || Position == nullptr;
 }
 
 u_char Cursor::operator*() {
-    return this->operator~()? (u_char)'\0': *Position;
+    return (!*this)? (u_char)'\0': *Position;
 }
 
 Cursor &Cursor::operator=(Cursor const &Right) {
@@ -79,18 +79,25 @@ BoundCursor BoundCursor::operator+(size_t Size) {
 }
 
 BoundCursor BoundCursor::operator+=(size_t Size) {
-
     BoundCursor R = *this;
     *this = this->operator+(Size);
     return R;
 }
 
-const BoundCursor BoundCursor::operator++(int) {
-    return this->operator+=(1);
+BoundCursor BoundCursor::operator++() {
+    return *this = this -> operator+(1);
 }
 
-bool BoundCursor::operator~() {
-    return Block == Bound.Block && Position >= Bound.Position;
+const BoundCursor BoundCursor::operator++(int) {
+    BoundCursor Ret = *this;
+
+    *this = this->operator+(1);
+    return Ret;
+}
+
+bool BoundCursor::operator!() {
+    return (Block == nullptr && Position == nullptr)
+            || (Block == Bound.Block && Position >= Bound.Position);
 }
 u_char BoundCursor::operator[](uint16_t Offset) {
     BoundCursor Target = operator+(Offset);

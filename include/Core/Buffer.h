@@ -14,7 +14,7 @@
 namespace ngx {
     namespace Core {
 
-        struct Cursor : public Ref {
+        struct Cursor : public Ref, public Achor {
             BufferMemoryBlock *Block = nullptr;
             u_char *Position = nullptr;
 
@@ -26,28 +26,29 @@ namespace ngx {
 
             virtual uint32_t DecRef();
 
-            u_char operator*();
+            virtual u_char operator*();
 
-            bool operator~();
+            virtual bool operator!();
 
             Cursor &operator=(Cursor const &Right);
         };
 
         struct BoundCursor : public Cursor {
             Cursor Bound;
-            BoundCursor operator+=(size_t Size);
+            virtual BoundCursor operator+=(size_t Size);
 
-            const BoundCursor operator++(int);
+            virtual BoundCursor operator++();
+            virtual const BoundCursor operator++(int);
 
-            BoundCursor operator+(size_t Size);
+            virtual BoundCursor operator+(size_t Size);
 
-            BoundCursor operator-(size_t) = delete;
+            virtual BoundCursor operator-(size_t) = delete;
 
-            BoundCursor &operator--() = delete;
+            virtual BoundCursor &operator--() = delete;
 
-            BoundCursor &operator-=(size_t Size) = delete;
+            virtual BoundCursor &operator-=(size_t Size) = delete;
 
-            bool operator~();
+            virtual bool operator!();
 
             u_char operator[](uint16_t Offset);
 
@@ -144,6 +145,14 @@ namespace ngx {
             void IncRef();
 
             void DecRef();
+
+            inline BoundCursor GetBoundCurosr() {
+                BoundCursor Ret;
+                Ret.Block = LeftBound.Block;
+                Ret.Position = LeftBound.Position;
+                Ret.Bound = RightBound;
+                return Ret;
+            }
         };
 
         struct HashRange: Range{
