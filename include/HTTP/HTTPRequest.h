@@ -39,7 +39,7 @@ namespace ngx {
             HTTPRequest(MemAllocator *Allocator) : Headers(Allocator, sizeof(HTTPHeader)),
                                                    ArgumentList(Allocator, sizeof(Range)) {};
             /* HTTPConnection
-            * Resetable
+            * CanReset
             * enum Method
             * Range URI
             * Array *Headers

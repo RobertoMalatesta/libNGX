@@ -1,9 +1,3 @@
-namespace ngx {
-    namespace Core {
-        namespace MetaClass {
-            class Achor {
-                virtual void AchorFunc(){};
-            };
-        }
-    }
-}
+class Achor {
+    virtual void AchorFunc(){};
+};

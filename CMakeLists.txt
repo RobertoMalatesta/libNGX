@@ -5,41 +5,36 @@ project(libNGX)
 set(CMAKE_CXX_STANDARD 11)
 
 set(SOURCE_FILES
-        src/Core/Array.cpp
-        src/Core/ArchX86.cpp
-        src/Core/Buffer.cpp
-        src/Core/BufferMemoryBlock.cpp
-        src/Core/BufferMemoryBlockRecycler.cpp
-        src/Core/BufferBuilder.cpp
-        src/Core/Checksum.cpp
-        src/Core/Connection.cpp
-        src/Core/EPollEventDomain.cpp
-        src/Core/Error.cpp
-        src/Core/EventDomain.cpp
+        src/Core/Arch/ArchX86.cpp
+        src/Core/BasicComponent/Buffer.cpp
+        src/Core/BasicComponent/BufferMemoryBlock.cpp
+        src/Core/BasicComponent/BufferMemoryBlockRecycler.cpp
+        src/Core/BasicComponent/BufferBuilder.cpp
+        src/Core/BasicComponent/Checksum.cpp
+        src/Core/BasicComponent/Connection.cpp
+#        src/Core/EPollEventDomain.cpp
+        src/Core/BasicComponent/Error.cpp
+        src/Core/BasicComponent/EventDomain.cpp
         src/Core/FSTree.cpp
-        src/Core/Hash.cpp
-        src/Core/List.cpp
-        src/Core/LinuxOSUtility.cpp
-        src/Core/Lock.cpp
-        src/Core/Listening.cpp
-        src/Core/MemoryBlockAllocator.cpp
-        src/Core/Pool.cpp
-        src/Core/Queue.cpp
-        src/Core/RBTree.cpp
-        src/Core/Ref.cpp
+        src/Core/BasicComponent/Hash.cpp
+        src/Core/BasicComponent/Lock.cpp
+        src/Core/BasicComponent/Listening.cpp
+        src/Core/BasicComponent/MemoryBlockAllocator.cpp
+        src/Core/BasicComponent/Pool.cpp
+        src/Core/DataStructure/RBTree.cpp
+        src/Core/BasicComponent/Reference.cpp
         src/Core/Server.cpp
-        src/Core/Socket.cpp
-        src/Core/SocketEventDomain.cpp
-        src/Core/StringUtil.cpp
-        src/Core/Time.cpp
-        src/Core/ThreadPool.cpp
-        src/Core/TimerTree.cpp
+        src/Core/BasicComponent/Socket.cpp
+        src/Core/BasicComponent/SocketEventDomain.cpp
+        src/Core/BasicComponent/Time.cpp
+        src/Core/BasicComponent/ThreadPool.cpp
+        src/Core/BasicComponent/TimerTree.cpp
         src/HTTP/HTTPConnection.cpp
         src/HTTP/HTTPServer.cpp
         src/HTTP/HTTPConnectionRecycler.cpp
         src/HTTP/HTTPParser.cpp
         src/HTTP/HTTPError.cpp
-        src/HTTP/HTTPConnectionBuilder.cpp src/Core/BasicMemoryBlock.cpp)
+        src/HTTP/HTTPConnectionBuilder.cpp src/Core/BasicComponent/BasicMemoryBlock.cpp src/Core/DataStructure/Array.cpp src/Core/DataStructure/Queue.cpp src/Core/DataStructure/List.cpp include/Core/BasicComponent/BasicComponent.h)
 
 set(TEST_FILES
         test/Test.cpp
