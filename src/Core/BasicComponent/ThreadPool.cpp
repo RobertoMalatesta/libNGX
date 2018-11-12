@@ -20,7 +20,7 @@ void Promise::doPromise() {
 }
 
 Thread::Thread(ThreadPool *TPool)
-        : Sentinel(), WorkerThread(Thread::ThreadProcess, this), Allocator(THREAD_POOL_MEMORY_SIZE) {
+        : Sentinel(), WorkerThread(Thread::ThreadProcess, this), Allocator() {
     this->TPool = TPool;
 }
 

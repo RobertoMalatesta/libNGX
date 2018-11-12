@@ -1,8 +1,10 @@
 
-    template<class T, size_t ALIGNMENT = 4096>
+
+
+template<class T, size_t ALIGNMENT = DefaultConfig::PAGE_SIZE, size_t DEFAULT_BUILD_SIZE = DefaultConfig::BUILD_DEFAULT_SIZE>
     class AlignBuild {
     public:
-        static int Build(T *&Item, size_t Size) {
+        static int Build(T *&Item, size_t Size = DEFAULT_BUILD_SIZE) {
 
             void *TempPointer;
 

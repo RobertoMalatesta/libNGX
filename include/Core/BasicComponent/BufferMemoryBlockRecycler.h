@@ -17,7 +17,7 @@ protected:
     SpinLock Lock;
     size_t BufferMemoryBlockSize;
 public:
-    BufferMemoryBlockRecycler(size_t BufferMemoryBlockSize, uint64_t RecyclerSize);
+    BufferMemoryBlockRecycler(size_t BufferMemoryBlockSize = BUFFER_DEFAULT_BLOCK_SIZE, uint64_t RecyclerSize = DEFAULT_RECYCLE_SIZE);
 
     size_t GetBlockSize() { return this->BufferMemoryBlockSize; }
 
