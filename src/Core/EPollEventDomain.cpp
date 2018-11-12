@@ -31,7 +31,7 @@ EventError EPollEventDomain::AttachSocket(Socket *S, SocketEventType Type) {
             Detached = !(ReadAttached || WriteAttached);
     int SocketFD = S->GetSocketFD();
 
-    printf("Attach Socket:%d, Type: %x\n", SocketFD, Type);
+//    printf("Attach Socket:%d, Type: %x\n", SocketFD, Type);
 
     if ((Type == SOCK_READ_EVENT && ReadAttached) ||
         (Type == SOCK_WRITE_EVENT && WriteAttached) ||
@@ -97,7 +97,7 @@ EventError EPollEventDomain::DetachSocket(Socket *S, SocketEventType Type) {
             Attached = ReadAttached || WriteAttached;
     int SocketFD = S->GetSocketFD();
 
-    printf("Detach Socket:%d, Type: %x\n", SocketFD, Type);
+//    printf("Detach Socket:%d, Type: %x\n", SocketFD, Type);
 
     if ((Type == SOCK_READ_EVENT && !ReadAttached) ||
         (Type == SOCK_WRITE_EVENT && !WriteAttached) ||

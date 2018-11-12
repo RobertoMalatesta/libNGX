@@ -67,18 +67,19 @@ void cpuinfo() {
 
             /* Pentium */
             case 5:
-                CacheLineSize = 32;
+                CACHELINE_SIZE = 32;
+
                 break;
 
                 /* Pentium Pro, II, III */
             case 6:
-                CacheLineSize = 32;
+                CACHELINE_SIZE= 32;
 
                 model = ((cpu[0] & 0xf0000) >> 8) | (cpu[0] & 0xf0);
 
                 if (model >= 0xd0) {
                     /* Intel Core, Core 2, Atom */
-                    CacheLineSize = 64;
+                    CACHELINE_SIZE = 64;
                 }
 
                 break;
@@ -88,11 +89,11 @@ void cpuinfo() {
                 * it prefetches up to two cache lines during memory read
                 */
             case 15:
-                CacheLineSize = 128;
+                CACHELINE_SIZE= 128;
                 break;
         }
 
     } else if (strcmp((const char *) vendor, "AuthenticAMD") == 0) {
-        CacheLineSize = 64;
+        CACHELINE_SIZE = 64;
     }
 }

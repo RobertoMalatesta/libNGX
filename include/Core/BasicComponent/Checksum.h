@@ -12,10 +12,11 @@
 //===-------------------------------------------------------------------------===//
 
 /* TODO: Align CRC table to cache line size */
-extern uint32_t crc32_table16[];
-extern uint32_t crc32_table256[];
 
 extern "C" {
+
+extern uint32_t crc32_table16[];
+extern uint32_t crc32_table256[];
 
 static inline uint32_t crc(u_char *data, size_t len) {
 

@@ -30,7 +30,7 @@ namespace Md5 {
 
     inline uint32_t SET(uint32_t n, const u_char *p) {
 
-        if (LittleEnding && NonAligned) {
+        if (LITTLE_ENDING && NON_ALIGNED) {
             return (*(uint32_t *) &p[n * 4]);
         } else {
             return block[n] = ((uint32_t) p[n * 4])
@@ -41,7 +41,7 @@ namespace Md5 {
     }
 
     inline uint32_t GET(uint32_t n, const u_char *p) {
-        if (LittleEnding && NonAligned) {
+        if (LITTLE_ENDING && NON_ALIGNED) {
             return (*(uint32_t *) &p[n * 4]);
         } else {
             return block[n];

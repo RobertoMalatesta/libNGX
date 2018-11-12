@@ -19,7 +19,7 @@ static struct {
     char HTTPLogTime[HTTPLogTimeSize];
     char HTTPLogTimeISO8601[HTTPLogTimeISO8601Size];
     char SysLogTime[SysLogTimeSize];
-} TimeStringRingBuffer[NumTimeSlot];
+} TimeStringRingBuffer[NUM_TIME_SLOT];
 
 static const char *WeekString[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 static const char *MonthString[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -35,10 +35,10 @@ int ngx::Core::BasicComponent::EnableTimer() {
 
     struct itimerval itv = {0};
 
-    itv.it_interval.tv_sec = TimeResolution / 1000;
-    itv.it_interval.tv_usec = (TimeResolution % 1000) * 1000;
-    itv.it_value.tv_sec = TimeResolution / 1000;
-    itv.it_value.tv_usec = (TimeResolution % 1000) * 1000;
+    itv.it_interval.tv_sec = TIME_RESOLUTION / 1000;
+    itv.it_interval.tv_usec = (TIME_RESOLUTION % 1000) * 1000;
+    itv.it_value.tv_sec = TIME_RESOLUTION / 1000;
+    itv.it_value.tv_usec = (TIME_RESOLUTION % 1000) * 1000;
 
     if (setitimer(ITIMER_REAL, &itv, nullptr) == -1) {
         return -1;
@@ -183,17 +183,17 @@ static void TimerHandle(int) {
 
 static void UpdateTimeString() {
 
-    uint64_t Ts;
-    TimestampVersion = (TimestampVersion + 1) % NumTimeSlot;
+    uint64_t TS;
+    TimestampVersion = (TimestampVersion + 1) % NUM_TIME_SLOT;
     gettimeofday(&Timestamp, nullptr);
 
-    Ts = (uint64_t) (Timestamp.tv_sec);
-    TimeStringRingBuffer[TimestampVersion].Timestamp = Ts;
+    TS = (uint64_t) (Timestamp.tv_sec);
+    TimeStringRingBuffer[TimestampVersion].Timestamp = TS;
 
     int Year, Month, MonthDay, Hour, Minute, Second, DayOfWeek, Days, Leap, DayOfYear;
 
-    Days = (int) (Ts / 86400);
-    Second = (int) (Ts % 86400);
+    Days = (int) (TS / 86400);
+    Second = (int) (TS % 86400);
 
     if (Days > 2932896) {
         Days = 2932896;

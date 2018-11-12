@@ -15,21 +15,6 @@ HTTPConnection::HTTPConnection(int SocketFd, struct SocketAddress &SocketAddress
         Request(&MemPool) {
 }
 
-void HTTPConnection::OnCloseConnection(void *PointerToConnection, ThreadPool *TPool){
-
-    HTTPConnection *TargetConnection;
-    HTTPServer *Server;
-
-    printf("EnterPromise OnCloseConnection, PointerToConnection: %p\n", PointerToConnection);
-
-    TargetConnection = static_cast<HTTPConnection *>(PointerToConnection);
-    Server = TargetConnection->ParentServer;
-
-    Server->CloseConnection(TargetConnection);
-
-    printf("LeavePromise OnClose Connection, PointerToConnection: %p\n", PointerToConnection);
-}
-
 void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *TPool) {
 
     EventType Type;

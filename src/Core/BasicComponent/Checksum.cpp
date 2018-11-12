@@ -2,6 +2,8 @@
 
 using namespace ngx::Core::BasicComponent;
 
+extern "C" {
+
 uint32_t crc32_table16[] = {
         0x00000000, 0x1db71064, 0x3b6e20c8, 0x26d930ac,
         0x76dc4190, 0x6b6b51f4, 0x4db26158, 0x5005713c,
@@ -75,3 +77,6 @@ uint32_t crc32_table256[] = {
         0xb3667a2e, 0xc4614ab8, 0x5d681b02, 0x2a6f2b94,
         0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
 };
+
+}
+

@@ -4,7 +4,7 @@ private:
     MemoryBlockAllocator *HeadBlock, *CurrentBlock;
 
 public:
-    Pool(size_t BlockSize = PageSize);
+    Pool(size_t BlockSize = PAGE_SIZE);
 
     Pool(Pool &Copy);
 

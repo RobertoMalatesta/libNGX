@@ -25,10 +25,6 @@ RuntimeError HTTPServer::PostProcessFinished(EventPromiseArgs &Arguments) {
     return {0};
 }
 
-void TestPromise(void *, ThreadPool *) {
-    printf("dummy promise!\n");
-}
-
 RuntimeError HTTPServer::PostConnectionEvent(EventPromiseArgs &Argument) {
 
     EventType TargetType;
@@ -52,9 +48,15 @@ RuntimeError HTTPServer::PostConnectionEvent(EventPromiseArgs &Argument) {
         TargetConnection = ConnectionBuilder.Get(SocketFD, TargetSocketAddress, TargetServer, TargetListening, TargetEventDomain);
         AttachConnection(TargetConnection);
     }
-    TargetConnection->Event = TargetType;
     TargetConnection->Lock.Lock();
-    EventDomain.PostPromise(*TargetConnection->OnEventPromise, static_cast<void *>(TargetConnection));
+    TargetConnection->Event = TargetType;
+
+    if (TargetConnection->GetSocketFD() != -1) {
+        EventDomain.PostPromise(*TargetConnection->OnEventPromise, static_cast<void *>(TargetConnection));
+    } else {
+        TargetConnection->Lock.Unlock();
+    }
+
     return {0, nullptr};
 }
 
