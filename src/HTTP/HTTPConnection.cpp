@@ -4,25 +4,33 @@ using namespace ngx::Core;
 using namespace ngx::HTTP;
 
 HTTPConnection::HTTPConnection(struct SocketAddress &SocketAddress) :
-        TimerNode(0, HTTPConnection::OnTimerEventWarp, nullptr),
+        TimerNode(0, HTTPConnection::OnTimerEventWarp, this),
         TCP4Connection(SocketAddress),
         Request(&MemPool) {
 }
 
 HTTPConnection::HTTPConnection(int SocketFd, struct SocketAddress &SocketAddress) :
-        TimerNode(0, HTTPConnection::OnTimerEventWarp, nullptr),
+        TimerNode(0, HTTPConnection::OnTimerEventWarp, this),
         TCP4Connection(SocketFd, SocketAddress),
         Request(&MemPool) {
 }
 
 void HTTPConnection::OnTimerEventWarp(void *PointerToConnection, ThreadPool *TPool) {
+
+    HTTPServer *TargetServer;
     HTTPConnection *TargetConnection;
-
     TargetConnection = static_cast<HTTPConnection *>(PointerToConnection);
+    TargetServer = TargetConnection->ParentServer;
 
-    TargetConnection->Lock.Lock();
-    TargetConnection->Event = ET_TIMER;
-    OnConnectionEvent(PointerToConnection, TPool);
+    printf("Timer trigger!\n");
+
+    if (TargetConnection->Closed) {
+        TargetConnection->Reset();
+        TargetServer->PutConnection(TargetConnection);
+    } else {
+        TargetConnection->Event |= ET_TIMER;
+        OnConnectionEvent(PointerToConnection, TPool);
+    }
 }
 
 void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *TPool) {
@@ -30,7 +38,6 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *TP
     EventType Type;
     HTTPConnection *TargetConnection;
     SocketEventDomain *EventDomain;
-    HTTPServer *TargetServer;
 
     printf("EnterPromise, PointerToConnection: %p\n", PointerToConnection);
 
@@ -38,7 +45,8 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *TP
 
     Type = TargetConnection->Event;
     EventDomain = TargetConnection->ParentEventDomain;
-    TargetServer = TargetConnection->ParentServer;
+
+    TargetConnection->Event = ET_NONE;
 
     printf("Event Type: %x, connection fd: %d\n", Type, TargetConnection->GetSocketFD());
 
@@ -55,9 +63,6 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *TP
         // Mark the socket as writable and write all data to it!
     }
     if ((Type & ET_TIMER) != 0) {
-        if (TargetConnection->Closed) {
-            TargetServer->PutConnection(TargetConnection);
-        }
         // Handle timer
     }
     TargetConnection->Lock.Unlock();
@@ -91,7 +96,6 @@ void HTTPConnection::Reset() {
 SocketError HTTPConnection::Close() {
 
     uint64_t RecycleTime;
-
     ParentEventDomain->DetachSocket(this, SOCK_READ_WRITE_EVENT);
 
     if (SocketFd != -1) {
@@ -103,10 +107,8 @@ SocketError HTTPConnection::Close() {
 
     RecycleTime = GetTimeStamp() + 5;
 
-    ParentEventDomain->DetachTimer(TimerNode);
     TimerNode.SetExpireTime(RecycleTime);
     ParentEventDomain->AttachTimer(TimerNode);
-
     return {0};
 }
 

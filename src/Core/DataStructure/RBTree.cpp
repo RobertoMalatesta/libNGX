@@ -70,6 +70,10 @@ void RBTree::RotateRight(RBTreeNode *Node) {
 
 void RBTree::Insert(RBTreeNode *Node) {
 
+    if (Node->Left != nullptr || Node->Right != nullptr) {
+        return;
+    }
+
     if (Root == Sentinel) {
         Node->Parent = nullptr;
         Node->Left = Sentinel;

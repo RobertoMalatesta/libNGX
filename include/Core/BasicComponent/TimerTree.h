@@ -1,15 +1,16 @@
-class Timer : public RBTreeNode {
+class Timer : public RBTreeNode, public CanReset {
 
     friend class TimerTree;
 
 protected:
-    uint64_t Timestamp = 0;
-    PromiseCallback *Callback = nullptr;
-    void *Argument = nullptr;
-
+    bool On = false;
     virtual int Compare(Timer *Node);
 
 public:
+
+    uint64_t Timestamp = 0;
+    void *Argument = nullptr;
+    PromiseCallback *Callback = nullptr;
 
     Timer() {};
 
@@ -24,20 +25,19 @@ public:
     void SetExpireTime(uint64_t Timestamp) {
         this->Timestamp = Timestamp;
     }
+
+    virtual void Reset() {On = false;};
 };
 
 class TimerTree : public RBTree, public AllocatorBuild<Timer> {
+    SpinLock Lock;
 public:
     TimerTree(MemAllocator *Allocator);
 
     ~TimerTree();
 
-    int PostTimerPromise(uint64_t Seconds, PromiseCallback *Callback, void *Argument);
-
     int QueueExpiredTimer(ThreadPool *TPool);
 
     int AttachTimer(Timer &T);
-
-    int DetachTimer(Timer &T);
 };
 

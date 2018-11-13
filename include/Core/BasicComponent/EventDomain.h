@@ -1,12 +1,11 @@
+typedef uint32_t EventType;
 
-typedef enum {
-    ET_NONE = 0x0000,
-    ET_TIMER = 0x0001,
-    ET_CONNECTED = 0x0002,
-    ET_READ = 0x0004,
-    ET_WRITE = 0x0008,
-    ET_CLOSED = 0x0010,
-} EventType;
+const uint32_t ET_NONE = 0x0000;
+const uint32_t ET_TIMER = 0x0001;
+const uint32_t ET_CONNECTED = 0x0002;
+const uint32_t ET_READ = 0x0004;
+const uint32_t ET_WRITE = 0x0008;
+const uint32_t ET_CLOSED = 0x0010;
 
 typedef enum {
     SOCK_READ_EVENT = 0,
@@ -31,11 +30,6 @@ public:
 
     inline RuntimeError AttachTimer(Timer &Timer) {
         Timers.AttachTimer(Timer);
-        return {0};
-    }
-
-    inline RuntimeError DetachTimer(Timer &Timer) {
-        Timers.DetachTimer(Timer);
         return {0};
     }
 

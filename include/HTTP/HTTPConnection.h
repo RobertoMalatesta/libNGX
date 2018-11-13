@@ -9,7 +9,7 @@ namespace ngx {
             Pool MemPool;
             SpinLock Lock;
             Timer TimerNode;
-            EventType Event;
+            uint32_t Event;
             Buffer ReadBuffer;
             HTTPRequest Request;
             HTTPServer *ParentServer;

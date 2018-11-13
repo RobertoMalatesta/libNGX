@@ -25,14 +25,16 @@ HTTPConnection *HTTPConnectionBuilder::Get(int SocketFD, SocketAddress *SocketAd
     }
 
     setsockopt(SocketFD, IPPROTO_TCP, TCP_NODELAY, (void *) &TCPNoDelay, sizeof(TCPNoDelay));
-    setsockopt(SocketFD, IPPROTO_TCP, TCP_NOPUSH, (void *) &TCPNoPush, sizeof(TCPNoPush));
 
     // configure connection
     Connection->Closed = false;
     Connection->ParentServer = Server;
     Connection->ParentListeing = Listening;
     Connection->ParentEventDomain = EventDomain;
-    EventDomain->AttachTimer(Connection->TimerNode);
+
+    Connection->TimerNode.Reset();
+
+//    EventDomain->AttachTimer(Connection->TimerNode);
     BB.BuildBuffer(Connection->ReadBuffer);
 
     return Connection;
@@ -43,7 +45,6 @@ void HTTPConnectionBuilder::Put(HTTPConnection *C) {
 
     if (C != nullptr) {
         TargetEventDomain = C->ParentEventDomain;
-        TargetEventDomain->DetachTimer(C->TimerNode);
         BackendRecycler.Put(C);
     }
 }

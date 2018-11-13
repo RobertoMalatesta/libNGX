@@ -35,7 +35,7 @@ RuntimeError HTTPServer::PostConnectionEvent(EventPromiseArgs &Argument) {
     EPollEventDomain *TargetEventDomain;
 
     TargetConnection = static_cast<HTTPConnection *>(Argument.UserArguments[6].Ptr);
-    TargetType = static_cast<EventType>(Argument.UserArguments[7].UInt);
+    TargetType = Argument.UserArguments[7].UInt;
 
     if ((TargetType & ET_CONNECTED) != 0) {
 
@@ -82,6 +82,9 @@ RuntimeError HTTPServer::HTTPServerEventProcess() {
 }
 
 RuntimeError HTTPServer::PutConnection(HTTPConnection *&Connection) {
+
+    SpinlockGuard LockGuard(&Lock);
+
     Connection->Reset();
     ConnectionBuilder.Put(Connection);
     Connection = nullptr;

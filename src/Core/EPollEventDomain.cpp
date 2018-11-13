@@ -71,6 +71,8 @@ EventError EPollEventDomain::AttachSocket(Socket *S, SocketEventType Type) {
         case SOCK_READ_WRITE_EVENT:
             Event.events |= EPOLLIN | EPOLLRDHUP | EPOLLOUT;
             break;
+        default:
+            break;
     }
 
     SpinlockGuard LockGuard(&Lock);
@@ -125,6 +127,8 @@ EventError EPollEventDomain::DetachSocket(Socket *S, SocketEventType Type) {
             break;
         case SOCK_READ_WRITE_EVENT:
             Event.events &= ~(EPOLLIN | EPOLLRDHUP | EPOLLOUT);
+            break;
+        default:
             break;
     }
 
