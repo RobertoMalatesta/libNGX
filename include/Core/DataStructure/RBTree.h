@@ -16,59 +16,21 @@ protected:
 
     virtual int Compare(RBTreeNode *Node) { return 0; }
 
-public:
-    static RBTreeNode *CreateFromAllocator(MemAllocator *Allocator, size_t DateSize) { return nullptr; };
-
-    static void FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node) {};
-
-    friend class RBTree;
-};
-
-class UInt32RBTreeNode : public RBTreeNode {
-
-    friend class UInt32RBTree;
-
-protected:
-    uint32_t Key = 0;
-    size_t DataSize = 0;
-    u_char Data[0];
-
-    UInt32RBTreeNode() = default;
-
-    UInt32RBTreeNode(size_t DataSize, uint32_t Key) {
-        this->DataSize = DataSize;
-        this->Key = Key;
-    };
-
-    ~UInt32RBTreeNode() = default;
-
     RBTreeNode *GetLeft() { return this->Left; }
 
     RBTreeNode *GetRight() { return this->Right; }
 
 public:
-
-    void SetKey(uint32_t Key) { this->Key = Key; };
-
-    uint32_t GetKey() { return Key; };
-
-    u_char *GetDataPointer() { return this->Data; };
-
-    virtual int Compare(UInt32RBTreeNode *Node);
-
-    static RBTreeNode *CreateFromAllocator(MemAllocator *Allocator, size_t DateSize);
-
-    static void FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node);
+    friend class RBTree;
 };
 
 class RBTree {
 
 protected:
-    RBTreeNode *Root;
-    RBTreeNode *Sentinel;
-    MemAllocator *Allocator;
+    RBTreeNode *Root = nullptr;
+    RBTreeNode *Sentinel = nullptr;
 
-    RBTree(MemAllocator *Allocator);
+    RBTree() = default;
 
     ~RBTree() = default;
 
@@ -86,21 +48,38 @@ public:
     RBTreeNode *Minimum();
 };
 
-class UInt32RBTree : public RBTree {
+union UInt32TreeValue {
+    void *Ptr;
+    uint32_t UInt;
+};
+
+
+class UInt32RBTreeNode : public RBTreeNode {
+
+    friend class UInt32RBTree;
 
 protected:
+    uint32_t Key = 0;
+
+public:
+
+    UInt32TreeValue Value;
+
+    UInt32RBTreeNode() = default;
+
+    ~UInt32RBTreeNode() = default;
+
+    void SetKey(uint32_t Key) { this->Key = Key; };
+
+    virtual int Compare(UInt32RBTreeNode *Node);
+};
+
+class UInt32RBTree : public RBTree, public AllocatorBuild<UInt32RBTreeNode> {
+
+public:
     UInt32RBTree(MemAllocator *Allocator);
 
     ~UInt32RBTree();
-
-public:
-    UInt32RBTreeNode *CreateNodeFromAllocator(size_t DataSize, uint32_t Key = 0);
-
-    void FreeNodeFromAllocator(UInt32RBTreeNode **TheRBTreeNode);
-
-    static UInt32RBTree *CreateFromAllocator(MemAllocator *ParentAllocator, MemAllocator *Allocator);
-
-    static void FreeFromAllocator(MemAllocator *ParentAllocator, UInt32RBTree **TheRBTree);
 
     UInt32RBTreeNode *Find(uint32_t Key);
 };

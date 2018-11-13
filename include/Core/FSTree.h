@@ -63,9 +63,9 @@ namespace ngx{
         protected:
             friend class FSTree;
 
-            MemAllocator *Allocator;
             bool Directory = false;
-            FSTree *Children;
+            FSTree *RootTree;
+            FSTree *ChildrenTree;
             FilterQueue FilterSentinel;
             RegExpQueue RegExpSentinel;
             size_t KeyLength = -1;
@@ -74,23 +74,20 @@ namespace ngx{
             u_char *Key;
             u_char *Data;
 
-            FSEntity(MemAllocator *Allocator, bool Directory = false);
-
-            ~FSEntity();
 
             int RawCompare(u_char *Key, size_t Length, bool Directory);
 
             virtual int Compare(FSEntity *Node);
-
-            RBTreeNode *GetLeft() { return this->Left; }
-
-            RBTreeNode *GetRight() { return this->Right; }
 
             FSEntity *CreateChild(u_char *Key, size_t Length, size_t DataSize, bool Directory);
 
             void DeleteChild(u_char *Key, size_t Length, bool Directory);
 
         public:
+
+            FSEntity(bool Directory = false);
+
+            ~FSEntity();
             bool IsDirectory() { return Directory; };
 
             u_char *GetDataPointer() { return Data; };
@@ -100,7 +97,7 @@ namespace ngx{
             static void FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node);
         };
 
-        class FSTree : public RBTree {
+        class FSTree : public RBTree ,public AllocatorBuild<FSEntity>{
 
         protected:
             FSTree(MemAllocator *Allocator);

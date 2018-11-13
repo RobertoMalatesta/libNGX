@@ -2,29 +2,8 @@
 
 using namespace ngx::Core;
 
-FSEntity::FSEntity(MemAllocator *Allocator, bool Directory) : RBTreeNode(), FilterSentinel(nullptr), RegExpSentinel() {
-    this->Allocator = Allocator;
-    this->Children = nullptr;
+FSEntity::FSEntity(bool Directory) : RBTreeNode(), FilterSentinel(nullptr), RegExpSentinel() {
     this->Directory = Directory;
-}
-
-RBTreeNode *FSEntity::CreateFromAllocator(MemAllocator *Allocator, size_t DateSize) {
-
-    void *PointerToMemory = Allocator->Allocate(DateSize);
-    FSEntity *Entity;
-
-    if (nullptr == PointerToMemory) {
-        return nullptr;
-    }
-
-    Entity = new(PointerToMemory) FSEntity(Allocator);
-    return (RBTreeNode *) Entity;
-}
-
-void FSEntity::FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node) {
-    if (nullptr != Node && nullptr != *Node) {
-        Allocator->Free((void * &) *Node);
-    }
 }
 
 FSEntity *FSEntity::CreateChild(u_char *Key, size_t Length, size_t DataSize, bool Directory) {
@@ -33,19 +12,19 @@ FSEntity *FSEntity::CreateChild(u_char *Key, size_t Length, size_t DataSize, boo
         return nullptr;
     }
 
-    if (Children == nullptr) {
-        Children = FSTree::CreateFromAllocator(Allocator, Allocator);
+    if (ChildrenTree == nullptr) {
+//        ChildrenTree = FSTree::CreateFromAllocator(Allocator, Allocator);
     }
 
-    return Children->CreateChild(Key, Length, DataSize, Directory);
+    return ChildrenTree->CreateChild(Key, Length, DataSize, Directory);
 }
 
 void FSEntity::DeleteChild(u_char *Key, size_t Length, bool Directory) {
 
-    if (Children == nullptr) {
+    if (ChildrenTree == nullptr) {
         return;
     }
-    return Children->DeleteChild(Key, Length, Directory);
+    return ChildrenTree->DeleteChild(Key, Length, Directory);
 }
 
 int FSEntity::RawCompare(u_char *Key, size_t Length, bool Directory) {
@@ -69,7 +48,7 @@ int FSEntity::Compare(FSEntity *Node) {
     return RawCompare(Node->Key, Node->KeyLength, Node->Directory);
 }
 
-FSTree::FSTree(MemAllocator *Allocator) : RBTree(Allocator) {
+FSTree::FSTree(MemAllocator *Allocator) : RBTree() {
 
     void *PointerToSentinel = Allocator->Allocate(sizeof(FSEntity));
 
@@ -83,19 +62,17 @@ FSTree::FSTree(MemAllocator *Allocator) : RBTree(Allocator) {
 FSTree::~FSTree() {
 
     RBTreeNode *Temp;
+    FSEntity *TempEntity;
 
     for (RBTreeNode *It = Minimum(); It != nullptr && It != Sentinel;) {
         Temp = It;
         It = Next(It);
         Delete(Temp);
-        Allocator->Free((void *&) Temp);
+        Destroy(TempEntity);
     }
 
-    Temp = Sentinel;
-
-    if (Temp != nullptr) {
-        Allocator->Free((void *&) Temp);
-    }
+    TempEntity = (FSEntity *)Sentinel;
+    Destroy(TempEntity);
 
     RBTree::~RBTree();
 }
@@ -111,8 +88,8 @@ FSEntity *FSTree::CreateChild(u_char *Key, size_t Length, size_t DataSize, bool 
         return nullptr;
     }
 
-    Node = (FSEntity *) FSEntity::CreateFromAllocator(Allocator,
-                                                      sizeof(FSEntity) + sizeof(u_char) * (Length + 2) + DataSize);
+    Build(Node);
+
 
     if (nullptr == Node) {
         return nullptr;
@@ -160,7 +137,7 @@ void FSTree::DeleteChild(u_char *Key, size_t Length, bool Directory) {
 
     if (nullptr != Entity) {
         Delete((RBTreeNode *) Entity);
-        FSEntity::FreeFromAllocator(Allocator, (RBTreeNode **) &Entity);
+        Destroy(Entity);
     }
 }
 

@@ -31,7 +31,7 @@ public:
     static void FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node);
 };
 
-class TimerTree : public RBTree {
+class TimerTree : public RBTree, public AllocatorBuild<TimerTreeNode> {
 
 protected:
     TimerTree(MemAllocator *Allocator);

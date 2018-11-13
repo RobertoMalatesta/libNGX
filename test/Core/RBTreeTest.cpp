@@ -7,7 +7,7 @@ int RBTreeTest() {
 
     Pool MemoryPool;
 
-    UInt32RBTree *RBTree = UInt32RBTree::CreateFromAllocator(&MemoryPool, &MemoryPool);
+    UInt32RBTree RBTree(&MemoryPool);
 
     UInt32RBTreeNode *Temp;
 
@@ -16,9 +16,11 @@ int RBTreeTest() {
     Nodes.clear();
 
     for (uint32_t i = 0; i < 10000; i++) {
-        Temp = RBTree->CreateNodeFromAllocator(1, i);
+        RBTree.Build(Temp);
+        Temp->SetKey(i);
+        Temp->Value.UInt = i;
+        RBTree.Insert(Temp);
         Nodes.push_back(Temp);
-        RBTree->Insert(Temp);
     }
 
     UInt32RBTreeNode *Node;
@@ -26,40 +28,35 @@ int RBTreeTest() {
     uint32_t Sum = 0;
 
     for (uint32_t i = 0; i < 10001; i++) {
-        Node = RBTree->Find(i);
-
-        if (Node != nullptr) {
-            Sum += Node->GetKey();
-        }
+        Node = RBTree.Find(i);
     }
 
-    for (RBTreeNode *N = RBTree->Minimum(); N != nullptr; N = RBTree->Next(N)) {
-        printf("%u\n", ((UInt32RBTreeNode *) N)->GetKey());
+    for (RBTreeNode *N = RBTree.Minimum(); N != nullptr; N = RBTree.Next(N)) {
+        printf("%u\n", ((UInt32RBTreeNode *) N)->Value.UInt);
     }
 
 
     for (UInt32RBTreeNode *it : Nodes) {
         Node = it;
-        RBTree->Delete(Node);
-        RBTree->FreeNodeFromAllocator(&Node);
+        RBTree.Delete(Node);
+        RBTree.Destroy(Node);
     }
 
     Nodes.clear();
 
-    for (int i = 0; i < 10000; i++) {
-        Temp = RBTree->CreateNodeFromAllocator(1, (uint32_t) i);
+    for (uint32_t i = 0; i < 10000; i++) {
+        RBTree.Build(Temp);
+        Temp->SetKey(i);
+        Temp->Value.UInt = i;
+        RBTree.Insert(Temp);
         Nodes.push_back(Temp);
-        RBTree->Insert(Temp);
     }
 
     for (UInt32RBTreeNode *it : Nodes) {
         Node = it;
-        RBTree->Delete(Node);
-        RBTree->FreeNodeFromAllocator(&Node);
-
+        RBTree.Delete(Node);
+        RBTree.Destroy(Node);
     }
-
-    UInt32RBTree::FreeFromAllocator(&MemoryPool, &RBTree);
 
     MemoryPool.GC();
 
