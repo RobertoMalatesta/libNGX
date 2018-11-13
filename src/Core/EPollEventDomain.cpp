@@ -156,7 +156,7 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs &Argument) {
 
     RuntimeError Error{0}, PostError{0};
 
-    Error= EventDomain::EventDomainProcess(Argument);
+    Error = EventDomain::EventDomainProcess(Argument);
 
     if (Error.GetCode() != 0) {
         return Error;
@@ -188,10 +188,10 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs &Argument) {
     Waiting.clear();
 
     if (-1 == EventCount && errno == EINTR) {
-        Error =  {0, "Interrupted by signal"};
+        Error = {0, "Interrupted by signal"};
     } else if (-1 >= EventCount) {
         return {errno, "epoll_wait() failed!"};
-    } else if ( 0 < EventCount){
+    } else if (0 < EventCount) {
 
         for (int i = 0; i < EventCount; i++) {
 
@@ -235,7 +235,7 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs &Argument) {
     Argument.UserArguments[6].UInt = 0;
     Argument.UserArguments[7].UInt = 0;
 
-   PostError = Server->PostProcessFinished(Argument);
+    PostError = Server->PostProcessFinished(Argument);
 
-   return PostError.GetCode() != 0? PostError: Error;
+    return PostError.GetCode() != 0 ? PostError : Error;
 }

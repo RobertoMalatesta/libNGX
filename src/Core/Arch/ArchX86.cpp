@@ -73,7 +73,7 @@ void cpuinfo() {
 
                 /* Pentium Pro, II, III */
             case 6:
-                CACHELINE_SIZE= 32;
+                CACHELINE_SIZE = 32;
 
                 model = ((cpu[0] & 0xf0000) >> 8) | (cpu[0] & 0xf0);
 
@@ -89,7 +89,7 @@ void cpuinfo() {
                 * it prefetches up to two cache lines during memory read
                 */
             case 15:
-                CACHELINE_SIZE= 128;
+                CACHELINE_SIZE = 128;
                 break;
         }
 

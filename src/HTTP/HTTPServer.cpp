@@ -45,7 +45,8 @@ RuntimeError HTTPServer::PostConnectionEvent(EventPromiseArgs &Argument) {
         TargetListening = static_cast<Listening *>(Argument.UserArguments[5].Ptr);
         TargetEventDomain = static_cast<EPollEventDomain *>(Argument.UserArguments[4].Ptr);
         TargetSocketAddress = static_cast<SocketAddress *>(Argument.UserArguments[1].Ptr);
-        TargetConnection = ConnectionBuilder.Get(SocketFD, TargetSocketAddress, TargetServer, TargetListening, TargetEventDomain);
+        TargetConnection = ConnectionBuilder.Get(SocketFD, TargetSocketAddress, TargetServer, TargetListening,
+                                                 TargetEventDomain);
         AttachConnection(TargetConnection);
     }
     TargetConnection->Lock.Lock();
