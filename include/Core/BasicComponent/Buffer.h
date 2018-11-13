@@ -224,7 +224,6 @@ protected:
     Cursor WriteCursor;
     BufferMemoryBlock *HeadBlock = nullptr;
 
-
     friend class BufferBuilder;
 
 public:

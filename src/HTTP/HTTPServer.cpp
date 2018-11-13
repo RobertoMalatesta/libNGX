@@ -52,7 +52,7 @@ RuntimeError HTTPServer::PostConnectionEvent(EventPromiseArgs &Argument) {
     TargetConnection->Lock.Lock();
     TargetConnection->Event = TargetType;
 
-    if (TargetConnection->GetSocketFD() != -1) {
+    if (!TargetConnection->Closed) {
         EventDomain.PostPromise(*TargetConnection->OnEventPromise, static_cast<void *>(TargetConnection));
     } else {
         TargetConnection->Lock.Unlock();
@@ -81,8 +81,7 @@ RuntimeError HTTPServer::HTTPServerEventProcess() {
     return EventDomain.EventDomainProcess(Argument);
 }
 
-RuntimeError HTTPServer::CloseConnection(HTTPConnection *&Connection) {
-    EventDomain.DetachSocket(Connection, SOCK_READ_WRITE_EVENT);
+RuntimeError HTTPServer::PutConnection(HTTPConnection *&Connection) {
     Connection->Reset();
     ConnectionBuilder.Put(Connection);
     Connection = nullptr;

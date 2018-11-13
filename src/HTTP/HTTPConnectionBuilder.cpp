@@ -7,12 +7,16 @@ HTTPConnectionBuilder::HTTPConnectionBuilder(size_t BufferBlockSize, uint64_t Bu
                                              uint64_t ConnectionRecyclerSize) :
         BackendRecycler(ConnectionRecyclerSize),
         BB(BufferBlockSize, BufferRecyclerSize),
-        TCPNoDelay(0),
+        TCPNoDelay(1),
         TCPNoPush(0) {
 }
 
 HTTPConnection *HTTPConnectionBuilder::Get(int SocketFD, SocketAddress *SocketAddress, HTTPServer *Server,
                                            Listening *Listening, SocketEventDomain *EventDomain) {
+
+    if (SocketFD == -1) {
+        return nullptr;
+    }
 
     HTTPConnection *Connection = BackendRecycler.Get(SocketFD, *SocketAddress);
 
@@ -20,20 +24,26 @@ HTTPConnection *HTTPConnectionBuilder::Get(int SocketFD, SocketAddress *SocketAd
         return nullptr;
     }
 
-    int Open = 1;
-    setsockopt(SocketFD, IPPROTO_TCP, TCP_NODELAY, (void *)&Open, sizeof((Open)));
+    setsockopt(SocketFD, IPPROTO_TCP, TCP_NODELAY, (void *)&TCPNoDelay, sizeof(TCPNoDelay));
+    setsockopt(SocketFD, IPPROTO_TCP, TCP_NOPUSH, (void *)&TCPNoPush, sizeof(TCPNoPush));
 
+    // configure connection
+    Connection->Closed = false;
     Connection->ParentServer = Server;
     Connection->ParentListeing = Listening;
     Connection->ParentEventDomain = EventDomain;
+    EventDomain->AttachTimer(Connection->TimerNode);
     BB.BuildBuffer(Connection->ReadBuffer);
-    // configure connection
 
     return Connection;
 }
 
 void HTTPConnectionBuilder::Put(HTTPConnection *C) {
+    SocketEventDomain *TargetEventDomain;
+
     if (C != nullptr) {
+        TargetEventDomain = C->ParentEventDomain;
+        TargetEventDomain->DetachTimer(C->TimerNode);
         BackendRecycler.Put(C);
     }
 }

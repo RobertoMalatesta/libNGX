@@ -7,13 +7,7 @@ SocketEventDomain::SocketEventDomain(size_t PoolSize, int ThreadCount) :
 }
 
 RuntimeError EventDomain::EventDomainProcess(EventPromiseArgs &Argument) {
-
-    if (nullptr == Timers) {
-        return {EINVAL, "Timer init failed, Timer == nullptr!"};
-    }
-
-    Timers->QueueExpiredTimer(&TPool);
-
+    Timers.QueueExpiredTimer(&TPool);
     return {0};
 }
 

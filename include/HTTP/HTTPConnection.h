@@ -3,13 +3,15 @@ namespace ngx{
 
         class HTTPConnection : public TCP4Connection, public Recyclable {
         protected:
-            SpinLock Lock;
-            Pool MemPool;
-            Buffer ReadBuffer;
-            TimerTreeNode TimerNode;
-            HTTPRequest Request;
+            bool Closed = true;
+            uint64_t LastEventTimestamp = 0;
 
+            Pool MemPool;
+            SpinLock Lock;
+            Timer TimerNode;
             EventType Event;
+            Buffer ReadBuffer;
+            HTTPRequest Request;
             HTTPServer *ParentServer;
             Listening *ParentListeing;
             SocketEventDomain *ParentEventDomain;
@@ -18,11 +20,14 @@ namespace ngx{
 
             RuntimeError SetSocketAddress(int SocketFD, struct SocketAddress &TargetSocketAddress);
 
-            static void OnCloseConnection(void *PointerToConnection, ThreadPool *TPool);
+            static void OnTimerEventWarp(void *PointerToConnection, ThreadPool *TPool);
             static void OnConnectionEvent(void *PointerToConnection, ThreadPool *TPool);
 
-            HTTPConnection(Core::SocketAddress &SocketAddress);
+            HTTPConnection(struct SocketAddress &SocketAddress);
             HTTPConnection(int SocketFd, Core::SocketAddress &SocketAddress);
+
+            SocketError Close();
+            RuntimeError RefreshTimer();
 
             friend class HTTPServer;
             friend class HTTPConnectionRecycler;

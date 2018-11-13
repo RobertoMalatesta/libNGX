@@ -1,4 +1,4 @@
-class TimerTreeNode : public RBTreeNode {
+class Timer : public RBTreeNode {
 
     friend class TimerTree;
 
@@ -7,44 +7,36 @@ protected:
     PromiseCallback *Callback = nullptr;
     void *Argument = nullptr;
 
-    RBTreeNode *GetLeft() { return this->Left; }
-
-    RBTreeNode *GetRight() { return this->Right; }
-
-    virtual int Compare(TimerTreeNode *Node);
+    virtual int Compare(Timer *Node);
 
 public:
 
-    TimerTreeNode() {};
+    Timer() {};
 
-    TimerTreeNode(uint64_t Timestamp, PromiseCallback *Callback, void *Argument) {
+    Timer(uint64_t Timestamp, PromiseCallback *Callback, void *Argument) {
         this->Timestamp = Timestamp;
         this->Callback = Callback;
         this->Argument = Argument;
     };
 
-    ~TimerTreeNode() = default;
+    ~Timer() = default;
 
-    static RBTreeNode *
-    CreateFromAllocator(MemAllocator *Allocator, uint64_t MillSecond, PromiseCallback *Callback, void *Argument);
-
-    static void FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node);
+    void SetExpireTime(uint64_t Timestamp) {
+        this->Timestamp = Timestamp;
+    }
 };
 
-class TimerTree : public RBTree, public AllocatorBuild<TimerTreeNode> {
-
-protected:
+class TimerTree : public RBTree, public AllocatorBuild<Timer> {
+public:
     TimerTree(MemAllocator *Allocator);
 
     ~TimerTree();
 
-public:
-    static TimerTree *CreateFromAllocator(MemAllocator *ParentAllocator, MemAllocator *Allocator);
-
-    static void FreeFromAllocator(MemAllocator *ParentAllocator, TimerTree **TheRBTree);
-
-    int PostTimerPromise(uint64_t MillSecond, PromiseCallback function, void *args);
+    int PostTimerPromise(uint64_t Seconds, PromiseCallback *Callback, void *Argument);
 
     int QueueExpiredTimer(ThreadPool *TPool);
+
+    int AttachTimer(Timer &T);
+    int DetachTimer(Timer &T);
 };
 

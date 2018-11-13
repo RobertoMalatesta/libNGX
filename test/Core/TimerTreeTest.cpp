@@ -18,21 +18,20 @@ int TimerTreeTest() {
 
     Pool MemAllocator;
     ThreadPool T(7);
-
+    TimerTree Tree(&MemAllocator);
     TimeModuleInit();
 
-    TimerTree *Tree = TimerTree::CreateFromAllocator(&MemAllocator, &MemAllocator);
-    Tree->PostTimerPromise(1, func, nullptr);
-    Tree->PostTimerPromise(3, func, nullptr);
-    Tree->PostTimerPromise(5, func, nullptr);
-    Tree->PostTimerPromise(10, func, nullptr);
-    Tree->PostTimerPromise(15, func, nullptr);
-    Tree->PostTimerPromise(18, func, nullptr);
+    Tree.PostTimerPromise(1, func, nullptr);
+    Tree.PostTimerPromise(3, func, nullptr);
+    Tree.PostTimerPromise(5, func, nullptr);
+    Tree.PostTimerPromise(10, func, nullptr);
+    Tree.PostTimerPromise(15, func, nullptr);
+    Tree.PostTimerPromise(18, func, nullptr);
 
     int i = 0;
 
     while (i++ < 20) {
-        Tree->QueueExpiredTimer(&T);
+        Tree.QueueExpiredTimer(&T);
         usleep(1000 * 1000);
     }
     return 0;

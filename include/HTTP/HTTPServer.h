@@ -24,7 +24,7 @@ namespace ngx{
                     uint64_t ConnectionRecycleSize, uint64_t BufferRecycleSize);
 
             virtual RuntimeError PostConnectionEvent(EventPromiseArgs &Argument);
-            virtual RuntimeError CloseConnection(HTTPConnection *&Connection);
+            virtual RuntimeError PutConnection(HTTPConnection *&Connection);
             RuntimeError HTTPServerEventProcess();
         };
     }

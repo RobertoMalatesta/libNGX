@@ -4,15 +4,25 @@ using namespace ngx::Core;
 using namespace ngx::HTTP;
 
 HTTPConnection::HTTPConnection(struct SocketAddress &SocketAddress) :
-        TimerNode(0, HTTPConnection::OnConnectionEvent, nullptr),
+        TimerNode(0, HTTPConnection::OnTimerEventWarp, nullptr),
         TCP4Connection(SocketAddress),
         Request(&MemPool) {
 }
 
 HTTPConnection::HTTPConnection(int SocketFd, struct SocketAddress &SocketAddress) :
-        TimerNode(0, HTTPConnection::OnConnectionEvent, nullptr),
+        TimerNode(0, HTTPConnection::OnTimerEventWarp, nullptr),
         TCP4Connection(SocketFd, SocketAddress),
         Request(&MemPool) {
+}
+
+void HTTPConnection::OnTimerEventWarp(void *PointerToConnection, ThreadPool *TPool) {
+    HTTPConnection *TargetConnection;
+
+    TargetConnection = static_cast<HTTPConnection *>(PointerToConnection);
+
+    TargetConnection->Lock.Lock();
+    TargetConnection->Event = ET_TIMER;
+    OnConnectionEvent(PointerToConnection, TPool);
 }
 
 void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *TPool) {
@@ -32,7 +42,7 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *TP
 
     printf("Event Type: %x, connection fd: %d\n", Type, TargetConnection->GetSocketFD());
 
-    TargetConnection->Lock.Unlock();
+    TargetConnection->LastEventTimestamp = GetTimeStamp();
 
     if ((Type & ET_CONNECTED) != 0) {
         EventDomain->AttachSocket(TargetConnection, SOCK_READ_WRITE_EVENT);
@@ -40,16 +50,28 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *TP
     if ((Type & ET_READ) != 0) {
         Buffer *Buffer = &TargetConnection->ReadBuffer;
         Buffer->WriteConnectionToBuffer(TargetConnection);
+    }
+    if ((Type & ET_WRITE) != 0) {
+        // Mark the socket as writable and write all data to it!
+    }
+    if ((Type & ET_TIMER) != 0) {
+        if (TargetConnection->Closed) {
+            TargetServer->PutConnection(TargetConnection);
+        }
+        // Handle timer
+    }
+    TargetConnection->Lock.Unlock();
+
+    SpinlockGuard LockGuard(&TargetConnection->Lock);
+    // Request Process Code
+    if ((Type &ET_READ) != 0) {
+
         HTTPParser::ParseHTTPRequest(TargetConnection->ReadBuffer, TargetConnection->Request);
 
         const u_char Content[] = "HTTP/1.1 200 OK\r\nServer: NGX(TestServer)\nContent-Length: 12\r\n\nHello World!";
 
-        EventDomain->DetachSocket(TargetConnection, SOCK_READ_WRITE_EVENT);
         write(TargetConnection->GetSocketFD(), Content, sizeof(Content) - 1);
-        TargetServer->CloseConnection(TargetConnection);
-    }
-    if ((Type & ET_WRITE) != 0) {
-        // Mark the socket as writable and write all data to it!
+        TargetConnection->Close();
     }
 
     printf("LeavePromise, PointerToConnection: %p\n", PointerToConnection);
@@ -62,12 +84,32 @@ RuntimeError HTTPConnection::SetSocketAddress(int SocketFD, struct SocketAddress
 }
 
 void HTTPConnection::Reset() {
+    ReadBuffer.Reset();
+    MemPool.Reset();
+}
+
+SocketError HTTPConnection::Close() {
+
+    uint64_t RecycleTime;
+
+    ParentEventDomain->DetachSocket(this, SOCK_READ_WRITE_EVENT);
 
     if (SocketFd != -1) {
         close(SocketFd);
         SocketFd = -1;
     }
 
-    ReadBuffer.Reset();
-    MemPool.Reset();
+    Closed = true;
+
+    RecycleTime = GetTimeStamp() + 5;
+
+    ParentEventDomain->DetachTimer(TimerNode);
+    TimerNode.SetExpireTime(RecycleTime);
+    ParentEventDomain->AttachTimer(TimerNode);
+
+    return {0};
+}
+
+RuntimeError HTTPConnection::RefreshTimer() {
+    return {0};
 }

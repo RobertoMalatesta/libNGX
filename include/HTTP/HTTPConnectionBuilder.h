@@ -17,8 +17,8 @@ namespace ngx {
         protected:
             BufferBuilder BB;
             HTTPConnectionRecycler BackendRecycler;
-            unsigned TCPNoDelay: 1;
-            unsigned TCPNoPush:1;
+            uint32_t TCPNoDelay;
+            uint32_t TCPNoPush;
             uint32_t ReadBufferSize = 8 * 1024 * 1024;
             uint32_t WriteBufferSize = 8 * 1024 * 1024;
             uint32_t ReadTimeout = 1 * 60;

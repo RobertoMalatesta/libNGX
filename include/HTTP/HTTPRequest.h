@@ -15,9 +15,8 @@ namespace ngx {
             unsigned int QuotedURI:1;
             unsigned int PlusInURI:1;
             unsigned int SpaceInURI:1;
-
-            SpinLock Lock;
             unsigned int Version;
+
             HTTPMethod Method;
             Range URI;
             BoundCursor URIExt;

@@ -42,8 +42,6 @@ const char HeaderNoMemoryErrorString[] = "No sufficient memory to store header i
 
 HTTPError HTTPParser::ParseHTTPRequest(Buffer &B, HTTPRequest &R) {
 
-    SpinlockGuard LockGuard(&R.Lock);
-
     HTTPError Error(0);
 
     switch (R.State) {
