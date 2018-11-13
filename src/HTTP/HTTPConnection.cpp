@@ -22,10 +22,9 @@ void HTTPConnection::OnTimerEventWarp(void *PointerToConnection, ThreadPool *TPo
     TargetConnection = static_cast<HTTPConnection *>(PointerToConnection);
     TargetServer = TargetConnection->ParentServer;
 
-    printf("Timer trigger!\n");
-
     if (TargetConnection->Closed) {
         TargetConnection->Reset();
+        printf("Connection Recycled: %p!\n", TargetConnection);
         TargetServer->PutConnection(TargetConnection);
     } else {
         TargetConnection->Event |= ET_TIMER;
@@ -45,8 +44,7 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *TP
 
     Type = TargetConnection->Event;
     EventDomain = TargetConnection->ParentEventDomain;
-
-    TargetConnection->Event = ET_NONE;
+    TargetConnection->Event |= Type;
 
     printf("Event Type: %x, connection fd: %d\n", Type, TargetConnection->GetSocketFD());
 
@@ -63,6 +61,7 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *TP
         // Mark the socket as writable and write all data to it!
     }
     if ((Type & ET_TIMER) != 0) {
+        printf("In timer event process: %p\n", TargetConnection);
         // Handle timer
     }
     TargetConnection->Lock.Unlock();
@@ -89,6 +88,7 @@ RuntimeError HTTPConnection::SetSocketAddress(int SocketFD, struct SocketAddress
 }
 
 void HTTPConnection::Reset() {
+    SpinlockGuard LockGuard(&Lock);
     ReadBuffer.Reset();
     MemPool.Reset();
 }

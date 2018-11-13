@@ -3,9 +3,9 @@ namespace ngx {
 
         class Server {
         protected:
+            SpinLock Lock;
             Listening ListeningSentinel;
             Connection ConnectionSentinel;
-            SpinLock Lock;
             std::atomic_uint64_t MaxConnection = {0};
 
         public:

@@ -83,8 +83,6 @@ RuntimeError HTTPServer::HTTPServerEventProcess() {
 
 RuntimeError HTTPServer::PutConnection(HTTPConnection *&Connection) {
 
-    SpinlockGuard LockGuard(&Lock);
-
     Connection->Reset();
     ConnectionBuilder.Put(Connection);
     Connection = nullptr;

@@ -14,6 +14,8 @@ HTTPConnectionBuilder::HTTPConnectionBuilder(size_t BufferBlockSize, uint64_t Bu
 HTTPConnection *HTTPConnectionBuilder::Get(int SocketFD, SocketAddress *SocketAddress, HTTPServer *Server,
                                            Listening *Listening, SocketEventDomain *EventDomain) {
 
+    SpinlockGuard LockGuard(&Lock);
+
     if (SocketFD == -1) {
         return nullptr;
     }
@@ -33,18 +35,14 @@ HTTPConnection *HTTPConnectionBuilder::Get(int SocketFD, SocketAddress *SocketAd
     Connection->ParentEventDomain = EventDomain;
 
     Connection->TimerNode.Reset();
-
-//    EventDomain->AttachTimer(Connection->TimerNode);
     BB.BuildBuffer(Connection->ReadBuffer);
 
     return Connection;
 }
 
 void HTTPConnectionBuilder::Put(HTTPConnection *C) {
-    SocketEventDomain *TargetEventDomain;
-
+    SpinlockGuard LockGuard(&Lock);
     if (C != nullptr) {
-        TargetEventDomain = C->ParentEventDomain;
         BackendRecycler.Put(C);
     }
 }

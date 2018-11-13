@@ -15,7 +15,7 @@ int HTTPServerTest() {
     };
 
     TCP4Listening Listen(SocketAddress);
-    HTTPServer Server(40960, 4, 31728, 40960, 1024, 1024);
+    HTTPServer Server(40960, 4, 31728, 40960, 1024, 4);
 
     Listen.SetPortReuse(false).PrintError();
     Listen.Listen().PrintError();

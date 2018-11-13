@@ -26,7 +26,7 @@ public:
         this->Timestamp = Timestamp;
     }
 
-    virtual void Reset() {On = false;};
+    virtual void Reset() {On = false, Timestamp = 0;};
 };
 
 class TimerTree : public RBTree, public AllocatorBuild<Timer> {
