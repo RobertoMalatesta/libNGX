@@ -47,7 +47,7 @@ void *Pool::Allocate(size_t Size) {
     return ret;
 }
 
-void Pool::Free(void* &pointer) {
+void Pool::Free(void *&pointer) {
 
     bool FoundInBlock = false;
 

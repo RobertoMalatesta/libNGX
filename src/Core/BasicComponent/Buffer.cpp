@@ -7,7 +7,7 @@ static inline BufferMemoryBlock *AquireBlock(BufferMemoryBlockRecycler *R, size_
     BufferMemoryBlock *Ret = nullptr;
 
     if (R == nullptr) {
-        BufferMemoryBlock::Build(Ret,Size);
+        BufferMemoryBlock::Build(Ret, Size);
     } else {
         Ret = R->Get();
     }
@@ -43,7 +43,7 @@ BoundCursor &BoundCursor::SetLeft(Cursor &Cursor) {
     return *this;
 }
 
-BoundCursor& BoundCursor::SetRight(Cursor &Bound) {
+BoundCursor &BoundCursor::SetRight(Cursor &Bound) {
     this->Bound = Bound;
     return *this;
 }
@@ -127,12 +127,12 @@ RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength)
     return {0};
 }
 
-Buffer& Buffer::operator<<(BoundCursor &BC) & {
+Buffer &Buffer::operator<<(BoundCursor &BC) &{
     ReadCursor = BC;
     return *this;
 }
 
-Buffer& Buffer::operator>>(BoundCursor &BC) & {
+Buffer &Buffer::operator>>(BoundCursor &BC) &{
     BC = ReadCursor;
     return *this;
 }

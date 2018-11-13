@@ -2,5 +2,6 @@
 
 using namespace ngx::Core::BasicComponent;
 
-EventDomain::EventDomain(size_t PoolSize, int ThreadCount) : Allocator(PoolSize), TPool(ThreadCount), Timers(&Allocator) {}
+EventDomain::EventDomain(size_t PoolSize, int ThreadCount) : Allocator(PoolSize), TPool(ThreadCount),
+                                                             Timers(&Allocator) {}
 

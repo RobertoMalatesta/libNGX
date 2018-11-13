@@ -1,4 +1,4 @@
-class BasicMemoryBlock: public Reference{
+class BasicMemoryBlock : public Reference {
 protected:
     size_t TotalSize = 0;
     size_t FreeSize = 0;
@@ -6,7 +6,9 @@ protected:
     void *Magic = nullptr;
 
     BasicMemoryBlock(size_t Size);
+
     ~BasicMemoryBlock();
+
 public:
 
     static BasicMemoryBlock *AddressToMemoryBlock(void *Address, size_t Size);

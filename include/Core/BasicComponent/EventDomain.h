@@ -33,6 +33,7 @@ public:
         Timers.AttachTimer(Timer);
         return {0};
     }
+
     inline RuntimeError DetachTimer(Timer &Timer) {
         Timers.DetachTimer(Timer);
         return {0};

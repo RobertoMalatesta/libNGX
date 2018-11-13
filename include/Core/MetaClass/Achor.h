@@ -1,3 +1,3 @@
 class Achor {
-    virtual void AchorFunc(){};
+    virtual void AchorFunc() {};
 };

@@ -338,7 +338,7 @@ UInt32RBTree::~UInt32RBTree() {
 
     UInt32RBTreeNode *Temp;
 
-    Temp = (UInt32RBTreeNode *)Sentinel;
+    Temp = (UInt32RBTreeNode *) Sentinel;
     Destroy(Temp);
 }
 

@@ -1,4 +1,4 @@
-namespace ngx{
+namespace ngx {
     namespace HTTP {
 
         class HTTPConnectionRecycler : public Recycler {
@@ -7,6 +7,7 @@ namespace ngx{
             HTTPConnectionRecycler(uint64_t RecyclerSize);
 
             virtual HTTPConnection *Get(int SocketFD, SocketAddress &TargetSocketAddress);
+
             virtual void Put(HTTPConnection *Item);
         };
     }

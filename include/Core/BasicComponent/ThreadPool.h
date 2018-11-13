@@ -1,6 +1,8 @@
 
 class Thread;
+
 class ThreadPool;
+
 typedef void (PromiseCallback)(void *PointerToArguments, ThreadPool *TPool);
 
 class Promise : public Queue {

@@ -29,7 +29,7 @@ int HTTPServerTest() {
     do {
         Error = Server.HTTPServerEventProcess();
 
-    } while( Error.GetCode() == 0);
+    } while (Error.GetCode() == 0);
 
     return 0;
 }

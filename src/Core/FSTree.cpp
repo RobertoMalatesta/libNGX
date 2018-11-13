@@ -71,7 +71,7 @@ FSTree::~FSTree() {
         Destroy(TempEntity);
     }
 
-    TempEntity = (FSEntity *)Sentinel;
+    TempEntity = (FSEntity *) Sentinel;
     Destroy(TempEntity);
 
     RBTree::~RBTree();

@@ -1,8 +1,8 @@
-namespace ngx{
+namespace ngx {
     namespace Core {
         namespace DefaultConfig {
 
-            const char CPUModule [] = "I386";
+            const char CPUModule[] = "I386";
             const char Compiler[] = "Clang 6.0";
 
             const uint32_t ARRAY_DEFAULT_COUNT = 32;

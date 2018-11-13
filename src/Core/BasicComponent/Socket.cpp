@@ -2,9 +2,9 @@
 
 using namespace ngx::Core::BasicComponent;
 
-Socket::Socket():
-    SocketFd(-1),
-    SocketAddress({0}) {
+Socket::Socket() :
+        SocketFd(-1),
+        SocketAddress({0}) {
 }
 
 Socket::Socket(struct SocketAddress &SocketAddress) :

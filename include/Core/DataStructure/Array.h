@@ -24,7 +24,7 @@ public:
 
     ~Array();
 
-    void *operator [] (uint32_t Index) {
+    void *operator[](uint32_t Index) {
 
         if (PointerToData == nullptr || Index >= ElementCount) {
             return nullptr;

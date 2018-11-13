@@ -1,4 +1,4 @@
-template < class ItemType>
+template<class ItemType>
 class AllocatorBuild {
 private:
     MemAllocator *Allocator;
@@ -37,7 +37,7 @@ public:
         if (Allocator != nullptr) {
             Allocator->Free((void *&) Item);
         } else {
-            free((void *)Item);
+            free((void *) Item);
             Item = nullptr;
         }
 

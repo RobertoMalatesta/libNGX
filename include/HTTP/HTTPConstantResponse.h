@@ -1,4 +1,4 @@
-namespace ngx{
+namespace ngx {
     namespace HTTP {
 
         class ConstResponseEntity {

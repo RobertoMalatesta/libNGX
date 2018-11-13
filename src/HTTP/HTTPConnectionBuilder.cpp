@@ -24,8 +24,8 @@ HTTPConnection *HTTPConnectionBuilder::Get(int SocketFD, SocketAddress *SocketAd
         return nullptr;
     }
 
-    setsockopt(SocketFD, IPPROTO_TCP, TCP_NODELAY, (void *)&TCPNoDelay, sizeof(TCPNoDelay));
-    setsockopt(SocketFD, IPPROTO_TCP, TCP_NOPUSH, (void *)&TCPNoPush, sizeof(TCPNoPush));
+    setsockopt(SocketFD, IPPROTO_TCP, TCP_NODELAY, (void *) &TCPNoDelay, sizeof(TCPNoDelay));
+    setsockopt(SocketFD, IPPROTO_TCP, TCP_NOPUSH, (void *) &TCPNoPush, sizeof(TCPNoPush));
 
     // configure connection
     Connection->Closed = false;

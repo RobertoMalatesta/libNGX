@@ -22,7 +22,7 @@ struct Cursor : public Ref, public Achor {
     virtual uint32_t DecRef();
 
     u_char operator*() {
-        return (!*this)? (u_char)'\0': *Position;
+        return (!*this) ? (u_char) '\0' : *Position;
     }
 
     inline bool operator!() {
@@ -33,6 +33,7 @@ struct Cursor : public Ref, public Achor {
         Block = Right.Block, Position = Right.Position;
         return *this;
     }
+
     inline bool operator==(Cursor const &Right) {
         return Block == Right.Block && Position == Right.Position;
     }
@@ -49,8 +50,7 @@ struct BoundCursor : public Cursor {
                 if (R.Block == R.Bound.Block && (R.Position + Size) >= R.Bound.Position) {
                     R.Block = nullptr, R.Position = nullptr;
                     break;
-                }
-                else {
+                } else {
                     R.Position += Size;
                     Size = 0;
                 }
@@ -70,7 +70,7 @@ struct BoundCursor : public Cursor {
     }
 
     inline BoundCursor operator++() {
-        return *this = this -> operator+(1);
+        return *this = this->operator+(1);
     }
 
     inline const BoundCursor operator++(int) {

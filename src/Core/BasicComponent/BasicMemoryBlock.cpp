@@ -2,7 +2,7 @@
 
 using namespace ngx::Core::BasicComponent;
 
-BasicMemoryBlock::BasicMemoryBlock(size_t Size): Reference() {
+BasicMemoryBlock::BasicMemoryBlock(size_t Size) : Reference() {
     PointerToHead = (u_char *) this + sizeof(BasicMemoryBlock);
     TotalSize = Size - sizeof(BasicMemoryBlock);
     PointerToData = PointerToHead;

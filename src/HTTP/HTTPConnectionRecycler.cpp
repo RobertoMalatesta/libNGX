@@ -3,7 +3,7 @@
 using namespace ngx::HTTP;
 
 HTTPConnectionRecycler::HTTPConnectionRecycler(uint64_t RecyclerSize) :
-        Recycler(RecyclerSize){}
+        Recycler(RecyclerSize) {}
 
 HTTPConnection *HTTPConnectionRecycler::Get(int SocketFD, SocketAddress &TargetSocketAddress) {
     HTTPConnection *Ret;

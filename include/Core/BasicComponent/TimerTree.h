@@ -37,6 +37,7 @@ public:
     int QueueExpiredTimer(ThreadPool *TPool);
 
     int AttachTimer(Timer &T);
+
     int DetachTimer(Timer &T);
 };
 

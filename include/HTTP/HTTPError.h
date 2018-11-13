@@ -1,4 +1,4 @@
-namespace ngx{
+namespace ngx {
     namespace HTTP {
 
         class HTTPError : public Error {
@@ -13,7 +13,8 @@ namespace ngx{
             }
 
             virtual void PrintError() {
-                printf("HTTPError: %s, Message: %s\n", ErrorCodeToError(ErrorCode), Message == nullptr ? "null" : Message);
+                printf("HTTPError: %s, Message: %s\n", ErrorCodeToError(ErrorCode),
+                       Message == nullptr ? "null" : Message);
             }
         };
     }

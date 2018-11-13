@@ -12,7 +12,7 @@ public:
 
     virtual void *Allocate(size_t Size);
 
-    virtual void Free(void* &pointer);
+    virtual void Free(void *&pointer);
 
     virtual void GC();
 

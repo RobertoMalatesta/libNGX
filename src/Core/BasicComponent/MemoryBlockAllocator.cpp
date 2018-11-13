@@ -26,7 +26,7 @@ void *MemoryBlockAllocator::Allocate(size_t Size) {
     return ret;
 }
 
-void MemoryBlockAllocator::Free(void* &Pointer) {
+void MemoryBlockAllocator::Free(void *&Pointer) {
     if (nullptr != Pointer && IsInBlock(Pointer)) {
         Pointer = nullptr;
         DecRef();

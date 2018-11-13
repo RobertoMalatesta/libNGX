@@ -1,4 +1,4 @@
-namespace ngx{
+namespace ngx {
     namespace HTTP {
         struct HTTPPerformanceUnit {
             std::atomic_uint64_t ConnectionCount = {0};
@@ -15,16 +15,19 @@ namespace ngx{
         protected:
 
             virtual RuntimeError PostProcessFinished(EventPromiseArgs &Arguments);
+
             HTTPConnectionBuilder ConnectionBuilder;
             EPollEventDomain EventDomain;
             HTTPPerformanceUnit PerformanceCounters;
 
         public:
             HTTPServer(size_t PoolSize, int ThreadCount, int EPollSize, size_t BufferBlockSize,
-                    uint64_t ConnectionRecycleSize, uint64_t BufferRecycleSize);
+                       uint64_t ConnectionRecycleSize, uint64_t BufferRecycleSize);
 
             virtual RuntimeError PostConnectionEvent(EventPromiseArgs &Argument);
+
             virtual RuntimeError PutConnection(HTTPConnection *&Connection);
+
             RuntimeError HTTPServerEventProcess();
         };
     }

@@ -1,4 +1,4 @@
-namespace ngx{
+namespace ngx {
     namespace Core {
 
         typedef int (FilterCallback)(FSEntity *Entity, void *Argument);
@@ -88,6 +88,7 @@ namespace ngx{
             FSEntity(bool Directory = false);
 
             ~FSEntity();
+
             bool IsDirectory() { return Directory; };
 
             u_char *GetDataPointer() { return Data; };
@@ -97,7 +98,7 @@ namespace ngx{
             static void FreeFromAllocator(MemAllocator *Allocator, RBTreeNode **Node);
         };
 
-        class FSTree : public RBTree ,public AllocatorBuild<FSEntity>{
+        class FSTree : public RBTree, public AllocatorBuild<FSEntity> {
 
         protected:
             FSTree(MemAllocator *Allocator);

@@ -64,7 +64,7 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *TP
 
     SpinlockGuard LockGuard(&TargetConnection->Lock);
     // Request Process Code
-    if ((Type &ET_READ) != 0) {
+    if ((Type & ET_READ) != 0) {
 
         HTTPParser::ParseHTTPRequest(TargetConnection->ReadBuffer, TargetConnection->Request);
 
