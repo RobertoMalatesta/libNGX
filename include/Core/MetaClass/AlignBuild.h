@@ -1,5 +1,15 @@
-
-
+//===- AlignBuild.h - Declare Align build template -----------------*- C++ -*-===//
+//
+//                     The NGX Server Infrastructure
+//
+// This file is distributed under the MIT Open Source License. See LICENSE.TXT
+// for detail.
+//
+//===-------------------------------------------------------------------------===//
+//
+//  This file declares AlignBuildTemplate whitch enable build object with
+//  page aligned memory
+//===-------------------------------------------------------------------------===//
 
 template<class T, size_t ALIGNMENT = DefaultConfig::PAGE_SIZE, size_t DEFAULT_BUILD_SIZE = DefaultConfig::BUILD_DEFAULT_SIZE>
 class AlignBuild {
