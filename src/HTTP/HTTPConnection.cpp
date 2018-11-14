@@ -29,11 +29,11 @@ void HTTPConnection::OnTimerEventWarp(void *PointerToConnection, ThreadPool *TPo
     } else {
         TargetConnection->Lock.Unlock();
         TargetConnection->ParentServer->PutConnection(TargetConnection);
-        TargetConnection->ParentEventDomain->DetachTimer(TargetConnection->TimerNode);
+        TargetConnection->ParentEventDomain->ResetTimer(TargetConnection->TimerNode);
     }
 }
 
-void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *TPool) {
+void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) {
 
     EventType Type;
     HTTPConnection *TargetConnection;
@@ -113,15 +113,12 @@ SocketError HTTPConnection::Close() {
     SpinlockGuard LockGuard(&Lock);
 
     ParentEventDomain->DetachSocket(this, SOCK_READ_WRITE_EVENT);
-    ParentEventDomain->DetachTimer(TimerNode);
 
     if (SocketFd != -1 || Open == 1) {
         close(SocketFd);
         SocketFd = -1, Open = 0;
     }
 
-    TimerNode.SetExpireTime(GetTimeStamp() + CONNECTION_RECYCLE_WAIT_TIME);
-    ParentEventDomain->AttachTimer(TimerNode);
-
+    ParentEventDomain->SetTimer(TimerNode, CONNECTION_RECYCLE_WAIT_TIME, TM_ONCE);
     return {0};
 }

@@ -30,7 +30,7 @@ set(SOURCE_FILES
         src/Core/BasicComponent/ThreadPool.cpp
         src/Core/BasicComponent/TimerTree.cpp
         src/Core/BasicComponent/BasicMemoryBlock.cpp
-#        src/Core/EPollEventDomain.cpp
+        src/Core/EPollEventDomain.cpp
         src/Core/FSTree.cpp
         src/Core/Server.cpp
         src/HTTP/HTTPConnection.cpp
@@ -55,7 +55,7 @@ set(TEST_FILES
         test/Core/TimerTreeTest.cpp
         test/Core/FSTreeTest.cpp
         test/Core/SocketTest.cpp
-#        test/Core/EPollEventDomainTest.cpp
+        test/Core/EPollEventDomainTest.cpp
         test/Core/LockTest.cpp
         test/Core/BufferTest.cpp
         test/Core/CoreTest.cpp

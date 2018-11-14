@@ -28,15 +28,18 @@ public:
 
     static void DiscardPromise(void *Argument, ThreadPool *TPool) {};
 
-    inline RuntimeError AttachTimer(Timer &Timer) {
+    inline RuntimeError SetTimer(Timer &Timer, uint64_t Interval, TimerMode Mode) {
         SpinlockGuard LockGuard(&Lock);
+        Timers.DetachTimer(Timer);
+        Timer.SeInterval(Interval, Mode);
         Timers.AttachTimer(Timer);
         return {0};
     }
 
-    inline RuntimeError DetachTimer(Timer &Timer) {
+    inline RuntimeError ResetTimer(Timer &Timer) {
         SpinlockGuard LockGuard(&Lock);
         Timers.DetachTimer(Timer);
+        Timer.Mode = TM_CLOSED, Timer.Interval = 0;
         return {0};
     }
 

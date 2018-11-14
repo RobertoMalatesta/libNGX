@@ -43,7 +43,7 @@ int TimerTree::QueueExpiredTimer(ThreadPool *TPool) {
     RBTreeNode *It;
     Timer *Temp;
 
-    uint64_t Timestamp = GetTimeStamp();
+    uint64_t Timestamp = GetHighResolutionTimestamp();
 
     for (It = Minimum(); It != Sentinel && It != nullptr;) {
 
@@ -57,18 +57,31 @@ int TimerTree::QueueExpiredTimer(ThreadPool *TPool) {
         TPool->PostPromise(Temp->Callback, Temp->Argument);
 
         Delete(Temp);
+
+        if (Temp->Mode == TM_INTERVAL && Temp->Interval > 0) {
+            Temp -> Timestamp = Timestamp + Temp->Interval;
+            Insert(Temp);
+        } else {
+            Temp->Mode = TM_CLOSED;
+        }
     }
     return 0;
 }
 
 int TimerTree::AttachTimer(Timer &T) {
-    Insert(&T);
+
+    if (T.Interval > 0) {
+       T.Timestamp = GetHighResolutionTimestamp() + T.Interval;
+        Insert(&T);
+    }
     return 0;
 }
 
 int TimerTree::DetachTimer(Timer &T) {
+
     if (T.IsTimerAttached()) {
         Delete(&T);
     }
+
     return 0;
 }

@@ -10,6 +10,8 @@ int EnableTimer();
 
 int DisableTimer();
 
+uint64_t GetHighResolutionTimestamp();
+
 uint64_t GetTimeStamp();
 
 int WriteErrorLogTime(char *Buf, size_t Size);

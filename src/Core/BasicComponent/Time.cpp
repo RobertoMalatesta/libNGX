@@ -7,10 +7,12 @@ using namespace std;
 using namespace ngx::Core::Arch::X86_64;
 using namespace ngx::Core::BasicComponent;
 
-static atomic_flag TimestampLock = ATOMIC_FLAG_INIT;
+static SpinLock Lock;
 static timeval Timestamp;
 static int TimestampVersion;
 static bool UpdateTimestamp;
+
+static uint64_t HighResolutionTimestamp;
 
 static struct {
     uint64_t Timestamp;
@@ -35,10 +37,10 @@ int ngx::Core::BasicComponent::EnableTimer() {
 
     struct itimerval itv = {0};
 
-    itv.it_interval.tv_sec = TIME_RESOLUTION / 1000;
-    itv.it_interval.tv_usec = (TIME_RESOLUTION % 1000) * 1000;
-    itv.it_value.tv_sec = TIME_RESOLUTION / 1000;
-    itv.it_value.tv_usec = (TIME_RESOLUTION % 1000) * 1000;
+    itv.it_interval.tv_sec = TIME_RESOLUTION / 1000000;
+    itv.it_interval.tv_usec = (TIME_RESOLUTION % 1000000);
+    itv.it_value.tv_sec = TIME_RESOLUTION / 1000000;
+    itv.it_value.tv_usec = (TIME_RESOLUTION % 1000000) * 1000000;
 
     if (setitimer(ITIMER_REAL, &itv, nullptr) == -1) {
         return -1;
@@ -58,7 +60,6 @@ int ngx::Core::BasicComponent::DisableTimer() {
         return -1;
     }
     return 0;
-
 }
 
 int ngx::Core::BasicComponent::TimeModuleInit() {
@@ -86,6 +87,12 @@ int ngx::Core::BasicComponent::TimeModuleInit() {
         FetchTimeVersion();
     }
     return 0;
+}
+
+uint64_t ngx::Core::BasicComponent::GetHighResolutionTimestamp() {
+
+    SpinlockGuard LockGuard(&Lock);
+    return HighResolutionTimestamp;
 }
 
 uint64_t ngx::Core::BasicComponent::GetTimeStamp() {
@@ -162,19 +169,13 @@ int ngx::Core::BasicComponent::WriteSysLogTime(char *Buf, size_t Size) {
 
 static int FetchTimeVersion(bool Force) {
 
-    int Version = 0;
-    while (TimestampLock.test_and_set()) {
-        RelaxMachine();
-    }
+    SpinlockGuard LockGuard(&Lock);
 
     if (UpdateTimestamp || Force) {
         UpdateTimeString();
     }
 
-    Version = TimestampVersion;
-
-    TimestampLock.clear();
-    return Version;
+    return TimestampVersion;
 }
 
 static void TimerHandle(int) {
@@ -183,17 +184,24 @@ static void TimerHandle(int) {
 
 static void UpdateTimeString() {
 
-    uint64_t TS;
-    TimestampVersion = (TimestampVersion + 1) % NUM_TIME_SLOT;
-    gettimeofday(&Timestamp, nullptr);
-
-    TS = (uint64_t) (Timestamp.tv_sec);
-    TimeStringRingBuffer[TimestampVersion].Timestamp = TS;
-
+    uint64_t Time, OldTime;
     int Year, Month, MonthDay, Hour, Minute, Second, DayOfWeek, Days, Leap, DayOfYear;
 
-    Days = (int) (TS / 86400);
-    Second = (int) (TS % 86400);
+    OldTime = TimeStringRingBuffer[TimestampVersion].Timestamp;
+
+    gettimeofday(&Timestamp, nullptr);
+    Time = (uint64_t) Timestamp.tv_sec;
+    HighResolutionTimestamp = Time * 1000000 + (uint64_t) Timestamp.tv_usec;
+
+    if (Time == OldTime) {
+        return;
+    }
+
+    TimestampVersion = (TimestampVersion + 1) % NUM_TIME_SLOT;
+    TimeStringRingBuffer[TimestampVersion].Timestamp = Time;
+
+    Days = (int) (Time / 86400);
+    Second = (int) (Time % 86400);
 
     if (Days > 2932896) {
         Days = 2932896;
