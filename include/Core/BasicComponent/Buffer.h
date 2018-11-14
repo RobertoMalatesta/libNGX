@@ -219,7 +219,7 @@ struct HashRange : Range {
 class Buffer : public CanReset {
 protected:
     size_t BlockSize = 0;
-    BufferMemoryBlockRecycler *Recycler = nullptr;
+    BufferMemoryBlockRecycleBin *RecycleBin = nullptr;
     BoundCursor ReadCursor;
     Cursor WriteCursor;
     BufferMemoryBlock *HeadBlock = nullptr;

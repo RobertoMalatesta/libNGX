@@ -1,10 +1,10 @@
 
 extern int HTTPServerTest();
 
-extern int HTTPConnectionRecyclerTest();
+extern int HTTPConnectionRecycleBinTest();
 
 int HTTPTest() {
     HTTPServerTest();
-//    HTTPConnectionRecyclerTest();
+//    HTTPConnectionRecycleBinTest();
     return 0;
 }

@@ -3,9 +3,6 @@ namespace ngx {
 
         class HTTPConnection : public TCP4Connection, public Recyclable {
         protected:
-            bool Closed = true;
-            uint64_t LastEventTimestamp = 0;
-
             Pool MemPool;
             SpinLock Lock;
             Timer TimerNode;
@@ -30,11 +27,9 @@ namespace ngx {
 
             SocketError Close();
 
-            RuntimeError RefreshTimer();
-
             friend class HTTPServer;
 
-            friend class HTTPConnectionRecycler;
+            friend class HTTPConnectionRecycleBin;
 
             friend class HTTPConnectionBuilder;
 

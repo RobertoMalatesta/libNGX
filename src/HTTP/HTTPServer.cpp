@@ -28,7 +28,6 @@ RuntimeError HTTPServer::PostProcessFinished(EventPromiseArgs &Arguments) {
 RuntimeError HTTPServer::PostConnectionEvent(EventPromiseArgs &Argument) {
 
     EventType TargetType;
-    HTTPServer *TargetServer;
     Listening *TargetListening;
     HTTPConnection *TargetConnection;
     SocketAddress *TargetSocketAddress;
@@ -41,21 +40,24 @@ RuntimeError HTTPServer::PostConnectionEvent(EventPromiseArgs &Argument) {
 
         int SocketFD = Argument.UserArguments[0].UInt;
 
-        TargetServer = static_cast<HTTPServer *>(Argument.UserArguments[3].Ptr);
         TargetListening = static_cast<Listening *>(Argument.UserArguments[5].Ptr);
         TargetEventDomain = static_cast<EPollEventDomain *>(Argument.UserArguments[4].Ptr);
         TargetSocketAddress = static_cast<SocketAddress *>(Argument.UserArguments[1].Ptr);
-        TargetConnection = ConnectionBuilder.Get(SocketFD, TargetSocketAddress, TargetServer, TargetListening,
-                                                 TargetEventDomain);
-        AttachConnection(TargetConnection);
+
+        if (ConnectionBuilder.Get(TargetConnection, SocketFD, TargetSocketAddress, this, TargetListening,
+                              TargetEventDomain) == 0) {
+            AttachConnection(TargetConnection);
+        }
+        else {
+            close(SocketFD);
+           // TODO: handle connection pool drain, add special response
+        }
     }
     TargetConnection->Lock.Lock();
     TargetConnection->Event = TargetType;
 
-    if (!TargetConnection->Closed) {
+    if (TargetConnection->Open == 1) {
         EventDomain.PostPromise(*TargetConnection->OnEventPromise, static_cast<void *>(TargetConnection));
-    } else {
-        TargetConnection->Lock.Unlock();
     }
 
     return {0, nullptr};
@@ -81,10 +83,11 @@ RuntimeError HTTPServer::HTTPServerEventProcess() {
     return EventDomain.EventDomainProcess(Argument);
 }
 
-RuntimeError HTTPServer::PutConnection(HTTPConnection *&Connection) {
+RuntimeError HTTPServer::PutConnection(HTTPConnection *&C) {
 
-    Connection->Reset();
-    ConnectionBuilder.Put(Connection);
-    Connection = nullptr;
+    DetachConnection(C);
+    C->Reset();
+    ConnectionBuilder.Put(C);
+
     return {0};
 }

@@ -12,7 +12,7 @@ set(SOURCE_FILES
         src/Core/DataStructure/RBTree.cpp
         src/Core/BasicComponent/Buffer.cpp
         src/Core/BasicComponent/BufferMemoryBlock.cpp
-        src/Core/BasicComponent/BufferMemoryBlockRecycler.cpp
+        src/Core/BasicComponent/BufferMemoryBlockRecycleBin.cpp
         src/Core/BasicComponent/BufferBuilder.cpp
         src/Core/BasicComponent/Checksum.cpp
         src/Core/BasicComponent/Connection.cpp
@@ -30,12 +30,12 @@ set(SOURCE_FILES
         src/Core/BasicComponent/ThreadPool.cpp
         src/Core/BasicComponent/TimerTree.cpp
         src/Core/BasicComponent/BasicMemoryBlock.cpp
-        src/Core/EPollEventDomain.cpp
+#        src/Core/EPollEventDomain.cpp
         src/Core/FSTree.cpp
         src/Core/Server.cpp
         src/HTTP/HTTPConnection.cpp
         src/HTTP/HTTPServer.cpp
-        src/HTTP/HTTPConnectionRecycler.cpp
+        src/HTTP/HTTPConnectionRecycleBin.cpp
         src/HTTP/HTTPParser.cpp
         src/HTTP/HTTPError.cpp
         src/HTTP/HTTPConnectionBuilder.cpp
@@ -55,13 +55,13 @@ set(TEST_FILES
         test/Core/TimerTreeTest.cpp
         test/Core/FSTreeTest.cpp
         test/Core/SocketTest.cpp
-        test/Core/EPollEventDomainTest.cpp
+#        test/Core/EPollEventDomainTest.cpp
         test/Core/LockTest.cpp
         test/Core/BufferTest.cpp
         test/Core/CoreTest.cpp
         test/HTTP/HTTPServerTest.cpp
         test/HTTP/HTTPTest.cpp
-        test/HTTP/HTTPConnectionRecycler.cpp
+        test/HTTP/HTTPConnectionRecycleBin.cpp
         test/HTTP/HTTPParserTest.cpp
         )
 

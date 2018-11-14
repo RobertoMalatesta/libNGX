@@ -10,6 +10,7 @@ EventError Server::EnqueueListening(Listening *L) {
 
     Queue *PQueue;
     Listening *PListen;
+
     SpinlockGuard LockGuard(&Lock);
 
     for (PQueue = ListeningSentinel.GetHead(); PQueue != ListeningSentinel.GetSentinel(); PQueue = PQueue->GetNext()) {
@@ -27,6 +28,7 @@ EventError Server::EnqueueListening(Listening *L) {
 
 Listening *Server::DequeueListening() {
     Listening *Listen;
+
     SpinlockGuard LockGuard(&Lock);
 
     if (ListeningSentinel.IsEmpty()) {
@@ -51,6 +53,7 @@ EventError Server::AttachConnection(Connection *C) {
     }
 
     SpinlockGuard LockGuard(&Lock);
+
     C->AttachSocket(&ConnectionSentinel);
     return {0};
 }
@@ -61,6 +64,7 @@ EventError Server::DetachConnection(Connection *C) {
     }
 
     SpinlockGuard LockGuard(&Lock);
+
     C->DetachSocket();
     MaxConnection.fetch_add(1);
 

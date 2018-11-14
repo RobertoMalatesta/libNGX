@@ -16,10 +16,10 @@ struct SocketAddress {
 
 class Socket : protected EventEntity {
 protected:
-    Queue QueueSentienl;
+    Queue QueueSentinel;
     int SocketFd = -1;
     SocketAddress SocketAddress;
-    std::atomic_flag EventLock = ATOMIC_FLAG_INIT;
+
     union {
         struct {
             unsigned Open: 1;
@@ -52,11 +52,11 @@ public:
     }
 
     inline void AttachSocket(Socket *S) {
-        S->QueueSentienl.Append(&QueueSentienl);
+        S->QueueSentinel.Append(&QueueSentinel);
     }
 
     inline void DetachSocket() {
-        QueueSentienl.Detach();
+        QueueSentinel.Detach();
     }
 
     virtual void Achor() {};

@@ -7,6 +7,7 @@ protected:
             return false;
         }
 
+        SpinlockGuard LockGuard(&Lock);
         return S->ReadAttach == 1;
     }
 
@@ -14,20 +15,28 @@ protected:
         if (nullptr == S) {
             return false;
         }
+
+        SpinlockGuard LockGuard(&Lock);
         return S->WriteAttach == 1;
     }
 
     void SetSocketReadAttached(Socket *S, int Val) {
+
         if (nullptr == S) {
             return;
         }
+
+        SpinlockGuard LockGuard(&Lock);
         S->ReadAttach = (Val == 1) ? 1 : 0;
     }
 
     void SetSocketWriteAttached(Socket *S, int Val) {
+
         if (nullptr == S) {
             return;
         }
+
+        SpinlockGuard LockGuard(&Lock);
         S->WriteAttach = (Val == 1) ? 1 : 0;
     }
 

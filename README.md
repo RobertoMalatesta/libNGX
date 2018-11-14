@@ -22,7 +22,7 @@
 
 -   相同用途Pool的回收和预留，减少调用`malloc()`和`free()`的次数。
     
-    *  PoolRecycler
+    *  PoolRecycleBin
         在销毁连接时根据运行状况保留一部分Pool, 在新连接创建时直接回收使用。
 
 -   基于红黑树的高级数据结构
@@ -108,7 +108,7 @@
 
     代理 EventDomain, HTTPURITree, HTTPConnectionBuilder来实现。
     EventDomain使用HTTPServerBuilder来装配，用于装配 具体的 EventDomain 和 HTTPURITree。 并初始化和装配Listening
-    HTTPConnectionBuilder 内部代理一个HTTPConnectionRecycler 和 BufferBlockRecycler
+    HTTPConnectionBuilder 内部代理一个HTTPConnectionRecycleBin 和 BufferBlockRecycleBin
     用来装配HTTPConnection。
 
 - HTTPConnectionScheduler

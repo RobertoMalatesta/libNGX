@@ -1,6 +1,6 @@
 namespace ngx {
     namespace Core {
-        class PoolMemoryBlockRecycler {
+        class PoolMemoryBlockRecycleBin {
 
         };
     }

@@ -15,13 +15,13 @@
 class BufferAllocator : public CanReset {
     SpinLock Lock;
     size_t BlockSize = 0;
-    BufferMemoryBlockRecycler *Recycler = nullptr;
+    BufferMemoryBlockRecycleBin *RecycleBin = nullptr;
     Cursor ReadCursor, WriteCursor;
     BufferMemoryBlock *HeadBlock = nullptr, *CurrentBlock = nullptr;
 
     friend class BufferBuilder;
 
-    BufferAllocator(BufferMemoryBlockRecycler *Recycler, size_t BlockSize = BUFFER_DEFAULT_BLOCK_SIZE);
+    BufferAllocator(BufferMemoryBlockRecycleBin *RecycleBin, size_t BlockSize = BUFFER_DEFAULT_BLOCK_SIZE);
 
     ~BufferAllocator();
 

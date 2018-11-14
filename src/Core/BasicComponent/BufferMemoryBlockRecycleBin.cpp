@@ -3,14 +3,14 @@
 using namespace ngx::Core::BasicComponent;
 
 
-BufferMemoryBlockRecycler::BufferMemoryBlockRecycler(
+BufferMemoryBlockRecycleBin::BufferMemoryBlockRecycleBin(
         size_t BufferMemoryBlockSize,
-        uint64_t RecyclerSize) :
-        Recycler(RecyclerSize) {
+        uint64_t RecycleBinSize) :
+        RecycleBin(RecycleBinSize) {
     this->BufferMemoryBlockSize = BufferMemoryBlockSize;
 }
 
-BufferMemoryBlock *BufferMemoryBlockRecycler::Get() {
+BufferMemoryBlock *BufferMemoryBlockRecycleBin::Get() {
 
     BufferMemoryBlock *Ret;
 
@@ -27,7 +27,7 @@ BufferMemoryBlock *BufferMemoryBlockRecycler::Get() {
     return Ret;
 }
 
-void BufferMemoryBlockRecycler::Put(BufferMemoryBlock *Item) {
+void BufferMemoryBlockRecycleBin::Put(BufferMemoryBlock *Item) {
 
     SpinlockGuard LockGuard(&Lock);
 

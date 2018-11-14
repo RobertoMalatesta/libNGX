@@ -1,4 +1,4 @@
-//===- BufferMemoryRecycler.h - Recycler for BufferMemoryBlock -----*- C++ -*-===//
+//===- BufferMemoryRecycleBin.h - RecycleBin for BufferMemoryBlock -----*- C++ -*-===//
 //
 //                     The NGX Server Infrastructure
 //
@@ -7,18 +7,18 @@
 //
 //===-------------------------------------------------------------------------===//
 //
-//  This file declare a simple recycler of BufferMemoryBlock, which aims to
+//  This file declare a simple RecycleBin of BufferMemoryBlock, which aims to
 //  reduce the count of malloc(2) procedure
 //
 //===-------------------------------------------------------------------------===//
 
-class BufferMemoryBlockRecycler : public Recycler {
+class BufferMemoryBlockRecycleBin : public RecycleBin {
 protected:
     SpinLock Lock;
     size_t BufferMemoryBlockSize;
 public:
-    BufferMemoryBlockRecycler(size_t BufferMemoryBlockSize = BUFFER_DEFAULT_BLOCK_SIZE,
-                              uint64_t RecyclerSize = DEFAULT_RECYCLE_SIZE);
+    BufferMemoryBlockRecycleBin(size_t BufferMemoryBlockSize = BUFFER_DEFAULT_BLOCK_SIZE,
+                              uint64_t RecycleBinSize = DEFAULT_RECYCLE_SIZE);
 
     size_t GetBlockSize() { return this->BufferMemoryBlockSize; }
 

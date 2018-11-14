@@ -15,7 +15,7 @@
 class BufferBuilder {
 protected:
     size_t BlockSize;
-    BufferMemoryBlockRecycler Recycler;
+    BufferMemoryBlockRecycleBin RecycleBin;
 public:
     BufferBuilder(size_t BlockSize, uint64_t RecycleSize);
 

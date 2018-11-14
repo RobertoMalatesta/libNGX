@@ -28,7 +28,7 @@ namespace ngx {
 #include "Core/BasicComponent/Listening.h"
 
 #include "Core/BasicComponent/BufferMemoryBlock.h"
-#include "Core/BasicComponent/BufferMemoryBlockRecycler.h"
+#include "Core/BasicComponent/BufferMemoryBlockRecycleBin.h"
 #include "Core/BasicComponent/Buffer.h"
 #include "Core/BasicComponent/BufferAllocator.h"
 #include "Core/BasicComponent/BufferBuilder.h"

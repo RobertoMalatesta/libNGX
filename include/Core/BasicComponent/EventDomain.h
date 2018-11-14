@@ -17,10 +17,10 @@ typedef enum {
 
 class EventDomain {
 protected:
+    SpinLock Lock;
     Pool Allocator;
     ThreadPool TPool;
     TimerTree Timers;
-    SpinLock Lock;
 public:
     EventDomain(size_t PoolSize, int ThreadCount);
 
@@ -29,11 +29,20 @@ public:
     static void DiscardPromise(void *Argument, ThreadPool *TPool) {};
 
     inline RuntimeError AttachTimer(Timer &Timer) {
+        SpinlockGuard LockGuard(&Lock);
         Timers.AttachTimer(Timer);
         return {0};
     }
 
+    inline RuntimeError DetachTimer(Timer &Timer) {
+        SpinlockGuard LockGuard(&Lock);
+        Timers.DetachTimer(Timer);
+        return {0};
+    }
+
     RuntimeError PostPromise(PromiseCallback *Callback, void *Argument);
+
+    RuntimeError QueueExpiredTimer();
 
     virtual RuntimeError EventDomainProcess(EventPromiseArgs &Argument);
 };

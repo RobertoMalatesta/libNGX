@@ -2,7 +2,7 @@
 
 using namespace ngx::Core::BasicComponent;
 
-static inline BufferMemoryBlock *AquireBlock(BufferMemoryBlockRecycler *R, size_t Size) {
+static inline BufferMemoryBlock *AquireBlock(BufferMemoryBlockRecycleBin *R, size_t Size) {
 
     BufferMemoryBlock *Ret = nullptr;
 
@@ -15,7 +15,7 @@ static inline BufferMemoryBlock *AquireBlock(BufferMemoryBlockRecycler *R, size_
     return Ret;
 }
 
-static inline void RecycleBlock(BufferMemoryBlockRecycler *R, BufferMemoryBlock *B) {
+static inline void RecycleBlock(BufferMemoryBlockRecycleBin *R, BufferMemoryBlock *B) {
 
     if (R == nullptr) {
         BufferMemoryBlock::Destroy(B);
@@ -85,7 +85,7 @@ Buffer::~Buffer() {
 
     while (TempBlock != nullptr) {
         NextBlock = TempBlock->GetNextBlock();
-        RecycleBlock(Recycler, TempBlock);
+        RecycleBlock(RecycleBin, TempBlock);
         TempBlock = NextBlock;
     }
 }
@@ -101,7 +101,7 @@ RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength)
 
         if (DataLength > CurrentBlockFreeSize) {
 
-            TempBufferBlock = AquireBlock(Recycler, BlockSize);
+            TempBufferBlock = AquireBlock(RecycleBin, BlockSize);
 
             if (TempBufferBlock == nullptr) {
                 ReadCursor.SetRight(WriteCursor);
@@ -152,10 +152,10 @@ RuntimeError Buffer::WriteConnectionToBuffer(Connection *C) {
 
         if (ReadLength == 0) {
 
-            if (Recycler == nullptr) {
+            if (RecycleBin == nullptr) {
                 BufferMemoryBlock::Build(TempBlock, BlockSize);
             } else {
-                TempBlock = Recycler->Get();
+                TempBlock = RecycleBin->Get();
             }
 
             if (TempBlock == nullptr) {
@@ -197,10 +197,10 @@ void Buffer::Reset() {
         NextBlock = TempBlock->GetNextBlock();
         TempBlock->Reset();
 
-        if (Recycler == nullptr) {
+        if (RecycleBin == nullptr) {
             BufferMemoryBlock::Destroy(TempBlock);
         } else {
-            Recycler->Put(TempBlock);
+            RecycleBin->Put(TempBlock);
         }
 
         TempBlock = NextBlock;
@@ -225,10 +225,10 @@ void Buffer::GC() {
         if (NextBlock->RefCount() == 0) {
             TempBlock->SetNextBlock(NextBlock->GetNextBlock());
 
-            if (Recycler == nullptr) {
+            if (RecycleBin == nullptr) {
                 BufferMemoryBlock::Destroy(NextBlock);
             } else {
-                Recycler->Put(NextBlock);
+                RecycleBin->Put(NextBlock);
             }
 
             NextBlock = TempBlock->GetNextBlock();
@@ -242,6 +242,6 @@ void Buffer::GC() {
         NextBlock = HeadBlock;
         HeadBlock = HeadBlock->GetNextBlock();
         NextBlock->Reset();
-        RecycleBlock(Recycler, NextBlock);
+        RecycleBlock(RecycleBin, NextBlock);
     }
 }

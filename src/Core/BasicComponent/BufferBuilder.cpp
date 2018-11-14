@@ -4,13 +4,13 @@ using namespace ngx::Core::BasicComponent;
 
 BufferBuilder::BufferBuilder(size_t BlockSize, uint64_t RecycleSize) :
         BlockSize(BlockSize),
-        Recycler(BlockSize, RecycleSize) {}
+        RecycleBin(BlockSize, RecycleSize) {}
 
 bool BufferBuilder::BuildBuffer(Buffer &Buf) {
 
-    Buf.Recycler = &Recycler;
+    Buf.RecycleBin = &RecycleBin;
     Buf.BlockSize = BlockSize;
-    Buf.HeadBlock = Recycler.Get();
+    Buf.HeadBlock = RecycleBin.Get();
 
     if (Buf.HeadBlock == nullptr) {
         return false;

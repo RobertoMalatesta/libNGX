@@ -1,9 +1,9 @@
-class Recycler {
+class RecycleBin {
 protected:
     Recyclable RecycleSentinel;
     uint64_t RecycleMaxSize = DEFAULT_RECYCLE_SIZE, RecycleSize = 0;
 public:
-    Recycler(uint64_t RecycleMaxSize) : RecycleSentinel() {
+    RecycleBin(uint64_t RecycleMaxSize) : RecycleSentinel() {
         this->RecycleMaxSize = RecycleMaxSize;
     }
 

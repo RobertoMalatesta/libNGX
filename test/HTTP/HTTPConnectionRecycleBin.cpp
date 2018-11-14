@@ -2,7 +2,7 @@
 
 using namespace ngx::HTTP;
 
-int HTTPConnectionRecyclerTest() {
+int HTTPConnectionRecycleBinTest() {
 
     struct SocketAddress SocketAddress = {
             .sockaddr_in = {
@@ -13,23 +13,23 @@ int HTTPConnectionRecyclerTest() {
             .SocketLength = sizeof(sockaddr_in)
     };
 
-    HTTPConnectionRecycler Recycler(4096);
+    HTTPConnectionRecycleBin RecycleBin(4096);
     HTTPConnection *C;
 
     std::vector<HTTPConnection *> Connections;
 
     for (int i = 0; i < 102400; i++) {
-        C = Recycler.Get(-1, SocketAddress);
-
-        if (random() >= (RAND_MAX >> 2)) {
-            Recycler.Put(C);
-        } else {
-            Connections.push_back(C);
+        if (RecycleBin.Get(C, -1, SocketAddress) == 0) {
+            if (random() >= (RAND_MAX >> 2)) {
+                RecycleBin.Put(C);
+            } else {
+                Connections.push_back(C);
+            }
         }
     }
 
     for (HTTPConnection *Conn : Connections) {
-        Recycler.Put(Conn);
+        RecycleBin.Put(Conn);
     }
 
     Connections.clear();

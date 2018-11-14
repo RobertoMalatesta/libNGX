@@ -1,4 +1,5 @@
 #include "Core/Core.h"
+#include "HTTP/config_header.h"
 
 namespace ngx {
     namespace HTTP {
@@ -9,6 +10,7 @@ namespace ngx {
         const bool DEFAULT_HTTP_ALLOW_UNDERSCORE = true;
 
         using namespace ngx::Core;
+        using namespace ngx::HTTP::DefaultConfig;
 
         class HTTPError;
 
@@ -16,7 +18,7 @@ namespace ngx {
 
         class HTTPConnection;
 
-        class HTTPConnectionRecycler;
+        class HTTPConnectionRecycleBin;
 
         class HTTPConnectionBuilder;
 
@@ -73,6 +75,6 @@ namespace ngx {
 #include "HTTP/HTTPRequest.h"
 #include "HTTP/HTTPParser.h"
 #include "HTTP/HTTPConnection.h"
-#include "HTTP/HTTPConnectionRecycler.h"
+#include "HTTP/HTTPConnectionRecycleBin.h"
 #include "HTTP/HTTPConnectionBuilder.h"
 #include "HTTP/HTTPServer.h"

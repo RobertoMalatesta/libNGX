@@ -3,7 +3,6 @@ class Timer : public RBTreeNode, public CanReset {
     friend class TimerTree;
 
 protected:
-    bool On = false;
     virtual int Compare(Timer *Node);
 
 public:
@@ -26,11 +25,14 @@ public:
         this->Timestamp = Timestamp;
     }
 
-    virtual void Reset() {On = false, Timestamp = 0;};
+    inline bool IsTimerAttached() {
+        return GetLeft() != nullptr && GetRight() != nullptr;
+    }
+
+    virtual void Reset() {Timestamp = 0;};
 };
 
 class TimerTree : public RBTree, public AllocatorBuild<Timer> {
-    SpinLock Lock;
 public:
     TimerTree(MemAllocator *Allocator);
 
@@ -39,5 +41,7 @@ public:
     int QueueExpiredTimer(ThreadPool *TPool);
 
     int AttachTimer(Timer &T);
+
+    int DetachTimer(Timer &T);
 };
 

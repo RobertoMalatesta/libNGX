@@ -3,13 +3,13 @@
 using namespace ngx::Core::BasicComponent;
 
 int Timer::Compare(Timer *Node) {
-    if (this->Timestamp == Node->Timestamp) {
-        return 0;
-    } else if (this->Timestamp > Node->Timestamp) {
+
+    if (Timestamp > Node->Timestamp) {
         return 1;
-    } else {
+    } else if (Timestamp < Node->Timestamp) {
         return -1;
     }
+    return 0;
 }
 
 TimerTree::TimerTree(MemAllocator *Allocator) : RBTree(), AllocatorBuild(Allocator) {
@@ -43,8 +43,6 @@ int TimerTree::QueueExpiredTimer(ThreadPool *TPool) {
     RBTreeNode *It;
     Timer *Temp;
 
-    SpinlockGuard LockGuard(&Lock);
-
     uint64_t Timestamp = GetTimeStamp();
 
     for (It = Minimum(); It != Sentinel && It != nullptr;) {
@@ -64,7 +62,13 @@ int TimerTree::QueueExpiredTimer(ThreadPool *TPool) {
 }
 
 int TimerTree::AttachTimer(Timer &T) {
-    SpinlockGuard LockGuard(&Lock);
     Insert(&T);
+    return 0;
+}
+
+int TimerTree::DetachTimer(Timer &T) {
+    if (T.IsTimerAttached()) {
+        Delete(&T);
+    }
     return 0;
 }

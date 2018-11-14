@@ -156,8 +156,6 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs &Argument) {
     int EventCount, TempConnectionFD;
     epoll_event Events[EPOLL_EVENT_BATCH_SIZE];
 
-    /* [TODO] should move to initialize code latter! */
-
     RuntimeError Error{0}, PostError{0};
 
     Error = EventDomain::EventDomainProcess(Argument);
