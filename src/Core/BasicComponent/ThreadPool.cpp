@@ -19,8 +19,7 @@ void Promise::doPromise() {
     }
 }
 
-Thread::Thread(ThreadPool *TPool)
-        : Sentinel(), WorkerThread(Thread::ThreadProcess, this), Allocator() {
+Thread::Thread(ThreadPool *TPool) : Sentinel(), WorkerThread(Thread::ThreadProcess, this), Allocator() {
     this->TPool = TPool;
 }
 
@@ -59,28 +58,28 @@ int Thread::TryPostPromise(PromiseCallback *Callback, void *Argument) {
 void Thread::ThreadProcess(Thread *Thread) {
 
     Promise *Node;
-    bool IsRunnig = true;
+    bool IsRunning;
+    Thread->Running = IsRunning = true;
 
-    usleep(THREAD_WAIT_TIME);
+    usleep(THREAD_WAIT_TIME * 10 + 100000);
 
-    while (IsRunnig) {
+    while (IsRunning) {
 
         usleep(THREAD_WAIT_TIME);
 
-        while (Thread->Lock.test_and_set()) {
+        if (Thread->Lock.test_and_set()) {
             std::this_thread::yield();
+        } else {
+            while (!Thread->Sentinel.IsEmpty()) {
+                Node = (Promise *)Thread->Sentinel.GetHead();
+                Node->Detach();
+                Node->doPromise();
+                Thread->Allocator.Free((void *&) Node);
+            }
+
+            IsRunning = Thread->Running;
+            Thread->Lock.clear();
         }
-
-        while (!Thread->Sentinel.IsEmpty()) {
-
-            Node = static_cast<Promise *> (Thread->Sentinel.GetHead());
-            Node->Detach();
-            Node->doPromise();
-            Thread->Allocator.Free((void *&) Node);
-        }
-
-        IsRunnig = Thread->Running;
-        Thread->Lock.clear();
     }
 }
 

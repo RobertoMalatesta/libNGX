@@ -1,8 +1,9 @@
 namespace ngx {
     namespace HTTP {
 
-        class HTTPConnectionRecycleBin : public RecycleBin {
+        class HTTPConnectionRecycleBin : public RecycleBin, public AllocatorBuild<HTTPConnection> {
         protected:
+            Pool BackendAllocator;
         public:
             HTTPConnectionRecycleBin(uint64_t RecycleBinSize);
 

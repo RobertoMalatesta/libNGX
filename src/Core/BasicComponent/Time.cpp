@@ -40,7 +40,7 @@ int ngx::Core::BasicComponent::EnableTimer() {
     itv.it_interval.tv_sec = TIME_RESOLUTION / 1000000;
     itv.it_interval.tv_usec = (TIME_RESOLUTION % 1000000);
     itv.it_value.tv_sec = TIME_RESOLUTION / 1000000;
-    itv.it_value.tv_usec = (TIME_RESOLUTION % 1000000) * 1000000;
+    itv.it_value.tv_usec = (TIME_RESOLUTION % 1000000);
 
     if (setitimer(ITIMER_REAL, &itv, nullptr) == -1) {
         return -1;
@@ -53,10 +53,10 @@ int ngx::Core::BasicComponent::DisableTimer() {
     struct itimerval itv = {0};
 
     itv.it_value.tv_sec = 0;
-    itv.it_value.tv_usec = 1;
+    itv.it_value.tv_usec = 0;
     itv.it_interval = itv.it_value;
 
-    if (setitimer(ITIMER_REAL, &itv, nullptr) == -1) {
+    if (setitimer(ITIMER_REAL, nullptr, nullptr) == -1) {
         return -1;
     }
     return 0;
@@ -92,6 +92,11 @@ int ngx::Core::BasicComponent::TimeModuleInit() {
 uint64_t ngx::Core::BasicComponent::GetHighResolutionTimestamp() {
 
     SpinlockGuard LockGuard(&Lock);
+
+    if (UpdateTimestamp) {
+        UpdateTimeString();
+    }
+
     return HighResolutionTimestamp;
 }
 

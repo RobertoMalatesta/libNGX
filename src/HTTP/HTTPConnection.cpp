@@ -3,6 +3,12 @@
 using namespace ngx::Core;
 using namespace ngx::HTTP;
 
+HTTPConnection::HTTPConnection() :
+        TimerNode(0, HTTPConnection::OnTimerEventWarp, this),
+        TCP4Connection(SocketAddress),
+        Request(&MemPool) {
+}
+
 HTTPConnection::HTTPConnection(struct SocketAddress &SocketAddress) :
         TimerNode(0, HTTPConnection::OnTimerEventWarp, this),
         TCP4Connection(SocketAddress),
@@ -28,6 +34,9 @@ void HTTPConnection::OnTimerEventWarp(void *PointerToConnection, ThreadPool *TPo
         OnConnectionEvent(PointerToConnection, TPool);
     } else {
         TargetConnection->Lock.Unlock();
+
+        printf("Recycle connection: %p\n", TargetConnection);
+
         TargetConnection->ParentServer->PutConnection(TargetConnection);
         TargetConnection->ParentEventDomain->ResetTimer(TargetConnection->TimerNode);
     }

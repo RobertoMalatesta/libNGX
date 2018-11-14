@@ -75,10 +75,12 @@ EventError EPollEventDomain::AttachSocket(Socket *S, SocketEventType Type) {
             break;
     }
 
-    SpinlockGuard LockGuard(&Lock);
+    {
+        SpinlockGuard LockGuard(&Lock);
 
-    if (-1 == epoll_ctl(EPollFD, EPollCommand, SocketFD, &Event)) {
-        return {errno, "Failed to attach connection to epoll!"};
+        if (-1 == epoll_ctl(EPollFD, EPollCommand, SocketFD, &Event)) {
+            return {errno, "Failed to attach connection to epoll!"};
+        }
     }
 
     if (Event.events | (EPOLLIN | EPOLLRDHUP)) {
@@ -136,10 +138,12 @@ EventError EPollEventDomain::DetachSocket(Socket *S, SocketEventType Type) {
         EPollCommand = EPOLL_CTL_DEL;
     }
 
-    SpinlockGuard LockGuard(&Lock);
+    {
+        SpinlockGuard LockGuard(&Lock);
 
-    if (-1 == epoll_ctl(EPollFD, EPollCommand, SocketFD, &Event)) {
-        return {errno, "Failed to attach connection to epoll!"};
+        if (-1 == epoll_ctl(EPollFD, EPollCommand, SocketFD, &Event)) {
+            return {errno, "Failed to attach connection to epoll!"};
+        }
     }
 
     SetSocketReadAttached(S, (Event.events & (EPOLLIN | EPOLLRDHUP)) == 0 ? 0 : 1);
@@ -191,10 +195,9 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs &Argument) {
 
     if (-1 == EventCount && errno == EINTR) {
         Error = {0, "Interrupted by signal"};
-    } else if (-1 >= EventCount) {
+    } else if (EventCount <= -1) {
         return {errno, "epoll_wait() failed!"};
-    } else if (0 < EventCount) {
-
+    } else if (EventCount > 0) {
         for (int i = 0; i < EventCount; i++) {
 
             if (Events[i].data.ptr == nullptr) {

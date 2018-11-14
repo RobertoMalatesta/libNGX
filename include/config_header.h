@@ -13,8 +13,8 @@ namespace ngx {
             const size_t POOL_DEFAULT_BLOCK_SIZE = 40960;
             const size_t BUFFER_DEFAULT_BLOCK_SIZE = 40960;
 
-            const int THREAD_WAIT_TIME = 1500;      // us
-            const int THREAD_POOL_SPIN_TIME = 100;  // us
+            const int THREAD_WAIT_TIME = 2000;     // us
+            const int THREAD_POOL_SPIN_TIME = 10;  // us
             const uint32_t THREAD_GC_ROUND = 20000;
 
             const bool LITTLE_ENDING = true;

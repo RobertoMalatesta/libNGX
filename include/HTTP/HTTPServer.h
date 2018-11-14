@@ -18,7 +18,6 @@ namespace ngx {
             EPollEventDomain EventDomain;
             HTTPConnectionBuilder ConnectionBuilder;
             HTTPPerformanceUnit PerformanceCounters;
-
             virtual RuntimeError PostProcessFinished(EventPromiseArgs &Arguments);
 
         public:

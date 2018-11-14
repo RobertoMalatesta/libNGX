@@ -3,13 +3,16 @@
 using namespace ngx::HTTP;
 
 HTTPConnectionRecycleBin::HTTPConnectionRecycleBin(uint64_t RecycleBinSize) :
-        RecycleBin(RecycleBinSize) {}
+            BackendAllocator(),
+            AllocatorBuild(&BackendAllocator),
+            RecycleBin(RecycleBinSize) {}
 
 
 int HTTPConnectionRecycleBin::Get(HTTPConnection *&C, int SocketFD, SocketAddress &TargetSocketAddress) {
 
     if (RecycleSentinel.IsEmpty()) {
-        C = new HTTPConnection(SocketFD, TargetSocketAddress);
+        Build(C);
+        C->SetSocketAddress(SocketFD, TargetSocketAddress);
     } else {
         C = (HTTPConnection *) RecycleSentinel.GetHead();
         RecycleSize -= 1;
@@ -24,7 +27,7 @@ int HTTPConnectionRecycleBin::Put(HTTPConnection *&Item) {
     Item->Reset();
 
     if (RecycleSize >= RecycleMaxSize) {
-        delete Item;
+        Destroy(Item);
     } else {
         RecycleSize += 1;
         RecycleSentinel.Append(Item);
