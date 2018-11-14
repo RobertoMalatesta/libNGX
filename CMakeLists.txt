@@ -11,6 +11,7 @@ set(SOURCE_FILES
         src/Core/DataStructure/List.cpp
         src/Core/DataStructure/RBTree.cpp
         src/Core/BasicComponent/Buffer.cpp
+        src/Core/BasicComponent/BasicMemoryBlock.cpp
         src/Core/BasicComponent/BufferMemoryBlock.cpp
         src/Core/BasicComponent/BufferMemoryBlockRecycleBin.cpp
         src/Core/BasicComponent/BufferBuilder.cpp
@@ -29,7 +30,6 @@ set(SOURCE_FILES
         src/Core/BasicComponent/Time.cpp
         src/Core/BasicComponent/ThreadPool.cpp
         src/Core/BasicComponent/TimerTree.cpp
-        src/Core/BasicComponent/BasicMemoryBlock.cpp
         src/Core/EPollEventDomain.cpp
         src/Core/FSTree.cpp
         src/Core/Server.cpp
