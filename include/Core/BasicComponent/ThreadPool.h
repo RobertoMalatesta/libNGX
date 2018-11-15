@@ -1,6 +1,5 @@
 
 class Thread;
-
 class ThreadPool;
 
 typedef void (PromiseCallback)(void *PointerToArguments, ThreadPool *TPool);

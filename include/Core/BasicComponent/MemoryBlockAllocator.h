@@ -2,7 +2,7 @@ class MemoryBlockAllocator
         : public BasicMemoryBlock,
           public MemAllocator,
           public CanReset,
-          public AlignBuild<MemoryBlockAllocator, PAGE_SIZE, POOL_DEFAULT_BLOCK_SIZE> {
+          public AlignBuild<MemoryBlockAllocator> {
 protected:
     MemoryBlockAllocator *Next;
 public:

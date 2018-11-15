@@ -15,7 +15,7 @@
 class BufferMemoryBlock
         : public BasicMemoryBlock,
           public Recyclable,
-          public AlignBuild<BufferMemoryBlock, PAGE_SIZE, BUFFER_DEFAULT_BLOCK_SIZE> {
+          public AlignBuild<BufferMemoryBlock, BUFFER_MEMORY_BLOCK_SIZE> {
 protected:
     BufferMemoryBlock *NextBlock = nullptr;
 

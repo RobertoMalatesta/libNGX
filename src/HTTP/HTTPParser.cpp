@@ -115,7 +115,7 @@ HTTPError HTTPParser::ParseMethod(Buffer &B, HTTPRequest &R) {
         break;
     }
 
-    R.Request.LeftBound = BC;
+    R.Request < BC;
 
     C1 = (*BC), C2 = *(BC + 1), C3 = *(BC + 2), C4 = *(BC + 3);
 
@@ -222,7 +222,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
         switch (RequestLineState) {
             case RL_SPACEBEFOREURI:
                 if (C == '/') {
-                    R.URI.LeftBound = BC;
+                    R.URI < BC;
                     RequestLineState = RL_AFTERSLASHINURI;
                     break;
                 }
@@ -230,7 +230,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                 C1 = (u_char) (C | 0x20);
 
                 if (C1 >= 'a' && C1 <= 'z') {
-                    R.Schema.LeftBound = BC;
+                    R.Schema < BC;
                     RequestLineState = RL_SCHEMA;
                     break;
                 }
@@ -256,7 +256,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
 
                 switch (C) {
                     case ':':
-                        R.Schema.RightBound = BC;
+                        R.Schema > BC;
                         RequestLineState = RL_SCHEMASLASH;
                         break;
                     default:
@@ -282,7 +282,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                 }
                 break;
             case RL_HOSTSTART:
-                R.Host.LeftBound = BC;
+                R.Host < BC;
                 if (C == '[') {
                     RequestLineState = RL_HOSTIPLITERIAL;
                     break;
@@ -297,17 +297,17 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                     break;
                 }
             case RL_HOSTEND:
-                R.Host.RightBound = BC;
+                R.Host > BC;
                 switch (C) {
                     case ':':
                         RequestLineState = RL_PORT;
                         break;
                     case '/':
-                        R.URI.LeftBound = BC;
+                        R.URI < BC;
                         RequestLineState = RL_AFTERSLASHINURI;
                         break;
                     case ' ':
-                        R.URI.LeftBound = BC + 1, R.URI.RightBound = BC + 2;
+                        R.URI < BC + 1, R.URI > BC + 2;
                         RequestLineState = RL_CHECKURIHTTP09;
                         break;
                     default:
@@ -354,11 +354,12 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                 }
                 switch (C) {
                     case '/':
-                        R.Port = R.URI.LeftBound = BC;
+                        R.Port < BC, R.URI < BC;
                         RequestLineState = RL_AFTERSLASHINURI;
                         break;
                     case ' ':
-                        R.Port = BC, R.URI.LeftBound = BC + 1, R.URI.RightBound = BC + 2;
+                        R.Port = BC;
+                        R.URI < BC + 1, R.URI > BC + 2;
                         RequestLineState = RL_HOSTHTTP09;
                         break;
                     default:
@@ -393,16 +394,16 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
 
                 switch (C) {
                     case ' ':
-                        R.URI.RightBound = BC;
+                        R.URI > BC;
                         RequestLineState = RL_CHECKURIHTTP09;
                         break;
                     case CR:
-                        R.URI.RightBound = BC;
+                        R.URI > BC;
                         HTTPMinor = 9;
                         RequestLineState = RL_ALMOSTDONE;
                         break;
                     case LF:
-                        R.URI.RightBound = BC;
+                        R.URI > BC;
                         HTTPMinor = 9;
                         goto done;
                     case '.':
@@ -468,16 +469,16 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
 //                        r->uri_ext = p + 1;
                         break;
                     case ' ':
-                        R.URI.RightBound = BC;
+                        R.URI > BC;
                         RequestLineState = RL_CHECKURIHTTP09;
                         break;
                     case CR:
-                        R.URI.RightBound = BC;
+                        R.URI > BC;
                         HTTPMinor = 9;
                         RequestLineState = RL_ALMOSTDONE;
                         break;
                     case LF:
-                        R.URI.RightBound = BC;
+                        R.URI > BC;
                         HTTPMinor = 9;
                         goto done;
                     case '\\':
@@ -540,17 +541,16 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
 
                 switch (C) {
                     case ' ':
-                        R.URI.RightBound = BC;
+                        R.URI > BC;
                         RequestLineState = RL_HTTP09;
                         break;
                     case CR:
-                        R.URI.RightBound = BC;
+                        R.URI > BC;
                         HTTPMinor = 9;
                         RequestLineState = RL_ALMOSTDONE;
                         break;
                     case LF:
-                        R.URI.RightBound = BC;
-                        HTTPMinor = 9;
+                        R.URI > BC;
                         goto done;
                     case '#':
                         R.ComplexURI = 1;
@@ -702,7 +702,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                 break;
 
             case RL_ALMOSTDONE:
-                R.Request.RightBound = LastBC;
+                R.Request > LastBC;
                 switch (C) {
                     case LF:
                         goto done;
@@ -719,7 +719,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
 
     BC += 1;
     B << BC;
-    R.Request.RightBound = BC;
+    R.Request > BC;
     R.Version = HTTPMajor * 1000 + HTTPMinor;
 
     if (R.Version == 9 && R.Method != GET) {
@@ -754,17 +754,16 @@ HTTPError HTTPParser::ParseHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderSco
         switch (State) {
             case HDR_START:
 
-                Header.Value.LeftBound = BC;
-                Header.Name.LeftBound = BC;
+                Header.Value < BC, Header.Name < BC;
                 Header.Valid = true;
 
                 switch (C) {
                     case CR:
-                        Header.Value.RightBound = BC;
+                        Header.Value > BC;
                         State = HDR_HEADER_ALMOST_DONE;
                         break;
                     case LF:
-                        Header.Value.RightBound = BC;
+                        Header.Value > BC;
                         NoMoreHeader = true;
                         goto done;
                         break;
@@ -810,28 +809,28 @@ HTTPError HTTPParser::ParseHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderSco
                 }
 
                 if (C == ':') {
-                    Header.Name.RightBound = BC;
+                    Header.Name > BC;
                     State = HDR_SPACE_BEFORE_VALUE;
                     break;
                 }
 
                 if (C == CR) {
-                    Header.Name.RightBound = BC;
-                    Header.Value.LeftBound = BC;
-                    Header.Value.RightBound = BC;
+                    Header.Name > BC;
+                    Header.Value < BC;
+                    Header.Value > BC;
                     State = HDR_ALMOST_DONE;
                     break;
                 }
 
                 if (C == LF) {
-                    Header.Name.RightBound = BC;
-                    Header.Value.LeftBound = BC;
-                    Header.Value.RightBound = BC;
+                    Header.Name > BC;
+                    Header.Value < BC;
+                    Header.Value > BC;
                     goto done;
                 }
 
                 if (C == '/') {
-                    if (Header.Name.LeftBound.CmpByte4(0, 'H', 'T', 'T', 'P')) {
+                    if (Header.Name.CmpByte4(0, 'H', 'T', 'T', 'P')) {
                         State = HDR_IGNORE_LINE;
                         break;
                     }
@@ -850,18 +849,18 @@ HTTPError HTTPParser::ParseHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderSco
                     case ' ':
                         break;
                     case CR:
-                        Header.Value.LeftBound = BC;
-                        Header.Value.RightBound = BC;
+                        Header.Value < BC;
+                        Header.Value > BC;
                         State = HDR_ALMOST_DONE;
                         break;
                     case LF:
-                        Header.Value.LeftBound = BC;
-                        Header.Value.RightBound = BC;
+                        Header.Value < BC;
+                        Header.Value > BC;
                         goto done;
                     case '\0':
                         return {EINVAL, InvalidHeaderErrorString};
                     default:
-                        Header.Value.LeftBound = BC;
+                        Header.Value < BC;
                         State = HDR_VALUE;
                         break;
                 }
@@ -869,15 +868,15 @@ HTTPError HTTPParser::ParseHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderSco
             case HDR_VALUE:
                 switch (C) {
                     case ' ':
-                        Header.Value.RightBound = BC;
+                        Header.Value > BC;
                         State = HDR_SPACE_AFTER_VALUE;
                         break;
                     case CR:
-                        Header.Value.RightBound = BC;
+                        Header.Value > BC;
                         State = HDR_ALMOST_DONE;
                         break;
                     case LF:
-                        Header.Value.RightBound = BC;
+                        Header.Value > BC;
                         goto done;
                     case '\0':
                         return {EINVAL, InvalidHeaderErrorString};
@@ -962,8 +961,7 @@ HTTPError HTTPParser::ValidateURI(HTTPRequest &R) {
         URI_URI
     };
 
-    Range URI = R.URI;
-    BoundCursor BC = URI.GetBoundCurosr();
+    BoundCursor BC = R.URI;
     URI_PARSE_STATE State = URI_START;
 
     for (u_char C, C1; C = *BC, !!BC; BC++) {
@@ -1032,7 +1030,6 @@ HTTPError HTTPParser::ValidateURI(HTTPRequest &R) {
                             break;
                         }
 #endif
-                        R.URIExt.Block = nullptr;
                         R.URIExt.Position = nullptr;
                         State = URI_AFTER_SLASH_IN_URI;
                         break;

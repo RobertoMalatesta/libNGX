@@ -1,3 +1,4 @@
+
 //===- Array.h - Array to hold contiguous element   -------------*- C++ -*-===//
 //
 //                     The NGX Server Infrastructure
@@ -20,7 +21,7 @@ private:
     MemAllocator *Allocator = nullptr;
 
 public:
-    Array(MemAllocator *Allocator, size_t Size, uint32_t Count = ARRAY_DEFAULT_COUNT);
+    Array(MemAllocator *Allocator, size_t Size, uint32_t Count = ARRAY_DEFAULT_ELEMENT_COUNT);
 
     ~Array();
 

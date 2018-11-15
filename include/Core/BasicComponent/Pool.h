@@ -1,10 +1,12 @@
 class Pool : public MemAllocator, public CanReset {
 private:
+    uint32_t AllocateRound;
+protected:
     size_t BlockSize;
     MemoryBlockAllocator *HeadBlock, *CurrentBlock;
 
 public:
-    Pool(size_t BlockSize = POOL_DEFAULT_BLOCK_SIZE);
+    Pool(size_t BlockSize = POOL_MEMORY_BLOCK_SIZE);
 
     Pool(Pool &Copy);
 

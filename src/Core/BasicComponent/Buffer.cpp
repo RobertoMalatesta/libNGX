@@ -24,56 +24,6 @@ static inline void RecycleBlock(BufferMemoryBlockRecycleBin *R, BufferMemoryBloc
     }
 }
 
-uint32_t Cursor::IncRef() {
-    if (Block != nullptr) {
-        return Block->IncRef();
-    }
-    return 0;
-}
-
-uint32_t Cursor::DecRef() {
-    if (Block != nullptr) {
-        return Block->DecRef();
-    }
-    return 0;
-}
-
-BoundCursor &BoundCursor::SetLeft(Cursor &Cursor) {
-    Block = Cursor.Block, Position = Cursor.Position;
-    return *this;
-}
-
-BoundCursor &BoundCursor::SetRight(Cursor &Bound) {
-    this->Bound = Bound;
-    return *this;
-}
-
-void Range::IncRef() {
-    BufferMemoryBlock *TempBlock;
-
-    TempBlock = LeftBound.Block;
-
-    while (TempBlock != RightBound.Block) {
-        TempBlock->IncRef();
-        TempBlock = TempBlock->GetNextBlock();
-    }
-
-    RightBound.Block->IncRef();
-}
-
-
-void Range::DecRef() {
-    BufferMemoryBlock *TempBlock;
-
-    TempBlock = LeftBound.Block;
-
-    while (TempBlock != RightBound.Block) {
-        TempBlock->DecRef();
-        TempBlock = TempBlock->GetNextBlock();
-    }
-
-    RightBound.Block->DecRef();
-}
 
 Buffer::~Buffer() {
 
@@ -93,7 +43,9 @@ Buffer::~Buffer() {
 RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength) {
 
     size_t CurrentBlockFreeSize;
-    BufferMemoryBlock *TempBufferBlock, *WriteBlock = WriteCursor.Block;
+    BufferMemoryBlock *TempBufferBlock, *WriteBlock;
+
+    WriteBlock = AddressToMemoryBlock(WriteCursor.Position);
 
     for (;;) {
 
@@ -104,7 +56,7 @@ RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength)
             TempBufferBlock = AquireBlock(RecycleBin, BlockSize);
 
             if (TempBufferBlock == nullptr) {
-                ReadCursor.SetRight(WriteCursor);
+                ReadCursor > WriteCursor;
                 return {ENOMEM, "No enough memory!"};
             }
 
@@ -114,7 +66,6 @@ RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength)
             DataLength -= CurrentBlockFreeSize;
 
             WriteBlock->SetNextBlock(TempBufferBlock);
-            WriteBlock = WriteCursor.Block = TempBufferBlock;
             WriteCursor.Position = WriteBlock->Start;
         } else {
             memcpy(WriteCursor.Position, PointerToData, DataLength);
@@ -123,7 +74,7 @@ RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength)
         }
     }
 
-    ReadCursor.SetRight(WriteCursor);
+    ReadCursor > WriteCursor;
     return {0};
 }
 
@@ -143,12 +94,14 @@ RuntimeError Buffer::WriteConnectionToBuffer(Connection *C) {
     u_char *PointerToData;
     size_t ReadLength;
     ssize_t RecievedSize;
-    BufferMemoryBlock *TempBlock;
+    BufferMemoryBlock *TempBlock, *WriteBlock;
+
+    WriteBlock = AddressToMemoryBlock(WriteCursor.Position);
 
     while (true) {
 
         PointerToData = WriteCursor.Position;
-        ReadLength = WriteCursor.Block->End - PointerToData;
+        ReadLength = WriteBlock->End - PointerToData;
 
         if (ReadLength == 0) {
 
@@ -161,10 +114,10 @@ RuntimeError Buffer::WriteConnectionToBuffer(Connection *C) {
             if (TempBlock == nullptr) {
                 return {ENOMEM, "Can not allocate BufferMemoryBlock when recv()"};
             }
-            WriteCursor.Block->SetNextBlock(TempBlock);
-            WriteCursor.Block = TempBlock;
-            PointerToData = WriteCursor.Position = WriteCursor.Block->Start;
-            ReadLength = WriteCursor.Block->End - PointerToData;
+            WriteBlock->SetNextBlock(TempBlock);
+            WriteBlock = TempBlock;
+            PointerToData = WriteCursor.Position = WriteBlock->Start;
+            ReadLength = WriteBlock->End - PointerToData;
         }
 
         RecievedSize = recv(SocketFd, PointerToData, ReadLength, 0);
@@ -181,18 +134,18 @@ RuntimeError Buffer::WriteConnectionToBuffer(Connection *C) {
             break;
         }
     }
-    ReadCursor.SetRight(WriteCursor);
-
+    ReadCursor > WriteCursor;
     return {0};
 }
 
 void Buffer::Reset() {
 
-    BufferMemoryBlock *TempBlock, *NextBlock;
+    BufferMemoryBlock *TempBlock, *NextBlock, *WriteBlock;
 
     TempBlock = HeadBlock;
+    WriteBlock = AddressToMemoryBlock(WriteCursor.Position);
 
-    while (TempBlock != WriteCursor.Block && TempBlock != nullptr) {
+    while (TempBlock != WriteBlock && TempBlock != nullptr) {
 
         NextBlock = TempBlock->GetNextBlock();
         TempBlock->Reset();
@@ -206,21 +159,21 @@ void Buffer::Reset() {
         TempBlock = NextBlock;
     }
 
-    if (WriteCursor.Block) {
-        WriteCursor.Block->Reset();
-        WriteCursor.Position = WriteCursor.Block->Start;
-        ReadCursor.SetLeft(WriteCursor);
-        ReadCursor.SetRight(WriteCursor);
+    if (WriteBlock != nullptr) {
+        WriteBlock->Reset();
+        WriteCursor.Position = WriteBlock->Start;
+        ReadCursor < WriteCursor > WriteCursor;
     }
 }
 
 void Buffer::GC() {
 
-    BufferMemoryBlock *TempBlock, *NextBlock;
+    BufferMemoryBlock *TempBlock, *NextBlock, *ReadBlock;
 
     TempBlock = HeadBlock, NextBlock = TempBlock->NextBlock;
+    ReadBlock = AddressToMemoryBlock(WriteCursor.Position);
 
-    while (NextBlock != nullptr && NextBlock != ReadCursor.Block) {
+    while (NextBlock != nullptr && NextBlock != ReadBlock) {
 
         if (NextBlock->RefCount() == 0) {
             TempBlock->SetNextBlock(NextBlock->GetNextBlock());

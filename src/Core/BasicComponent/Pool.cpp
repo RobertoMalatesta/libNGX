@@ -23,7 +23,7 @@ Pool::Pool(Pool &Copy) {
 void *Pool::Allocate(size_t Size) {
 
     void *ret = nullptr;
-    MemoryBlockAllocator *TempAllocator;
+    MemoryBlockAllocator *TempAllocator = nullptr;
 
     if (Size == 0) {
         return ret;
@@ -33,17 +33,25 @@ void *Pool::Allocate(size_t Size) {
         do {
             ret = CurrentBlock->Allocate(Size);
 
-            if (ret == nullptr) {
-                if (CurrentBlock->GetNextBlock() == nullptr) {
-                    MemoryBlockAllocator::Build(TempAllocator, BlockSize);
-                    CurrentBlock->SetNextBlock(TempAllocator);
-                }
+            if (ret != nullptr) {
+                break;
+            }
+            if (CurrentBlock->GetNextBlock() != nullptr) {
                 CurrentBlock = CurrentBlock->GetNextBlock();
             } else {
-                break;
+
+                if (MemoryBlockAllocator::Build(TempAllocator, BlockSize) != 0) {
+                    break;
+                }
+                CurrentBlock->SetNextBlock(TempAllocator);
             }
         } while (true);
     }
+
+    if ((AllocateRound++) % POOL_RECYCLE_ROUND == 0) {
+        GC();
+    }
+
     return ret;
 }
 
@@ -71,7 +79,7 @@ void Pool::Free(void *&pointer) {
 
 void Pool::GC() {
 
-    int Residual = DEFAULT_POOL_RESIDUAL;
+    int Residual = POOL_RESIDUAL;
 
     MemoryBlockAllocator *Last = HeadBlock, *Current = nullptr /*, *Next = nullptr */, *TempFreeBlockHead = nullptr, *TempFreeBlockTail = nullptr;
 
@@ -116,7 +124,7 @@ void Pool::GC() {
 
 void Pool::Reset() {
 
-    int Residual = DEFAULT_POOL_RESIDUAL;
+    int Residual = POOL_RESIDUAL;
 
     MemoryBlockAllocator *TempMemBlock = HeadBlock, *NextMemBlock, *NewMemBlockList = nullptr;
 

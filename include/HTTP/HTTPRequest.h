@@ -2,8 +2,8 @@ namespace ngx {
     namespace HTTP {
 
         struct HTTPHeader {
-            HashRange Name;
-            Range Value;
+            HashBoundCursor Name;
+            BoundCursor Value;
             bool Valid;
 
             HTTPHeader() : Name(), Value(), Valid(true) {}
@@ -18,16 +18,16 @@ namespace ngx {
             unsigned int Version;
 
             HTTPMethod Method;
-            Range URI;
+            BoundCursor URI;
             BoundCursor URIExt;
             BoundCursor Port;
             BoundCursor HTTPProtocol;
             BoundCursor Argument;
             BoundCursor Content;
-            Range Schema;
-            Range Host;
-            Range IP;
-            Range Request;
+            BoundCursor Schema;
+            BoundCursor Host;
+            BoundCursor IP;
+            BoundCursor Request;
             Array Headers;
             Array ArgumentList;
             HTTPRequestState State = HTTP_INIT_STATE;
@@ -36,7 +36,7 @@ namespace ngx {
 
         public:
             HTTPRequest(MemAllocator *Allocator) : Headers(Allocator, sizeof(HTTPHeader)),
-                                                   ArgumentList(Allocator, sizeof(Range)) {};
+                                                   ArgumentList(Allocator, sizeof(BoundCursor)) {};
             /* HTTPConnection
             * CanReset
             * enum Method

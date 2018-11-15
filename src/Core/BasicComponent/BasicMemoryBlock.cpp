@@ -20,7 +20,7 @@ BasicMemoryBlock *BasicMemoryBlock::AddressToMemoryBlock(void *Address, size_t S
     BasicMemoryBlock *MemBlk;
     MemBlk = (BasicMemoryBlock *) ((size_t) Address & ~(Size - 1));
 
-    if (nullptr != MemBlk && MemBlk->Magic == (void *) MemBlk) {
+    if (MemBlk != nullptr && MemBlk->Magic == (void *) MemBlk) {
         return MemBlk;
     }
 

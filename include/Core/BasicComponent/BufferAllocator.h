@@ -21,7 +21,7 @@ class BufferAllocator : public CanReset {
 
     friend class BufferBuilder;
 
-    BufferAllocator(BufferMemoryBlockRecycleBin *RecycleBin, size_t BlockSize = BUFFER_DEFAULT_BLOCK_SIZE);
+    BufferAllocator(BufferMemoryBlockRecycleBin *RecycleBin, size_t BlockSize = BUFFER_MEMORY_BLOCK_SIZE);
 
     ~BufferAllocator();
 
