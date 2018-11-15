@@ -23,29 +23,29 @@ TimerTree::TimerTree(MemAllocator *Allocator) : RBTree(), AllocatorBuild(Allocat
 
 TimerTree::~TimerTree() {
 
-    RBTreeNode *Temp;
-    Timer *TempTimer;
+    Timer *Temp;
 
-    for (RBTreeNode *It = Minimum(); It != nullptr && It != Sentinel;) {
-        Temp = It, TempTimer = (Timer *) It;
+    for (RBTreeNode *It = Minimum(); It != Sentinel && It != nullptr;) {
+        Temp = (Timer *) It;
         It = Next(It);
-        Delete(Temp), Destroy(TempTimer);
+        Delete(Temp);
     }
 
-    TempTimer = (Timer *) (Sentinel);
-    Destroy(TempTimer);
+    if (Sentinel) {
+        Temp = (Timer *) Sentinel;
+        Destroy(Temp);
+        Root = Sentinel = nullptr;
+    }
 
     RBTree::~RBTree();
 };
 
 int TimerTree::QueueExpiredTimer(ThreadPool *TPool) {
 
-    RBTreeNode *It;
     Timer *Temp;
-
     uint64_t Timestamp = GetHighResolutionTimestamp();
 
-    for (It = Minimum(); It != Sentinel && It != nullptr;) {
+    for (RBTreeNode *It = Minimum(); It != Sentinel && It != nullptr;) {
 
         Temp = (Timer *) It;
         It = Next(It);
@@ -59,7 +59,7 @@ int TimerTree::QueueExpiredTimer(ThreadPool *TPool) {
         Delete(Temp);
 
         if (Temp->Mode == TM_INTERVAL && Temp->Interval > 0) {
-            Temp -> Timestamp = Timestamp + Temp->Interval;
+            Temp->Timestamp = Timestamp + Temp->Interval;
             Insert(Temp);
         } else {
             Temp->Mode = TM_CLOSED;
@@ -71,7 +71,7 @@ int TimerTree::QueueExpiredTimer(ThreadPool *TPool) {
 int TimerTree::AttachTimer(Timer &T) {
 
     if (T.Interval > 0) {
-       T.Timestamp = GetHighResolutionTimestamp() + T.Interval;
+        T.Timestamp = GetHighResolutionTimestamp() + T.Interval;
         Insert(&T);
     }
     return 0;

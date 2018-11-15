@@ -7,6 +7,8 @@ namespace ngx {
         public:
             HTTPConnectionRecycleBin(uint64_t RecycleBinSize);
 
+            ~HTTPConnectionRecycleBin();
+
             virtual int Get(HTTPConnection *&C, int SocketFD, SocketAddress &TargetSocketAddress);
 
             virtual int Put(HTTPConnection *&Item);

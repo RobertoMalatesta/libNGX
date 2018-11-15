@@ -7,9 +7,12 @@ HTTPConnectionBuilder::HTTPConnectionBuilder(size_t BufferBlockSize, uint64_t Bu
                                              uint64_t ConnectionRecycleBinSize) :
         BackendRecycleBin(ConnectionRecycleBinSize),
         BB(BufferBlockSize, BufferRecycleBinSize),
-        TCPNoDelay(1), TCPNoPush(0) {}
+        TCPNoDelay(1), TCPNoPush(0) {
 
-int HTTPConnectionBuilder::Get(HTTPConnection *&C, int SocketFD, SocketAddress *SocketAddress, HTTPServer *Server, SocketEventDomain *EventDomain) {
+}
+
+int HTTPConnectionBuilder::Get(HTTPConnection *&C, int SocketFD, SocketAddress *SocketAddress, HTTPServer *Server,
+                               SocketEventDomain *EventDomain) {
 
     SpinlockGuard LockGuard(&Lock);
 

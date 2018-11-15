@@ -17,7 +17,7 @@ int HTTPServerTest() {
     TimeModuleInit();
 
     TCP4Listening Listen(SocketAddress);
-    HTTPServer Server(40960, 3, 31728, 40960, 1024, 1024);
+    HTTPServer Server(POOL_MEMORY_BLOCK_SIZE, 3, EPOLL_EVENT_MAX_CONNECTION, BUFFER_MEMORY_BLOCK_SIZE, 1024, 1024);
 
     Listen.SetPortReuse(false).PrintError();
     Listen.Listen().PrintError();
@@ -27,8 +27,15 @@ int HTTPServerTest() {
     RuntimeError Error{0};
 
     do {
+
         Error = Server.HTTPServerEventProcess();
-    } while (Error.GetCode() == 0 && !IsInterrupted());
+
+        if (Error.GetCode() == 0 && IsInterrupted()) {
+            Error = Server.HTTPServerEventProcess();
+            break;
+        }
+
+    } while (Error.GetCode() == 0);
 
     return 0;
 }

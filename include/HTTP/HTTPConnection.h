@@ -34,6 +34,7 @@ namespace ngx {
         public:
 
             HTTPConnection();
+
             ~HTTPConnection() = default;
 
             inline RuntimeError ReadConnection() {

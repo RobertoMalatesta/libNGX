@@ -15,9 +15,10 @@ namespace ngx {
 
         class HTTPServer : public Server {
         protected:
-            EPollEventDomain EventDomain;
             HTTPConnectionBuilder ConnectionBuilder;
+            EPollEventDomain EventDomain;
             HTTPPerformanceUnit PerformanceCounters;
+
             virtual RuntimeError PostProcessFinished(EventPromiseArgs &Arguments);
 
         public:
@@ -29,6 +30,8 @@ namespace ngx {
             virtual RuntimeError PutConnection(HTTPConnection *&C);
 
             RuntimeError HTTPServerEventProcess();
+
+            ~HTTPServer() = default;
         };
     }
 }

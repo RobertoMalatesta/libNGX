@@ -3,9 +3,9 @@
 using namespace ngx::HTTP;
 
 HTTPConnectionRecycleBin::HTTPConnectionRecycleBin(uint64_t RecycleBinSize) :
-            BackendAllocator(),
-            AllocatorBuild(&BackendAllocator),
-            RecycleBin(RecycleBinSize) {}
+        BackendAllocator(),
+        AllocatorBuild(&BackendAllocator),
+        RecycleBin(RecycleBinSize) {}
 
 
 int HTTPConnectionRecycleBin::Get(HTTPConnection *&C, int SocketFD, SocketAddress &TargetSocketAddress) {
@@ -33,4 +33,16 @@ int HTTPConnectionRecycleBin::Put(HTTPConnection *&Item) {
         RecycleSentinel.Append(Item);
     }
     return 0;
+}
+
+HTTPConnectionRecycleBin::~HTTPConnectionRecycleBin() {
+
+    HTTPConnection *Item;
+
+    while (!RecycleSentinel.IsEmpty()) {
+        Item = (HTTPConnection *) RecycleSentinel.GetHead();
+        RecycleSize -= 1;
+        Item->Detach();
+        Destroy(Item);
+    }
 }

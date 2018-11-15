@@ -10,6 +10,17 @@ BufferMemoryBlockRecycleBin::BufferMemoryBlockRecycleBin(
     this->BufferMemoryBlockSize = BufferMemoryBlockSize;
 }
 
+BufferMemoryBlockRecycleBin::~BufferMemoryBlockRecycleBin() {
+
+    BufferMemoryBlock *TempBlock;
+
+    while (!RecycleSentinel.IsEmpty()) {
+        TempBlock = (BufferMemoryBlock *) RecycleSentinel.GetHead();
+        TempBlock->Detach();
+        BufferMemoryBlock::Destroy(TempBlock);
+    }
+}
+
 BufferMemoryBlock *BufferMemoryBlockRecycleBin::Get() {
 
     BufferMemoryBlock *Ret;

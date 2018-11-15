@@ -23,10 +23,6 @@ Thread::Thread(ThreadPool *TPool) : Sentinel(), WorkerThread(Thread::ThreadProce
     this->TPool = TPool;
 }
 
-Thread::~Thread() {
-    Stop();
-}
-
 int Thread::TryPostPromise(PromiseCallback *Callback, void *Argument) {
 
     if (Lock.test_and_set()) {
@@ -58,8 +54,7 @@ int Thread::TryPostPromise(PromiseCallback *Callback, void *Argument) {
 void Thread::ThreadProcess(Thread *Thread) {
 
     Promise *Node;
-    bool IsRunning;
-    Thread->Running = IsRunning = true;
+    Thread->Running = true;
 
     {
         uint64_t Timestamp = GetHighResolutionTimestamp();
@@ -69,24 +64,25 @@ void Thread::ThreadProcess(Thread *Thread) {
         }
     }
 
-    while (IsRunning) {
+    while (true) {
 
         usleep(THREAD_WAIT_TIME);
 
         if (Thread->Lock.test_and_set()) {
             std::this_thread::yield();
+        } else if (!Thread->Running) {
+            break;
         } else {
             while (!Thread->Sentinel.IsEmpty()) {
-                Node = (Promise *)Thread->Sentinel.GetHead();
+                Node = (Promise *) Thread->Sentinel.GetHead();
                 Node->Detach();
                 Node->doPromise();
                 Thread->Allocator.Free((void *&) Node);
             }
-
-            IsRunning = Thread->Running;
             Thread->Lock.clear();
         }
     }
+    Thread->Lock.clear();
 }
 
 void Thread::Stop() {
@@ -110,8 +106,9 @@ ThreadPool::ThreadPool(int NumThread) : NumThread(NumThread) {
 ThreadPool::~ThreadPool() {
 
     for (Thread *Temp: Threads) {
-        delete Temp;
+        Temp->Stop(), delete Temp;
     }
+
     Threads.clear();
 }
 
@@ -133,3 +130,4 @@ void ThreadPool::PostPromise(PromiseCallback *Callback, void *PointerToArg) {
 
     DeliverIndex = i;
 }
+

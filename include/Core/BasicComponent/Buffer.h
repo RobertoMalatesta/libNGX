@@ -12,7 +12,9 @@
 //===----------------------------------------------------------------------===//
 
 class Cursor;
+
 class BoundCursor;
+
 class Range;
 
 class Buffer : public CanReset {
@@ -23,6 +25,7 @@ protected:
     BufferMemoryBlockRecycleBin *RecycleBin = nullptr;
 
     friend class BufferBuilder;
+
 public:
     Buffer() = default;
 
@@ -33,7 +36,7 @@ public:
     Buffer &operator>>(BoundCursor &BC) &;
 
     inline BufferMemoryBlock *AddressToMemoryBlock(void *Cursor) const {
-        return (BufferMemoryBlock *)BufferMemoryBlock::AddressToMemoryBlock(Cursor, BlockSize);
+        return (BufferMemoryBlock *) BufferMemoryBlock::AddressToMemoryBlock(Cursor, BlockSize);
     }
 
     RuntimeError WriteConnectionToBuffer(Connection *C);

@@ -29,6 +29,7 @@ static const char *MonthString[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
 static void TimerHandle(int);
+
 static void InterruptHandle(int);
 
 static void UpdateTimeString();
@@ -209,7 +210,6 @@ static void TimerHandle(int) {
 }
 
 static void InterruptHandle(int) {
-    printf("interrupt handled!");
     Interrupted = true;
 }
 

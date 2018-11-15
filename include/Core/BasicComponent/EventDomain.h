@@ -19,12 +19,16 @@ class EventDomain {
 protected:
     SpinLock Lock;
     Pool Allocator;
-    ThreadPool TPool;
     TimerTree Timers;
+    ThreadPool TPool;
 public:
     EventDomain(size_t PoolSize, int ThreadCount);
 
-    ~EventDomain() = default;
+    ~EventDomain() {
+        SpinlockGuard LockGuard(&Lock);
+        TPool.~ThreadPool();
+        Timers.~TimerTree();
+    }
 
     static void DiscardPromise(void *Argument, ThreadPool *TPool) {};
 

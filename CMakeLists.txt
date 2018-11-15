@@ -61,7 +61,6 @@ set(TEST_FILES
         test/HTTP/HTTPTest.cpp
         test/HTTP/HTTPServerTest.cpp
         test/HTTP/HTTPConnectionRecycleBin.cpp
-        test/HTTP/HTTPParserTest.cpp
         test/HTTP/HTTPParseTest.cpp)
 
 include_directories(./include)

@@ -1,12 +1,13 @@
 enum TimerMode {
-   TM_CLOSED = 0,
-   TM_ONCE,
-   TM_INTERVAL,
+    TM_CLOSED = 0,
+    TM_ONCE,
+    TM_INTERVAL,
 };
 
 class Timer : public RBTreeNode, public CanReset {
 protected:
     virtual int Compare(Timer *Node);
+
     friend class TimerTree;
 
     uint64_t Timestamp = 0;
@@ -27,14 +28,14 @@ public:
     ~Timer() = default;
 
     void SeInterval(uint64_t Interval, TimerMode Mode = TM_ONCE) {
-        this->Mode = Mode,this->Interval = Interval;
+        this->Mode = Mode, this->Interval = Interval;
     }
 
     inline bool IsTimerAttached() {
         return GetLeft() != nullptr && GetRight() != nullptr;
     }
 
-    virtual void Reset() {Timestamp = 0;};
+    virtual void Reset() { Timestamp = 0; };
 };
 
 class TimerTree : public RBTree, public AllocatorBuild<Timer> {

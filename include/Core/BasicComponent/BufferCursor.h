@@ -47,7 +47,7 @@ struct BoundCursor : public Cursor {
 
     inline BoundCursor operator+=(size_t Size) {
 
-        return *this =  *this + Size;
+        return *this = *this + Size;
     }
 
     inline BoundCursor operator++() {

@@ -19,6 +19,8 @@ protected:
 public:
     BufferBuilder(size_t BlockSize = BUFFER_MEMORY_BLOCK_SIZE, uint64_t RecycleSize = DEFAULT_RECYCLE_SIZE);
 
+    ~BufferBuilder();
+
     bool BuildBuffer(Buffer &Buf);
 
     BufferAllocator BuildBufferAllocator();

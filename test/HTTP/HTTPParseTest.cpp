@@ -9,8 +9,6 @@ int HTTPParseTest() {
     BufferBuilder Builder(BUFFER_MEMORY_BLOCK_SIZE, 1000);
     HTTPRequest Request(&MemoryAllocator);
 
-    printf("size of http connection: %lu\n", sizeof(HTTPConnection));
-
     u_char Text[] = "GET / HTTP/1.1\r\nAcceptEncoding: application/json\n\r\n";
 
     Builder.BuildBuffer(buffer);

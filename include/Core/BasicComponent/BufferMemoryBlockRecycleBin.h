@@ -18,7 +18,9 @@ protected:
     size_t BufferMemoryBlockSize;
 public:
     BufferMemoryBlockRecycleBin(size_t BufferMemoryBlockSize = BUFFER_MEMORY_BLOCK_SIZE,
-                              uint64_t RecycleBinSize = DEFAULT_RECYCLE_SIZE);
+                                uint64_t RecycleBinSize = DEFAULT_RECYCLE_SIZE);
+
+    ~BufferMemoryBlockRecycleBin();
 
     size_t GetBlockSize() { return this->BufferMemoryBlockSize; }
 

@@ -114,7 +114,8 @@ uint32_t Cursor::DecRef() {
     return 0;
 }
 
-BoundCursor::BoundCursor(Buffer *ParentBuffer, u_char *Position, u_char *Bound): Cursor(ParentBuffer, Position), Bound(Bound) {
+BoundCursor::BoundCursor(Buffer *ParentBuffer, u_char *Position, u_char *Bound) : Cursor(ParentBuffer, Position),
+                                                                                  Bound(Bound) {
 }
 
 uint32_t BoundCursor::IncRef() {

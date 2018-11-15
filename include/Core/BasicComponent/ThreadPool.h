@@ -1,5 +1,6 @@
 
 class Thread;
+
 class ThreadPool;
 
 typedef void (PromiseCallback)(void *PointerToArguments, ThreadPool *TPool);
@@ -41,7 +42,7 @@ private:
 public:
     Thread(ThreadPool *TPool);
 
-    ~Thread();
+    ~Thread() = default;
 
     void Stop();
 
@@ -63,5 +64,4 @@ public:
     ~ThreadPool();
 
     void PostPromise(PromiseCallback *Callback, void *PointerToArg);
-
 };

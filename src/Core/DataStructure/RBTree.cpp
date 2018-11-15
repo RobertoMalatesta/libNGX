@@ -10,7 +10,7 @@ RBTreeNode *RBTree::Minimum() {
         return Temp;
     }
 
-    while (Temp->Left != Sentinel) {
+    while (Temp->GetLeft() != Sentinel) {
         Temp = Temp->Left;
     }
 

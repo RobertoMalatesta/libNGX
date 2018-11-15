@@ -40,17 +40,14 @@ RuntimeError HTTPServer::PostConnectionEvent(EventPromiseArgs &Argument) {
 
         int SocketFD = Argument.UserArguments[0].UInt;
 
-        TargetListening = static_cast<Listening *>(Argument.UserArguments[5].Ptr);
         TargetEventDomain = static_cast<EPollEventDomain *>(Argument.UserArguments[4].Ptr);
         TargetSocketAddress = static_cast<SocketAddress *>(Argument.UserArguments[1].Ptr);
 
-        if (ConnectionBuilder.Get(TargetConnection, SocketFD, TargetSocketAddress, this, TargetListening,
-                              TargetEventDomain) == 0) {
+        if (ConnectionBuilder.Get(TargetConnection, SocketFD, TargetSocketAddress, this, TargetEventDomain) == 0) {
             AttachConnection(TargetConnection);
-        }
-        else {
+        } else {
             close(SocketFD);
-           // TODO: handle connection pool drain, add special response
+            // TODO: handle connection pool drain, add special response
         }
     }
     TargetConnection->Lock.Lock();

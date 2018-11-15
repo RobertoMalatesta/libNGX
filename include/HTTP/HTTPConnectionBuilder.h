@@ -29,6 +29,8 @@ namespace ngx {
             HTTPConnectionBuilder(size_t BufferBlockSize, uint64_t BufferRecycleBinSize,
                                   uint64_t ConnectionRecycleBinSize);
 
+            ~HTTPConnectionBuilder() = default;
+
             inline HTTPError SetTCPNoDelay(bool Open) {
 
                 SpinlockGuard LockGuard(&Lock);
