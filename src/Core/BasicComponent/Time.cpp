@@ -11,6 +11,7 @@ static SpinLock Lock;
 static timeval Timestamp;
 static int TimestampVersion;
 static bool UpdateTimestamp;
+static bool Interrupted;
 
 static uint64_t HighResolutionTimestamp;
 
@@ -28,10 +29,57 @@ static const char *MonthString[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
 static void TimerHandle(int);
+static void InterruptHandle(int);
 
 static void UpdateTimeString();
 
 static inline int FetchTimeVersion(bool Force = false);
+
+bool ngx::Core::BasicComponent::IsInterrupted() {
+    return Interrupted;
+}
+
+void ngx::Core::BasicComponent::ClearInterrupted() {
+    Interrupted = false;
+}
+
+int ngx::Core::BasicComponent::TimeModuleInit() {
+
+    struct sigaction sa = {nullptr};
+
+    static bool TimeModuleInited = false;
+
+    if (!TimeModuleInited) {
+
+        UpdateTimeString();
+
+        memset(&sa, 0, sizeof(struct sigaction));
+        sa.sa_handler = TimerHandle;
+        sigemptyset(&sa.sa_mask);
+
+        if (sigaction(SIGALRM, &sa, nullptr) == -1) {
+            return -1;
+        }
+
+        memset(&sa, 0, sizeof(struct sigaction));
+        sa.sa_handler = InterruptHandle;
+        sigemptyset(&sa.sa_mask);
+
+        if (sigaction(SIGINT, &sa, nullptr) == -1) {
+            return -1;
+        }
+
+        if (EnableTimer() == -1) {
+            return -1;
+        }
+
+        Interrupted = false;
+
+        TimeModuleInited = true;
+        FetchTimeVersion();
+    }
+    return 0;
+}
 
 int ngx::Core::BasicComponent::EnableTimer() {
 
@@ -58,33 +106,6 @@ int ngx::Core::BasicComponent::DisableTimer() {
 
     if (setitimer(ITIMER_REAL, nullptr, nullptr) == -1) {
         return -1;
-    }
-    return 0;
-}
-
-int ngx::Core::BasicComponent::TimeModuleInit() {
-
-    struct sigaction sa = {nullptr};
-
-    static bool TimeModuleInited = false;
-
-    if (!TimeModuleInited) {
-
-        UpdateTimeString();
-
-        memset(&sa, 0, sizeof(struct sigaction));
-        sa.sa_handler = TimerHandle;
-        sigemptyset(&sa.sa_mask);
-
-        if (sigaction(SIGALRM, &sa, nullptr) == -1) {
-            return -1;
-        }
-
-        if (EnableTimer() == -1) {
-            return -1;
-        }
-        TimeModuleInited = true;
-        FetchTimeVersion();
     }
     return 0;
 }
@@ -185,6 +206,11 @@ static int FetchTimeVersion(bool Force) {
 
 static void TimerHandle(int) {
     UpdateTimestamp = true;
+}
+
+static void InterruptHandle(int) {
+    printf("interrupt handled!");
+    Interrupted = true;
 }
 
 static void UpdateTimeString() {

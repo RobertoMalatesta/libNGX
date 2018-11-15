@@ -4,6 +4,10 @@ const size_t HTTPLogTimeSize = sizeof("28/Sep/1970:12:00:00 +0600");
 const size_t HTTPLogTimeISO8601Size = sizeof("28/Sep/1970:12:00:00 +0600");
 const size_t SysLogTimeSize = sizeof("Sep 28 12:00:00");
 
+bool IsInterrupted();
+
+void ClearInterrupted();
+
 int TimeModuleInit();
 
 int EnableTimer();

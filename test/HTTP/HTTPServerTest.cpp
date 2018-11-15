@@ -14,6 +14,8 @@ int HTTPServerTest() {
             .SocketLength = sizeof(sockaddr_in)
     };
 
+    TimeModuleInit();
+
     TCP4Listening Listen(SocketAddress);
     HTTPServer Server(40960, 3, 31728, 40960, 1024, 1024);
 
@@ -22,13 +24,11 @@ int HTTPServerTest() {
 
     Server.EnqueueListening(&Listen).PrintError();
 
-    TimeModuleInit();
-
     RuntimeError Error{0};
 
     do {
         Error = Server.HTTPServerEventProcess();
-    } while (Error.GetCode() == 0);
+    } while (Error.GetCode() == 0 && !IsInterrupted());
 
     return 0;
 }

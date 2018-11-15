@@ -61,7 +61,13 @@ void Thread::ThreadProcess(Thread *Thread) {
     bool IsRunning;
     Thread->Running = IsRunning = true;
 
-    usleep(THREAD_WAIT_TIME * 10 + 100000);
+    {
+        uint64_t Timestamp = GetHighResolutionTimestamp();
+
+        while (GetHighResolutionTimestamp() - Timestamp < (THREAD_WAIT_TIME * 10 + 100000)) {
+            usleep(THREAD_WAIT_TIME * 10 + 100000);
+        }
+    }
 
     while (IsRunning) {
 
