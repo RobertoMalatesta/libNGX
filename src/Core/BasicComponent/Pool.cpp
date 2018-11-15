@@ -71,8 +71,13 @@ void Pool::Free(void *&pointer) {
             }
             TempBlock = TempBlock->GetNextBlock();
         }
+
         if (!FoundInBlock) {
             free(pointer);
+        }
+
+        if ((AllocateRound++) % POOL_RECYCLE_ROUND == 0) {
+            GC();
         }
     }
 }
