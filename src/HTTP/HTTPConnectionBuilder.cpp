@@ -9,8 +9,7 @@ HTTPConnectionBuilder::HTTPConnectionBuilder(size_t BufferBlockSize, uint64_t Bu
         BB(BufferBlockSize, BufferRecycleBinSize),
         TCPNoDelay(1), TCPNoPush(0) {}
 
-int HTTPConnectionBuilder::Get(HTTPConnection *&C, int SocketFD, SocketAddress *SocketAddress, HTTPServer *Server,
-                               Listening *Listening, SocketEventDomain *EventDomain) {
+int HTTPConnectionBuilder::Get(HTTPConnection *&C, int SocketFD, SocketAddress *SocketAddress, HTTPServer *Server, SocketEventDomain *EventDomain) {
 
     SpinlockGuard LockGuard(&Lock);
 
@@ -24,7 +23,6 @@ int HTTPConnectionBuilder::Get(HTTPConnection *&C, int SocketFD, SocketAddress *
     C->Open = 1;
     C->Lock.Unlock();
     C->ParentServer = Server;
-    C->ParentListeing = Listening;
     C->ParentEventDomain = EventDomain;
     C->TimerNode.Reset();
 

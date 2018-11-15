@@ -18,10 +18,9 @@ class Range;
 class Buffer : public CanReset {
 protected:
     size_t BlockSize;
-    BufferMemoryBlockRecycleBin *RecycleBin = nullptr;
-    BoundCursor ReadCursor;
-    Cursor WriteCursor;
+    BoundCursor Cursor;
     BufferMemoryBlock *HeadBlock = nullptr;
+    BufferMemoryBlockRecycleBin *RecycleBin = nullptr;
 
     friend class BufferBuilder;
 public:
@@ -42,7 +41,7 @@ public:
     RuntimeError WriteDataToBuffer(u_char *PointerToData, size_t DataLength);
 
     inline bool HasBytes(uint32_t Count = 1) {
-        return (ReadCursor + 1).Position == nullptr;
+        return (Cursor + 1).Position == nullptr;
     }
 
     virtual void Reset();

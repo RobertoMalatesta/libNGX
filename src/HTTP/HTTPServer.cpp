@@ -57,7 +57,7 @@ RuntimeError HTTPServer::PostConnectionEvent(EventPromiseArgs &Argument) {
     TargetConnection->Event = TargetType;
 
     if (TargetConnection->Open == 1) {
-        EventDomain.PostPromise(*TargetConnection->OnEventPromise, static_cast<void *>(TargetConnection));
+        EventDomain.PostPromise(HTTPConnection::OnConnectionEvent, static_cast<void *>(TargetConnection));
     }
 
     return {0, nullptr};

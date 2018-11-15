@@ -26,7 +26,8 @@ namespace ngx {
             uint32_t WriteTimeout = 1 * 60;
 
         public:
-            HTTPConnectionBuilder(size_t BufferBlockSize, uint64_t BufferRecycleBinSize, uint64_t ConnectionRecycleBinSize);
+            HTTPConnectionBuilder(size_t BufferBlockSize, uint64_t BufferRecycleBinSize,
+                                  uint64_t ConnectionRecycleBinSize);
 
             inline HTTPError SetTCPNoDelay(bool Open) {
 
@@ -48,8 +49,8 @@ namespace ngx {
                 return {0};
             };
 
-            int Get(HTTPConnection *&C, int SocketFD, SocketAddress *SocketAddress, HTTPServer *Server,
-                    Listening *Listening,
+            int Get(HTTPConnection *&C, int SocketFD, SocketAddress *SocketAddress,
+                    HTTPServer *Server,
                     SocketEventDomain *EventDomain);
 
             int Put(HTTPConnection *&C);

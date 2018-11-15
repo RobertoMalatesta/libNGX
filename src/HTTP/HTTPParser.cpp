@@ -115,8 +115,6 @@ HTTPError HTTPParser::ParseMethod(Buffer &B, HTTPRequest &R) {
         break;
     }
 
-    R.Request < BC;
-
     C1 = (*BC), C2 = *(BC + 1), C3 = *(BC + 2), C4 = *(BC + 3);
 
     if (C4 == ' ') {
@@ -214,7 +212,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
     } RequestLineState = RL_SPACEBEFOREURI;
 
     u_char C, C1;
-    unsigned int HTTPMajor = 0, HTTPMinor = 0;
+    u_short HTTPMajor = 0, HTTPMinor = 0;
     BoundCursor BC, LastBC;
 
     for (B >> BC, LastBC = BC; C = *BC, !!BC; LastBC = BC++) {
@@ -702,7 +700,6 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
                 break;
 
             case RL_ALMOSTDONE:
-                R.Request > LastBC;
                 switch (C) {
                     case LF:
                         goto done;
@@ -719,7 +716,6 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
 
     BC += 1;
     B << BC;
-    R.Request > BC;
     R.Version = HTTPMajor * 1000 + HTTPMinor;
 
     if (R.Version == 9 && R.Method != GET) {

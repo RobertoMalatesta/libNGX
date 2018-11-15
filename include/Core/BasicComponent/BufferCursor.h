@@ -1,6 +1,6 @@
 class Buffer;
 
-struct Cursor : public Ref, public Achor {
+struct Cursor {
 
     u_char *Position = nullptr;
     Buffer *ParentBuffer = nullptr;
@@ -9,9 +9,9 @@ struct Cursor : public Ref, public Achor {
 
     Cursor(Buffer *ParentBuffer, u_char *Position);
 
-    virtual uint32_t IncRef();
+    uint32_t IncRef();
 
-    virtual uint32_t DecRef();
+    uint32_t DecRef();
 
     inline u_char operator*() const {
         return (!*this) ? (u_char) '\0' : *Position;
@@ -22,7 +22,7 @@ struct Cursor : public Ref, public Achor {
     }
 
     inline Cursor &operator=(Cursor const &Right) {
-        Position = Right.Position;
+        ParentBuffer = Right.ParentBuffer, Position = Right.Position;
         return *this;
     }
 
@@ -35,58 +35,69 @@ struct BoundCursor : public Cursor {
 
     u_char *Bound = nullptr;
 
-    virtual uint32_t IncRef();
+    BoundCursor() = default;
 
-    virtual uint32_t DecRef();
+    BoundCursor(Buffer *ParentBuffer, u_char *Position, u_char *Bound);
+
+    uint32_t IncRef();
+
+    uint32_t DecRef();
 
     BoundCursor operator+(size_t Size) const;
 
     inline BoundCursor operator+=(size_t Size) {
-        BoundCursor R = *this;
-        *this = *this + Size;
-        return R;
+
+        return *this =  *this + Size;
     }
 
     inline BoundCursor operator++() {
+
         return *this = *this + 1;
     }
 
     inline const BoundCursor operator++(int) {
+
         BoundCursor Ret = *this;
         *this = *this + 1;
         return Ret;
     }
 
     inline bool operator!() const {
+
         return Position == nullptr || Position >= Bound;
     }
 
     inline u_char operator[](uint16_t Offset) const {
+
         return *(*this + Offset);
     }
 
     inline BoundCursor &operator=(BoundCursor const &Right) {
-        ParentBuffer = Right.ParentBuffer;
-        Position = Right.Position, Bound = Right.Bound;
+
+        ParentBuffer = Right.ParentBuffer, Position = Right.Position, Bound = Right.Bound;
         return *this;
     }
 
     inline BoundCursor &operator<(Cursor Cursor) {
-        Position = Cursor.Position;
+
+        ParentBuffer = Cursor.ParentBuffer, Position = Cursor.Position;
         return *this;
     }
 
     inline BoundCursor &operator>(Cursor Cursor) {
-        this->Bound = Cursor.Position;
+
+        ParentBuffer = Cursor.ParentBuffer, this->Bound = Cursor.Position;
         return *this;
     }
 
     inline BoundCursor &operator<(BoundCursor Cursor) {
+
         Position = Cursor.Position;
         return *this;
     }
 
     inline BoundCursor &operator>(BoundCursor Cursor) {
+
         this->Bound = Cursor.Position;
         return *this;
     }
@@ -97,17 +108,47 @@ struct BoundCursor : public Cursor {
 
     BoundCursor &operator-=(size_t Size) = delete;
 
-    bool ReadByte(uint32_t Offset, u_char &C1) const;
+    bool ReadByte(uint32_t Offset, u_char &C1) const {
 
-    bool CmpByte(uint32_t Offset, u_char C1) const;
+        BoundCursor TempCursor = (*this + Offset);
+
+        if (TempCursor.Position == nullptr) {
+            return false;
+        }
+
+        C1 = *TempCursor.Position;
+        return true;
+    }
+
+    bool CmpByte(uint32_t Offset, u_char C1) const {
+
+        u_char A1;
+        return this->ReadByte(Offset, A1) && A1 == C1;
+    }
 
     bool ReadBytes2(uint32_t Offset, u_char &C1, u_char &C2) const;
 
-    bool CmpByte2(uint32_t Offset, u_char C1, u_char C2) const;
+    bool CmpByte2(uint32_t Offset, u_char C1, u_char C2) const {
+
+        u_char A1, A2;
+
+        return this->ReadBytes2(Offset, A1, A2)
+               && A1 == C1
+               && A2 == C2;
+    }
 
     bool ReadBytes4(uint32_t Offset, u_char &C1, u_char &C2, u_char &C3, u_char &C4) const;
 
-    bool CmpByte4(uint32_t Offset, u_char C1, u_char C2, u_char C3, u_char C4) const;
+    bool CmpByte4(uint32_t Offset, u_char C1, u_char C2, u_char C3, u_char C4) const {
+
+        u_char A1, A2, A3, A4;
+
+        return this->ReadBytes4(Offset, A1, A2, A3, A4)
+               && A1 == C1
+               && A2 == C2
+               && A3 == C3
+               && A4 == C4;
+    }
 
     size_t Size() const;
 };

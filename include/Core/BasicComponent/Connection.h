@@ -31,7 +31,7 @@ public:
 };
 
 
-class TCP4Connection : public Connection {
+class TCP4Connection : protected Connection {
 public:
     TCP4Connection(struct SocketAddress &SocketAddress);
 

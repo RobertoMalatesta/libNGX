@@ -4,7 +4,8 @@ static void DiscardPromise(void *, ThreadPool *) {
 
 class EventEntity {
 protected:
-    PromiseCallback *OnEventPromise = DiscardPromise;
+    SpinLock Lock;
+    uint32_t Event;
 };
 
 union UserArgument {

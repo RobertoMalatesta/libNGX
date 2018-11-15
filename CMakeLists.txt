@@ -30,11 +30,11 @@ set(SOURCE_FILES
         src/Core/BasicComponent/Time.cpp
         src/Core/BasicComponent/ThreadPool.cpp
         src/Core/BasicComponent/TimerTree.cpp
-        src/Core/EPollEventDomain.cpp
+        #        src/Core/EPollEventDomain.cpp
         src/Core/FSTree.cpp
         src/Core/Server.cpp
         src/HTTP/HTTPConnection.cpp
-        src/HTTP/HTTPServer.cpp
+        #        src/HTTP/HTTPServer.cpp
         src/HTTP/HTTPConnectionRecycleBin.cpp
         src/HTTP/HTTPParser.cpp
         src/HTTP/HTTPError.cpp
@@ -43,27 +43,26 @@ set(SOURCE_FILES
 
 set(TEST_FILES
         test/Test.cpp
-        test/Core/MemBlockTest.cpp
-        test/Core/PoolTest.cpp
-        test/Core/BufTest.cpp
-        test/Core/ArrayTest.cpp
-        test/Core/TimeTest.cpp
-        test/Core/ThreadPool.cpp
-        test/Core/HashTest.cpp
-        test/Core/CRCTest.cpp
-        test/Core/RBTreeTest.cpp
-        test/Core/TimerTreeTest.cpp
-        test/Core/FSTreeTest.cpp
-        test/Core/SocketTest.cpp
-        test/Core/EPollEventDomainTest.cpp
-        test/Core/LockTest.cpp
-        test/Core/BufferTest.cpp
+        #        test/Core/MemBlockTest.cpp
+        #        test/Core/PoolTest.cpp
+        #        test/Core/ArrayTest.cpp
+        #        test/Core/TimeTest.cpp
+        #        test/Core/ThreadPool.cpp
+        #        test/Core/HashTest.cpp
+        #        test/Core/CRCTest.cpp
+        #        test/Core/RBTreeTest.cpp
+        #        test/Core/TimerTreeTest.cpp
+        #        test/Core/FSTreeTest.cpp
+        #        test/Core/SocketTest.cpp
+        #        test/Core/EPollEventDomainTest.cpp
+        #        test/Core/LockTest.cpp
+                 test/Core/BufferTest.cpp
         test/Core/CoreTest.cpp
-        test/HTTP/HTTPServerTest.cpp
         test/HTTP/HTTPTest.cpp
-        test/HTTP/HTTPConnectionRecycleBin.cpp
-        test/HTTP/HTTPParserTest.cpp
-        )
+        #        test/HTTP/HTTPServerTest.cpp
+        #        test/HTTP/HTTPConnectionRecycleBin.cpp
+        #        test/HTTP/HTTPParserTest.cpp
+        test/HTTP/HTTPParseTest.cpp)
 
 include_directories(./include)
 

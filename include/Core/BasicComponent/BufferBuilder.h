@@ -17,7 +17,7 @@ protected:
     size_t BlockSize;
     BufferMemoryBlockRecycleBin RecycleBin;
 public:
-    BufferBuilder(size_t BlockSize, uint64_t RecycleSize);
+    BufferBuilder(size_t BlockSize = BUFFER_MEMORY_BLOCK_SIZE, uint64_t RecycleSize = DEFAULT_RECYCLE_SIZE);
 
     bool BuildBuffer(Buffer &Buf);
 

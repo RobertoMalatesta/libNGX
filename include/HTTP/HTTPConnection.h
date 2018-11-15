@@ -1,19 +1,17 @@
 namespace ngx {
     namespace HTTP {
 
-        class HTTPConnection : public TCP4Connection, public Recyclable {
+        class HTTPConnection : protected TCP4Connection, protected Recyclable {
         protected:
+
             Pool MemPool;
-            SpinLock Lock;
+
             Timer TimerNode;
-            uint32_t Event;
             Buffer ReadBuffer;
             HTTPRequest Request;
-            HTTPServer *ParentServer;
-            Listening *ParentListeing;
-            SocketEventDomain *ParentEventDomain;
 
-            PromiseCallback *OnEventPromise = HTTPConnection::OnConnectionEvent;
+            HTTPServer *ParentServer;
+            SocketEventDomain *ParentEventDomain;
 
             RuntimeError SetSocketAddress(int SocketFD, struct SocketAddress &TargetSocketAddress);
 

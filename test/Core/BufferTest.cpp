@@ -9,7 +9,7 @@ int BufferTest() {
 
     u_char c;
     Buffer buffer;
-    BufferBuilder Builder(4096, 1000);
+    BufferBuilder Builder(BUFFER_MEMORY_BLOCK_SIZE, 1000);
     BoundCursor Cursor;
     u_char Text[] = "This is a very long text!";
 

@@ -2,7 +2,9 @@
 
 using namespace ngx::Core::BasicComponent;
 
-Cursor::Cursor(Buffer *ParentBuffer, u_char *Position) : ParentBuffer(ParentBuffer), Position(Position) {}
+Cursor::Cursor(Buffer *ParentBuffer, u_char *Position) : ParentBuffer(ParentBuffer), Position(Position) {
+    this->ParentBuffer = ParentBuffer, this->Position = Position;
+}
 
 BoundCursor BoundCursor::operator+(size_t Size) const {
 
@@ -31,25 +33,10 @@ BoundCursor BoundCursor::operator+(size_t Size) const {
                 }
             }
         }
+    } else {
+        R.Position = R.Bound = nullptr;
     }
     return R;
-}
-
-bool BoundCursor::ReadByte(uint32_t Offset, u_char &C1) const {
-
-    BoundCursor TempCursor = (*this + Offset);
-
-    if (TempCursor.Position == nullptr) {
-        return false;
-    }
-
-    C1 = *TempCursor.Position;
-    return true;
-}
-
-bool BoundCursor::CmpByte(uint32_t Offset, u_char C1) const {
-    u_char A1;
-    return this->ReadByte(Offset, A1) && A1 == C1;
 }
 
 bool BoundCursor::ReadBytes2(uint32_t Offset, u_char &C1, u_char &C2) const {
@@ -77,14 +64,6 @@ bool BoundCursor::ReadBytes2(uint32_t Offset, u_char &C1, u_char &C2) const {
     }
 }
 
-bool BoundCursor::CmpByte2(uint32_t Offset, u_char C1, u_char C2) const {
-    u_char A1, A2;
-
-    return this->ReadBytes2(Offset, A1, A2)
-           && A1 == C1
-           && A2 == C2;
-}
-
 bool BoundCursor::ReadBytes4(uint32_t Offset, u_char &C1, u_char &C2, u_char &C3, u_char &C4) const {
 
     BoundCursor Cur = (*this + (Offset + 3));
@@ -110,17 +89,6 @@ bool BoundCursor::ReadBytes4(uint32_t Offset, u_char &C1, u_char &C2, u_char &C3
     return true;
 }
 
-bool BoundCursor::CmpByte4(uint32_t Offset, u_char C1, u_char C2, u_char C3, u_char C4) const {
-
-    u_char A1, A2, A3, A4;
-
-    return this->ReadBytes4(Offset, A1, A2, A3, A4)
-           && A1 == C1
-           && A2 == C2
-           && A3 == C3
-           && A4 == C4;
-}
-
 uint32_t Cursor::IncRef() {
 
     BufferMemoryBlock *MemoryBlock;
@@ -144,6 +112,9 @@ uint32_t Cursor::DecRef() {
     }
 
     return 0;
+}
+
+BoundCursor::BoundCursor(Buffer *ParentBuffer, u_char *Position, u_char *Bound): Cursor(ParentBuffer, Position), Bound(Bound) {
 }
 
 uint32_t BoundCursor::IncRef() {

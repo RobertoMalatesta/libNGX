@@ -11,11 +11,12 @@ namespace ngx {
 
         class HTTPRequest {
         protected:
-            unsigned int ComplexURI:1;
-            unsigned int QuotedURI:1;
-            unsigned int PlusInURI:1;
-            unsigned int SpaceInURI:1;
-            unsigned int Version;
+
+            unsigned ComplexURI:1;
+            unsigned QuotedURI:1;
+            unsigned PlusInURI:1;
+            unsigned SpaceInURI:1;
+            unsigned short Version;
 
             HTTPMethod Method;
             BoundCursor URI;
@@ -27,7 +28,6 @@ namespace ngx {
             BoundCursor Schema;
             BoundCursor Host;
             BoundCursor IP;
-            BoundCursor Request;
             Array Headers;
             Array ArgumentList;
             HTTPRequestState State = HTTP_INIT_STATE;
