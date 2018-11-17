@@ -51,7 +51,7 @@ namespace ngx {
                 return {0};
             };
 
-            int Get(HTTPConnection *&C, int SocketFD, SocketAddress *SocketAddress,
+            int Get(HTTPConnection *&C, int SocketFD, SocketAddress &SocketAddress,
                     HTTPServer *Server,
                     SocketEventDomain *EventDomain);
 

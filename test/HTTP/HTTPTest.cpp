@@ -1,4 +1,7 @@
 
+#include <zconf.h>
+#include <cstdio>
+
 extern int HTTPServerTest();
 
 extern int HTTPConnectionRecycleBinTest();
@@ -9,7 +12,7 @@ int HTTPTest() {
     {
         HTTPServerTest();
     }
-    int a = 1;
+
 //    HTTPConnectionRecycleBinTest();
 //    HTTPParseTest();
     return 0;

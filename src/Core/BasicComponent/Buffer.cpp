@@ -88,7 +88,7 @@ Buffer &Buffer::operator>>(BoundCursor &BC) &{
 
 RuntimeError Buffer::WriteConnectionToBuffer(Connection *C) {
 
-    int SocketFd = C->GetSocketFD();
+    int SocketFD = C->GetSocketFD();
     u_char *PointerToData;
     size_t ReadLength;
     ssize_t RecievedSize;
@@ -118,7 +118,7 @@ RuntimeError Buffer::WriteConnectionToBuffer(Connection *C) {
             ReadLength = WriteBlock->End - PointerToData;
         }
 
-        RecievedSize = recv(SocketFd, PointerToData, ReadLength, 0);
+        RecievedSize = recv(SocketFD, PointerToData, ReadLength, 0);
 
         if (RecievedSize == -1) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {

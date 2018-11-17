@@ -26,6 +26,7 @@ namespace ngx {
 #include "Core/BasicComponent/SocketEventDomain.h"
 #include "Core/BasicComponent/Connection.h"
 #include "Core/BasicComponent/Listening.h"
+#include "Core/BasicComponent/Server.h"
 
 #include "Core/BasicComponent/BufferMemoryBlock.h"
 #include "Core/BasicComponent/BufferMemoryBlockRecycleBin.h"
@@ -34,6 +35,7 @@ namespace ngx {
 #include "Core/BasicComponent/BufferAllocator.h"
 #include "Core/BasicComponent/BufferBuilder.h"
 
+#include "Core/BasicComponent/Router/Router.h"
         }
     }
 }

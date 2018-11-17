@@ -51,5 +51,5 @@ public:
 
     RuntimeError QueueExpiredTimer();
 
-    virtual RuntimeError EventDomainProcess(EventPromiseArgs &Argument);
+    virtual RuntimeError EventDomainProcess();
 };

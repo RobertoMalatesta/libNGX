@@ -11,7 +11,7 @@ RuntimeError EventDomain::QueueExpiredTimer() {
     return {0};
 }
 
-RuntimeError EventDomain::EventDomainProcess(EventPromiseArgs &Argument) {
+RuntimeError EventDomain::EventDomainProcess() {
     return QueueExpiredTimer();
 }
 

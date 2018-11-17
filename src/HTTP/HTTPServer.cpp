@@ -11,73 +11,131 @@ HTTPServer::HTTPServer(
         uint64_t BufferRecycleSize) :
         Server(),
         ConnectionBuilder(BufferBlockSize, BufferRecycleSize, ConnectionRecycleSize),
-        EventDomain(PoolSize, ThreadCount, EPollSize) {}
+        EventDomain(PoolSize, ThreadCount, EPollSize) {
 
-RuntimeError HTTPServer::PostProcessFinished(EventPromiseArgs &Arguments) {
+}
 
-    HTTPServer *TempServer;
-    TCP4Listening *TempListen;
+EventError HTTPServer::EnqueueListening(HTTPListening *L) {
 
-    TempServer = static_cast<HTTPServer *>(Arguments.UserArguments[3].Ptr);
-    TempListen = static_cast<TCP4Listening *>(Arguments.UserArguments[5].Ptr);
-    TempServer->EnqueueListening(TempListen);
+    EventError Error{0};
+
+    Error = EventDomain.AttachSocket(L, SOCK_READ_WRITE_EVENT);
+
+    if (Error.GetCode() != 0) {
+        return Error;
+    }
+
+    Error = Server::EnqueueListening(L);
+
+    if (Error.GetCode() != 0) {
+        EventDomain.DetachSocket(L, SOCK_READ_WRITE_EVENT);
+        return Error;
+    }
+
+    L->ParentServer = this;
+    L->ParentEventDomain = &EventDomain;
 
     return {0};
 }
 
-RuntimeError HTTPServer::PostConnectionEvent(EventPromiseArgs &Argument) {
+HTTPListening* HTTPServer::DequeueListening() {
 
-    EventType TargetType;
-    Listening *TargetListening;
-    HTTPConnection *TargetConnection;
-    SocketAddress *TargetSocketAddress;
-    EPollEventDomain *TargetEventDomain;
+    HTTPListening *L;
+    EventError Error{0};
 
-    TargetConnection = static_cast<HTTPConnection *>(Argument.UserArguments[6].Ptr);
-    TargetType = Argument.UserArguments[7].UInt;
+    L = (HTTPListening *)Server::DequeueListening();
 
-    if ((TargetType & ET_CONNECTED) != 0) {
-
-        int SocketFD = Argument.UserArguments[0].UInt;
-
-        TargetEventDomain = static_cast<EPollEventDomain *>(Argument.UserArguments[4].Ptr);
-        TargetSocketAddress = static_cast<SocketAddress *>(Argument.UserArguments[1].Ptr);
-
-        if (ConnectionBuilder.Get(TargetConnection, SocketFD, TargetSocketAddress, this, TargetEventDomain) == 0) {
-            AttachConnection(TargetConnection);
-        } else {
-            close(SocketFD);
-            // TODO: handle connection pool drain, add special response
-        }
+    if (L == nullptr) {
+        return nullptr;
     }
-    TargetConnection->Lock.Lock();
-    TargetConnection->Event = TargetType;
 
-    if (TargetConnection->Open == 1) {
-        EventDomain.PostPromise(HTTPConnection::OnConnectionEvent, static_cast<void *>(TargetConnection));
+    Error = EventDomain.DetachSocket(L, SOCK_READ_WRITE_EVENT);
+
+    if (Error.GetCode() != 0) {
+        Server::EnqueueListening(L);
+        return nullptr;
     }
+
+    L->ParentServer = nullptr;
+    L->ParentEventDomain = nullptr;
+
+    return L;
+}
+
+EventError HTTPServer::AttachConnection(HTTPConnection *C) {
+
+    EventError Error{0};
+
+    Error = Server::AttachConnection(C);
+
+    if (Error.GetCode() != 0) {
+        return Error;
+    }
+
+    Error = EventDomain.AttachSocket(C, SOCK_READ_WRITE_EVENT);
+
+    if (Error.GetCode() != 0) {
+        Server::DetachConnection(C);
+        return Error;
+    }
+
+    return {0};
+}
+
+EventError HTTPServer::DetachConnection(HTTPConnection *C) {
+
+    EventError Error{0};
+
+    EventDomain.DetachSocket(C, SOCK_READ_WRITE_EVENT);
+
+    if (Error.GetCode() != 0) {
+        return Error;
+    }
+
+    Error = Server::DetachConnection(C);
+
+    if (Error.GetCode() != 0) {
+        Error = EventDomain.AttachSocket(C, SOCK_READ_WRITE_EVENT);
+        return Error;
+    }
+
+    return {0};
+
+}
+
+RuntimeError HTTPServer::PostProcessFinished() {
+    return {0};
+}
+
+RuntimeError HTTPServer::PostConnectionEvent(Connection &C, uint32_t EventType) {
+
+    HTTPConnection *HC;
+
+    HC = (HTTPConnection *)(&C);
+
+
 
     return {0, nullptr};
 }
 
 RuntimeError HTTPServer::HTTPServerEventProcess() {
+    return EventDomain.EventDomainProcess(this);
+}
 
-    Listening *Listen;
-    EventPromiseArgs Argument = {nullptr};
 
-    memset(&Argument, 0, sizeof(EventPromiseArgs));
+RuntimeError HTTPServer::GetConnection(HTTPConnection *&C, int SocketFD, SocketAddress &Address) {
 
-    Listen = DequeueListening();
+    C = nullptr;
 
-    if (Listen == nullptr) {
-        return {ENOENT, "Can not get a Listening from HTTPServer"};
+    if (SocketFD == -1) {
+        return {EINVAL, "bad connection fd"};
     }
 
-    Argument.UserArguments[3].Ptr = static_cast<void *>(this);
-    Argument.UserArguments[4].Ptr = static_cast<void *>(&EventDomain);
-    Argument.UserArguments[5].Ptr = (void *) Listen;
+    if (ConnectionBuilder.Get(C, SocketFD, Address, this, &EventDomain) == -1) {
+        return {EINVAL, "can not get connection"};
+    }
 
-    return EventDomain.EventDomainProcess(Argument);
+    return {0};
 }
 
 RuntimeError HTTPServer::PutConnection(HTTPConnection *&C) {

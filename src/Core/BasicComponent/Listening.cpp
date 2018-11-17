@@ -6,46 +6,56 @@ Listening::Listening() : Socket() {
     IsListen = 1;
 }
 
-Listening::Listening(Core::SocketAddress &SocketAddress) :
+Listening::Listening(SocketAddress &SocketAddress) :
         Socket(SocketAddress) {
     IsListen = 1;
 }
 
-Listening::Listening(int SocketFd, Core::SocketAddress &SocketAddress) :
-        Socket(SocketFd, SocketAddress) {
+Listening::Listening(int SocketFD, SocketAddress &SocketAddress) :
+        Socket(SocketFD, SocketAddress) {
     IsListen = 1;
 }
 
-TCP4Listening::TCP4Listening(Core::SocketAddress &SocketAddress)
+TCP4Listening::TCP4Listening(SocketAddress &SocketAddress)
         : Listening(SocketAddress) {
-    SocketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    SocketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     Type = SOCK_TYPE_STREAM;
     Version = 4;
 
-    if (0 == bind(SocketFd, &SocketAddress.sockaddr, SocketAddress.SocketLength)) {
+    if (0 == bind(SocketFD, &Address.sockaddr, Address.SocketLength)) {
         Active = 1;
     }
 }
 
 TCP4Listening::~TCP4Listening() {
-    if (SocketFd != -1) {
-        close(SocketFd);
+    if (SocketFD != -1) {
+        close(SocketFD);
         Active = 0;
-        SocketFd = -1;
+        SocketFD = -1;
     }
 }
 
 SocketError TCP4Listening::Listen() {
 
-    if (SocketFd == -1) {
-        return SocketError(EINVAL, "Bad Socket!");
+    if (SocketFD == -1) {
+        return {EINVAL, "Bad Socket!"};
     }
 
-    if (-1 == listen(SocketFd, Backlog)) {
-        return SocketError(errno, "Listen to Socket failed!");
+    if (-1 == listen(SocketFD, Backlog)) {
+        return {errno, "Listen to Socket failed!"};
     }
-    return SocketError(0);
+    return {0};
+}
+
+SocketError TCP4Listening::Close() {
+
+    if (SocketFD != -1) {
+        close(SocketFD);
+        SocketFD = -1;
+    }
+
+    return {0};
 }
 
 SocketError TCP4Listening::SetPortReuse(bool Open) {
@@ -53,11 +63,11 @@ SocketError TCP4Listening::SetPortReuse(bool Open) {
     int Val = Open ? 1 : 0;
 
     if ((Open && Reuse) || (!Open && !Reuse)) {
-        return SocketError(EALREADY);
+        return {EALREADY};
     }
 
-    if (setsockopt(SocketFd, SOL_SOCKET, SO_REUSEPORT, &Val, sizeof(int))) {
-        return SocketError(errno);
+    if (setsockopt(SocketFD, SOL_SOCKET, SO_REUSEPORT, &Val, sizeof(int))) {
+        return {errno};
     }
-    return SocketError(0);
+    return {0};
 }

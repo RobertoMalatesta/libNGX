@@ -13,17 +13,17 @@ namespace ngx {
             HTTPServer *ParentServer;
             SocketEventDomain *ParentEventDomain;
 
-            RuntimeError SetSocketAddress(int SocketFD, struct SocketAddress &TargetSocketAddress);
+            HTTPConnection(struct SocketAddress &SocketAddress);
+
+            HTTPConnection(int SocketFD, SocketAddress &SocketAddress);
+
+            RuntimeError SetSocketAddress(int SocketFD, struct SocketAddress &Address);
+
+            virtual RuntimeError HandleEventDomain(uint32_t EventType);
 
             static void OnTimerEventWarp(void *PointerToConnection, ThreadPool *TPool);
 
             static void OnConnectionEvent(void *PointerToConnection, ThreadPool *TPool);
-
-            HTTPConnection(struct SocketAddress &SocketAddress);
-
-            HTTPConnection(int SocketFd, Core::SocketAddress &SocketAddress);
-
-            SocketError Close();
 
             friend class HTTPServer;
 
@@ -48,6 +48,8 @@ namespace ngx {
             RuntimeError ProcessRequest() {
                 return RuntimeError(0);
             };
+
+            SocketError Close();
 
             virtual void Reset();
         };

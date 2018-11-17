@@ -13,21 +13,31 @@ namespace ngx {
             std::atomic_uint64_t WatingCount = {0};
         };
 
-        class HTTPServer : public Server {
+        class HTTPServer : protected Server {
         protected:
             HTTPConnectionBuilder ConnectionBuilder;
             EPollEventDomain EventDomain;
             HTTPPerformanceUnit PerformanceCounters;
 
-            virtual RuntimeError PostProcessFinished(EventPromiseArgs &Arguments);
+            virtual RuntimeError PostProcessFinished();
 
         public:
             HTTPServer(size_t PoolSize, int ThreadCount, int EPollSize, size_t BufferBlockSize,
                        uint64_t ConnectionRecycleSize, uint64_t BufferRecycleSize);
 
-            virtual RuntimeError PostConnectionEvent(EventPromiseArgs &Argument);
+            EventError EnqueueListening(HTTPListening *L);
+
+            HTTPListening *DequeueListening();
+
+            EventError AttachConnection(HTTPConnection *C);
+
+            EventError DetachConnection(HTTPConnection *C);
+
+            virtual RuntimeError GetConnection(HTTPConnection *&C, int SocketFD, SocketAddress &Address);
 
             virtual RuntimeError PutConnection(HTTPConnection *&C);
+
+            virtual RuntimeError PostConnectionEvent(Connection &C, uint32_t EventType);
 
             RuntimeError HTTPServerEventProcess();
 

@@ -5,7 +5,7 @@ using namespace ngx::HTTP;
 
 HTTPConnection::HTTPConnection() :
         TimerNode(0, HTTPConnection::OnTimerEventWarp, this),
-        TCP4Connection(SocketAddress),
+        TCP4Connection(Address),
         Request(&MemPool) {
 }
 
@@ -15,10 +15,35 @@ HTTPConnection::HTTPConnection(struct SocketAddress &SocketAddress) :
         Request(&MemPool) {
 }
 
-HTTPConnection::HTTPConnection(int SocketFd, struct SocketAddress &SocketAddress) :
+HTTPConnection::HTTPConnection(int SocketFD, struct SocketAddress &SocketAddress) :
         TimerNode(0, HTTPConnection::OnTimerEventWarp, this),
-        TCP4Connection(SocketFd, SocketAddress),
+        TCP4Connection(SocketFD, SocketAddress),
         Request(&MemPool) {
+}
+
+RuntimeError HTTPConnection::SetSocketAddress(int SocketFD, struct SocketAddress &Address) {
+
+    SpinlockGuard LockGuard(&Lock);
+
+    this->SocketFD = SocketFD;
+    this->Address = Address;
+
+    return {0};
+}
+
+RuntimeError HTTPConnection::HandleEventDomain(uint32_t EventType) {
+
+    Lock.Lock();
+    Event = EventType;
+
+    if (ParentServer == nullptr || ParentEventDomain == nullptr) {
+        return {EINVAL, "connection not attached"};
+    } else if (Open == 1) {
+        return ParentEventDomain -> PostPromise(HTTPConnection::OnConnectionEvent, static_cast<void *>(this));
+    }
+
+    return {EFAULT, "connection not open"};
+
 }
 
 void HTTPConnection::OnTimerEventWarp(void *PointerToConnection, ThreadPool *TPool) {
@@ -46,21 +71,14 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) 
 
     EventType Type;
     HTTPConnection *TargetConnection;
-    SocketEventDomain *EventDomain;
 
     printf("EnterPromise, PointerToConnection: %p\n", PointerToConnection);
 
     TargetConnection = static_cast<HTTPConnection *>(PointerToConnection);
 
     Type = TargetConnection->Event;
-    EventDomain = TargetConnection->ParentEventDomain;
-    TargetConnection->Event |= Type;
 
     printf("Event Type: %x, connection fd: %d\n", Type, TargetConnection->GetSocketFD());
-
-    if ((Type & ET_CONNECTED) != 0) {
-        EventDomain->AttachSocket(TargetConnection, SOCK_READ_WRITE_EVENT);
-    }
 
     if ((Type & ET_READ) != 0) {
         Buffer *Buffer = &TargetConnection->ReadBuffer;
@@ -99,16 +117,6 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) 
     printf("LeavePromise, PointerToConnection: %p\n", PointerToConnection);
 }
 
-RuntimeError HTTPConnection::SetSocketAddress(int SocketFD, struct SocketAddress &TargetSocketAddress) {
-
-    SpinlockGuard LockGuard(&Lock);
-
-    this->SocketFd = SocketFD;
-    this->SocketAddress = TargetSocketAddress;
-
-    return {0};
-}
-
 void HTTPConnection::Reset() {
 
     SpinlockGuard LockGuard(&Lock);
@@ -121,11 +129,11 @@ SocketError HTTPConnection::Close() {
 
     SpinlockGuard LockGuard(&Lock);
 
-    ParentEventDomain->DetachSocket(this, SOCK_READ_WRITE_EVENT);
+    ParentServer->DetachConnection(this);
 
-    if (SocketFd != -1 || Open == 1) {
-        close(SocketFd);
-        SocketFd = -1, Open = 0;
+    if (SocketFD != -1 || Open == 1) {
+        close(SocketFD);
+        SocketFD = -1, Open = 0;
     }
 
     ParentEventDomain->SetTimer(TimerNode, CONNECTION_RECYCLE_WAIT_TIME, TM_ONCE);

@@ -19,7 +19,7 @@ public:
 
     Connection(struct SocketAddress &SocketAddress);
 
-    Connection(int SocketFd, struct SocketAddress &SocketAddress);
+    Connection(int SocketFD, struct SocketAddress &SocketAddress);
 
     virtual SocketError Connect() {
         return SocketError(EINVAL, "Method not implement!");
@@ -35,7 +35,7 @@ class TCP4Connection : protected Connection {
 public:
     TCP4Connection(struct SocketAddress &SocketAddress);
 
-    TCP4Connection(int SocketFd, struct SocketAddress &SocketAddress);
+    TCP4Connection(int SocketFD, struct SocketAddress &SocketAddress);
 
     virtual SocketError Connect();
 

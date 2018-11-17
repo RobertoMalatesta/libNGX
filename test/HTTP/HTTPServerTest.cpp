@@ -16,7 +16,7 @@ int HTTPServerTest() {
 
     TimeModuleInit();
 
-    TCP4Listening Listen(SocketAddress);
+    HTTPListening Listen(SocketAddress);
     HTTPServer Server(POOL_MEMORY_BLOCK_SIZE, 3, EPOLL_EVENT_MAX_CONNECTION, BUFFER_MEMORY_BLOCK_SIZE, 1024, 1024);
 
     Listen.SetPortReuse(false).PrintError();

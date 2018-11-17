@@ -152,17 +152,14 @@ EventError EPollEventDomain::DetachSocket(Socket *S, SocketEventType Type) {
     return {0};
 }
 
-RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs &Argument) {
+RuntimeError EPollEventDomain::EventDomainProcess(Server *S) {
 
-    Server *Server;
-    Listening *Listen;
-    SocketAddress TempAddress = {0};
-    int EventCount, TempConnectionFD;
+    int EventCount;
     epoll_event Events[EPOLL_EVENT_BATCH_SIZE];
 
     RuntimeError Error{0}, PostError{0};
 
-    Error = EventDomain::EventDomainProcess(Argument);
+    Error = EventDomain::EventDomainProcess();
 
     if (Error.GetCode() != 0) {
         return Error;
@@ -172,24 +169,11 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs &Argument) {
         return {ENOENT, "EPollEventDomain initial failed!"};
     }
 
-    Server = static_cast<class Server *>(Argument.UserArguments[3].Ptr);
-    Listen = static_cast<Listening *>(Argument.UserArguments[5].Ptr);
-
-    if (nullptr == Listen || nullptr == Server) {
-        return {ENOENT, "Listen queue empty!"};
-    }
-
-    if (-1 == Listen->GetSocketFD()) {
-        return {EINVAL, "Invalid socket fd!"};
-    }
-
     if (Waiting.test_and_set()) {
         return {EALREADY, "EPollEventDomain is already waiting for events!"};
     }
 
-    AttachSocket(Listen, SOCK_READ_WRITE_EVENT);
     EventCount = epoll_pwait(EPollFD, Events, EPOLL_EVENT_BATCH_SIZE, EPOLL_EVENT_WAIT_TIME, &epoll_sig_mask);
-    DetachSocket(Listen, SOCK_READ_WRITE_EVENT);
 
     Waiting.clear();
 
@@ -205,42 +189,22 @@ RuntimeError EPollEventDomain::EventDomainProcess(EventPromiseArgs &Argument) {
             }
 
             auto *TempSocket = static_cast<Socket *>(Events[i].data.ptr);
-            Argument.UserArguments[7].UInt = 0;
 
-            if (TempSocket->GetSocketFD() == Listen->GetSocketFD()) {
+            uint32_t EventType = 0;
 
-                TempConnectionFD = accept4(Listen->GetSocketFD(), &TempAddress.sockaddr,
-                                           &TempAddress.SocketLength, SOCK_NONBLOCK);
-
-                if (-1 == TempConnectionFD) {
-                    printf("accept4() failed in EventDomainProcess()!\n");
-                }
-
-                Argument.UserArguments[0].UInt = (uint32_t) TempConnectionFD;
-                Argument.UserArguments[1].Ptr = static_cast<void *>(&TempAddress);
-                Argument.UserArguments[6].Ptr = nullptr;
-                Argument.UserArguments[7].UInt |= ET_CONNECTED;
-            } else {
-                Argument.UserArguments[6].Ptr = static_cast<void *>(TempSocket);
-
-                if (Events[i].events & (EPOLLIN | EPOLLRDHUP)) {
-                    Argument.UserArguments[7].UInt |= ET_READ;
-                }
-
-                if (Events[i].events & (EPOLLOUT)) {
-                    Argument.UserArguments[7].UInt |= ET_WRITE;
-                }
+            if (Events[i].events & (EPOLLIN | EPOLLRDHUP)) {
+                EventType |= ET_READ;
             }
-            Server->PostConnectionEvent(Argument);
+
+            if (Events[i].events & (EPOLLOUT)) {
+                EventType |= ET_WRITE;
+            }
+
+            TempSocket->HandleEventDomain(EventType);
         }
     }
 
-    Argument.UserArguments[0].UInt = 0;
-    Argument.UserArguments[1].UInt = 0;
-    Argument.UserArguments[6].UInt = 0;
-    Argument.UserArguments[7].UInt = 0;
-
-    PostError = Server->PostProcessFinished(Argument);
+    PostError = S->PostProcessFinished();
 
     return PostError.GetCode() != 0 ? PostError : Error;
 }

@@ -14,11 +14,11 @@ struct SocketAddress {
     };
 };
 
-class Socket : protected EventEntity {
+class Socket : protected EventEntity, public Achor{
 protected:
     Queue QueueSentinel;
-    int SocketFd = -1;
-    SocketAddress SocketAddress;
+    int SocketFD = -1;
+    SocketAddress Address;
 
     union {
         struct {
@@ -43,7 +43,7 @@ public:
 
     Socket(struct SocketAddress &SocketAddress);
 
-    Socket(int SocketFd, struct SocketAddress &SocketAddress);
+    Socket(int SocketFD, struct SocketAddress &SocketAddress);
 
     int GetSocketFD();
 
@@ -59,5 +59,7 @@ public:
         QueueSentinel.Detach();
     }
 
-    virtual void Achor() {};
+    virtual RuntimeError HandleEventDomain(uint32_t EventType) {
+        return {ENOENT, "method not implemented!"};
+    };
 };

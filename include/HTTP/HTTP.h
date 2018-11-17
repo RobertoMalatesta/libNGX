@@ -74,6 +74,7 @@ namespace ngx {
 #include "HTTP/HTTPError.h"
 #include "HTTP/HTTPRequest.h"
 #include "HTTP/HTTPParser.h"
+#include "HTTP/HTTPListening.h"
 #include "HTTP/HTTPConnection.h"
 #include "HTTP/HTTPConnectionRecycleBin.h"
 #include "HTTP/HTTPConnectionBuilder.h"

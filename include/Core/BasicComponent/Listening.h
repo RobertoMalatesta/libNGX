@@ -4,10 +4,14 @@ public:
 
     Listening(struct SocketAddress &SocketAddress);
 
-    Listening(int SocketFd, struct SocketAddress &SocketAddress);
+    Listening(int SocketFD, struct SocketAddress &SocketAddress);
 
     virtual SocketError Listen() {
-        return SocketError(EINVAL, "Method not implement!");
+        return {ENOENT, "method not implement"};
+    };
+
+    virtual SocketError Close() {
+        return {ENOENT, "method not implement"};
     };
 };
 
@@ -20,6 +24,7 @@ public:
     ~TCP4Listening();
 
     virtual SocketError Listen();
+    virtual SocketError Close();
 
     SocketError SetPortReuse(bool Open);
 };

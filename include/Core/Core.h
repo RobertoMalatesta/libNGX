@@ -32,12 +32,9 @@ namespace ngx {
         class FSTree;
 
         class EPollEventDomain;
-
-        class Server;
     }
 }
 
 
 #include "Core/FSTree.h"
 #include "Core/EPollEventDomain.h"
-#include "Core/Server.h"

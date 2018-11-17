@@ -70,11 +70,3 @@ EventError Server::DetachConnection(Connection *C) {
 
     return {EINVAL};
 }
-
-RuntimeError Server::PostProcessFinished(EventPromiseArgs &) {
-    return {EINVAL};
-}
-
-RuntimeError Server::PostConnectionEvent(EventPromiseArgs &) {
-    return {EINVAL};
-}

@@ -3,21 +3,21 @@
 using namespace ngx::Core::BasicComponent;
 
 Socket::Socket() :
-        SocketFd(-1),
-        SocketAddress({0}) {
+        SocketFD(-1),
+        Address({0}) {
 }
 
 Socket::Socket(struct SocketAddress &SocketAddress) :
-        SocketFd(-1),
-        SocketAddress(SocketAddress) {
+        SocketFD(-1),
+        Address(SocketAddress) {
 }
 
-Socket::Socket(int SocketFd, struct SocketAddress &SocketAddress) :
-        SocketFd(SocketFd),
-        SocketAddress(SocketAddress) {
-    Active = (SocketFd == -1 ? 0 : 1);
+Socket::Socket(int SocketFD, struct SocketAddress &SocketAddress) :
+        SocketFD(SocketFD),
+        Address(SocketAddress) {
+    Active = (SocketFD == -1 ? 0 : 1);
 }
 
 int Socket::GetSocketFD() {
-    return SocketFd;
+    return SocketFD;
 }
