@@ -26,7 +26,7 @@ namespace ngx {
             static void OnConnectionEvent(void *PointerToConnection, ThreadPool *TPool);
 
             friend class HTTPServer;
-
+            friend class HTTPListening;
             friend class HTTPConnectionRecycleBin;
 
             friend class HTTPConnectionBuilder;

@@ -13,11 +13,9 @@ public:
 
     Listening *DequeueListening();
 
-    EventError AttachConnection(Connection *C);
+    EventError AttachConnection(Connection &C);
 
-    EventError DetachConnection(Connection *C);
+    EventError DetachConnection(Connection &C);
 
     virtual RuntimeError PostProcessFinished() = 0;
-
-    virtual RuntimeError PostConnectionEvent(Connection &, uint32_t) = 0;
 };

@@ -7,7 +7,6 @@ namespace ngx {
             HTTPServer *ParentServer;
             SocketEventDomain *ParentEventDomain;
 
-
             friend class HTTPServer;
 
             virtual RuntimeError HandleEventDomain(uint32_t EventType);

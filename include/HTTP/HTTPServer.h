@@ -27,17 +27,16 @@ namespace ngx {
 
             EventError EnqueueListening(HTTPListening *L);
 
-            HTTPListening *DequeueListening();
+            EventError DequeueListening(HTTPListening *&L);
 
-            EventError AttachConnection(HTTPConnection *C);
+            EventError AttachConnection(HTTPConnection &C);
 
-            EventError DetachConnection(HTTPConnection *C);
+            EventError DetachConnection(HTTPConnection &C);
 
             virtual RuntimeError GetConnection(HTTPConnection *&C, int SocketFD, SocketAddress &Address);
 
             virtual RuntimeError PutConnection(HTTPConnection *&C);
 
-            virtual RuntimeError PostConnectionEvent(Connection &C, uint32_t EventType);
 
             RuntimeError HTTPServerEventProcess();
 

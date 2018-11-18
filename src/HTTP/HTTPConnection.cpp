@@ -39,7 +39,7 @@ RuntimeError HTTPConnection::HandleEventDomain(uint32_t EventType) {
     if (ParentServer == nullptr || ParentEventDomain == nullptr) {
         return {EINVAL, "connection not attached"};
     } else if (Open == 1) {
-        return ParentEventDomain -> PostPromise(HTTPConnection::OnConnectionEvent, static_cast<void *>(this));
+        return ParentEventDomain->PostPromise(HTTPConnection::OnConnectionEvent, static_cast<void *>(this));
     }
 
     return {EFAULT, "connection not open"};
@@ -52,10 +52,8 @@ void HTTPConnection::OnTimerEventWarp(void *PointerToConnection, ThreadPool *TPo
 
     TargetConnection = static_cast<HTTPConnection *>(PointerToConnection);
 
-    TargetConnection->Lock.Lock();
-
     if (TargetConnection->Open == 1) {
-        TargetConnection->Event |= ET_TIMER;
+        TargetConnection->Lock.Lock();
         OnConnectionEvent(PointerToConnection, TPool);
     } else {
         TargetConnection->Lock.Unlock();
@@ -70,19 +68,20 @@ void HTTPConnection::OnTimerEventWarp(void *PointerToConnection, ThreadPool *TPo
 void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) {
 
     EventType Type;
-    HTTPConnection *TargetConnection;
+    HTTPConnection *C;
 
     printf("EnterPromise, PointerToConnection: %p\n", PointerToConnection);
 
-    TargetConnection = static_cast<HTTPConnection *>(PointerToConnection);
+    C = static_cast<HTTPConnection *>(PointerToConnection);
 
-    Type = TargetConnection->Event;
+    Type = C->Event;
 
-    printf("Event Type: %x, connection fd: %d\n", Type, TargetConnection->GetSocketFD());
+    printf("Event Type: %x, connection fd: %d\n", Type, C->GetSocketFD());
+
 
     if ((Type & ET_READ) != 0) {
-        Buffer *Buffer = &TargetConnection->ReadBuffer;
-        Buffer->WriteConnectionToBuffer(TargetConnection);
+        Buffer *Buffer = &C->ReadBuffer;
+        Buffer->WriteConnectionToBuffer(C);
     }
 
     if ((Type & ET_WRITE) != 0) {
@@ -90,28 +89,25 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) 
     }
 
     if ((Type & ET_TIMER) != 0) {
-        printf("In timer event process: %p\n", TargetConnection);
+        printf("In timer event process: %p\n", C);
         // Handle timer
     }
 
-    TargetConnection->Lock.Unlock();
-
+    C->Lock.Unlock();
 
     // Handle Request here
 
     if ((Type & ET_READ) != 0) {
-
         {
-            SpinlockGuard LockGuard(&TargetConnection->Lock);
+            SpinlockGuard LockGuard(&C->Lock);
 
-            HTTPParser::ParseHTTPRequest(TargetConnection->ReadBuffer, TargetConnection->Request);
+            HTTPParser::ParseHTTPRequest(C->ReadBuffer, C->Request);
 
             const u_char Content[] = "HTTP/1.1 200 OK\r\nServer: NGX(TestServer)\nContent-Length: 12\r\n\nHello World!";
 
-            write(TargetConnection->GetSocketFD(), Content, sizeof(Content) - 1);
+            write(C->GetSocketFD(), Content, sizeof(Content) - 1);
         }
-
-        TargetConnection->Close();
+        C->Close();
     }
 
     printf("LeavePromise, PointerToConnection: %p\n", PointerToConnection);
@@ -129,7 +125,7 @@ SocketError HTTPConnection::Close() {
 
     SpinlockGuard LockGuard(&Lock);
 
-    ParentServer->DetachConnection(this);
+    ParentServer->DetachConnection(*this);
 
     if (SocketFD != -1 || Open == 1) {
         close(SocketFD);

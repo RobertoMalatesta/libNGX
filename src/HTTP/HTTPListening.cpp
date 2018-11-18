@@ -28,12 +28,14 @@ RuntimeError HTTPListening::HandleEventDomain(uint32_t EventType) {
 
         Error = ParentServer->GetConnection(C, TempFD, Address);
 
-        if (Error.GetCode() != 0) {
+        if (Error.GetCode() != 0 || C == nullptr) {
             close(TempFD);
             return Error;
         }
 
-        ParentServer->AttachConnection(C);
+        ParentServer->AttachConnection(*C);
+
+        printf("create new connection: %d", C->GetSocketFD());
     }
     return {0};
 }

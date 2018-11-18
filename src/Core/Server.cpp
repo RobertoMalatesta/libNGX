@@ -41,10 +41,10 @@ Listening *Server::DequeueListening() {
     return Listen;
 }
 
-EventError Server::AttachConnection(Connection *C) {
+EventError Server::AttachConnection(Connection &C) {
 
-    if (C == nullptr || C->GetSocketFD() == -1) {
-        return {EINVAL, "Bad connection!"};
+    if (C.GetSocketFD() == -1) {
+        return {0};
     }
 
     if (MaxConnection.fetch_sub(1) <= 0) {
@@ -54,19 +54,18 @@ EventError Server::AttachConnection(Connection *C) {
 
     SpinlockGuard LockGuard(&Lock);
 
-    C->AttachSocket(&ConnectionSentinel);
+    C.AttachSocket(&ConnectionSentinel);
     return {0};
 }
 
-EventError Server::DetachConnection(Connection *C) {
-    if (C == nullptr || C->GetSocketFD() == -1) {
-        return {EINVAL, "Bad connection!"};
+EventError Server::DetachConnection(Connection &C) {
+
+    if (C.GetSocketFD() != -1) {
+        SpinlockGuard LockGuard(&Lock);
+
+        C.DetachSocket();
+        MaxConnection.fetch_add(1);
     }
 
-    SpinlockGuard LockGuard(&Lock);
-
-    C->DetachSocket();
-    MaxConnection.fetch_add(1);
-
-    return {EINVAL};
+    return {0};
 }

@@ -38,31 +38,30 @@ EventError HTTPServer::EnqueueListening(HTTPListening *L) {
     return {0};
 }
 
-HTTPListening* HTTPServer::DequeueListening() {
+EventError HTTPServer::DequeueListening(HTTPListening *&L) {
 
-    HTTPListening *L;
     EventError Error{0};
 
     L = (HTTPListening *)Server::DequeueListening();
 
     if (L == nullptr) {
-        return nullptr;
+        return {ENOENT, "no listening in queue"};
     }
 
     Error = EventDomain.DetachSocket(L, SOCK_READ_WRITE_EVENT);
 
     if (Error.GetCode() != 0) {
         Server::EnqueueListening(L);
-        return nullptr;
+        return Error;
     }
 
     L->ParentServer = nullptr;
     L->ParentEventDomain = nullptr;
 
-    return L;
+    return {0};
 }
 
-EventError HTTPServer::AttachConnection(HTTPConnection *C) {
+EventError HTTPServer::AttachConnection(HTTPConnection &C) {
 
     EventError Error{0};
 
@@ -72,21 +71,20 @@ EventError HTTPServer::AttachConnection(HTTPConnection *C) {
         return Error;
     }
 
-    Error = EventDomain.AttachSocket(C, SOCK_READ_WRITE_EVENT);
+    Error = EventDomain.AttachSocket(&C, SOCK_READ_WRITE_EVENT);
 
     if (Error.GetCode() != 0) {
         Server::DetachConnection(C);
         return Error;
     }
-
     return {0};
 }
 
-EventError HTTPServer::DetachConnection(HTTPConnection *C) {
+EventError HTTPServer::DetachConnection(HTTPConnection &C) {
 
     EventError Error{0};
 
-    EventDomain.DetachSocket(C, SOCK_READ_WRITE_EVENT);
+    EventDomain.DetachSocket(&C, SOCK_READ_WRITE_EVENT);
 
     if (Error.GetCode() != 0) {
         return Error;
@@ -95,27 +93,15 @@ EventError HTTPServer::DetachConnection(HTTPConnection *C) {
     Error = Server::DetachConnection(C);
 
     if (Error.GetCode() != 0) {
-        Error = EventDomain.AttachSocket(C, SOCK_READ_WRITE_EVENT);
+        Error = EventDomain.AttachSocket(&C, SOCK_READ_WRITE_EVENT);
         return Error;
     }
 
     return {0};
-
 }
 
 RuntimeError HTTPServer::PostProcessFinished() {
     return {0};
-}
-
-RuntimeError HTTPServer::PostConnectionEvent(Connection &C, uint32_t EventType) {
-
-    HTTPConnection *HC;
-
-    HC = (HTTPConnection *)(&C);
-
-
-
-    return {0, nullptr};
 }
 
 RuntimeError HTTPServer::HTTPServerEventProcess() {
@@ -140,7 +126,7 @@ RuntimeError HTTPServer::GetConnection(HTTPConnection *&C, int SocketFD, SocketA
 
 RuntimeError HTTPServer::PutConnection(HTTPConnection *&C) {
 
-    DetachConnection(C);
+    DetachConnection(*C);
     C->Reset();
     ConnectionBuilder.Put(C);
 
