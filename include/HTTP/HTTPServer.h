@@ -13,7 +13,7 @@ namespace ngx {
             std::atomic_uint64_t WatingCount = {0};
         };
 
-        class HTTPServer : protected Server {
+        class HTTPServer : public Server {
         protected:
             HTTPConnectionBuilder ConnectionBuilder;
             EPollEventDomain EventDomain;
@@ -28,10 +28,6 @@ namespace ngx {
             EventError EnqueueListening(HTTPListening *L);
 
             EventError DequeueListening(HTTPListening *&L);
-
-            EventError AttachConnection(HTTPConnection &C);
-
-            EventError DetachConnection(HTTPConnection &C);
 
             virtual RuntimeError GetConnection(HTTPConnection *&C, int SocketFD, SocketAddress &Address);
 

@@ -33,17 +33,20 @@ RuntimeError HTTPConnection::SetSocketAddress(int SocketFD, struct SocketAddress
 
 RuntimeError HTTPConnection::HandleEventDomain(uint32_t EventType) {
 
+    if (ParentServer == nullptr || ParentEventDomain == nullptr) {
+        return {EINVAL, "connection not attached"};
+    }
+
     Lock.Lock();
     Event = EventType;
 
-    if (ParentServer == nullptr || ParentEventDomain == nullptr) {
-        return {EINVAL, "connection not attached"};
-    } else if (Open == 1) {
-        return ParentEventDomain->PostPromise(HTTPConnection::OnConnectionEvent, static_cast<void *>(this));
-    }
+    if (Open == 0) {
+        SocketFD = -1;
+        Lock.Unlock();
+        return {EFAULT, "connection not open"};
+    };
 
-    return {EFAULT, "connection not open"};
-
+    return ParentEventDomain->PostPromise(HTTPConnection::OnConnectionEvent, static_cast<void *>(this));
 }
 
 void HTTPConnection::OnTimerEventWarp(void *PointerToConnection, ThreadPool *TPool) {
@@ -51,17 +54,17 @@ void HTTPConnection::OnTimerEventWarp(void *PointerToConnection, ThreadPool *TPo
     HTTPConnection *TargetConnection;
 
     TargetConnection = static_cast<HTTPConnection *>(PointerToConnection);
+    TargetConnection->Lock.Lock();
 
     if (TargetConnection->Open == 1) {
-        TargetConnection->Lock.Lock();
         OnConnectionEvent(PointerToConnection, TPool);
     } else {
-        TargetConnection->Lock.Unlock();
 
         printf("Recycle connection: %p\n", TargetConnection);
 
-        TargetConnection->ParentServer->PutConnection(TargetConnection);
         TargetConnection->ParentEventDomain->ResetTimer(TargetConnection->TimerNode);
+        TargetConnection->Lock.Unlock();
+        TargetConnection->ParentServer->PutConnection(TargetConnection);
     }
 }
 
@@ -105,7 +108,11 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) 
 
             const u_char Content[] = "HTTP/1.1 200 OK\r\nServer: NGX(TestServer)\nContent-Length: 12\r\n\nHello World!";
 
-            write(C->GetSocketFD(), Content, sizeof(Content) - 1);
+            ssize_t size = write(C->GetSocketFD(), Content, sizeof(Content) - 1);
+
+            if ( size <= 0 ) {
+                printf("bad write!\n");
+            }
         }
         C->Close();
     }
@@ -125,10 +132,14 @@ SocketError HTTPConnection::Close() {
 
     SpinlockGuard LockGuard(&Lock);
 
+    ParentEventDomain->DetachSocket(this, SOCK_READ_WRITE_EVENT);
     ParentServer->DetachConnection(*this);
 
     if (SocketFD != -1 || Open == 1) {
-        close(SocketFD);
+
+        if (close(SocketFD) == -1) {
+            printf("failed to close socket!\n");
+        }
         SocketFD = -1, Open = 0;
     }
 

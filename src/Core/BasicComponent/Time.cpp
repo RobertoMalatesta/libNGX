@@ -222,6 +222,7 @@ static void UpdateTimeString() {
 
     gettimeofday(&Timestamp, nullptr);
     Time = (uint64_t) Timestamp.tv_sec;
+
     HighResolutionTimestamp = Time * 1000000 + (uint64_t) Timestamp.tv_usec;
 
     if (Time == OldTime) {

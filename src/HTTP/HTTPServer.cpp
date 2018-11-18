@@ -61,45 +61,6 @@ EventError HTTPServer::DequeueListening(HTTPListening *&L) {
     return {0};
 }
 
-EventError HTTPServer::AttachConnection(HTTPConnection &C) {
-
-    EventError Error{0};
-
-    Error = Server::AttachConnection(C);
-
-    if (Error.GetCode() != 0) {
-        return Error;
-    }
-
-    Error = EventDomain.AttachSocket(&C, SOCK_READ_WRITE_EVENT);
-
-    if (Error.GetCode() != 0) {
-        Server::DetachConnection(C);
-        return Error;
-    }
-    return {0};
-}
-
-EventError HTTPServer::DetachConnection(HTTPConnection &C) {
-
-    EventError Error{0};
-
-    EventDomain.DetachSocket(&C, SOCK_READ_WRITE_EVENT);
-
-    if (Error.GetCode() != 0) {
-        return Error;
-    }
-
-    Error = Server::DetachConnection(C);
-
-    if (Error.GetCode() != 0) {
-        Error = EventDomain.AttachSocket(&C, SOCK_READ_WRITE_EVENT);
-        return Error;
-    }
-
-    return {0};
-}
-
 RuntimeError HTTPServer::PostProcessFinished() {
     return {0};
 }
@@ -117,7 +78,7 @@ RuntimeError HTTPServer::GetConnection(HTTPConnection *&C, int SocketFD, SocketA
         return {EINVAL, "bad connection fd"};
     }
 
-    if (ConnectionBuilder.Get(C, SocketFD, Address, this, &EventDomain) == -1) {
+    if (ConnectionBuilder.Get(C, SocketFD, Address, this, &EventDomain) != 0) {
         return {EINVAL, "can not get connection"};
     }
 
@@ -125,8 +86,6 @@ RuntimeError HTTPServer::GetConnection(HTTPConnection *&C, int SocketFD, SocketA
 }
 
 RuntimeError HTTPServer::PutConnection(HTTPConnection *&C) {
-
-    DetachConnection(*C);
     C->Reset();
     ConnectionBuilder.Put(C);
 

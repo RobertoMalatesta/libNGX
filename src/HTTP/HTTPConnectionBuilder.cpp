@@ -20,6 +20,8 @@ int HTTPConnectionBuilder::Get(HTTPConnection *&C, int SocketFD, SocketAddress &
         return C = nullptr, -1;
     }
 
+    TCPNoDelay = 1;
+
     setsockopt(SocketFD, IPPROTO_TCP, TCP_NODELAY, (void *) &TCPNoDelay, sizeof(TCPNoDelay));
 
     // configure connection

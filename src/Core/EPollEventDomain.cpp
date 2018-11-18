@@ -47,7 +47,7 @@ EventError EPollEventDomain::AttachSocket(Socket *S, SocketEventType Type) {
     unsigned int EPollCommand = EPOLL_CTL_ADD;
     struct epoll_event Event = {0};
     Event.data.ptr = static_cast<void *> (S);
-    Event.events = EPOLLET;
+    Event.events = 0;
 
     if (!Detached) {
         EPollCommand = EPOLL_CTL_MOD;
@@ -106,7 +106,7 @@ EventError EPollEventDomain::DetachSocket(Socket *S, SocketEventType Type) {
     if ((Type == SOCK_READ_EVENT && !ReadAttached) ||
         (Type == SOCK_WRITE_EVENT && !WriteAttached) ||
         (Type == SOCK_READ_WRITE_EVENT && !Attached)) {
-        return {EALREADY, "Socket already attached!"};
+        return {EALREADY, "Socket already detached!"};
     }
 
     if (EPollFD == -1 || SocketFD == -1) {
@@ -117,7 +117,7 @@ EventError EPollEventDomain::DetachSocket(Socket *S, SocketEventType Type) {
 
     struct epoll_event Event = {
             .data.ptr = static_cast<void *> (S),
-            .events = EPOLLET | ((ReadAttached) ? EPOLLIN | EPOLLRDHUP : 0) | (WriteAttached ? EPOLLOUT : 0)
+            .events = ((ReadAttached) ? EPOLLIN | EPOLLRDHUP : 0) | (WriteAttached ? EPOLLOUT : 0)
     };
 
     switch (Type) {
