@@ -8,7 +8,7 @@ HTTPListening::HTTPListening(SocketAddress &SocketAddress) : TCP4Listening(Socke
 
 RuntimeError HTTPListening::HandleEventDomain(uint32_t EventType) {
 
-    int TempFD = -1;
+    int TempFD;
     SocketAddress Address{0};
     HTTPConnection *C;
 
@@ -20,22 +20,25 @@ RuntimeError HTTPListening::HandleEventDomain(uint32_t EventType) {
 
         RuntimeError Error{0};
 
-        TempFD = accept4(SocketFD, &Address.sockaddr, &Address.SocketLength, SOCK_NONBLOCK);
+        do {
 
-        if (TempFD == -1) {
-            return {EFAULT, "failed to accept socket"};
-        }
+            TempFD = accept4(SocketFD, &Address.sockaddr, &Address.SocketLength, SOCK_NONBLOCK);
 
-        Error = ParentServer->GetConnection(C, TempFD, Address);
+            if (TempFD == -1) {
+                //[TODO] add warning here!
+                break;
+            }
 
-        if (Error.GetCode() != 0 || C == nullptr) {
-            close(TempFD);
-            return Error;
-        }
+            Error = ParentServer->GetConnection(C, TempFD, Address);
 
-        printf("create new connection: %d\n", C->GetSocketFD());
+            if (Error.GetCode() != 0 || C == nullptr) {
+                close(TempFD);
+                //[TODO] add warning here!
+            }
 
-        ParentEventDomain->AttachSocket(*C, ET_READ | ET_WRITE);
+            printf("create new connection: %d\n", C->GetSocketFD());
+            ParentEventDomain->AttachSocket(*C, ET_READ | ET_WRITE);
+        } while (true);
     }
     return {0};
 }

@@ -48,21 +48,3 @@ SocketError TCP4Connection::Close() {
     }
     return {0};
 }
-
-SocketError TCP4Connection::SetNoDelay(bool Open) {
-
-    unsigned int TCPNoDelay = Open ? 1 : 0;
-
-    if ((Nodelay == 1 && TCPNoDelay == 1) || (Nodelay == 0 && TCPNoDelay == 0)) {
-        return {0, "No delay is already set!"};
-    }
-
-    if (setsockopt(SocketFD, IPPROTO_TCP, TCP_NODELAY,
-                   (const void *) &TCPNoDelay, sizeof(int)) == -1) {
-        return {errno, "setsockopt() failed to set TCP_NODELAY!"};
-    }
-
-    Nodelay = TCPNoDelay;
-
-    return {0};
-}

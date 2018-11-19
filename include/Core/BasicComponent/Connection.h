@@ -40,6 +40,4 @@ public:
     virtual SocketError Connect();
 
     virtual SocketError Close();
-
-    SocketError SetNoDelay(bool Open);
 };

@@ -150,10 +150,7 @@ struct BoundCursor : public Cursor {
                && A4 == C4;
     }
 
-    size_t Size() const;
-};
-
-struct HashBoundCursor : BoundCursor {
-    inline uint32_t Hash() const;
+    size_t Size();
+    uint32_t Hash();
 };
 
