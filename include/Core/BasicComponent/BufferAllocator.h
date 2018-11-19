@@ -13,7 +13,7 @@
 //===-------------------------------------------------------------------------===//
 
 class BufferAllocator : public CanReset {
-    SpinLock Lock;
+    Spinlock Lock;
     size_t BlockSize = 0;
     BufferMemoryBlockRecycleBin *RecycleBin = nullptr;
     Cursor ReadCursor, WriteCursor;

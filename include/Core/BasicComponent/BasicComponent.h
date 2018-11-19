@@ -12,7 +12,7 @@ namespace ngx {
 #include "Core/BasicComponent/BasicMemoryBlock.h"
 #include "Core/BasicComponent/MemoryBlockAllocator.h"
 #include "Core/BasicComponent/Pool.h"
-#include "Core/BasicComponent/Lock.h"
+#include "Core/BasicComponent/Spinlock.h"
 #include "Core/BasicComponent/Checksum.h"
 #include "Core/BasicComponent/Hash.h"
 #include "Core/BasicComponent/Digest.h"

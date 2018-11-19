@@ -7,7 +7,7 @@ const EventType  ET_CLOSED = 0x0010;
 
 class EventDomain {
 protected:
-    SpinLock Lock;
+    Spinlock Lock;
     Pool Allocator;
     TimerTree Timers;
     ThreadPool TPool;

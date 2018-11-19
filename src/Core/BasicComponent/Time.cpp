@@ -7,7 +7,7 @@ using namespace std;
 using namespace ngx::Core::Arch::X86_64;
 using namespace ngx::Core::BasicComponent;
 
-static SpinLock Lock;
+static Spinlock Lock;
 static timeval Timestamp;
 static int TimestampVersion;
 static bool UpdateTimestamp;

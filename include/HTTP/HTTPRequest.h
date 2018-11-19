@@ -2,7 +2,7 @@ namespace ngx {
     namespace HTTP {
 
         struct HTTPHeader {
-            HashBoundCursor Name;
+            BoundCursor Name;
             BoundCursor Value;
             bool Valid;
 

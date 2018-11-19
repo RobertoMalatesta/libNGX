@@ -29,7 +29,7 @@ private:
 
     ThreadPool *TPool = nullptr;
     std::thread WorkerThread;
-    std::atomic_flag Lock;
+    BigSpinlock Lock;
     Promise Sentinel;
     Pool Allocator;
     bool Running;

@@ -8,7 +8,7 @@ namespace ngx {
 #include "Core/MetaClass/AllocatorBuild.h"
 #include "Core/MetaClass/Reference.h"
 #include "Core/MetaClass/CanReset.h"
-
+#include "Core/MetaClass/Lock.h"
         }
 
     }

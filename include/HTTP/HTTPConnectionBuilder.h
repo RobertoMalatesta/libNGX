@@ -15,7 +15,7 @@ namespace ngx {
     namespace HTTP {
         class HTTPConnectionBuilder {
         protected:
-            SpinLock Lock;
+            Spinlock Lock;
             BufferBuilder BB;
             HTTPConnectionRecycleBin BackendRecycleBin;
             uint32_t TCPNoDelay;

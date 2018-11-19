@@ -1,7 +1,7 @@
 
 class Server {
 protected:
-    SpinLock Lock;
+    Spinlock Lock;
 
 public:
     Server() = default;

@@ -19,7 +19,7 @@ set(SOURCE_FILES
         src/Core/BasicComponent/Connection.cpp
         src/Core/BasicComponent/Error.cpp
         src/Core/BasicComponent/EventDomain.cpp
-        src/Core/BasicComponent/Lock.cpp
+        src/Core/BasicComponent/Spinlock.cpp
         src/Core/BasicComponent/Listening.cpp
         src/Core/BasicComponent/MemoryBlockAllocator.cpp
         src/Core/BasicComponent/Pool.cpp

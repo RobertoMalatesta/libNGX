@@ -25,7 +25,8 @@ Thread::Thread(ThreadPool *TPool) : Sentinel(), WorkerThread(Thread::ThreadProce
 
 int Thread::TryPostPromise(PromiseCallback *Callback, void *Argument) {
 
-    if (Lock.test_and_set()) {
+
+    if (!Lock.TryLock()) {
         return -1;
     }
 
@@ -36,7 +37,7 @@ int Thread::TryPostPromise(PromiseCallback *Callback, void *Argument) {
     void *PointerToPromise = Allocator.Allocate(sizeof(Promise));
 
     if (nullptr == PointerToPromise) {
-        Lock.clear();
+        Lock.Unlock();
         return -1;
     }
 
@@ -46,7 +47,7 @@ int Thread::TryPostPromise(PromiseCallback *Callback, void *Argument) {
         Allocator.GC();
     }
 
-    Lock.clear();
+    Lock.Unlock();
 
     return 0;
 }
@@ -68,30 +69,28 @@ void Thread::ThreadProcess(Thread *Thread) {
 
         usleep(THREAD_WAIT_TIME);
 
-        if (Thread->Lock.test_and_set()) {
-            std::this_thread::yield();
-        } else if (!Thread->Running) {
-            break;
-        } else {
-            while (!Thread->Sentinel.IsEmpty()) {
-                Node = (Promise *) Thread->Sentinel.GetHead();
-                Node->Detach();
-                Node->doPromise();
-                Thread->Allocator.Free((void *&) Node);
+        if (Thread->Lock.TryLock()) {
+            if (!Thread->Running) {
+                break;
+            } else {
+                while (!Thread->Sentinel.IsEmpty()) {
+                    Node = (Promise *) Thread->Sentinel.GetHead();
+                    Node->Detach();
+                    Node->doPromise();
+                    Thread->Allocator.Free((void *&) Node);
+                }
+                Thread->Lock.Unlock();
             }
-            Thread->Lock.clear();
         }
     }
-    Thread->Lock.clear();
+    Thread->Lock.Unlock();
 }
 
 void Thread::Stop() {
-
-    while (Lock.test_and_set()) {
-        RelaxMachine();
+    {
+        SpinlockGuard LockGuard(&Lock);
+        Running = false;
     }
-    Running = false;
-    Lock.clear();
     WorkerThread.join();
     Allocator.GC();
 }

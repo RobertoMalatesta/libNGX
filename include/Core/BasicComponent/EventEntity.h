@@ -6,7 +6,7 @@ static void DiscardPromise(void *, ThreadPool *) {
 
 class EventEntity {
 protected:
-    SpinLock Lock;
+    Spinlock Lock;
     EventType Event;
     EventType AttachedEvent;
 };
