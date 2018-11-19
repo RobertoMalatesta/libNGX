@@ -56,13 +56,14 @@ void HTTPConnection::OnTimerEventWarp(void *PointerToConnection, ThreadPool *TPo
     TargetConnection = static_cast<HTTPConnection *>(PointerToConnection);
     TargetConnection->Lock.Lock();
 
+    TargetConnection->Event |= ET_TIMER;
+
     if (TargetConnection->Open == 1) {
         OnConnectionEvent(PointerToConnection, TPool);
     } else {
 
-        printf("Recycle connection: %p\n", TargetConnection);
+        printf("recycle connection: %p\n", TargetConnection);
 
-        TargetConnection->ParentEventDomain->ResetTimer(TargetConnection->TimerNode);
         TargetConnection->Lock.Unlock();
         TargetConnection->ParentServer->PutConnection(TargetConnection);
     }
@@ -73,7 +74,7 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) 
     EventType Type;
     HTTPConnection *C;
 
-    printf("EnterPromise, PointerToConnection: %p\n", PointerToConnection);
+    printf("Enter Promise, PointerToConnection: %p\n", PointerToConnection);
 
     C = static_cast<HTTPConnection *>(PointerToConnection);
 
@@ -83,8 +84,7 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) 
 
 
     if ((Type & ET_READ) != 0) {
-        Buffer *Buffer = &C->ReadBuffer;
-        Buffer->WriteConnectionToBuffer(C);
+        C->ReadBuffer.ReadFromConnection(C);
     }
 
     if ((Type & ET_WRITE) != 0) {
@@ -117,13 +117,14 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) 
         C->Close();
     }
 
-    printf("LeavePromise, PointerToConnection: %p\n", PointerToConnection);
+    printf("Leave Promise, PointerToConnection: %p\n", PointerToConnection);
 }
 
 void HTTPConnection::Reset() {
 
     SpinlockGuard LockGuard(&Lock);
 
+    ParentEventDomain->ResetTimer(TimerNode);
     ReadBuffer.Reset();
     MemPool.Reset();
 }

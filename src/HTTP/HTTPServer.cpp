@@ -86,8 +86,6 @@ RuntimeError HTTPServer::GetConnection(HTTPConnection *&C, int SocketFD, SocketA
 }
 
 RuntimeError HTTPServer::PutConnection(HTTPConnection *&C) {
-    C->Reset();
     ConnectionBuilder.Put(C);
-
     return {0};
 }

@@ -30,8 +30,9 @@ set(SOURCE_FILES
         src/Core/BasicComponent/Time.cpp
         src/Core/BasicComponent/ThreadPool.cpp
         src/Core/BasicComponent/TimerTree.cpp
+        src/Core/BasicComponent/BufferCursor.cpp
+        src/Core/BasicComponent/Router/Router.cpp
         src/Core/EPollEventDomain.cpp
-        src/Core/FSTree.cpp
         src/Core/Server.cpp
         src/HTTP/HTTPConnection.cpp
         src/HTTP/HTTPServer.cpp
@@ -39,8 +40,7 @@ set(SOURCE_FILES
         src/HTTP/HTTPParser.cpp
         src/HTTP/HTTPError.cpp
         src/HTTP/HTTPConnectionBuilder.cpp
-        src/Core/BasicComponent/BufferCursor.cpp
-        src/Core/BasicComponent/Router/Router.cpp src/HTTP/HTTPListening.cpp)
+        src/HTTP/HTTPListening.cpp)
 
 set(TEST_FILES
         test/Test.cpp

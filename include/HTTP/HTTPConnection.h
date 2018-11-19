@@ -38,7 +38,7 @@ namespace ngx {
             ~HTTPConnection() = default;
 
             inline RuntimeError ReadConnection() {
-                return ReadBuffer.WriteConnectionToBuffer(this);
+                return ReadBuffer.ReadFromConnection(this);
             }
 
             inline RuntimeError WriteConnection() {

@@ -35,6 +35,4 @@ namespace ngx {
     }
 }
 
-
-#include "Core/FSTree.h"
 #include "Core/EPollEventDomain.h"

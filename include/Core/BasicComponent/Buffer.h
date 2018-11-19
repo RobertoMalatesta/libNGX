@@ -39,9 +39,9 @@ public:
         return (BufferMemoryBlock *) BufferMemoryBlock::AddressToMemoryBlock(Cursor, BlockSize);
     }
 
-    RuntimeError WriteConnectionToBuffer(Connection *C);
+    RuntimeError ReadFromConnection(Connection *C);
 
-    RuntimeError WriteDataToBuffer(u_char *PointerToData, size_t DataLength);
+    RuntimeError ReadData(u_char *PointerToData, size_t DataLength);
 
     inline bool HasBytes(uint32_t Count = 1) {
         return (Cursor + 1).Position == nullptr;

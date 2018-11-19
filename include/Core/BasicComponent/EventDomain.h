@@ -33,8 +33,10 @@ public:
     static void DiscardPromise(void *Argument, ThreadPool *TPool) {};
 
     inline RuntimeError SetTimer(Timer &Timer, uint64_t Interval, TimerMode Mode) {
+
+        ResetTimer(Timer);
+
         SpinlockGuard LockGuard(&Lock);
-        Timers.DetachTimer(Timer);
         Timer.SeInterval(Interval, Mode);
         Timers.AttachTimer(Timer);
         return {0};

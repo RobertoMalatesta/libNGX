@@ -40,42 +40,6 @@ Buffer::~Buffer() {
     }
 }
 
-RuntimeError Buffer::WriteDataToBuffer(u_char *PointerToData, size_t DataLength) {
-
-    size_t CurrentBlockFreeSize;
-    BufferMemoryBlock *TempBufferBlock, *WriteBlock;
-
-    WriteBlock = AddressToMemoryBlock(Cursor.Bound);
-
-    for (;;) {
-
-        CurrentBlockFreeSize = WriteBlock->End - Cursor.Bound;
-
-        if (DataLength > CurrentBlockFreeSize) {
-
-            TempBufferBlock = AquireBlock(RecycleBin, BlockSize);
-
-            if (TempBufferBlock == nullptr) {
-                return {ENOMEM, "No enough memory!"};
-            }
-
-            memcpy(Cursor.Bound, PointerToData, CurrentBlockFreeSize);
-
-            PointerToData += CurrentBlockFreeSize;
-            DataLength -= CurrentBlockFreeSize;
-
-            WriteBlock->SetNextBlock(TempBufferBlock);
-            Cursor.Bound = WriteBlock->Start;
-        } else {
-            memcpy(Cursor.Bound, PointerToData, DataLength);
-            Cursor.Bound += DataLength;
-            break;
-        }
-    }
-
-    return {0};
-}
-
 Buffer &Buffer::operator<<(BoundCursor &BC) &{
     Cursor = BC;
     return *this;
@@ -86,7 +50,7 @@ Buffer &Buffer::operator>>(BoundCursor &BC) &{
     return *this;
 }
 
-RuntimeError Buffer::WriteConnectionToBuffer(Connection *C) {
+RuntimeError Buffer::ReadFromConnection(Connection *C) {
 
     int SocketFD = C->GetSocketFD();
     u_char *PointerToData;
@@ -132,6 +96,42 @@ RuntimeError Buffer::WriteConnectionToBuffer(Connection *C) {
             break;
         }
     }
+    return {0};
+}
+
+RuntimeError Buffer::ReadData(u_char *PointerToData, size_t DataLength) {
+
+    size_t CurrentBlockFreeSize;
+    BufferMemoryBlock *TempBufferBlock, *WriteBlock;
+
+    WriteBlock = AddressToMemoryBlock(Cursor.Bound);
+
+    for (;;) {
+
+        CurrentBlockFreeSize = WriteBlock->End - Cursor.Bound;
+
+        if (DataLength > CurrentBlockFreeSize) {
+
+            TempBufferBlock = AquireBlock(RecycleBin, BlockSize);
+
+            if (TempBufferBlock == nullptr) {
+                return {ENOMEM, "No enough memory!"};
+            }
+
+            memcpy(Cursor.Bound, PointerToData, CurrentBlockFreeSize);
+
+            PointerToData += CurrentBlockFreeSize;
+            DataLength -= CurrentBlockFreeSize;
+
+            WriteBlock->SetNextBlock(TempBufferBlock);
+            Cursor.Bound = WriteBlock->Start;
+        } else {
+            memcpy(Cursor.Bound, PointerToData, DataLength);
+            Cursor.Bound += DataLength;
+            break;
+        }
+    }
+
     return {0};
 }
 
