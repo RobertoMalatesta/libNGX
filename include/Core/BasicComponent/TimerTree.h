@@ -10,6 +10,7 @@ protected:
 
     friend class TimerTree;
 
+    Spinlock Lock;
     uint64_t Timestamp = 0;
 public:
     TimerMode Mode = TM_ONCE;

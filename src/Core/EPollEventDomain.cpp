@@ -26,11 +26,13 @@ EPollEventDomain::~EPollEventDomain() {
 
 EventError EPollEventDomain::AttachSocket(Socket &S, EventType Type) {
 
-    SpinlockGuard LockGuard(&Lock);
+    LockGuard LockGuard(&Lock);
+    LockSocket(S);
 
     int SocketFD = S.GetSocketFD();
 
     if (EPollFD == -1 || SocketFD == -1) {
+        UnlockSocket(S);
         return {-1, "Bad Socket Descriptor!"};
     }
 
@@ -50,16 +52,19 @@ EventError EPollEventDomain::AttachSocket(Socket &S, EventType Type) {
     }
 
     if (-1 == epoll_ctl(EPollFD, EPollCommand, SocketFD, &Event)) {
-            return {errno, "Failed to attach connection to epoll!"};
+        UnlockSocket(S);
+        return {errno, "Failed to attach connection to epoll!"};
     }
 
     SetAttachedEvent(S, Type, true);
+    UnlockSocket(S);
     return {0};
 }
 
 EventError EPollEventDomain::DetachSocket(Socket &S, EventType Type) {
 
-    SpinlockGuard LockGuard(&Lock);
+    LockGuard LockGuard(&Lock);
+    LockSocket(S);
 
     int SocketFD = S.GetSocketFD();
     uint32_t Attached = GetAttachedEvent(S);
@@ -69,6 +74,7 @@ EventError EPollEventDomain::DetachSocket(Socket &S, EventType Type) {
     unsigned int EPollCommand = (Attached == 0? EPOLL_CTL_DEL: EPOLL_CTL_MOD);
 
     if (EPollFD == -1 || SocketFD == -1) {
+        UnlockSocket(S);
         return {-1, "Bad Socket Descriptor!"};
     }
 
@@ -86,10 +92,12 @@ EventError EPollEventDomain::DetachSocket(Socket &S, EventType Type) {
     }
 
     if (-1 == epoll_ctl(EPollFD, EPollCommand, SocketFD, &Event)) {
+        UnlockSocket(S);
         return {errno, "Failed to attach connection to epoll!"};
     }
 
     SetAttachedEvent(S, Type, false);
+    UnlockSocket(S);
     return {0};
 }
 
@@ -100,7 +108,9 @@ RuntimeError EPollEventDomain::EventDomainProcess(Server *S) {
 
     RuntimeError Error{0}, PostError{0};
 
+    Lock.Lock();
     Error = EventDomain::EventDomainProcess();
+    Lock.Unlock();
 
     if (Error.GetCode() != 0) {
         return Error;
@@ -110,13 +120,7 @@ RuntimeError EPollEventDomain::EventDomainProcess(Server *S) {
         return {ENOENT, "EPollEventDomain initial failed!"};
     }
 
-    if (Waiting.test_and_set()) {
-        return {EALREADY, "EPollEventDomain is already waiting for events!"};
-    }
-
     EventCount = epoll_pwait(EPollFD, Events, EPOLL_EVENT_BATCH_SIZE, EPOLL_EVENT_WAIT_TIME, &epoll_sig_mask);
-
-    Waiting.clear();
 
     if (-1 == EventCount && errno == EINTR) {
         Error = {0, "Interrupted by signal"};
@@ -140,7 +144,6 @@ RuntimeError EPollEventDomain::EventDomainProcess(Server *S) {
             if (Events[i].events & (EPOLLOUT)) {
                 EventType |= ET_WRITE;
             }
-
             TempSocket->HandleEventDomain(EventType);
         }
     }

@@ -11,4 +11,6 @@
 #include <signal.h>
 #include <unistd.h>
 
+#include <pthread.h>
+#include <mutex>
 #include <netinet/in.h>

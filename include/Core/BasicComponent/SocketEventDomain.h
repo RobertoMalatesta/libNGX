@@ -2,19 +2,24 @@
 class SocketEventDomain : public EventDomain {
 protected:
     inline EventType GetAttachedEvent(Socket &S) {
-        SpinlockGuard LockGuard(&S.Lock);
-
         return S.AttachedEvent;
     }
 
     inline void SetAttachedEvent(Socket &S, EventType Type, bool On) {
-        SpinlockGuard LockGuard(&S.Lock);
 
         if (On == 1) {
             S.AttachedEvent |= Type;
         } else {
             S.AttachedEvent &= ~Type;
         }
+    }
+
+    inline void LockSocket(Socket &S) {
+        S.Lock.Lock();
+    }
+
+    inline void UnlockSocket(Socket &S) {
+        S.Lock.Unlock();
     }
 
 public:

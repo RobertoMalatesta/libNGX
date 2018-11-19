@@ -33,17 +33,17 @@ public:
     virtual bool TryLock();
 };
 
-class SpinlockGuard {
+class LockGuard {
 
 protected:
-    Spinlock *Lock;
+    LockType *Lock;
 public:
-    SpinlockGuard(Spinlock *Lock) {
+    LockGuard(LockType *Lock) {
         this->Lock = Lock;
         Lock->Lock();
     }
 
-    ~SpinlockGuard() {
+    ~LockGuard() {
         Lock->Unlock();
     }
 };

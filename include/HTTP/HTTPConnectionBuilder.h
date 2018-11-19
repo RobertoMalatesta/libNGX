@@ -33,20 +33,20 @@ namespace ngx {
 
             inline HTTPError SetTCPNoDelay(bool Open) {
 
-                SpinlockGuard LockGuard(&Lock);
+                LockGuard LockGuard(&Lock);
                 TCPNoDelay = (Open) ? 1 : 0;
                 return {0};
             }
 
             inline HTTPError SetTCPNoPush(bool Open) {
 
-                SpinlockGuard LockGuard(&Lock);
+                LockGuard LockGuard(&Lock);
                 TCPNoPush = (Open) ? 1 : 0;
                 return {0};
             };
 
             inline HTTPError SetReadBufferSize(uint32_t Size) {
-                SpinlockGuard LockGuard(&Lock);
+                LockGuard LockGuard(&Lock);
                 ReadBufferSize = Size;
                 return {0};
             };

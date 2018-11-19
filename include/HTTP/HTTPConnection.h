@@ -6,7 +6,6 @@ namespace ngx {
 
             Pool MemPool;
 
-            Timer TimerNode;
             Buffer ReadBuffer;
             HTTPRequest Request;
 

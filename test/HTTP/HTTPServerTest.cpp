@@ -17,12 +17,12 @@ int HTTPServerTest() {
     TimeModuleInit();
 
     HTTPListening Listen(SocketAddress);
-    HTTPServer Server(POOL_MEMORY_BLOCK_SIZE, 3, EPOLL_EVENT_MAX_CONNECTION, BUFFER_MEMORY_BLOCK_SIZE, 1024, 1024);
+    HTTPServer Server(POOL_MEMORY_BLOCK_SIZE, 3, EPOLL_EVENT_MAX_CONNECTION, BUFFER_MEMORY_BLOCK_SIZE, 10, 10);
 
     Listen.SetPortReuse(false).PrintError();
     Listen.Listen().PrintError();
 
-    Server.AttachListening(&Listen).PrintError();
+    Server.AttachListening(Listen).PrintError();
 
     RuntimeError Error{0};
 
@@ -37,7 +37,7 @@ int HTTPServerTest() {
 
     } while (Error.GetCode() == 0);
 
-    Server.DetachListening(Listen)
+    Server.DetachListening(Listen);
 
     return 0;
 }

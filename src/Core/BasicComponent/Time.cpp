@@ -113,7 +113,7 @@ int ngx::Core::BasicComponent::DisableTimer() {
 
 uint64_t ngx::Core::BasicComponent::GetHighResolutionTimestamp() {
 
-    SpinlockGuard LockGuard(&Lock);
+    LockGuard LockGuard(&Lock);
 
     if (UpdateTimestamp) {
         UpdateTimeString();
@@ -196,7 +196,7 @@ int ngx::Core::BasicComponent::WriteSysLogTime(char *Buf, size_t Size) {
 
 static int FetchTimeVersion(bool Force) {
 
-    SpinlockGuard LockGuard(&Lock);
+    LockGuard LockGuard(&Lock);
 
     if (UpdateTimestamp || Force) {
         UpdateTimeString();

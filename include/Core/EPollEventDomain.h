@@ -16,7 +16,7 @@ namespace ngx {
 
         namespace DefaultConfig {
 
-            const int EPOLL_EVENT_BATCH_SIZE = 512;
+            const int EPOLL_EVENT_BATCH_SIZE = 1;
             const int EPOLL_EVENT_WAIT_TIME = 1;    // ms
             const int EPOLL_EVENT_MAX_CONNECTION = 32768;
         }
@@ -37,7 +37,6 @@ namespace ngx {
         class EPollEventDomain : public SocketEventDomain {
         protected:
             int EPollFD = -1;
-            std::atomic_flag Waiting = ATOMIC_FLAG_INIT;
         public:
 
             EPollEventDomain(size_t PoolSize, int ThreadCount, int EPollSize);

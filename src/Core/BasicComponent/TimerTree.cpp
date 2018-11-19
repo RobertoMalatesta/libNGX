@@ -55,8 +55,9 @@ int TimerTree::QueueExpiredTimer(ThreadPool *TPool) {
         }
 
         TPool->PostPromise(Temp->Callback, Temp->Argument);
-
+        Temp->Lock.Lock();
         Delete(Temp);
+        Temp->Lock.Unlock();
 
         if (Temp->Mode == TM_INTERVAL && Temp->Interval > 0) {
             Temp->Timestamp = Timestamp + Temp->Interval;
@@ -72,7 +73,9 @@ int TimerTree::AttachTimer(Timer &T) {
 
     if (T.Interval > 0) {
         T.Timestamp = GetHighResolutionTimestamp() + T.Interval;
+        T.Lock.Lock();
         Insert(&T);
+        T.Lock.Unlock();
     }
     return 0;
 }
@@ -80,7 +83,9 @@ int TimerTree::AttachTimer(Timer &T) {
 int TimerTree::DetachTimer(Timer &T) {
 
     if (T.IsTimerAttached()) {
+        T.Lock.Lock();
         Delete(&T);
+        T.Lock.Unlock();
     }
 
     return 0;

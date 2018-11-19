@@ -48,7 +48,7 @@ void *Pool::Allocate(size_t Size) {
         } while (true);
     }
 
-    if ((AllocateRound++) % POOL_RECYCLE_ROUND == 0) {
+    if ((++AllocateRound) % POOL_RECYCLE_ROUND == 0) {
         GC();
     }
 

@@ -6,7 +6,6 @@ EventDomain::EventDomain(size_t PoolSize, int ThreadCount)
         : Lock(), Allocator(PoolSize), Timers(&Allocator), TPool(ThreadCount) {}
 
 RuntimeError EventDomain::QueueExpiredTimer() {
-    SpinlockGuard LockGuard(&Lock);
     Timers.QueueExpiredTimer(&TPool);
     return {0};
 }
@@ -16,8 +15,6 @@ RuntimeError EventDomain::EventDomainProcess() {
 }
 
 RuntimeError EventDomain::PostPromise(PromiseCallback *Callback, void *Argument) {
-    SpinlockGuard LockGuard(&Lock);
     TPool.PostPromise(Callback, Argument);
     return {0};
 }
-

@@ -25,7 +25,7 @@ BufferMemoryBlock *BufferMemoryBlockRecycleBin::Get() {
 
     BufferMemoryBlock *Ret;
 
-    SpinlockGuard LockGuard(&Lock);
+    LockGuard LockGuard(&Lock);
 
     if (RecycleSentinel.IsEmpty()) {
         BufferMemoryBlock::Build(Ret, BufferMemoryBlockSize);
@@ -40,7 +40,7 @@ BufferMemoryBlock *BufferMemoryBlockRecycleBin::Get() {
 
 void BufferMemoryBlockRecycleBin::Put(BufferMemoryBlock *Item) {
 
-    SpinlockGuard LockGuard(&Lock);
+    LockGuard LockGuard(&Lock);
 
     if (RecycleSize >= RecycleMaxSize) {
         BufferMemoryBlock::Destroy(Item);

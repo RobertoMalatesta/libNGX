@@ -28,14 +28,14 @@ class Thread {
 private:
 
     ThreadPool *TPool = nullptr;
-    std::thread WorkerThread;
-    BigSpinlock Lock;
+    pthread_t WorkerThread;
+    Mutex Lock;
     Promise Sentinel;
     Pool Allocator;
     bool Running;
     uint32_t PostCount;
 
-    static void ThreadProcess(Thread *Thread);
+    static void* ThreadProcess(void *Thread);
 
     friend Promise;
 

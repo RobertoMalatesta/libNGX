@@ -15,27 +15,29 @@ public:
     EventDomain(size_t PoolSize, int ThreadCount);
 
     ~EventDomain() {
-        SpinlockGuard LockGuard(&Lock);
+        LockGuard LockGuard(&Lock);
         TPool.~ThreadPool();
         Timers.~TimerTree();
     }
 
     static void DiscardPromise(void *Argument, ThreadPool *TPool) {};
 
-    inline RuntimeError SetTimer(Timer &Timer, uint64_t Interval, TimerMode Mode) {
-
-        ResetTimer(Timer);
-
-        SpinlockGuard LockGuard(&Lock);
-        Timer.SeInterval(Interval, Mode);
-        Timers.AttachTimer(Timer);
+    inline RuntimeError SetTimer(EventEntity &Entity, uint64_t Interval, TimerMode Mode) {
+        LockGuard LockGuard(&Lock);
+        Entity.Lock.Lock();
+        Timers.DetachTimer(Entity.TimerNode);
+        Entity.TimerNode.SeInterval(Interval, Mode);
+        Timers.AttachTimer(Entity.TimerNode);
+        Entity.Lock.Unlock();
         return {0};
     }
 
-    inline RuntimeError ResetTimer(Timer &Timer) {
-        SpinlockGuard LockGuard(&Lock);
-        Timers.DetachTimer(Timer);
-        Timer.Mode = TM_CLOSED, Timer.Interval = 0;
+    inline RuntimeError ResetTimer(EventEntity &Entity) {
+        LockGuard LockGuard(&Lock);
+        Entity.Lock.Lock();
+        Timers.DetachTimer(Entity.TimerNode);
+        Entity.TimerNode.Mode = TM_CLOSED, Entity.TimerNode.Interval = 0;
+        Entity.Lock.Unlock();
         return {0};
     }
 

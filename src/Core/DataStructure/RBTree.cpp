@@ -208,6 +208,8 @@ void RBTree::Delete(RBTreeNode *Node) {
         return;
     }
 
+    bool Red = Subst->IsRed();
+
     if (Subst == Subst->Parent->Left) {
         Subst->Parent->Left = Temp;
     } else {
@@ -250,7 +252,7 @@ void RBTree::Delete(RBTreeNode *Node) {
     Node->Right = nullptr;
     Node->Parent = nullptr;
 
-    if (Subst->IsRed()) {
+    if (Red) {
         return;
     }
 

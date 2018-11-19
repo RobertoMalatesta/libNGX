@@ -1,6 +1,6 @@
 class Pool : public MemAllocator, public CanReset {
 private:
-    uint32_t AllocateRound;
+    uint32_t AllocateRound = 0;
 protected:
     size_t BlockSize;
     MemoryBlockAllocator *HeadBlock, *CurrentBlock;

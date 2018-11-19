@@ -1,5 +1,5 @@
 #include "HTTP/HTTP.h"
-
+#include <fcntl.h>
 using namespace ngx::Core;
 using namespace ngx::HTTP;
 
@@ -20,13 +20,10 @@ RuntimeError HTTPListening::HandleEventDomain(uint32_t EventType) {
 
         RuntimeError Error{0};
 
-        do {
-
-            TempFD = accept4(SocketFD, &Address.sockaddr, &Address.SocketLength, SOCK_NONBLOCK);
+            TempFD = accept4(SocketFD, &Address.sockaddr, &Address.SocketLength, O_NONBLOCK);
 
             if (TempFD == -1) {
-                //[TODO] add warning here!
-                break;
+                return {EBADFD, "failed to accept socket"};
             }
 
             Error = ParentServer->GetConnection(C, TempFD, Address);
@@ -38,7 +35,6 @@ RuntimeError HTTPListening::HandleEventDomain(uint32_t EventType) {
 
             printf("create new connection: %d\n", C->GetSocketFD());
             ParentEventDomain->AttachSocket(*C, ET_READ | ET_WRITE);
-        } while (true);
     }
     return {0};
 }

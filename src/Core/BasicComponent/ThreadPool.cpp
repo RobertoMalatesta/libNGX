@@ -19,8 +19,19 @@ void Promise::doPromise() {
     }
 }
 
-Thread::Thread(ThreadPool *TPool) : Sentinel(), WorkerThread(Thread::ThreadProcess, this), Allocator() {
+Thread::Thread(ThreadPool *TPool) : Sentinel(), Allocator() {
+
+    int ret;
+
+    this->Running = true;
     this->TPool = TPool;
+    this->Lock.Lock();
+
+    ret = pthread_create(&WorkerThread, nullptr,Thread::ThreadProcess, (void *)this);
+
+    if (ret != 0) {
+        this->Running = false;
+    }
 }
 
 int Thread::TryPostPromise(PromiseCallback *Callback, void *Argument) {
@@ -52,46 +63,41 @@ int Thread::TryPostPromise(PromiseCallback *Callback, void *Argument) {
     return 0;
 }
 
-void Thread::ThreadProcess(Thread *Thread) {
+void* Thread::ThreadProcess(void *Argument) {
 
     Promise *Node;
-    Thread->Running = true;
 
-    {
-        uint64_t Timestamp = GetHighResolutionTimestamp();
+    auto *T = static_cast<Thread *>(Argument);
 
-        while (GetHighResolutionTimestamp() - Timestamp < (THREAD_WAIT_TIME * 10 + 100000)) {
-            usleep(THREAD_WAIT_TIME * 10 + 100000);
-        }
-    }
+    T->Lock.Unlock();
 
     while (true) {
 
         usleep(THREAD_WAIT_TIME);
+        LockGuard Guard(&T->Lock);
 
-        if (Thread->Lock.TryLock()) {
-            if (!Thread->Running) {
-                break;
-            } else {
-                while (!Thread->Sentinel.IsEmpty()) {
-                    Node = (Promise *) Thread->Sentinel.GetHead();
-                    Node->Detach();
-                    Node->doPromise();
-                    Thread->Allocator.Free((void *&) Node);
-                }
-                Thread->Lock.Unlock();
+        if (!T->Running) {
+            break;
+        } else {
+            while (!T->Sentinel.IsEmpty()) {
+                Node = (Promise *) T->Sentinel.GetHead();
+                Node->Detach();
+                Node->doPromise();
+                T->Allocator.Free((void *&) Node);
             }
         }
     }
-    Thread->Lock.Unlock();
+
+    T->Lock.Unlock();
+    return nullptr;
 }
 
 void Thread::Stop() {
     {
-        SpinlockGuard LockGuard(&Lock);
+        LockGuard LockGuard(&Lock);
         Running = false;
     }
-    WorkerThread.join();
+    pthread_join(WorkerThread, nullptr);
     Allocator.GC();
 }
 
