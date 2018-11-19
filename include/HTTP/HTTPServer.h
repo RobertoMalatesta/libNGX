@@ -25,16 +25,15 @@ namespace ngx {
             HTTPServer(size_t PoolSize, int ThreadCount, int EPollSize, size_t BufferBlockSize,
                        uint64_t ConnectionRecycleSize, uint64_t BufferRecycleSize);
 
-            EventError EnqueueListening(HTTPListening *L);
+            virtual EventError AttachListening(HTTPListening &L);
 
-            EventError DequeueListening(HTTPListening *&L);
+            virtual EventError DetachListening(HTTPListening &L);
 
             virtual RuntimeError GetConnection(HTTPConnection *&C, int SocketFD, SocketAddress &Address);
 
             virtual RuntimeError PutConnection(HTTPConnection *&C);
 
-
-            RuntimeError HTTPServerEventProcess();
+            RuntimeError ServerEventProcess();
 
             ~HTTPServer() = default;
         };

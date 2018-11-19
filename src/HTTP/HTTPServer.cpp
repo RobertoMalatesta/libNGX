@@ -15,48 +15,34 @@ HTTPServer::HTTPServer(
 
 }
 
-EventError HTTPServer::EnqueueListening(HTTPListening *L) {
+EventError HTTPServer::AttachListening(HTTPListening &L) {
 
     EventError Error{0};
 
-    Error = EventDomain.AttachSocket(L, SOCK_READ_WRITE_EVENT);
+    Error = EventDomain.AttachSocket(L, ET_READ | ET_WRITE);
 
     if (Error.GetCode() != 0) {
         return Error;
     }
 
-    Error = Server::EnqueueListening(L);
-
-    if (Error.GetCode() != 0) {
-        EventDomain.DetachSocket(L, SOCK_READ_WRITE_EVENT);
-        return Error;
-    }
-
-    L->ParentServer = this;
-    L->ParentEventDomain = &EventDomain;
+    L.ParentServer = this;
+    L.ParentEventDomain = &EventDomain;
 
     return {0};
 }
 
-EventError HTTPServer::DequeueListening(HTTPListening *&L) {
+EventError HTTPServer::DetachListening(HTTPListening &L) {
 
     EventError Error{0};
 
-    L = (HTTPListening *)Server::DequeueListening();
-
-    if (L == nullptr) {
-        return {ENOENT, "no listening in queue"};
-    }
-
-    Error = EventDomain.DetachSocket(L, SOCK_READ_WRITE_EVENT);
+    Error = EventDomain.DetachSocket(L, ET_READ | ET_WRITE);
 
     if (Error.GetCode() != 0) {
-        Server::EnqueueListening(L);
         return Error;
     }
 
-    L->ParentServer = nullptr;
-    L->ParentEventDomain = nullptr;
+    L.ParentServer = nullptr;
+    L.ParentEventDomain = nullptr;
 
     return {0};
 }
@@ -65,7 +51,7 @@ RuntimeError HTTPServer::PostProcessFinished() {
     return {0};
 }
 
-RuntimeError HTTPServer::HTTPServerEventProcess() {
+RuntimeError HTTPServer::ServerEventProcess() {
     return EventDomain.EventDomainProcess(this);
 }
 

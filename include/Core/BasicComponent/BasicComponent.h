@@ -21,8 +21,8 @@ namespace ngx {
 #include "Core/BasicComponent/TimerTree.h"
 
 #include "Core/BasicComponent/EventEntity.h"
-#include "Core/BasicComponent/Socket.h"
 #include "Core/BasicComponent/EventDomain.h"
+#include "Core/BasicComponent/Socket.h"
 #include "Core/BasicComponent/SocketEventDomain.h"
 #include "Core/BasicComponent/Connection.h"
 #include "Core/BasicComponent/Listening.h"

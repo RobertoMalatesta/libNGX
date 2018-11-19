@@ -1,51 +1,26 @@
 
-
-
 class SocketEventDomain : public EventDomain {
 protected:
-    bool IsSocketReadAttached(Socket *S) {
+    inline EventType GetAttachedEvent(Socket &S) {
+        SpinlockGuard LockGuard(&S.Lock);
 
-        if (nullptr == S) {
-            return false;
-        }
-
-        SpinlockGuard LockGuard(&Lock);
-        return S->ReadAttach == 1;
+        return S.AttachedEvent;
     }
 
-    bool IsSocketWriteAttached(Socket *S) {
-        if (nullptr == S) {
-            return false;
+    inline void SetAttachedEvent(Socket &S, EventType Type, bool On) {
+        SpinlockGuard LockGuard(&S.Lock);
+
+        if (On == 1) {
+            S.AttachedEvent |= Type;
+        } else {
+            S.AttachedEvent &= ~Type;
         }
-
-        SpinlockGuard LockGuard(&Lock);
-        return S->WriteAttach == 1;
-    }
-
-    void SetSocketReadAttached(Socket *S, int Val) {
-
-        if (nullptr == S) {
-            return;
-        }
-
-        SpinlockGuard LockGuard(&Lock);
-        S->ReadAttach = (Val == 1) ? 1 : 0;
-    }
-
-    void SetSocketWriteAttached(Socket *S, int Val) {
-
-        if (nullptr == S) {
-            return;
-        }
-
-        SpinlockGuard LockGuard(&Lock);
-        S->WriteAttach = (Val == 1) ? 1 : 0;
     }
 
 public:
     SocketEventDomain(size_t PoolSize, int ThreadCount);
 
-    virtual EventError AttachSocket(Socket *S, SocketEventType Type) = 0;
+    virtual EventError AttachSocket(Socket &S, EventType Type) = 0;
 
-    virtual EventError DetachSocket(Socket *S, SocketEventType Type) = 0;
+    virtual EventError DetachSocket(Socket &S, EventType Type) = 0;
 };

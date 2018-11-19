@@ -22,20 +22,22 @@ int HTTPServerTest() {
     Listen.SetPortReuse(false).PrintError();
     Listen.Listen().PrintError();
 
-    Server.EnqueueListening(&Listen).PrintError();
+    Server.AttachListening(&Listen).PrintError();
 
     RuntimeError Error{0};
 
     do {
 
-        Error = Server.HTTPServerEventProcess();
+        Error = Server.ServerEventProcess();
 
         if (Error.GetCode() == 0 && IsInterrupted()) {
-            Error = Server.HTTPServerEventProcess();
+            Error = Server.ServerEventProcess();
             break;
         }
 
     } while (Error.GetCode() == 0);
+
+    Server.DetachListening(Listen)
 
     return 0;
 }

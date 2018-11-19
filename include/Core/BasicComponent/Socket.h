@@ -14,7 +14,7 @@ struct SocketAddress {
     };
 };
 
-class Socket : protected EventEntity, public Achor{
+class Socket : public EventEntity, public Achor{
 protected:
     Queue QueueSentinel;
     int SocketFD = -1;
@@ -30,8 +30,6 @@ protected:
             unsigned Version:3;
             unsigned Reuse:1;
             unsigned Nodelay:1;
-            unsigned ReadAttach:1;
-            unsigned WriteAttach:1;
         };
         u_short Flags = 0;
     };

@@ -12,7 +12,7 @@ int HTTPParseTest() {
     u_char Text[] = "GET / HTTP/1.1\r\nAcceptEncoding: application/json\n\r\n";
 
     Builder.BuildBuffer(buffer);
-    buffer.WriteDataToBuffer(Text, sizeof(Text) - 1);
+    buffer.ReadData(Text, sizeof(Text) - 1);
 
     HTTPError Error = HTTPParser::ParseHTTPRequest(buffer, Request);
 

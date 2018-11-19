@@ -1,3 +1,5 @@
+typedef uint32_t EventType;
+
 static void DiscardPromise(void *, ThreadPool *) {
     printf("discard promise!");
 }
@@ -5,5 +7,6 @@ static void DiscardPromise(void *, ThreadPool *) {
 class EventEntity {
 protected:
     SpinLock Lock;
-    uint32_t Event;
+    EventType Event;
+    EventType AttachedEvent;
 };

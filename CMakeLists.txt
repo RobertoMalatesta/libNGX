@@ -19,7 +19,6 @@ set(SOURCE_FILES
         src/Core/BasicComponent/Connection.cpp
         src/Core/BasicComponent/Error.cpp
         src/Core/BasicComponent/EventDomain.cpp
-        src/Core/BasicComponent/Hash.cpp
         src/Core/BasicComponent/Lock.cpp
         src/Core/BasicComponent/Listening.cpp
         src/Core/BasicComponent/MemoryBlockAllocator.cpp
@@ -33,14 +32,14 @@ set(SOURCE_FILES
         src/Core/BasicComponent/BufferCursor.cpp
         src/Core/BasicComponent/Router/Router.cpp
         src/Core/EPollEventDomain.cpp
-        src/Core/Server.cpp
+        src/HTTP/HTTPListening.cpp
         src/HTTP/HTTPConnection.cpp
         src/HTTP/HTTPServer.cpp
         src/HTTP/HTTPConnectionRecycleBin.cpp
         src/HTTP/HTTPParser.cpp
         src/HTTP/HTTPError.cpp
         src/HTTP/HTTPConnectionBuilder.cpp
-        src/HTTP/HTTPListening.cpp)
+        )
 
 set(TEST_FILES
         test/Test.cpp
@@ -53,7 +52,6 @@ set(TEST_FILES
         test/Core/CRCTest.cpp
         test/Core/RBTreeTest.cpp
         test/Core/TimerTreeTest.cpp
-        test/Core/FSTreeTest.cpp
         test/Core/SocketTest.cpp
         test/Core/EPollEventDomainTest.cpp
         test/Core/LockTest.cpp

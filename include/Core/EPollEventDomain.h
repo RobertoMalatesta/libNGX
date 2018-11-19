@@ -46,9 +46,9 @@ namespace ngx {
 
             virtual RuntimeError EventDomainProcess(Server *S);
 
-            virtual EventError AttachSocket(Socket *S, SocketEventType Type);
+            virtual EventError AttachSocket(Socket &S, EventType Type);
 
-            virtual EventError DetachSocket(Socket *S, SocketEventType Type);
+            virtual EventError DetachSocket(Socket &S, EventType Type);
         };
     }
 }

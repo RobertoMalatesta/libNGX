@@ -35,8 +35,7 @@ RuntimeError HTTPListening::HandleEventDomain(uint32_t EventType) {
 
         printf("create new connection: %d\n", C->GetSocketFD());
 
-        ParentEventDomain->AttachSocket(C, SOCK_READ_WRITE_EVENT);
-        ParentServer->AttachConnection(*C);
+        ParentEventDomain->AttachSocket(*C, ET_READ | ET_WRITE);
     }
     return {0};
 }

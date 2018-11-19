@@ -133,8 +133,7 @@ SocketError HTTPConnection::Close() {
 
     SpinlockGuard LockGuard(&Lock);
 
-    ParentEventDomain->DetachSocket(this, SOCK_READ_WRITE_EVENT);
-    ParentServer->DetachConnection(*this);
+    ParentEventDomain->DetachSocket(*this, ET_READ | ET_WRITE);
 
     if (SocketFD != -1 || Open == 1) {
 

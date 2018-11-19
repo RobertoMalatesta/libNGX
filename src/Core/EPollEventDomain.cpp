@@ -24,131 +24,72 @@ EPollEventDomain::~EPollEventDomain() {
     }
 }
 
-EventError EPollEventDomain::AttachSocket(Socket *S, SocketEventType Type) {
+EventError EPollEventDomain::AttachSocket(Socket &S, EventType Type) {
 
-    bool ReadAttached = IsSocketReadAttached(S),
-            WriteAttached = IsSocketWriteAttached(S),
-            Detached = !(ReadAttached || WriteAttached);
-    int SocketFD = S->GetSocketFD();
+    SpinlockGuard LockGuard(&Lock);
 
-//    printf("Attach Socket:%d, Type: %x\n", SocketFD, Type);
-
-    if ((Type == SOCK_READ_EVENT && ReadAttached) ||
-        (Type == SOCK_WRITE_EVENT && WriteAttached) ||
-        (Type == SOCK_READ_WRITE_EVENT && ReadAttached && WriteAttached)
-            ) {
-        return {EALREADY, "Socket already attached!"};
-    }
+    int SocketFD = S.GetSocketFD();
 
     if (EPollFD == -1 || SocketFD == -1) {
         return {-1, "Bad Socket Descriptor!"};
     }
 
-    unsigned int EPollCommand = EPOLL_CTL_ADD;
     struct epoll_event Event = {0};
-    Event.data.ptr = static_cast<void *> (S);
-    Event.events = 0;
+    uint32_t Attached = GetAttachedEvent(S);
 
-    if (!Detached) {
-        EPollCommand = EPOLL_CTL_MOD;
+    unsigned int EPollCommand = (Attached == 0? EPOLL_CTL_ADD: EPOLL_CTL_MOD);
+    Event.data.ptr = static_cast<void *> (&S);
+    Event.events = EPOLLET;
 
-        if (ReadAttached) {
-            Event.events |= EPOLLIN | EPOLLRDHUP;
-        }
-
-        if (WriteAttached) {
-            Event.events |= EPOLLOUT;
-        }
+    if (Type & ET_READ) {
+        Event.events |= EPOLLIN | EPOLLRDHUP;
     }
 
-    switch (Type) {
-        case SOCK_READ_EVENT:
-            Event.events |= EPOLLIN | EPOLLRDHUP;
-            break;
-        case SOCK_WRITE_EVENT:
-            Event.events |= EPOLLOUT;
-            break;
-        case SOCK_READ_WRITE_EVENT:
-            Event.events |= EPOLLIN | EPOLLRDHUP | EPOLLOUT;
-            break;
-        default:
-            break;
+    if (Type & ET_READ) {
+        Event.events |= EPOLLOUT;
     }
 
-    {
-        SpinlockGuard LockGuard(&Lock);
-
-        if (-1 == epoll_ctl(EPollFD, EPollCommand, SocketFD, &Event)) {
+    if (-1 == epoll_ctl(EPollFD, EPollCommand, SocketFD, &Event)) {
             return {errno, "Failed to attach connection to epoll!"};
-        }
     }
 
-    if (Event.events | (EPOLLIN | EPOLLRDHUP)) {
-        SetSocketReadAttached(S, 1);
-    }
-
-    if (Event.events | (EPOLLOUT)) {
-        SetSocketWriteAttached(S, 1);
-    }
-
+    SetAttachedEvent(S, Type, true);
     return {0};
 }
 
-EventError EPollEventDomain::DetachSocket(Socket *S, SocketEventType Type) {
+EventError EPollEventDomain::DetachSocket(Socket &S, EventType Type) {
 
-    bool ReadAttached = IsSocketReadAttached(S),
-            WriteAttached = IsSocketWriteAttached(S),
-            Attached = ReadAttached || WriteAttached;
-    int SocketFD = S->GetSocketFD();
+    SpinlockGuard LockGuard(&Lock);
 
-//    printf("Detach Socket:%d, Type: %x\n", SocketFD, Type);
+    int SocketFD = S.GetSocketFD();
+    uint32_t Attached = GetAttachedEvent(S);
 
-    if ((Type == SOCK_READ_EVENT && !ReadAttached) ||
-        (Type == SOCK_WRITE_EVENT && !WriteAttached) ||
-        (Type == SOCK_READ_WRITE_EVENT && !Attached)) {
-        return {EALREADY, "Socket already detached!"};
-    }
+    Attached &= ~Type;
+
+    unsigned int EPollCommand = (Attached == 0? EPOLL_CTL_DEL: EPOLL_CTL_MOD);
 
     if (EPollFD == -1 || SocketFD == -1) {
         return {-1, "Bad Socket Descriptor!"};
     }
 
-    unsigned int EPollCommand = EPOLL_CTL_DEL;
-
     struct epoll_event Event = {
-            .data.ptr = static_cast<void *> (S),
-            .events = ((ReadAttached) ? EPOLLIN | EPOLLRDHUP : 0) | (WriteAttached ? EPOLLOUT : 0)
+            .data.ptr = static_cast<void *> (&S),
+            .events = EPOLLET,
     };
 
-    switch (Type) {
-        case SOCK_READ_EVENT:
-            Event.events &= ~(EPOLLIN | EPOLLRDHUP);
-            break;
-        case SOCK_WRITE_EVENT:
-            Event.events &= ~(EPOLLOUT);
-            break;
-        case SOCK_READ_WRITE_EVENT:
-            Event.events &= ~(EPOLLIN | EPOLLRDHUP | EPOLLOUT);
-            break;
-        default:
-            break;
+    if (Type & ET_READ) {
+        Event.events |= EPOLLIN | EPOLLRDHUP;
     }
 
-    if (Event.events == 0) {
-        EPollCommand = EPOLL_CTL_DEL;
+    if (Type & ET_READ) {
+        Event.events |= EPOLLOUT;
     }
 
-    {
-        SpinlockGuard LockGuard(&Lock);
-
-        if (-1 == epoll_ctl(EPollFD, EPollCommand, SocketFD, &Event)) {
-            return {errno, "Failed to attach connection to epoll!"};
-        }
+    if (-1 == epoll_ctl(EPollFD, EPollCommand, SocketFD, &Event)) {
+        return {errno, "Failed to attach connection to epoll!"};
     }
 
-    SetSocketReadAttached(S, (Event.events & (EPOLLIN | EPOLLRDHUP)) == 0 ? 0 : 1);
-    SetSocketWriteAttached(S, (Event.events & (EPOLLOUT)) == 0 ? 0 : 1);
-
+    SetAttachedEvent(S, Type, false);
     return {0};
 }
 

@@ -1,19 +1,9 @@
-typedef uint32_t EventType;
-
-const uint32_t ET_NONE = 0x0000;
-const uint32_t ET_TIMER = 0x0001;
-const uint32_t ET_CONNECTED = 0x0002;
-const uint32_t ET_READ = 0x0004;
-const uint32_t ET_WRITE = 0x0008;
-const uint32_t ET_CLOSED = 0x0010;
-
-typedef enum {
-    SOCK_READ_EVENT = 0,
-    SOCK_WRITE_EVENT,
-    SOCK_READ_WRITE_EVENT,
-    SOCK_TIMER_EVENT,
-} SocketEventType;
-
+const EventType  ET_NONE = 0x0000;
+const EventType  ET_TIMER = 0x0001;
+const EventType  ET_CONNECTED = 0x0002;
+const EventType  ET_READ = 0x0004;
+const EventType  ET_WRITE = 0x0008;
+const EventType  ET_CLOSED = 0x0010;
 
 class EventDomain {
 protected:
