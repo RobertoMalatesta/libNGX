@@ -5,10 +5,13 @@ using namespace ngx::HTTP;
 HTTPConnectionRecycleBin::HTTPConnectionRecycleBin(uint64_t RecycleBinSize) :
         BackendAllocator(),
         AllocatorBuild(&BackendAllocator),
-        RecycleBin(RecycleBinSize) {}
+        RecycleBin(RecycleBinSize) {
+}
 
 
 int HTTPConnectionRecycleBin::Get(HTTPConnection *&C, int SocketFD, SocketAddress &TargetSocketAddress) {
+
+    C = nullptr;
 
     if (!RecycleSentinel.IsEmpty()) {
         C = (HTTPConnection *) RecycleSentinel.GetHead();
@@ -16,7 +19,9 @@ int HTTPConnectionRecycleBin::Get(HTTPConnection *&C, int SocketFD, SocketAddres
         C->Detach();
     }
     else{
-        C = new HTTPConnection();
+        if (Build(C) != 0) {
+            return C = nullptr, -1;
+        }
     }
 
     C->SetSocketAddress(SocketFD, TargetSocketAddress);
@@ -25,9 +30,9 @@ int HTTPConnectionRecycleBin::Get(HTTPConnection *&C, int SocketFD, SocketAddres
 
 int HTTPConnectionRecycleBin::Put(HTTPConnection *&Item) {
 
-
     if (RecycleSize >= RecycleMaxSize) {
-        delete Item;
+        Item->~HTTPConnection();
+        Destroy(Item);
         Item = nullptr;
     } else {
         Item->Reset();
@@ -47,9 +52,10 @@ HTTPConnectionRecycleBin::~HTTPConnectionRecycleBin() {
     HTTPConnection *Item;
 
     while (!RecycleSentinel.IsEmpty()) {
-        Item = (HTTPConnection *) RecycleSentinel.GetHead();
+        Item = static_cast<HTTPConnection *> (RecycleSentinel.GetHead());
         RecycleSize -= 1;
         Item->Detach();
+        Item->~HTTPConnection();
         Destroy(Item);
     }
 }

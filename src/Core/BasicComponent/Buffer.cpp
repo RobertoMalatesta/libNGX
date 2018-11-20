@@ -58,6 +58,16 @@ RuntimeError Buffer::ReadFromConnection(Connection *C) {
     ssize_t RecievedSize;
     BufferMemoryBlock *TempBlock, *WriteBlock;
 
+    if (HeadBlock == nullptr) {
+        HeadBlock = AquireBlock(RecycleBin, BlockSize);
+
+        if (HeadBlock == nullptr) {
+            return {ENOMEM, "can not allocate buffer block"};
+        } else {
+            Cursor = {this, HeadBlock->Start, HeadBlock->Start};
+        }
+    }
+
     WriteBlock = AddressToMemoryBlock(Cursor.Bound);
 
     while (true) {
@@ -67,15 +77,12 @@ RuntimeError Buffer::ReadFromConnection(Connection *C) {
 
         if (ReadLength == 0) {
 
-            if (RecycleBin == nullptr) {
-                BufferMemoryBlock::Build(TempBlock, BlockSize);
-            } else {
-                TempBlock = RecycleBin->Get();
-            }
+            TempBlock = AquireBlock(RecycleBin, BlockSize);
 
             if (TempBlock == nullptr) {
                 return {ENOMEM, "Can not allocate BufferMemoryBlock when recv()"};
             }
+
             WriteBlock->SetNextBlock(TempBlock);
             WriteBlock = TempBlock;
             PointerToData = Cursor.Bound = WriteBlock->Start;
@@ -88,7 +95,7 @@ RuntimeError Buffer::ReadFromConnection(Connection *C) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 break;
             } else {
-                return {errno, "Failed to read from socket!"};
+                return {errno, "failed to read from socket!"};
             }
         } else if (RecievedSize > 0) {
             Cursor.Bound += RecievedSize;
@@ -115,7 +122,7 @@ RuntimeError Buffer::ReadData(u_char *PointerToData, size_t DataLength) {
             TempBufferBlock = AquireBlock(RecycleBin, BlockSize);
 
             if (TempBufferBlock == nullptr) {
-                return {ENOMEM, "No enough memory!"};
+                return {ENOMEM, "no enough memory"};
             }
 
             memcpy(Cursor.Bound, PointerToData, CurrentBlockFreeSize);
@@ -137,29 +144,18 @@ RuntimeError Buffer::ReadData(u_char *PointerToData, size_t DataLength) {
 
 void Buffer::Reset() {
 
-    BufferMemoryBlock *TempBlock, *NextBlock, *WriteBlock;
+    BufferMemoryBlock *TempBlock, *NextBlock;
 
     TempBlock = HeadBlock;
-    WriteBlock = AddressToMemoryBlock(Cursor.Bound);
 
-    while (TempBlock != WriteBlock && TempBlock != nullptr) {
+    while (TempBlock != nullptr) {
 
         NextBlock = TempBlock->GetNextBlock();
-        TempBlock->Reset();
-
-        if (RecycleBin == nullptr) {
-            BufferMemoryBlock::Destroy(TempBlock);
-        } else {
-            RecycleBin->Put(TempBlock);
-        }
-
+        RecycleBlock(RecycleBin, TempBlock);
         TempBlock = NextBlock;
     }
 
-    if (WriteBlock != nullptr) {
-        WriteBlock->Reset();
-        Cursor.Position = Cursor.Bound = WriteBlock->Start;
-    }
+    Cursor = {this, nullptr, nullptr};
 }
 
 void Buffer::GC() {

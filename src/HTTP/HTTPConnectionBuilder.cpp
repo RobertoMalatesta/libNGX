@@ -31,7 +31,7 @@ int HTTPConnectionBuilder::Get(HTTPConnection *&C, int SocketFD, SocketAddress &
     C->TimerNode.Reset();
     C->Unlock();
 
-    BB.BuildBuffer(C->ReadBuffer);
+//    BB.BuildBuffer(C->ReadBuffer);
 
     return 0;
 }

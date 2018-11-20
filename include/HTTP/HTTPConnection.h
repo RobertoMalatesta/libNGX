@@ -8,12 +8,8 @@ namespace ngx {
             Buffer ReadBuffer;
             HTTPRequest *Request;
 
-            HTTPServer *ParentServer;
-            SocketEventDomain *ParentEventDomain;
-
-            HTTPConnection(struct SocketAddress &SocketAddress);
-
-            HTTPConnection(int SocketFD, SocketAddress &SocketAddress);
+            HTTPServer *ParentServer = nullptr;
+            SocketEventDomain *ParentEventDomain = nullptr;
 
             RuntimeError SetSocketAddress(int SocketFD, struct SocketAddress &Address);
 

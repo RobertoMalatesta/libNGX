@@ -10,22 +10,20 @@ Connection::Connection() : Socket() {
 }
 
 Connection::Connection(struct SocketAddress &SocketAddress) :
-        Socket(SocketAddress) {}
+        Socket(SocketAddress) {
+}
 
 Connection::Connection(int SocketFD, struct SocketAddress &SocketAddress)
-        : Socket(SocketFD, SocketAddress) {};
+        : Socket(SocketFD, SocketAddress) {
+};
 
 TCP4Connection::TCP4Connection(int SocketFD, struct SocketAddress &SocketAddress) :
-        Connection(SocketFD, SocketAddress) {}
+        Connection(SocketFD, SocketAddress) {
+}
 
 TCP4Connection::TCP4Connection(struct SocketAddress &SocketAddress) :
         Connection(SocketAddress) {
-    SocketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    Type = SOCK_TYPE_STREAM;
 
-    if (0 == bind(SocketFD, &SocketAddress.sockaddr, SocketAddress.SocketLength)) {
-        Active = 1;
-    }
 }
 
 SocketError TCP4Connection::Connect() {
@@ -35,6 +33,13 @@ SocketError TCP4Connection::Connect() {
 
     if (Active == 1) {
         return {EALREADY, "Socket is already active!"};
+    }
+
+    SocketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    Type = SOCK_TYPE_STREAM;
+
+    if (0 == bind(SocketFD, &Address.sockaddr, Address.SocketLength)) {
+        Active = 1;
     }
 
     return {0};

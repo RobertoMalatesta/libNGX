@@ -10,20 +10,6 @@ HTTPConnection::HTTPConnection() :
     TimerNode.Argument = this;
 }
 
-HTTPConnection::HTTPConnection(struct SocketAddress &SocketAddress) :
-        TCP4Connection(SocketAddress),
-        Request(nullptr) {
-    TimerNode.Callback = HTTPConnection::OnTimerEventWarp;
-    TimerNode.Argument = this;
-}
-
-HTTPConnection::HTTPConnection(int SocketFD, struct SocketAddress &SocketAddress) :
-        TCP4Connection(SocketFD, SocketAddress),
-        Request(nullptr) {
-    TimerNode.Callback = HTTPConnection::OnTimerEventWarp;
-    TimerNode.Argument = this;
-}
-
 RuntimeError HTTPConnection::SetSocketAddress(int SocketFD, struct SocketAddress &Address) {
     Lock();
     this->SocketFD = SocketFD;
@@ -124,14 +110,13 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) 
 
 void HTTPConnection::Reset() {
 
-
     if (ParentEventDomain != nullptr) {
         ParentEventDomain->ResetTimer(*this);
-        ParentEventDomain = nullptr;
-        ParentServer = nullptr;
     }
 
     Lock();
+    ParentEventDomain = nullptr;
+    ParentServer = nullptr;
     ReadBuffer.Reset();
     MemPool.Reset();
     Unlock();
