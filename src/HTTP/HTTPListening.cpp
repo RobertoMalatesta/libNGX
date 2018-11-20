@@ -32,9 +32,9 @@ RuntimeError HTTPListening::HandleEventDomain(uint32_t EventType) {
                 close(TempFD);
                 //[TODO] add warning here!
             }
-
-            printf("create new connection: %d\n", C->GetSocketFD());
-            ParentEventDomain->AttachSocket(*C, ET_READ | ET_WRITE);
+            C->Lock.Lock();
+            C->ParentEventDomain->AttachSocket(*C, ET_READ | ET_WRITE);
+            C->Lock.Unlock();
     }
     return {0};
 }

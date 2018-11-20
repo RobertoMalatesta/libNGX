@@ -14,14 +14,6 @@ protected:
         }
     }
 
-    inline void LockSocket(Socket &S) {
-        S.Lock.Lock();
-    }
-
-    inline void UnlockSocket(Socket &S) {
-        S.Lock.Unlock();
-    }
-
 public:
     SocketEventDomain(size_t PoolSize, int ThreadCount);
 

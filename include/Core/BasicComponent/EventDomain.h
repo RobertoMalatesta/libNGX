@@ -24,11 +24,9 @@ public:
 
     inline RuntimeError SetTimer(EventEntity &Entity, uint64_t Interval, TimerMode Mode) {
         LockGuard LockGuard(&Lock);
-        Entity.Lock.Lock();
         Timers.DetachTimer(Entity.TimerNode);
         Entity.TimerNode.SeInterval(Interval, Mode);
         Timers.AttachTimer(Entity.TimerNode);
-        Entity.Lock.Unlock();
         return {0};
     }
 

@@ -27,12 +27,10 @@ EPollEventDomain::~EPollEventDomain() {
 EventError EPollEventDomain::AttachSocket(Socket &S, EventType Type) {
 
     LockGuard LockGuard(&Lock);
-    LockSocket(S);
 
     int SocketFD = S.GetSocketFD();
 
     if (EPollFD == -1 || SocketFD == -1) {
-        UnlockSocket(S);
         return {-1, "Bad Socket Descriptor!"};
     }
 
@@ -52,29 +50,24 @@ EventError EPollEventDomain::AttachSocket(Socket &S, EventType Type) {
     }
 
     if (-1 == epoll_ctl(EPollFD, EPollCommand, SocketFD, &Event)) {
-        UnlockSocket(S);
         return {errno, "Failed to attach connection to epoll!"};
     }
 
     SetAttachedEvent(S, Type, true);
-    UnlockSocket(S);
     return {0};
 }
 
 EventError EPollEventDomain::DetachSocket(Socket &S, EventType Type) {
 
     LockGuard LockGuard(&Lock);
-    LockSocket(S);
 
     int SocketFD = S.GetSocketFD();
     uint32_t Attached = GetAttachedEvent(S);
-
     Attached &= ~Type;
 
     unsigned int EPollCommand = (Attached == 0? EPOLL_CTL_DEL: EPOLL_CTL_MOD);
 
     if (EPollFD == -1 || SocketFD == -1) {
-        UnlockSocket(S);
         return {-1, "Bad Socket Descriptor!"};
     }
 
@@ -92,12 +85,10 @@ EventError EPollEventDomain::DetachSocket(Socket &S, EventType Type) {
     }
 
     if (-1 == epoll_ctl(EPollFD, EPollCommand, SocketFD, &Event)) {
-        UnlockSocket(S);
         return {errno, "Failed to attach connection to epoll!"};
     }
 
     SetAttachedEvent(S, Type, false);
-    UnlockSocket(S);
     return {0};
 }
 

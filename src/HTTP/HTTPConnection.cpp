@@ -78,6 +78,7 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) 
     printf("Enter Promise, PointerToConnection: %p\n", PointerToConnection);
 
     C = static_cast<HTTPConnection *>(PointerToConnection);
+
     C->Lock.Lock();
     Type = C->Event;
 
@@ -96,6 +97,7 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) 
         printf("In timer event process: %p\n", C);
         // Handle timer
     }
+
     C->Lock.Unlock();
 
     // Handle Request here
@@ -103,13 +105,14 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) 
     if ((Type & ET_READ) != 0) {
 //            HTTPParser::ParseHTTPRequest(C->ReadBuffer, C->Request);
 
-            const u_char Content[] = "HTTP/1.1 200 OK\r\nServer: NGX(TestServer)\nContent-Length: 12\r\n\nHello World!";
+        const u_char Content[] = "HTTP/1.1 200 OK\r\nServer: NGX(TestServer)\nContent-Length: 12\r\n\nHello World!";
 
-            ssize_t size = write(C->GetSocketFD(), Content, sizeof(Content) - 1);
+        ssize_t size = write(C->GetSocketFD(), Content, sizeof(Content) - 1);
 
-            if ( size <= 0 ) {
-                printf("bad write!\n");
-            }
+        if (size <= 0) {
+            printf("bad write!\n");
+        }
+
         C->Close();
     }
 
@@ -117,13 +120,16 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) 
 }
 
 void HTTPConnection::Reset() {
+    Lock.Lock();
     ParentEventDomain->ResetTimer(*this);
     ReadBuffer.Reset();
     MemPool.Reset();
+    Lock.Unlock();
 }
 
 SocketError HTTPConnection::Close() {
 
+    Lock.Lock();
     ParentEventDomain->DetachSocket(*this, ET_READ | ET_WRITE);
 
     if (SocketFD != -1 || Open == 1) {
@@ -135,5 +141,6 @@ SocketError HTTPConnection::Close() {
     }
 
     ParentEventDomain->SetTimer(*this, CONNECTION_RECYCLE_WAIT_TIME, TM_ONCE);
+    Lock.Unlock();
     return {0};
 }

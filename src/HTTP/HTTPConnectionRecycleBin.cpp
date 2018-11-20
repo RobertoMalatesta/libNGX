@@ -10,15 +10,15 @@ HTTPConnectionRecycleBin::HTTPConnectionRecycleBin(uint64_t RecycleBinSize) :
 
 int HTTPConnectionRecycleBin::Get(HTTPConnection *&C, int SocketFD, SocketAddress &TargetSocketAddress) {
 
-    if (RecycleSentinel.IsEmpty()) {
-        Build(C);
-        C->SetSocketAddress(SocketFD, TargetSocketAddress);
+    if (RecycleSentinel.IsEmpty() && Build(C) == -1) {
+        return -1;
     } else {
         C = (HTTPConnection *) RecycleSentinel.GetHead();
         RecycleSize -= 1;
         C->Detach();
-        C->SetSocketAddress(SocketFD, TargetSocketAddress);
     }
+
+    C->SetSocketAddress(SocketFD, TargetSocketAddress);
     return 0;
 }
 
