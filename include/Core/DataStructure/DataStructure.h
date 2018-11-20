@@ -9,6 +9,7 @@ namespace ngx {
 #include "Core/DataStructure/Queue.h"
 #include "Core/DataStructure/List.h"
 #include "Core/DataStructure/RBTree.h"
+#include "Core/DataStructure/RBTree2.h"
 
         }
     }
