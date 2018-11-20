@@ -19,7 +19,7 @@ EventError HTTPServer::AttachListening(HTTPListening &L) {
 
     EventError Error{0};
 
-    Error = EventDomain.AttachSocket(L, ET_READ | ET_WRITE);
+    Error = EventDomain.AttachSocket(L, ET_READ | ET_WRITE | ET_ACCEPT);
 
     if (Error.GetCode() != 0) {
         return Error;
@@ -35,7 +35,7 @@ EventError HTTPServer::DetachListening(HTTPListening &L) {
 
     EventError Error{0};
 
-    Error = EventDomain.DetachSocket(L, ET_READ | ET_WRITE);
+    Error = EventDomain.DetachSocket(L, ET_READ | ET_WRITE | ET_ACCEPT);
 
     if (Error.GetCode() != 0) {
         return Error;

@@ -9,11 +9,11 @@ extern int HTTPConnectionRecycleBinTest();
 extern int HTTPParseTest();
 
 int HTTPTest() {
-//    {
-//        HTTPServerTest();
-//    }
+    {
+        HTTPServerTest();
+    }
 
-    HTTPConnectionRecycleBinTest();
+//    HTTPConnectionRecycleBinTest();
 //    HTTPParseTest();
     return 0;
 }

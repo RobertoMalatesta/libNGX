@@ -54,8 +54,9 @@ void HTTPConnection::OnTimerEventWarp(void *PointerToConnection, ThreadPool *TPo
     } else {
 
         printf("recycle connection: %p\n", C);
-
-        C->ParentServer->PutConnection(C);
+        if (C->ParentServer != nullptr) {
+            C->ParentServer->PutConnection(C);
+        }
     }
 }
 
@@ -69,40 +70,49 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) 
     C = static_cast<HTTPConnection *>(PointerToConnection);
 
     C->Lock();
-    Type = C->Event;
 
-    printf("Event Type: %x, connection fd: %d\n", Type, C->GetSocketFD());
+    if (C->Open == 1) {
+        Type = C->Event;
+        printf("Event Type: %x, connection fd: %d\n", Type, C->GetSocketFD());
 
-
-    if ((Type & ET_READ) != 0) {
-        C->ReadBuffer.ReadFromConnection(C);
-    }
-
-    if ((Type & ET_WRITE) != 0) {
-        // Mark the socket as writable and write all data to it!
-    }
-
-    if ((Type & ET_TIMER) != 0) {
-        printf("In timer event process: %p\n", C);
-        // Handle timer
-    }
-
-    C->Unlock();
-
-    // Handle Request here
-
-    if ((Type & ET_READ) != 0) {
-//            HTTPParser::ParseHTTPRequest(C->ReadBuffer, C->Request);
-
-        const u_char Content[] = "HTTP/1.1 200 OK\r\nServer: NGX(TestServer)\nContent-Length: 12\r\n\nHello World!";
-
-        ssize_t size = write(C->GetSocketFD(), Content, sizeof(Content) - 1);
-
-        if (size <= 0) {
-            printf("bad write!\n");
+        if ((Type & ET_READ) != 0) {
+            C->ReadBuffer.ReadFromConnection(C);
         }
 
-        C->Close();
+        if ((Type & ET_WRITE) != 0) {
+            // Mark the socket as writable and write all data to it!
+        }
+
+        if ((Type & ET_TIMER) != 0) {
+            printf("In timer event process: %p\n", C);
+            // Handle timer
+        }
+
+        C->Unlock();
+
+        // Handle Request here
+
+        C->Lock();
+        if ((Type & ET_READ) != 0) {
+//            HTTPParser::ParseHTTPRequest(C->ReadBuffer, C->Request);
+            if (C->Open == 1) {
+
+                const u_char Content[] = "HTTP/1.1 200 OK\r\nServer: NGX(TestServer)\nContent-Length: 12\r\n\nHello World!";
+
+                ssize_t size = write(C->GetSocketFD(), Content, sizeof(Content) - 1);
+
+                if (size <= 0) {
+                    printf("bad write!\n");
+                }
+            }
+        }
+        C->Unlock();
+        if ((Type & ET_READ) != 0) {
+            C->Close();
+        }
+    } else {
+        printf("connection closed, skip this event!\n");
+        C->Unlock();
     }
 
     printf("Leave Promise, PointerToConnection: %p\n", PointerToConnection);
@@ -111,7 +121,7 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) 
 void HTTPConnection::Reset() {
 
     if (ParentEventDomain != nullptr) {
-        ParentEventDomain->ResetTimer(*this);
+        ParentEventDomain->SetTimer(*this, CONNECTION_RECYCLE_WAIT_TIME, TM_ONCE);
     }
 
     Lock();
@@ -124,9 +134,9 @@ void HTTPConnection::Reset() {
 
 SocketError HTTPConnection::Close() {
 
-    Lock();
     ParentEventDomain->DetachSocket(*this, ET_READ | ET_WRITE);
 
+    Lock();
     if (SocketFD != -1 || Open == 1) {
 
         if (close(SocketFD) == -1) {
@@ -134,8 +144,8 @@ SocketError HTTPConnection::Close() {
         }
         SocketFD = -1, Open = 0;
     }
+    Unlock();
 
     ParentEventDomain->SetTimer(*this, CONNECTION_RECYCLE_WAIT_TIME, TM_ONCE);
-    Unlock();
     return {0};
 }

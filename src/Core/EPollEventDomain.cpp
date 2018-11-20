@@ -49,6 +49,10 @@ EventError EPollEventDomain::AttachSocket(Socket &S, EventType Type) {
         Event.events |= EPOLLOUT;
     }
 
+    if (Type & ET_ACCEPT) {
+        Event.events &= ~EPOLLET;
+    }
+
     if (-1 == epoll_ctl(EPollFD, EPollCommand, SocketFD, &Event)) {
         return {errno, "Failed to attach connection to epoll!"};
     }
@@ -76,6 +80,10 @@ EventError EPollEventDomain::DetachSocket(Socket &S, EventType Type) {
             .events = EPOLLET,
     };
 
+    if (Type & ET_ACCEPT) {
+        Event.events &= ~EPOLLET;
+    }
+
     if (Type & ET_READ) {
         Event.events |= EPOLLIN | EPOLLRDHUP;
     }
@@ -87,8 +95,9 @@ EventError EPollEventDomain::DetachSocket(Socket &S, EventType Type) {
     if (-1 == epoll_ctl(EPollFD, EPollCommand, SocketFD, &Event)) {
         return {errno, "Failed to attach connection to epoll!"};
     }
-
+    S.Lock();
     SetAttachedEvent(S, Type, false);
+    S.Unlock();
     return {0};
 }
 
@@ -100,7 +109,7 @@ RuntimeError EPollEventDomain::EventDomainProcess(Server *S) {
     RuntimeError Error{0}, PostError{0};
 
     Lock.Lock();
-    Error = EventDomain::EventDomainProcess();
+    Error = SocketEventDomain::EventDomainProcess();
     Lock.Unlock();
 
     if (Error.GetCode() != 0) {

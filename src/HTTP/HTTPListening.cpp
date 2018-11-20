@@ -32,9 +32,9 @@ RuntimeError HTTPListening::HandleEventDomain(uint32_t EventType) {
                 close(TempFD);
                 //[TODO] add warning here!
             }
-            C->Lock.Lock();
+            C->Lock();
             C->ParentEventDomain->AttachSocket(*C, ET_READ | ET_WRITE);
-            C->Lock.Unlock();
+            C->Unlock();
     }
     return {0};
 }
