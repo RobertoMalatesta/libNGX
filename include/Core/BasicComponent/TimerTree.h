@@ -7,11 +7,9 @@ enum TimerMode {
 class Timer : public RBTreeNode, public CanReset {
 protected:
     virtual int Compare(Timer *Node);
-
-    friend class TimerTree;
-
-    Spinlock Lock;
+    Spinlock _Lock;
     uint64_t Timestamp = 0;
+    friend class TimerTree;
 public:
     TimerMode Mode = TM_ONCE;
     uint64_t Interval = 0;
@@ -37,6 +35,14 @@ public:
     }
 
     virtual void Reset() { Timestamp = 0; };
+
+    inline void Lock() {
+        _Lock.Lock();
+    }
+
+    inline void Unlock() {
+        _Lock.Unlock();
+    }
 };
 
 class TimerTree : public RBTree, public AllocatorBuild<Timer> {

@@ -3,15 +3,10 @@
 using namespace ngx::Core::BasicComponent;
 
 EventDomain::EventDomain(size_t PoolSize, int ThreadCount)
-        : Lock(), Allocator(PoolSize), Timers(&Allocator), TPool(ThreadCount) {}
-
-RuntimeError EventDomain::QueueExpiredTimer() {
-    Timers.QueueExpiredTimer(&TPool);
-    return {0};
-}
+        : Lock(), Allocator(PoolSize), TPool(ThreadCount) {}
 
 RuntimeError EventDomain::EventDomainProcess() {
-    return QueueExpiredTimer();
+    return {0};
 }
 
 RuntimeError EventDomain::PostPromise(PromiseCallback *Callback, void *Argument) {

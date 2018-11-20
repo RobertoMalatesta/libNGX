@@ -6,9 +6,7 @@ static void DiscardPromise(void *, ThreadPool *) {
 
 class EventEntity {
 protected:
-    Spinlock Lock;
     EventType Event = 0;
     EventType AttachedEvent = 0;
-    Timer TimerNode;
     friend class EventDomain;
 };

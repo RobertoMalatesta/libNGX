@@ -9,7 +9,6 @@ class EventDomain {
 protected:
     Spinlock Lock;
     Pool Allocator;
-    TimerTree Timers;
     ThreadPool TPool;
 public:
     EventDomain(size_t PoolSize, int ThreadCount);
@@ -17,31 +16,11 @@ public:
     ~EventDomain() {
         LockGuard LockGuard(&Lock);
         TPool.~ThreadPool();
-        Timers.~TimerTree();
     }
 
     static void DiscardPromise(void *Argument, ThreadPool *TPool) {};
 
-    inline RuntimeError SetTimer(EventEntity &Entity, uint64_t Interval, TimerMode Mode) {
-        LockGuard LockGuard(&Lock);
-        Timers.DetachTimer(Entity.TimerNode);
-        Entity.TimerNode.SeInterval(Interval, Mode);
-        Timers.AttachTimer(Entity.TimerNode);
-        return {0};
-    }
-
-    inline RuntimeError ResetTimer(EventEntity &Entity) {
-        LockGuard LockGuard(&Lock);
-        Entity.Lock.Lock();
-        Timers.DetachTimer(Entity.TimerNode);
-        Entity.TimerNode.Mode = TM_CLOSED, Entity.TimerNode.Interval = 0;
-        Entity.Lock.Unlock();
-        return {0};
-    }
-
     RuntimeError PostPromise(PromiseCallback *Callback, void *Argument);
-
-    RuntimeError QueueExpiredTimer();
 
     virtual RuntimeError EventDomainProcess();
 };

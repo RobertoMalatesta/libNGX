@@ -29,7 +29,7 @@ int HTTPConnectionBuilder::Get(HTTPConnection *&C, int SocketFD, SocketAddress &
     C->ParentServer = Server;
     C->ParentEventDomain = EventDomain;
     C->TimerNode.Reset();
-    C->Lock.Unlock();
+    C->Unlock();
 
     BB.BuildBuffer(C->ReadBuffer);
 

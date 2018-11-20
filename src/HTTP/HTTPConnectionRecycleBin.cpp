@@ -10,12 +10,13 @@ HTTPConnectionRecycleBin::HTTPConnectionRecycleBin(uint64_t RecycleBinSize) :
 
 int HTTPConnectionRecycleBin::Get(HTTPConnection *&C, int SocketFD, SocketAddress &TargetSocketAddress) {
 
-    if (RecycleSentinel.IsEmpty() && Build(C) == -1) {
-        return -1;
-    } else {
+    if (!RecycleSentinel.IsEmpty()) {
         C = (HTTPConnection *) RecycleSentinel.GetHead();
         RecycleSize -= 1;
         C->Detach();
+    }
+    else{
+        C = new HTTPConnection();
     }
 
     C->SetSocketAddress(SocketFD, TargetSocketAddress);
@@ -24,14 +25,20 @@ int HTTPConnectionRecycleBin::Get(HTTPConnection *&C, int SocketFD, SocketAddres
 
 int HTTPConnectionRecycleBin::Put(HTTPConnection *&Item) {
 
-    Item->Reset();
 
     if (RecycleSize >= RecycleMaxSize) {
-        Destroy(Item);
+        delete Item;
+        Item = nullptr;
     } else {
+        Item->Reset();
         RecycleSize += 1;
         RecycleSentinel.Append(Item);
     }
+
+    if (AllocateCount++ % (RECYCLE_GC_ROUND) == 0) {
+        BackendAllocator.GC();
+    }
+
     return 0;
 }
 

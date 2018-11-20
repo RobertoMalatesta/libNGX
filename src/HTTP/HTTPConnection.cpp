@@ -5,39 +5,40 @@ using namespace ngx::HTTP;
 
 HTTPConnection::HTTPConnection() :
         TCP4Connection(Address),
-        Request(&MemPool) {
+        Request(nullptr) {
     TimerNode.Callback = HTTPConnection::OnTimerEventWarp;
     TimerNode.Argument = this;
 }
 
 HTTPConnection::HTTPConnection(struct SocketAddress &SocketAddress) :
         TCP4Connection(SocketAddress),
-        Request(&MemPool) {
+        Request(nullptr) {
     TimerNode.Callback = HTTPConnection::OnTimerEventWarp;
     TimerNode.Argument = this;
 }
 
 HTTPConnection::HTTPConnection(int SocketFD, struct SocketAddress &SocketAddress) :
         TCP4Connection(SocketFD, SocketAddress),
-        Request(&MemPool) {
+        Request(nullptr) {
     TimerNode.Callback = HTTPConnection::OnTimerEventWarp;
     TimerNode.Argument = this;
 }
 
 RuntimeError HTTPConnection::SetSocketAddress(int SocketFD, struct SocketAddress &Address) {
-
-    LockGuard LockGuard(&Lock);
+    Lock();
     this->SocketFD = SocketFD;
     this->Address = Address;
+    Unlock();
 
     return {0};
 }
 
 RuntimeError HTTPConnection::HandleEventDomain(uint32_t EventType) {
 
-    LockGuard LockGuard(&Lock);
+    Lock();
 
     if (ParentServer == nullptr || ParentEventDomain == nullptr) {
+        Unlock();
         return {EINVAL, "connection not attached"};
     }
 
@@ -45,9 +46,11 @@ RuntimeError HTTPConnection::HandleEventDomain(uint32_t EventType) {
 
     if (Open == 0) {
         SocketFD = -1;
+        Unlock();
         return {EFAULT, "connection not open"};
     };
 
+    Unlock();
     return ParentEventDomain->PostPromise(HTTPConnection::OnConnectionEvent, static_cast<void *>(this));
 }
 
@@ -56,9 +59,9 @@ void HTTPConnection::OnTimerEventWarp(void *PointerToConnection, ThreadPool *TPo
     HTTPConnection *C;
 
     C = static_cast<HTTPConnection *>(PointerToConnection);
-    C->Lock.Lock();
+    C->Lock();
     C->Event |= ET_TIMER;
-    C->Lock.Unlock();
+    C->Unlock();
 
     if (C->Open == 1) {
         OnConnectionEvent(PointerToConnection, TPool);
@@ -79,7 +82,7 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) 
 
     C = static_cast<HTTPConnection *>(PointerToConnection);
 
-    C->Lock.Lock();
+    C->Lock();
     Type = C->Event;
 
     printf("Event Type: %x, connection fd: %d\n", Type, C->GetSocketFD());
@@ -98,7 +101,7 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) 
         // Handle timer
     }
 
-    C->Lock.Unlock();
+    C->Unlock();
 
     // Handle Request here
 
@@ -120,16 +123,23 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) 
 }
 
 void HTTPConnection::Reset() {
-    Lock.Lock();
-    ParentEventDomain->ResetTimer(*this);
+
+
+    if (ParentEventDomain != nullptr) {
+        ParentEventDomain->ResetTimer(*this);
+        ParentEventDomain = nullptr;
+        ParentServer = nullptr;
+    }
+
+    Lock();
     ReadBuffer.Reset();
     MemPool.Reset();
-    Lock.Unlock();
+    Unlock();
 }
 
 SocketError HTTPConnection::Close() {
 
-    Lock.Lock();
+    Lock();
     ParentEventDomain->DetachSocket(*this, ET_READ | ET_WRITE);
 
     if (SocketFD != -1 || Open == 1) {
@@ -141,6 +151,6 @@ SocketError HTTPConnection::Close() {
     }
 
     ParentEventDomain->SetTimer(*this, CONNECTION_RECYCLE_WAIT_TIME, TM_ONCE);
-    Lock.Unlock();
+    Unlock();
     return {0};
 }

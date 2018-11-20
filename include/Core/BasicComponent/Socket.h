@@ -17,6 +17,7 @@ struct SocketAddress {
 class Socket : public EventEntity, public Achor{
 protected:
     Queue QueueSentinel;
+    Timer TimerNode;
     int SocketFD = -1;
     SocketAddress Address;
 
@@ -60,4 +61,7 @@ public:
     virtual RuntimeError HandleEventDomain(uint32_t EventType) {
         return {ENOENT, "method not implemented!"};
     };
+
+    inline void Lock() { TimerNode.Lock(); }
+    inline void Unlock() { TimerNode.Unlock(); }
 };

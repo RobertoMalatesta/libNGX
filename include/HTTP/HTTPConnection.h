@@ -3,11 +3,10 @@ namespace ngx {
 
         class HTTPConnection : protected TCP4Connection, protected Recyclable {
         protected:
-
             Pool MemPool;
 
             Buffer ReadBuffer;
-            HTTPRequest Request;
+            HTTPRequest *Request;
 
             HTTPServer *ParentServer;
             SocketEventDomain *ParentEventDomain;
@@ -27,7 +26,6 @@ namespace ngx {
             friend class HTTPServer;
             friend class HTTPListening;
             friend class HTTPConnectionRecycleBin;
-
             friend class HTTPConnectionBuilder;
 
         public:

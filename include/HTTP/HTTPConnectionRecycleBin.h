@@ -3,6 +3,7 @@ namespace ngx {
 
         class HTTPConnectionRecycleBin : public RecycleBin, public AllocatorBuild<HTTPConnection> {
         protected:
+            uint32_t AllocateCount = 0;
             Pool BackendAllocator;
         public:
             HTTPConnectionRecycleBin(uint64_t RecycleBinSize);

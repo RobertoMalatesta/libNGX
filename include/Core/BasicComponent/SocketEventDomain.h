@@ -1,6 +1,8 @@
 
 class SocketEventDomain : public EventDomain {
 protected:
+    TimerTree Timers;
+
     inline EventType GetAttachedEvent(Socket &S) {
         return S.AttachedEvent;
     }
@@ -16,8 +18,28 @@ protected:
 
 public:
     SocketEventDomain(size_t PoolSize, int ThreadCount);
+    ~SocketEventDomain();
 
     virtual EventError AttachSocket(Socket &S, EventType Type) = 0;
 
     virtual EventError DetachSocket(Socket &S, EventType Type) = 0;
+
+    inline RuntimeError SetTimer(Socket &S, uint64_t Interval, TimerMode Mode) {
+        Lock.Lock();
+        Timers.DetachTimer(S.TimerNode);
+        S.TimerNode.SeInterval(Interval, Mode);
+        Timers.AttachTimer(S.TimerNode);
+        Lock.Unlock();
+        return {0};
+    }
+
+    inline RuntimeError ResetTimer(Socket &S) {
+        Lock.Lock();
+        Timers.DetachTimer(S.TimerNode);
+        Lock.Unlock();
+        return {0};
+    }
+
+    RuntimeError EventDomainProcess();
+
 };
