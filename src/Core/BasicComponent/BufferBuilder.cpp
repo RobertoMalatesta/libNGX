@@ -16,11 +16,5 @@ bool BufferBuilder::BuildBuffer(Buffer &Buf) {
 
     Buf.RecycleBin = &RecycleBin;
     Buf.BlockSize = BlockSize;
-    Buf.HeadBlock = RecycleBin.Get();
-
-    if (Buf.HeadBlock == nullptr) {
-        return false;
-    }
-    Buf.Cursor = {&Buf, Buf.HeadBlock->Start, Buf.HeadBlock->Start};
     return true;
 }

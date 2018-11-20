@@ -31,10 +31,10 @@ set(SOURCE_FILES
         src/Core/BasicComponent/TimerTree.cpp
         src/Core/BasicComponent/BufferCursor.cpp
         src/Core/BasicComponent/Router/Router.cpp
-#        src/Core/EPollEventDomain.cpp
-#        src/HTTP/HTTPListening.cpp
+        src/Core/EPollEventDomain.cpp
+        src/HTTP/HTTPListening.cpp
         src/HTTP/HTTPConnection.cpp
-#        src/HTTP/HTTPServer.cpp
+        src/HTTP/HTTPServer.cpp
         src/HTTP/HTTPConnectionRecycleBin.cpp
         src/HTTP/HTTPParser.cpp
         src/HTTP/HTTPError.cpp
@@ -53,12 +53,12 @@ set(TEST_FILES
         test/Core/RBTreeTest.cpp
         test/Core/TimerTreeTest.cpp
         test/Core/SocketTest.cpp
-#        test/Core/EPollEventDomainTest.cpp
+        test/Core/EPollEventDomainTest.cpp
         test/Core/LockTest.cpp
         test/Core/BufferTest.cpp
         test/Core/CoreTest.cpp
         test/HTTP/HTTPTest.cpp
-#        test/HTTP/HTTPServerTest.cpp
+        test/HTTP/HTTPServerTest.cpp
         test/HTTP/HTTPConnectionRecycleBin.cpp
         test/HTTP/HTTPParseTest.cpp)
 

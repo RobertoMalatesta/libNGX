@@ -155,6 +155,7 @@ void Buffer::Reset() {
         TempBlock = NextBlock;
     }
 
+    HeadBlock = nullptr;
     Cursor = {this, nullptr, nullptr};
 }
 
