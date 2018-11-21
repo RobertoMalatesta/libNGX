@@ -35,6 +35,7 @@ public:
         }
 
         if (Allocator != nullptr) {
+            Item->~ItemType();
             Allocator->Free((void *&) Item);
         } else {
             free((void *) Item);
