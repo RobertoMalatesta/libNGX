@@ -3,7 +3,7 @@
 using namespace ngx::Core;
 
 int LockTest() {
-    BigSpinlock Lock;
+    Spinlock Lock;
 
     Lock.Lock();
     Lock.Unlock();

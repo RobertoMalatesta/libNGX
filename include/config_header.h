@@ -22,8 +22,8 @@ namespace ngx {
             const int POOL_RESIDUAL = 16;
             const int POOL_RECYCLE_ROUND = 10000;
             const uint64_t DEFAULT_RECYCLE_SIZE = 1024;
-            const int THREAD_WAIT_TIME = 1000;     // us
-            const int THREAD_POOL_SPIN_TIME = 20;  // us
+            const int THREAD_WAIT_TIME = 500;     // us
+            const int THREAD_POOL_SPIN_TIME = 5;  // us
             const uint32_t THREAD_GC_ROUND = 10000;
             const uint32_t RECYCLE_GC_ROUND = 10000;
         }

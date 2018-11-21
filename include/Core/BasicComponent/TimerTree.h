@@ -7,7 +7,6 @@ enum TimerMode {
 class Timer : public RBTreeNode, public CanReset {
 protected:
     virtual int Compare(Timer *Node);
-    Spinlock _Lock;
     uint64_t Timestamp = 0;
     friend class TimerTree;
 public:
@@ -35,23 +34,13 @@ public:
     }
 
     virtual void Reset() { Timestamp = 0; };
-
-    inline void Lock() {
-        _Lock.Lock();
-    }
-
-    inline void Unlock() {
-        _Lock.Unlock();
-    }
-
-    inline bool TryLock() {
-        return _Lock.TryLock();
-    }
 };
 
-class TimerTree : public RBTree, public AllocatorBuild<Timer> {
+class TimerTree : public RBTree {
+private:
+    Timer _Sentinet;
 public:
-    TimerTree(MemAllocator *Allocator);
+    TimerTree();
 
     ~TimerTree();
 

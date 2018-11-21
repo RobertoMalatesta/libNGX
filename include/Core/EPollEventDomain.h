@@ -37,6 +37,7 @@ namespace ngx {
         class EPollEventDomain : public SocketEventDomain {
         protected:
             int EPollFD = -1;
+            Spinlock EPollLock;
         public:
 
             EPollEventDomain(size_t PoolSize, int ThreadCount, int EPollSize);

@@ -17,6 +17,7 @@ struct SocketAddress {
 class Socket : public EventEntity, public Achor{
 protected:
     Queue QueueSentinel;
+    Spinlock _Lock;
     Timer TimerNode;
     int SocketFD = -1;
     SocketAddress Address;
@@ -50,19 +51,28 @@ public:
         return SocketError(ENOENT, "Method not implemented!");
     }
 
-    inline void AttachSocket(Socket *S) {
-        S->QueueSentinel.Append(&QueueSentinel);
-    }
-
-    inline void DetachSocket() {
-        QueueSentinel.Detach();
-    }
-
     virtual RuntimeError HandleEventDomain(uint32_t EventType) {
         return {ENOENT, "method not implemented!"};
     };
 
-    inline void Lock() { TimerNode.Lock(); }
-    inline void Unlock() { TimerNode.Unlock(); }
-    inline bool TryLock() { return TimerNode.TryLock(); }
+
+    inline void Lock() {
+        _Lock.Lock();
+    }
+
+    inline void Unlock() {
+        _Lock.Unlock();
+    }
+
+    inline bool TryLock() {
+        return _Lock.TryLock();
+    }
+
+    static inline Socket *TimerToSocket(Timer *T) {
+        if (T == nullptr) {
+            return nullptr;
+        }
+        return (Socket *)((uintptr_t)T - (uintptr_t)(&((Socket*)0)->TimerNode));
+    }
+
 };

@@ -12,6 +12,8 @@ RuntimeError HTTPListening::HandleEventDomain(uint32_t EventType) {
     SocketAddress Address{0};
     HTTPConnection *C;
 
+    LockGuard Lock(&_Lock);
+
     if (ParentServer == nullptr || ParentEventDomain == nullptr) {
         return {EINVAL, "Listening is not attached"};
     }
@@ -20,20 +22,22 @@ RuntimeError HTTPListening::HandleEventDomain(uint32_t EventType) {
 
         RuntimeError Error{0};
 
-            TempFD = accept4(SocketFD, &Address.sockaddr, &Address.SocketLength, O_NONBLOCK);
+        TempFD = accept4(SocketFD, &Address.sockaddr, &Address.SocketLength, O_NONBLOCK);
 
-            if (TempFD == -1) {
-                return {EBADFD, "failed to accept socket"};
-            }
+        if (TempFD == -1) {
+            return {EBADFD, "failed to accept socket"};
+        }
 
-            Error = ParentServer->GetConnection(C, TempFD, Address);
+        Error = ParentServer->GetConnection(C, TempFD, Address);
 
-            if (Error.GetCode() != 0 || C == nullptr) {
-                close(TempFD);
-                //[TODO] add warning here!
-            }
-            C->ParentEventDomain->AttachSocket(*C, ET_READ | ET_WRITE);
+        if (Error.GetCode() != 0 || C == nullptr) {
+            close(TempFD);
+            //[TODO] add warning here!
+        }
+
+        C->ParentEventDomain->AttachSocket(*C, ET_READ | ET_WRITE);
     }
+
     return {0};
 }
 

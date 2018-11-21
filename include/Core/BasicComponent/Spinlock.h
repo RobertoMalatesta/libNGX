@@ -1,10 +1,10 @@
 class Spinlock : public LockType {
 protected:
-    std::atomic_flag LockAtomic = ATOMIC_FLAG_INIT;
+    pthread_spinlock_t lock;
 public:
-    Spinlock() {
-        LockAtomic.clear();
-    }
+    Spinlock();
+
+    ~Spinlock();
 
     virtual void Lock();
 
@@ -12,16 +12,6 @@ public:
 
     virtual bool TryLock();
 };
-
-class BigSpinlock : public Spinlock {
-public:
-    BigSpinlock();
-
-    virtual void Lock();
-
-    virtual bool TryLock();
-};
-
 
 class Mutex : public LockType{
 private:

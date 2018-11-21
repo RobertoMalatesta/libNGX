@@ -15,7 +15,7 @@ namespace ngx {
 
             virtual RuntimeError HandleEventDomain(uint32_t EventType);
 
-            static void OnTimerEventWarp(void *PointerToConnection, ThreadPool *TPool);
+            static void OnTimerEvent(void *PointerToConnection, ThreadPool *TPool);
 
             static void OnConnectionEvent(void *PointerToConnection, ThreadPool *TPool);
 

@@ -12,13 +12,8 @@ int Timer::Compare(Timer *Node) {
     return 0;
 }
 
-TimerTree::TimerTree(MemAllocator *Allocator) : RBTree(), AllocatorBuild(Allocator) {
-
-    Timer *TempTimer;
-
-    if (Build(TempTimer) == 0) {
-        Root = Sentinel = TempTimer;
-    }
+TimerTree::TimerTree() : RBTree() {
+    Root = Sentinel = &_Sentinet;
 }
 
 TimerTree::~TimerTree() {
@@ -31,11 +26,7 @@ TimerTree::~TimerTree() {
         Delete(Temp);
     }
 
-    if (Sentinel) {
-        Temp = (Timer *) Sentinel;
-        Destroy(Temp);
-        Root = Sentinel = nullptr;
-    }
+    Root = Sentinel = nullptr;
 
     RBTree::~RBTree();
 };
@@ -47,14 +38,15 @@ int TimerTree::QueueExpiredTimer(ThreadPool *TPool) {
 
     for (RBTreeNode *It = Minimum(); It != Sentinel && It != nullptr;) {
 
-        Temp = (Timer *) It;
+        Temp = (Timer *)It;
+        Socket *S = Socket::TimerToSocket(Temp);
         It = Next(It);
 
-        if (Temp->Timestamp > Timestamp) {
-            break;
-        }
-
-        if (Temp->TryLock()) {
+        if (S->TryLock()) {
+            if (Temp->Timestamp > Timestamp) {
+                S->Unlock();
+                break;
+            }
 
             TPool->PostPromise(Temp->Callback, Temp->Argument);
             Delete(Temp);
@@ -65,8 +57,7 @@ int TimerTree::QueueExpiredTimer(ThreadPool *TPool) {
             } else {
                 Temp->Mode = TM_CLOSED;
             }
-
-            Temp->Unlock();
+            S->Unlock();
         }
     }
     return 0;

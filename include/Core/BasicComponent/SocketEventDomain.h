@@ -2,6 +2,7 @@
 class SocketEventDomain : public EventDomain {
 protected:
     TimerTree Timers;
+    Spinlock TimersLock;
 
     inline EventType GetAttachedEvent(Socket &S) {
         return S.AttachedEvent;
@@ -26,25 +27,21 @@ public:
 
     inline RuntimeError SetTimer(Socket &S, uint64_t Interval, TimerMode Mode) {
 
-        LockGuard LockGuard(&Lock);
-        S.Lock();
+        LockGuard LockGuard(&TimersLock);
 
         Timers.DetachTimer(S.TimerNode);
         S.TimerNode.SeInterval(Interval, Mode);
         Timers.AttachTimer(S.TimerNode);
 
-        S.Unlock();
         return {0};
     }
 
     inline RuntimeError ResetTimer(Socket &S) {
 
-        LockGuard LockGuard(&Lock);
-        S.Lock();
+        LockGuard LockGuard(&TimersLock);
 
         Timers.DetachTimer(S.TimerNode);
 
-        S.Unlock();
         return {0};
     }
 

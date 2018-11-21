@@ -23,7 +23,7 @@ int HTTPConnectionRecycleBin::Get(HTTPConnection *&C, int SocketFD, SocketAddres
             return C = nullptr, -1;
         }
     }
-
+    C->Unlock();
     C->SetSocketAddress(SocketFD, TargetSocketAddress);
     return 0;
 }
@@ -31,7 +31,6 @@ int HTTPConnectionRecycleBin::Get(HTTPConnection *&C, int SocketFD, SocketAddres
 int HTTPConnectionRecycleBin::Put(HTTPConnection *&Item) {
 
     if (RecycleSize >= RecycleMaxSize) {
-        Item->Lock();
         Destroy(Item);
         Item = nullptr;
     } else {

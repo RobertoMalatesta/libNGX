@@ -2,43 +2,24 @@
 
 using namespace ngx::Core::BasicComponent;
 
+Spinlock::Spinlock() {
+    pthread_spin_init(&lock, 0);
+}
+
+Spinlock::~Spinlock() {
+    pthread_spin_destroy(&lock);
+}
+
 void Spinlock::Lock() {
-    while (LockAtomic.test_and_set()) {
-        RelaxMachine();
-    }
+    pthread_spin_lock(&lock);
 }
 
 void Spinlock::Unlock() {
-    LockAtomic.clear();
+    pthread_spin_unlock(&lock);
 }
 
 bool Spinlock::TryLock() {
-
-    if (LockAtomic.test_and_set()) {
-        RelaxMachine();
-        return false;
-    }
-
-    return true;
-}
-
-BigSpinlock::BigSpinlock() : Spinlock() {}
-
-void BigSpinlock::Lock() {
-
-    while (LockAtomic.test_and_set()) {
-        std::this_thread::yield();
-    }
-}
-
-bool BigSpinlock::TryLock() {
-
-    if (LockAtomic.test_and_set()) {
-        std::this_thread::yield();
-        return false;
-    }
-
-    return true;
+    return pthread_spin_trylock(&lock) == 0;
 }
 
 Mutex::Mutex() :BackendMutex(){}

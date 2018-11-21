@@ -3,7 +3,7 @@
 using namespace ngx::Core::BasicComponent;
 
 SocketEventDomain::SocketEventDomain(size_t PoolSize, int ThreadCount) :
-        EventDomain(PoolSize, ThreadCount), Timers(&Allocator) {
+        EventDomain(PoolSize, ThreadCount), Timers() {
 }
 
 SocketEventDomain::~SocketEventDomain() {
@@ -13,9 +13,10 @@ SocketEventDomain::~SocketEventDomain() {
 RuntimeError SocketEventDomain::EventDomainProcess() {
 
     RuntimeError Error{0};
-    LockGuard LockGuard(&Lock);
 
     Error = EventDomain::EventDomainProcess();
+
+    LockGuard LockGuard(&TimersLock);
 
     if (Error.GetCode() == 0) {
         Timers.QueueExpiredTimer(&TPool);

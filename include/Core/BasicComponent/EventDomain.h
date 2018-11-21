@@ -7,14 +7,13 @@ const EventType  ET_CLOSED = 0x0010;
 
 class EventDomain {
 protected:
-    Pool Allocator;
     ThreadPool TPool;
-    Spinlock Lock;
+    Spinlock TPoolLock;
 public:
     EventDomain(size_t PoolSize, int ThreadCount);
 
     ~EventDomain() {
-        LockGuard LockGuard(&Lock);
+        LockGuard LockGuard(&TPoolLock);
         TPool.~ThreadPool();
     }
 
