@@ -51,8 +51,14 @@ int ngx::Core::BasicComponent::TimeModuleInit() {
     static bool TimeModuleInited = false;
 
     if (!TimeModuleInited) {
-
         UpdateTimeString();
+
+        memset(&sa, 0, sizeof(struct sigaction));
+        sa.sa_handler = SIG_IGN;
+
+        if (sigaction(SIGPIPE, &sa, nullptr) == -1) {
+            return -1;
+        }
 
         memset(&sa, 0, sizeof(struct sigaction));
         sa.sa_handler = TimerHandle;

@@ -32,7 +32,6 @@ int HTTPConnectionRecycleBin::Put(HTTPConnection *&Item) {
 
     if (RecycleSize >= RecycleMaxSize) {
         Item->Lock();
-        Item->~HTTPConnection();
         Destroy(Item);
         Item = nullptr;
     } else {

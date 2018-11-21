@@ -120,13 +120,15 @@ RuntimeError EPollEventDomain::EventDomainProcess(Server *S) {
         return Error;
     }
 
-    LockGuard LockGuard(&Lock);
+    Lock.Lock();
 
     if (-1 == EPollFD) {
         return {ENOENT, "EPollEventDomain initial failed!"};
     }
 
     EventCount = epoll_pwait(EPollFD, Events, EPOLL_EVENT_BATCH_SIZE, EPOLL_EVENT_WAIT_TIME, &epoll_sig_mask);
+
+    Lock.Unlock();
 
     if (-1 == EventCount && errno == EINTR) {
         Error = {0, "Interrupted by signal"};
