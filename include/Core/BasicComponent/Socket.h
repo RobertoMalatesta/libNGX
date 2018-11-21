@@ -64,4 +64,5 @@ public:
 
     inline void Lock() { TimerNode.Lock(); }
     inline void Unlock() { TimerNode.Unlock(); }
+    inline bool TryLock() { return TimerNode.TryLock(); }
 };

@@ -119,14 +119,7 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) 
 }
 
 void HTTPConnection::Reset() {
-
-    if (ParentEventDomain != nullptr) {
-        ParentEventDomain->SetTimer(*this, CONNECTION_RECYCLE_WAIT_TIME, TM_ONCE);
-    }
-
     Lock();
-    ParentEventDomain = nullptr;
-    ParentServer = nullptr;
     ReadBuffer.Reset();
     MemPool.Reset();
     Unlock();

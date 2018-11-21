@@ -13,6 +13,7 @@ SocketEventDomain::~SocketEventDomain() {
 RuntimeError SocketEventDomain::EventDomainProcess() {
 
     RuntimeError Error{0};
+    LockGuard LockGuard(&Lock);
 
     Error = EventDomain::EventDomainProcess();
 

@@ -25,21 +25,28 @@ public:
     virtual EventError DetachSocket(Socket &S, EventType Type) = 0;
 
     inline RuntimeError SetTimer(Socket &S, uint64_t Interval, TimerMode Mode) {
-        Lock.Lock();
+
+        LockGuard LockGuard(&Lock);
+        S.Lock();
+
         Timers.DetachTimer(S.TimerNode);
         S.TimerNode.SeInterval(Interval, Mode);
         Timers.AttachTimer(S.TimerNode);
-        Lock.Unlock();
+
+        S.Unlock();
         return {0};
     }
 
     inline RuntimeError ResetTimer(Socket &S) {
-        Lock.Lock();
+
+        LockGuard LockGuard(&Lock);
+        S.Lock();
+
         Timers.DetachTimer(S.TimerNode);
-        Lock.Unlock();
+
+        S.Unlock();
         return {0};
     }
 
     RuntimeError EventDomainProcess();
-
 };

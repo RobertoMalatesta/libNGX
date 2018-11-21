@@ -25,7 +25,7 @@ int HTTPServerTest() {
     Server.AttachListening(Listen).PrintError();
 
     RuntimeError Error{0};
-    int i=0;
+
     do {
 
         Error = Server.ServerEventProcess();

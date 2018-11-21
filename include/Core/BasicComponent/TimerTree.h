@@ -43,6 +43,10 @@ public:
     inline void Unlock() {
         _Lock.Unlock();
     }
+
+    inline bool TryLock() {
+        return _Lock.TryLock();
+    }
 };
 
 class TimerTree : public RBTree, public AllocatorBuild<Timer> {
