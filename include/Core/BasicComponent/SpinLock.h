@@ -1,6 +1,6 @@
 class SpinLock : public LockType {
 protected:
-    pthread_rwlock_t lock;
+    pthread_spinlock_t lock;
 public:
     SpinLock();
 

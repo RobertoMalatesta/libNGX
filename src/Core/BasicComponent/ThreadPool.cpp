@@ -66,7 +66,8 @@ void* Thread::ThreadProcess(void *Argument) {
     while (true) {
 
         usleep(THREAD_WAIT_TIME);
-        LockGuard Guard(&T->Lock);
+
+        T->Lock.Lock();
 
         if (!T->Running) {
             break;
@@ -81,6 +82,8 @@ void* Thread::ThreadProcess(void *Argument) {
                 T->Destroy(P);
             }
         }
+
+        T->Lock.Unlock();
     }
 
     T->Lock.Unlock();

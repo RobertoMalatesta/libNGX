@@ -19,6 +19,7 @@ int HTTPServerTest() {
     HTTPListening Listen(SocketAddress);
     HTTPServer Server(POOL_MEMORY_BLOCK_SIZE, 3, EPOLL_EVENT_MAX_CONNECTION, BUFFER_MEMORY_BLOCK_SIZE, 512, 1024);
 
+    Listen.Bind();
     Listen.SetNonBlock(true).PrintError();
     Listen.SetPortReuse(true).PrintError();
     Listen.Listen().PrintError();
@@ -32,7 +33,7 @@ int HTTPServerTest() {
         Error = Server.ServerEventProcess();
 
         if (Error.GetCode() == 0 && IsInterrupted()) {
-            Error = Server.ServerEventProcess();
+            Server.ServerEventProcess();
             break;
         }
 

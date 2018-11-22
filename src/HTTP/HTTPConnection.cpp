@@ -48,8 +48,11 @@ void HTTPConnection::OnTimerEvent(void *PointerToConnection, ThreadPool *TPool) 
     C->Lock();
     C->Event |= ET_TIMER;
 
+
     if (C->Open == 0) {
+        C-> ParentServer->PutConnection(C);
     }
+    C->Unlock();
 }
 
 void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) {
@@ -90,6 +93,7 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) 
             }
         }
         if ((Type & ET_READ) != 0) {
+            printf("will close socket: %d\n", C->SocketFD);
             C->Close();
         }
     } else {
@@ -101,6 +105,7 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) 
 }
 
 void HTTPConnection::Reset() {
+    AttachedEvent = Event = 0;
     ReadBuffer.Reset();
     MemPool.Reset();
     TimerNode.Reset();
@@ -112,8 +117,7 @@ SocketError HTTPConnection::Close() {
 
     ParentEventDomain->DetachSocket(*this, ET_READ | ET_WRITE);
     TCP4Connection::Close();
-    ParentEventDomain->ResetTimer(*this);
-    ParentServer->PutConnection(C);
+    ParentEventDomain->SetTimer(*C, CONNECTION_RECYCLE_WAIT_TIME, TM_ONCE);
 
     return {0};
 }

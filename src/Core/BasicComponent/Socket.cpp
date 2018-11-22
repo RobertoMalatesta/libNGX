@@ -33,7 +33,7 @@ SocketError Socket::SetNonBlock(bool On) {
 
     Code = fcntl(SocketFD, F_SETFL, flags | O_NONBLOCK);
 
-    return {Code, "fcntl() failed"};
+    return {Code};
 }
 
 SocketError Socket::SetNoDelay(bool On) {

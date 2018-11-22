@@ -1,5 +1,4 @@
 #include "Core/Core.h"
-
 using namespace ngx::Core::BasicComponent;
 
 SpinLock::SpinLock() {

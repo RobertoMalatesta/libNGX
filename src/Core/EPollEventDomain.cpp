@@ -38,14 +38,17 @@ EventError EPollEventDomain::AttachSocket(Socket &S, EventType Type) {
     uint32_t Attached = GetAttachedEvent(S);
 
     unsigned int EPollCommand = (Attached == 0? EPOLL_CTL_ADD: EPOLL_CTL_MOD);
-    Event.data.ptr = static_cast<void *> (&S);
-    Event.events = EPOLLET;
 
-    if (Type & ET_READ) {
+    Attached |= Type;
+
+    Event.data.ptr = static_cast<void *> (&S);
+    Event.events = (Attached & ET_ACCEPT)? 0: EPOLLET;
+
+    if (Attached & ET_READ) {
         Event.events |= EPOLLIN | EPOLLRDHUP;
     }
 
-    if (Type & ET_READ) {
+    if (Attached & ET_WRITE) {
         Event.events |= EPOLLOUT;
     }
 
@@ -53,7 +56,7 @@ EventError EPollEventDomain::AttachSocket(Socket &S, EventType Type) {
         return {errno, "Failed to attach connection to epoll!"};
     }
 
-    SetAttachedEvent(S, Type, true);
+    SetAttachedEvent(S, Attached, true);
     return {0};
 }
 
@@ -73,20 +76,21 @@ EventError EPollEventDomain::DetachSocket(Socket &S, EventType Type) {
 
     struct epoll_event Event = {
             .data.ptr = static_cast<void *> (&S),
-            .events = EPOLLET,
+            .events = (Attached & ET_ACCEPT)? 0: EPOLLET
     };
 
-    if (Type & ET_READ) {
+    if (Attached & ET_READ) {
         Event.events |= EPOLLIN | EPOLLRDHUP;
     }
 
-    if (Type & ET_READ) {
+    if (Attached & ET_WRITE) {
         Event.events |= EPOLLOUT;
     }
 
     if (-1 == epoll_ctl(EPollFD, EPollCommand, SocketFD, &Event)) {
         return {errno, "Failed to attach connection to epoll!"};
     }
+
     SetAttachedEvent(S, Type, false);
     return {0};
 }
@@ -129,7 +133,7 @@ RuntimeError EPollEventDomain::EventDomainProcess(Server *S) {
 
             uint32_t EventType = 0;
 
-            if (Events[i].events & (EPOLLIN | EPOLLRDHUP)) {
+            if (Events[i].events & EPOLLIN || Events[i].events & EPOLLRDHUP) {
                 EventType |= ET_READ;
             }
 

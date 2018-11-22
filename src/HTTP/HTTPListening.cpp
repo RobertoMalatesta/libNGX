@@ -22,29 +22,27 @@ RuntimeError HTTPListening::HandleEventDomain(uint32_t EventType) {
 
         RuntimeError Error{0};
 
-        while(true) {
+        NewFD = accept4(SocketFD, &Address.sockaddr, &Address.SocketLength, O_NONBLOCK);
 
-            NewFD = accept(SocketFD, &Address.sockaddr, &Address.SocketLength);
+        if (NewFD == -1) {
+            printf("failed to accept()\n");
+            //[TODO] add warning here!
+            return {errno, "failed to accept socket"};
+        } else {
 
-            if (NewFD == -1) {
-                //[TODO] add warning here!
-
-                if (errno == EWOULDBLOCK || errno == EAGAIN) {
-                    break;
-                }
-
-                return {errno, "failed to accept socket"};
-            }
-
+            printf("accept() new connection: %d\n", NewFD);
             Error = ParentServer->GetConnection(C, NewFD, Address);
+
+            Error.PrintError();
 
             if (Error.GetCode() != 0 || C == nullptr) {
                 close(NewFD);
             }
 
-            C->ParentEventDomain->AttachSocket(*C, ET_READ | ET_WRITE);
-        }
+            Error.PrintError();
 
+            C->ParentEventDomain->AttachSocket(*C, ET_READ | ET_WRITE).PrintError();
+        }
     }
 
     return {0};
