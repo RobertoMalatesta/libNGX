@@ -29,8 +29,6 @@ protected:
             unsigned Expired:1;
             unsigned IsListen:1;
             unsigned Version:3;
-            unsigned Reuse:1;
-            unsigned Nodelay:1;
         };
         u_short Flags = 0;
     };

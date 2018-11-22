@@ -18,7 +18,7 @@ Listening::Listening(int SocketFD, SocketAddress &SocketAddress) :
 
 TCP4Listening::TCP4Listening(SocketAddress &SocketAddress)
         : Listening(SocketAddress) {
-    Type = SOCK_TYPE_STREAM, Version = 4, IsListen = 1;
+    Type = SOCK_TYPE_STREAM, Version = 4;
 }
 
 TCP4Listening::~TCP4Listening() {
@@ -30,6 +30,7 @@ SocketError TCP4Listening::Bind() {
     int Code =0;
 
     if (SocketFD == -1 || Active == 0) {
+
         SocketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
         if (SocketFD == -1) {
@@ -74,10 +75,6 @@ SocketError TCP4Listening::Close() {
 SocketError TCP4Listening::SetPortReuse(bool Open) {
 
     int Val = Open ? 1 : 0;
-
-    if ((Open && Reuse) || (!Open && !Reuse)) {
-        return {EALREADY, "reuse already set"};
-    }
 
     if (setsockopt(SocketFD, SOL_SOCKET, SO_REUSEPORT, &Val, sizeof(int))) {
         return {errno, "setsockopt() failed"};

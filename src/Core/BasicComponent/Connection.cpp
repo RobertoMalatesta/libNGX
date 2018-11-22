@@ -11,19 +11,22 @@ Connection::Connection() : Socket() {
 
 Connection::Connection(struct SocketAddress &SocketAddress) :
         Socket(SocketAddress) {
+    IsListen = 0;
 }
 
 Connection::Connection(int SocketFD, struct SocketAddress &SocketAddress)
         : Socket(SocketFD, SocketAddress) {
+    IsListen = 0;
 };
 
 TCP4Connection::TCP4Connection(int SocketFD, struct SocketAddress &SocketAddress) :
         Connection(SocketFD, SocketAddress) {
+    Type = SOCK_TYPE_STREAM, Version = 4;
 }
 
 TCP4Connection::TCP4Connection(struct SocketAddress &SocketAddress) :
         Connection(SocketAddress) {
-
+    Type = SOCK_TYPE_STREAM, Version = 4;
 }
 
 SocketError TCP4Connection::Connect() {
