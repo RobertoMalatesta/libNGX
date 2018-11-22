@@ -14,7 +14,7 @@
 
 class BufferMemoryBlockRecycleBin : public RecycleBin {
 protected:
-    Spinlock Lock;
+    SpinLock Lock;
     size_t BufferMemoryBlockSize;
 public:
     BufferMemoryBlockRecycleBin(size_t BufferMemoryBlockSize = BUFFER_MEMORY_BLOCK_SIZE,

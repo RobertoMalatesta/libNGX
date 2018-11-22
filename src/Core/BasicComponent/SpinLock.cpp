@@ -2,23 +2,23 @@
 
 using namespace ngx::Core::BasicComponent;
 
-Spinlock::Spinlock() {
+SpinLock::SpinLock() {
     pthread_spin_init(&lock, 0);
 }
 
-Spinlock::~Spinlock() {
+SpinLock::~SpinLock() {
     pthread_spin_destroy(&lock);
 }
 
-void Spinlock::Lock() {
+void SpinLock::Lock() {
     pthread_spin_lock(&lock);
 }
 
-void Spinlock::Unlock() {
+void SpinLock::Unlock() {
     pthread_spin_unlock(&lock);
 }
 
-bool Spinlock::TryLock() {
+bool SpinLock::TryLock() {
     return pthread_spin_trylock(&lock) == 0;
 }
 

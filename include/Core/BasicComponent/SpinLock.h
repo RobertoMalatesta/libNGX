@@ -1,10 +1,10 @@
-class Spinlock : public LockType {
+class SpinLock : public LockType {
 protected:
     pthread_spinlock_t lock;
 public:
-    Spinlock();
+    SpinLock();
 
-    ~Spinlock();
+    ~SpinLock();
 
     virtual void Lock();
 

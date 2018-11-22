@@ -8,7 +8,7 @@ const EventType  ET_CLOSED = 0x0010;
 class EventDomain {
 protected:
     ThreadPool TPool;
-    Spinlock TPoolLock;
+    SpinLock TPoolLock;
 public:
     EventDomain(size_t PoolSize, int ThreadCount);
 

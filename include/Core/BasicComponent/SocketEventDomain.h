@@ -2,7 +2,7 @@
 class SocketEventDomain : public EventDomain {
 protected:
     TimerTree Timers;
-    Spinlock TimersLock;
+    SpinLock TimersLock;
 
     inline EventType GetAttachedEvent(Socket &S) {
         return S.AttachedEvent;

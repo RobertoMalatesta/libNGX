@@ -16,10 +16,9 @@ struct SocketAddress {
 
 class Socket : public EventEntity, public Achor{
 protected:
-    Queue QueueSentinel;
-    Spinlock _Lock;
-    Timer TimerNode;
     int SocketFD = -1;
+    SpinLock _Lock;
+    Timer TimerNode;
     SocketAddress Address;
 
     union {
@@ -47,9 +46,7 @@ public:
 
     int GetSocketFD();
 
-    SocketError SetOption() {
-        return SocketError(ENOENT, "Method not implemented!");
-    }
+    virtual SocketError SetOption() = 0;
 
     virtual RuntimeError HandleEventDomain(uint32_t EventType) {
         return {ENOENT, "method not implemented!"};
