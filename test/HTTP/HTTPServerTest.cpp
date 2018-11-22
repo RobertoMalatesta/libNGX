@@ -19,7 +19,8 @@ int HTTPServerTest() {
     HTTPListening Listen(SocketAddress);
     HTTPServer Server(POOL_MEMORY_BLOCK_SIZE, 3, EPOLL_EVENT_MAX_CONNECTION, BUFFER_MEMORY_BLOCK_SIZE, 512, 1024);
 
-    Listen.SetPortReuse(false).PrintError();
+    Listen.SetNonBlock(true).PrintError();
+    Listen.SetPortReuse(true).PrintError();
     Listen.Listen().PrintError();
 
     Server.AttachListening(Listen).PrintError();

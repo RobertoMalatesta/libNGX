@@ -6,6 +6,7 @@ class ThreadPool;
 typedef void (PromiseCallback)(void *PointerToArguments, ThreadPool *TPool);
 
 class Promise {
+
 private:
 
     Queue Q;
@@ -20,7 +21,8 @@ protected:
     friend class ThreadPool;
 
 public:
-    Promise();
+
+    Promise() = default;
 
     static inline Promise *FromQueue(Queue *Q) {
         return (Promise *)((uintptr_t)Q - (uintptr_t)&(((Promise*)0)->Q));

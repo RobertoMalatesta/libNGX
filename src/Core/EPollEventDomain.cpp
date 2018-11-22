@@ -49,10 +49,6 @@ EventError EPollEventDomain::AttachSocket(Socket &S, EventType Type) {
         Event.events |= EPOLLOUT;
     }
 
-    if (Type & ET_ACCEPT) {
-        Event.events &= ~EPOLLET;
-    }
-
     if (-1 == epoll_ctl(EPollFD, EPollCommand, SocketFD, &Event)) {
         return {errno, "Failed to attach connection to epoll!"};
     }
@@ -79,10 +75,6 @@ EventError EPollEventDomain::DetachSocket(Socket &S, EventType Type) {
             .data.ptr = static_cast<void *> (&S),
             .events = EPOLLET,
     };
-
-    if (Type & ET_ACCEPT) {
-        Event.events &= ~EPOLLET;
-    }
 
     if (Type & ET_READ) {
         Event.events |= EPOLLIN | EPOLLRDHUP;
@@ -112,9 +104,9 @@ RuntimeError EPollEventDomain::EventDomainProcess(Server *S) {
         return Error;
     }
 
-    LockGuard LockGuard(&EPollLock);
-
+    EPollLock.Lock();
     if (-1 == EPollFD) {
+        EPollLock.Unlock();
         return {ENOENT, "EPollEventDomain initial failed!"};
     }
 
@@ -123,7 +115,7 @@ RuntimeError EPollEventDomain::EventDomainProcess(Server *S) {
     EPollLock.Unlock();
 
     if (-1 == EventCount && errno == EINTR) {
-        Error = {0, "Interrupted by signal"};
+        return {0, "Interrupted by signal"};
     } else if (EventCount <= -1) {
         return {errno, "epoll_wait() failed!"};
     } else if (EventCount > 0) {
@@ -148,7 +140,5 @@ RuntimeError EPollEventDomain::EventDomainProcess(Server *S) {
         }
     }
 
-    PostError = S->PostProcessFinished();
-
-    return PostError.GetCode() != 0 ? PostError : Error;
+    return S->PostProcessFinished();
 }

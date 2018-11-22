@@ -3,9 +3,6 @@
 
 using namespace ngx::Core::BasicComponent;
 
-Promise::Promise() {
-}
-
 void Promise::doPromise() {
     if (Callback != nullptr) {
         Callback(PointerToArg, TPool);

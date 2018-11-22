@@ -1,4 +1,4 @@
-class Listening : public Socket, public Queue {
+class Listening : public Socket {
 public:
     Listening();
 
@@ -6,13 +6,11 @@ public:
 
     Listening(int SocketFD, struct SocketAddress &SocketAddress);
 
-    virtual SocketError Listen() {
-        return {ENOENT, "method not implement"};
-    };
+    virtual SocketError Bind() = 0;
 
-    virtual SocketError Close() {
-        return {ENOENT, "method not implement"};
-    };
+    virtual SocketError Listen() = 0;
+
+    virtual SocketError Close() = 0;
 };
 
 class TCP4Listening : public Listening {
@@ -23,8 +21,15 @@ public:
 
     ~TCP4Listening();
 
+    virtual SocketError Bind();
+
     virtual SocketError Listen();
+
     virtual SocketError Close();
+
+    virtual RuntimeError HandleEventDomain(EventType Type) {
+        return {0};
+    };
 
     SocketError SetPortReuse(bool Open);
 };

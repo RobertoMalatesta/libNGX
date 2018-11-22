@@ -19,9 +19,9 @@ Socket::Socket(int SocketFD, struct SocketAddress &SocketAddress) :
     Active = (SocketFD == -1 ? 0 : 1);
 }
 
-int Socket::SetNonBlock(bool On) {
+SocketError Socket::SetNonBlock(bool On) {
 
-    int flags = fcntl(SocketFD, F_GETFL);
+    int flags = fcntl(SocketFD, F_GETFL), Code = 0;
 
     if (flags == -1) {
         return errno;
@@ -31,12 +31,16 @@ int Socket::SetNonBlock(bool On) {
         flags &= ~O_NONBLOCK;
     }
 
-    return fcntl(SocketFD, F_SETFL, flags | O_NONBLOCK);
+    Code = fcntl(SocketFD, F_SETFL, flags | O_NONBLOCK);
+
+    return {Code, "fcntl() failed"};
 }
 
-int Socket::SetNoDelay(bool On) {
+SocketError Socket::SetNoDelay(bool On) {
 
-    int NoDelay = On? 1: 0;
+    int NoDelay = On? 1: 0, Code = 0;
 
-    return setsockopt(SocketFD, IPPROTO_TCP, TCP_NODELAY, (void *) &NoDelay, sizeof(NoDelay));
+    Code = setsockopt(SocketFD, IPPROTO_TCP, TCP_NODELAY, (void *) &NoDelay, sizeof(NoDelay));
+
+    return {Code, "setsockopt() failed"};
 }

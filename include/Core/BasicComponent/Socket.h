@@ -48,13 +48,11 @@ public:
         return SocketFD;
     }
 
-    int SetNonBlock(bool On);
+    SocketError SetNonBlock(bool On);
 
-    int SetNoDelay(bool On);
+    SocketError SetNoDelay(bool On);
 
-    virtual SocketError SetOption() = 0;
-
-    virtual RuntimeError HandleEventDomain(uint32_t EventType) = 0;
+    virtual RuntimeError HandleEventDomain(EventType Type) = 0;
 
 
     inline void Lock() {

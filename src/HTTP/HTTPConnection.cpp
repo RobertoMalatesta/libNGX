@@ -8,20 +8,22 @@ HTTPConnection::HTTPConnection() :
         Request(nullptr) {
     TimerNode.Callback = HTTPConnection::OnTimerEvent;
     TimerNode.Argument = this;
+
+    Type = SOCK_TYPE_STREAM, Version = 4, IsListen = 1;
 }
 
 RuntimeError HTTPConnection::SetSocketAddress(int SocketFD, struct SocketAddress &Address) {
-    Lock();
+
+    LockGuard Guard(&SocketLock);
     this->SocketFD = SocketFD;
     this->Address = Address;
-    Unlock();
 
     return {0};
 }
 
 RuntimeError HTTPConnection::HandleEventDomain(uint32_t EventType) {
 
-    LockGuard Guard(&_Lock);
+    LockGuard Guard(&SocketLock);
 
     if (ParentServer == nullptr || ParentEventDomain == nullptr) {
         return {EINVAL, "connection not attached"};
@@ -46,7 +48,7 @@ void HTTPConnection::OnTimerEvent(void *PointerToConnection, ThreadPool *TPool) 
     C->Lock();
     C->Event |= ET_TIMER;
 
-    if (C->ParentServer != nullptr) {
+    if (C->Open == 0) {
         C->ParentServer->PutConnection(C);
     }
 }
@@ -96,7 +98,7 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) 
 //            printf("connection closed, skip this event!\n");
     }
 
-    C->_Lock.Unlock();
+    C->SocketLock.Unlock();
 //    printf("Leave Promise, PointerToConnection: %p\n", PointerToConnection);
 }
 

@@ -18,41 +18,54 @@ Listening::Listening(int SocketFD, SocketAddress &SocketAddress) :
 
 TCP4Listening::TCP4Listening(SocketAddress &SocketAddress)
         : Listening(SocketAddress) {
-    SocketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-
-    Type = SOCK_TYPE_STREAM;
-    Version = 4;
-
-    if (0 == bind(SocketFD, &Address.sockaddr, Address.SocketLength)) {
-        Active = 1;
-    }
+    Type = SOCK_TYPE_STREAM, Version = 4, IsListen = 1;
 }
 
 TCP4Listening::~TCP4Listening() {
-    if (SocketFD != -1) {
-        close(SocketFD);
-        Active = 0;
-        SocketFD = -1;
+    Close();
+}
+
+SocketError TCP4Listening::Bind() {
+
+    int Code =0;
+
+    if (SocketFD == -1 || Active == 0) {
+        SocketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+        if (SocketFD == -1) {
+            return {errno, "failed to create socket"};
+        }
+
+        Code = bind(SocketFD, &Address.sockaddr, Address.SocketLength);
+
+        if (Code == -1) {
+            return {errno, "failed to bind socket"};
+        }
+
+        Active = 1;
     }
+
+    return {0};
 }
 
 SocketError TCP4Listening::Listen() {
 
     if (SocketFD == -1) {
-        return {EINVAL, "Bad Socket!"};
+        return {EINVAL, "bad Socket!"};
     }
 
     if (-1 == listen(SocketFD, Backlog)) {
-        return {errno, "Listen to Socket failed!"};
+        return {errno, "listen to Socket failed!"};
     }
+
     return {0};
 }
 
 SocketError TCP4Listening::Close() {
 
-    if (SocketFD != -1) {
+    if (SocketFD != -1 || Active == 1) {
         close(SocketFD);
-        SocketFD = -1;
+        SocketFD = -1, Active = 0;
     }
 
     return {0};
@@ -63,11 +76,12 @@ SocketError TCP4Listening::SetPortReuse(bool Open) {
     int Val = Open ? 1 : 0;
 
     if ((Open && Reuse) || (!Open && !Reuse)) {
-        return {EALREADY};
+        return {EALREADY, "reuse already set"};
     }
 
     if (setsockopt(SocketFD, SOL_SOCKET, SO_REUSEPORT, &Val, sizeof(int))) {
-        return {errno};
+        return {errno, "setsockopt() failed"};
     }
+
     return {0};
 }

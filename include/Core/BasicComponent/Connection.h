@@ -21,13 +21,9 @@ public:
 
     Connection(int SocketFD, struct SocketAddress &SocketAddress);
 
-    virtual SocketError Connect() {
-        return SocketError(EINVAL, "Method not implement!");
-    };
+    virtual SocketError Connect() = 0;
 
-    virtual SocketError Close() {
-        return SocketError(EINVAL, "Method not implement!");
-    };
+    virtual SocketError Close() = 0;
 };
 
 

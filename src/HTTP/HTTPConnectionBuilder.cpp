@@ -21,8 +21,8 @@ int HTTPConnectionBuilder::Get(HTTPConnection *&C, int SocketFD, SocketAddress &
 
     // configure connection
     C->Open = 1;
-    C->SetNoDelay(TCPNoDelay == 1);
     C->SetNonBlock(true);
+    C->SetNoDelay(TCPNoDelay == 1);
     C->ParentServer = Server;
     C->ParentEventDomain = EventDomain;
 
