@@ -17,7 +17,7 @@ struct SocketAddress {
 class Socket : public EventEntity, public Achor{
 protected:
     int SocketFD = -1;
-    SpinLock _Lock;
+    SpinLock SocketLock;
     Timer TimerNode;
     SocketAddress Address;
 
@@ -44,25 +44,29 @@ public:
 
     Socket(int SocketFD, struct SocketAddress &SocketAddress);
 
-    int GetSocketFD();
+    inline int GetSocketFD() const {
+        return SocketFD;
+    }
+
+    int SetNonBlock(bool On);
+
+    int SetNoDelay(bool On);
 
     virtual SocketError SetOption() = 0;
 
-    virtual RuntimeError HandleEventDomain(uint32_t EventType) {
-        return {ENOENT, "method not implemented!"};
-    };
+    virtual RuntimeError HandleEventDomain(uint32_t EventType) = 0;
 
 
     inline void Lock() {
-        _Lock.Lock();
+        SocketLock.Lock();
     }
 
     inline void Unlock() {
-        _Lock.Unlock();
+        SocketLock.Unlock();
     }
 
     inline bool TryLock() {
-        return _Lock.TryLock();
+        return SocketLock.TryLock();
     }
 
     static inline Socket *TimerToSocket(Timer *T) {
@@ -71,5 +75,4 @@ public:
         }
         return (Socket *)((uintptr_t)T - (uintptr_t)(&((Socket*)0)->TimerNode));
     }
-
 };

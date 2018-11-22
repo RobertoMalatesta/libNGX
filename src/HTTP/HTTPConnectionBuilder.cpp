@@ -1,4 +1,3 @@
-#include <netinet/tcp.h>
 #include "HTTP/HTTP.h"
 
 using namespace ngx::HTTP;
@@ -20,17 +19,14 @@ int HTTPConnectionBuilder::Get(HTTPConnection *&C, int SocketFD, SocketAddress &
         return C = nullptr, -1;
     }
 
-    TCPNoDelay = 1;
-
-    setsockopt(SocketFD, IPPROTO_TCP, TCP_NODELAY, (void *) &TCPNoDelay, sizeof(TCPNoDelay));
-
     // configure connection
     C->Open = 1;
+    C->SetNoDelay(TCPNoDelay == 1);
+    C->SetNonBlock(true);
     C->ParentServer = Server;
     C->ParentEventDomain = EventDomain;
 
     BB.BuildBuffer(C->ReadBuffer);
-
 
     return 0;
 }

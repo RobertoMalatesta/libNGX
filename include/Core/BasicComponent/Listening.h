@@ -17,7 +17,7 @@ public:
 
 class TCP4Listening : public Listening {
 protected:
-    uint Backlog = 1024;
+    uint Backlog = 32768;
 public:
     TCP4Listening(struct SocketAddress &SocketAddress);
 
