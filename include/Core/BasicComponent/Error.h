@@ -67,6 +67,8 @@ private:
 public:
     EventError(int ErrorCode, const char *Message = nullptr) : Error(ErrorCode, Message) {};
 
+    const char *GetError() { return ErrorCodeToError(ErrorCode); }
+
     virtual void PrintError() {
         printf("EventError: %s, Message: %s\n", ErrorCodeToError(ErrorCode),
                Message == nullptr ? "null" : Message);

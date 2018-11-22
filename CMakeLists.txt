@@ -64,7 +64,7 @@ set(TEST_FILES
 
 include_directories(./include)
 
-LINK_LIBRARIES(-lpthread)
+LINK_LIBRARIES(-lpthread -lglog)
 
 add_executable(NGXTest ${SOURCE_FILES} ${TEST_FILES})
 add_library(libNGX STATIC ${SOURCE_FILES})

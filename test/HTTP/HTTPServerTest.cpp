@@ -4,7 +4,6 @@ using namespace ngx::Core;
 using namespace ngx::HTTP;
 
 int HTTPServerTest() {
-
     SocketAddress SocketAddress = {
             .sockaddr_in = {
                     .sin_family = AF_INET,
@@ -14,17 +13,19 @@ int HTTPServerTest() {
             .SocketLength = sizeof(sockaddr_in)
     };
 
+    LOG(INFO) << "Init time module start";
     TimeModuleInit();
+    LOG(INFO) << "Init time module end";
 
     HTTPListening Listen(SocketAddress);
     HTTPServer Server(POOL_MEMORY_BLOCK_SIZE, 3, EPOLL_EVENT_MAX_CONNECTION, BUFFER_MEMORY_BLOCK_SIZE, 512, 1024);
 
-    Listen.Bind();
-    Listen.SetNonBlock(true).PrintError();
-    Listen.SetPortReuse(true).PrintError();
-    Listen.Listen().PrintError();
+    LOG(INFO) << "Bind() Listening: " << Listen.Bind().GetError();
+    LOG(INFO) << "Set NON_BLOCK: " <<Listen.SetNonBlock(true).GetError();
+    LOG(INFO) << "Set PORT_REUSE: " << Listen.SetPortReuse(true).GetError();
+    LOG(INFO) << "Start listening: " << Listen.Listen().GetError();
 
-    Server.AttachListening(Listen).PrintError();
+    LOG(INFO) << "Attach listening to server: " << Server.AttachListening(Listen).GetError();
 
     RuntimeError Error{0};
 
