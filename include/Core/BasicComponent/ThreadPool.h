@@ -5,32 +5,38 @@ class ThreadPool;
 
 typedef void (PromiseCallback)(void *PointerToArguments, ThreadPool *TPool);
 
-class Promise : public Queue {
+class Promise {
 private:
-    void *PointerToArg = nullptr;
+
+    Queue Q;
     ThreadPool *TPool = nullptr;
+
+protected:
+
+    void *PointerToArg = nullptr;
     PromiseCallback *Callback = nullptr;
 
     friend class Thread;
-
     friend class ThreadPool;
 
 public:
     Promise();
 
-    Promise(ThreadPool *TPool, Thread *T, PromiseCallback *Callback, void *PointerToArgs);
+    static inline Promise *FromQueue(Queue *Q) {
+        return (Promise *)((uintptr_t)Q - (uintptr_t)&(((Promise*)0)->Q));
+    }
 
     void doPromise();
 };
 
-class Thread {
+class Thread: public AllocatorBuild<Promise> {
 
 private:
 
     ThreadPool *TPool = nullptr;
     pthread_t WorkerThread;
     Mutex Lock;
-    Promise Sentinel;
+    Queue Sentinel;
     Pool Allocator;
     bool Running;
     uint32_t PostCount;

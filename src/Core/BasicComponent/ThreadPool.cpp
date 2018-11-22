@@ -3,14 +3,7 @@
 
 using namespace ngx::Core::BasicComponent;
 
-Promise::Promise() : Queue() {
-}
-
-Promise::Promise(ThreadPool *TPool, Thread *T, PromiseCallback *Callback, void *PointerToArgs)
-        : Queue((Queue *) &T->Sentinel, false) {
-    this->TPool = TPool;
-    this->Callback = Callback;
-    this->PointerToArg = PointerToArgs;
+Promise::Promise() {
 }
 
 void Promise::doPromise() {
@@ -36,6 +29,7 @@ Thread::Thread(ThreadPool *TPool) : Sentinel(), Allocator() {
 
 int Thread::TryPostPromise(PromiseCallback *Callback, void *Argument) {
 
+    Promise *P = nullptr;
 
     if (!Lock.TryLock()) {
         return -1;
@@ -45,27 +39,28 @@ int Thread::TryPostPromise(PromiseCallback *Callback, void *Argument) {
         return 0;
     }
 
-    void *PointerToPromise = Allocator.Allocate(sizeof(Promise));
-
-    if (nullptr == PointerToPromise) {
+    if (Build(P) != 0 || P == nullptr) {
         Lock.Unlock();
         return -1;
     }
 
-    new(PointerToPromise) Promise(TPool, this, Callback, Argument);
+    P->TPool = TPool;
+    P->Callback = Callback;
+    P->PointerToArg = Argument;
+    Sentinel.Append(&P->Q);
 
     if (PostCount++ % THREAD_GC_ROUND == 0) {
         Allocator.GC();
     }
 
     Lock.Unlock();
-
     return 0;
 }
 
 void* Thread::ThreadProcess(void *Argument) {
 
-    Promise *Node;
+    Queue *Q;
+    Promise *P;
 
     auto *T = static_cast<Thread *>(Argument);
 
@@ -80,10 +75,13 @@ void* Thread::ThreadProcess(void *Argument) {
             break;
         } else {
             while (!T->Sentinel.IsEmpty()) {
-                Node = (Promise *) T->Sentinel.GetHead();
-                Node->Detach();
-                Node->doPromise();
-                T->Allocator.Free((void *&) Node);
+                Q = T->Sentinel.GetLast();
+                P = Promise::FromQueue(Q);
+
+                Q->Detach();
+                P->doPromise();
+
+                T->Destroy(P);
             }
         }
     }
