@@ -72,7 +72,7 @@ void* Thread::ThreadProcess(void *Argument) {
             break;
         } else {
             while (!T->Sentinel.IsEmpty()) {
-                Q = T->Sentinel.GetLast();
+                Q = T->Sentinel.GetNext();
                 P = Promise::FromQueue(Q);
 
                 Q->Detach();

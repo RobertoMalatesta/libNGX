@@ -3,43 +3,11 @@
 using namespace ngx::Core::DataStructure;
 
 Queue::Queue() {
-    this->Sentinel = this;
-}
-
-Queue::Queue(Queue *Sentinel, bool IsInsertToHead) {
-    this->Sentinel = Sentinel;
-    IsInsertToHead ? InsertToHead() : InsertToTail();
+    this->Prev = this -> Next = this;
 }
 
 bool Queue::IsEmpty() {
     return this == this->Prev;
-}
-
-void Queue::InsertToHead() {
-    Next = Sentinel->Next;
-    Next->Prev = Next;
-    Prev = Sentinel;
-    Sentinel->Next = this;
-}
-
-void Queue::InsertToTail() {
-
-    Prev = Sentinel->Prev;
-    Prev->Next = this;
-    Next = Sentinel;
-    Sentinel->Prev = this;
-}
-
-Queue *Queue::GetHead() {
-    return Sentinel->Next;
-}
-
-Queue *Queue::GetLast() {
-    return Sentinel->Prev;
-}
-
-Queue *Queue::GetSentinel() {
-    return Sentinel;
 }
 
 Queue *Queue::GetNext() {
@@ -50,11 +18,11 @@ Queue *Queue::GetPrev() {
     return Prev;
 }
 
-void Queue::Attach() {
-    Sentinel->Prev->Next = Next;
-    Next->Prev = Sentinel->Prev;
-    Sentinel->Prev = Prev;
-    Sentinel->Prev->Next = Sentinel;
+void Queue::Attach(Queue *Q) {
+    Next = Q->Next;
+    Next->Prev = Next;
+    Prev = Q;
+    Q->Next = this;
 }
 
 void Queue::Detach() {
@@ -69,51 +37,51 @@ void Queue::Append(Queue *Node) {
         return;
     }
 
-    Node->Next = Next;
-    Node->Next->Prev = Node;
-    Node->Prev = this;
+    Prev = Node->Prev;
+    Prev->Next = this;
     Next = Node;
+    Node->Prev = this;
 }
 
-void Queue::QueueSplit(Queue *Q1, Queue *Node) {
+void Queue::QueueSplit(Queue *Q, Queue *Q1, Queue *Q2) {
 
-    Node->Prev = Sentinel->Prev;
-    Node->Prev->Next = Node;
-    Node->Next = Q1;
-    Sentinel->Prev = Q1->Prev;
-    Sentinel->Prev->Next = Sentinel;
-    Q1->Prev = Node;
+    Q2->Prev = Q->Prev;
+    Q2->Prev->Next = Q2;
+    Q2->Next = Q1;
+    Q->Prev = Q1->Prev;
+    Q->Prev->Next = Q;
+    Q1->Prev = Q2;
 }
 
-void Queue::Sort(int (*cmp)(Queue *, Queue *)) {
+void Queue::Sort(Queue *S, int (*cmp)(Queue *, Queue *)) {
 
-    Queue *TQueue = Sentinel, *TPrev = nullptr, *TNext = nullptr;
+    Queue *TQ = S, *TPrev = nullptr, *TNext = nullptr;
 
-    if (GetLast() == GetHead()) {
+    if (S->IsEmpty()) {
         return;
     }
 
-    for (TQueue = TQueue->GetNext(); TQueue != Sentinel; TQueue = TQueue->GetNext()) {
+    for (TQ = TQ->GetNext(); TQ != S; TQ = TQ->GetNext()) {
 
-        TPrev = TQueue->GetPrev();
-        TQueue->Detach();
+        TPrev = TQ->GetPrev();
+        TQ->Detach();
 
         do {
-            if (cmp(TPrev, TQueue) <= 0) {
+            if (cmp(TPrev, TQ) <= 0) {
                 break;
             }
 
             TPrev = TPrev->GetPrev();
 
-        } while (TPrev != Sentinel);
-        TPrev->Append(TQueue);
+        } while (TPrev != S);
+        TPrev->Append(TQ);
     }
 }
 
-Queue *Queue::GetMiddle() {
-    Queue *Middle = Sentinel, *Next = Sentinel;
+Queue *Queue::GetMiddle(Queue *S) {
+    Queue *Middle = S, *Next = S;
 
-    if (Middle == GetLast()) {
+    if (Middle == S->GetPrev()) {
         return Middle;
     }
 
@@ -122,8 +90,8 @@ Queue *Queue::GetMiddle() {
         Middle = Middle->GetNext();
         Next = Next->GetNext();
 
-        if (Next == GetLast() ||
-            (Next = Next->GetNext()) == GetLast()) {
+        if (Next == S->GetPrev() ||
+            (Next = Next->GetNext()) == S->GetPrev()) {
             return Middle;
         }
     }

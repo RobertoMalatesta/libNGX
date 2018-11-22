@@ -1,38 +1,26 @@
 class Queue {
 
 protected:
-    Queue *Prev = this, *Next = this, *Sentinel;
-
-    void InsertToHead();
-
-    void InsertToTail();
+    Queue *Prev = this, *Next = this;
 
 public:
     Queue();
 
-    Queue(Queue *Sentinel, bool IsInsertToHead);
-
     bool IsEmpty();
-
-    Queue *GetHead();
 
     Queue *GetNext();
 
     Queue *GetPrev();
 
-    Queue *GetLast();
-
-    Queue *GetSentinel();
-
-    Queue *GetMiddle();
+    void Attach(Queue *Node);
 
     void Detach();
 
-    void Attach();
-
     void Append(Queue *Node);
 
-    void QueueSplit(Queue *Q1, Queue *Node);
+    static void QueueSplit(Queue *Q, Queue *Q1, Queue *Q2);
 
-    void Sort(int (*cmp)(Queue *q1, Queue *q2));
+    static void Sort(Queue *S, int (*cmp)(Queue *q1, Queue *q2));
+
+    static Queue *GetMiddle(Queue *S);
 };

@@ -6,7 +6,6 @@ private:
     ListCarriage *Next;
 
 public:
-    void *operator new(size_t Size, void *PointerToAllocator);
 
     ListCarriage(uint32_t NumberOfElements) {
         this->PointerToElements = (u_char *) this + sizeof(ListCarriage);

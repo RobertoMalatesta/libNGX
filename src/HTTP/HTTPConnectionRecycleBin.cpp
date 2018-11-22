@@ -14,7 +14,7 @@ int HTTPConnectionRecycleBin::Get(HTTPConnection *&C, int SocketFD, SocketAddres
     C = nullptr;
 
     if (!RecycleSentinel.IsEmpty()) {
-        C = (HTTPConnection *) RecycleSentinel.GetHead();
+        C = (HTTPConnection *) RecycleSentinel.GetNext();
         RecycleSize -= 1;
         C->Detach();
     }
@@ -51,7 +51,7 @@ HTTPConnectionRecycleBin::~HTTPConnectionRecycleBin() {
     HTTPConnection *Item;
 
     while (!RecycleSentinel.IsEmpty()) {
-        Item = static_cast<HTTPConnection *> (RecycleSentinel.GetHead());
+        Item = static_cast<HTTPConnection *> (RecycleSentinel.GetNext());
         RecycleSize -= 1;
         Item->Detach();
         Item->~HTTPConnection();
