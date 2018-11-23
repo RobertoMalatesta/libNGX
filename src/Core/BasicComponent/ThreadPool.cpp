@@ -70,6 +70,7 @@ void* Thread::ThreadProcess(void *Argument) {
         T->Lock.Lock();
 
         if (!T->Running) {
+            T->Lock.Unlock();
             break;
         } else {
             while (!T->Sentinel.IsEmpty()) {
@@ -86,7 +87,6 @@ void* Thread::ThreadProcess(void *Argument) {
         T->Lock.Unlock();
     }
 
-    T->Lock.Unlock();
     return nullptr;
 }
 

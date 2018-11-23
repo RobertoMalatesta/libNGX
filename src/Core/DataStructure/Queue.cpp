@@ -19,10 +19,10 @@ Queue *Queue::GetPrev() {
 }
 
 void Queue::Attach(Queue *Q) {
-    Next = Q->Next;
-    Next->Prev = Next;
+    Q -> Prev = Prev;
+    Q -> Prev -> Next = Q;
+    Q -> Next = this;
     Prev = Q;
-    Q->Next = this;
 }
 
 void Queue::Detach() {
@@ -32,19 +32,13 @@ void Queue::Detach() {
 }
 
 void Queue::Append(Queue *Node) {
-
-    if (nullptr == Node) {
-        return;
-    }
-
-    Prev = Node->Prev;
-    Prev->Next = this;
-    Next = Node;
-    Node->Prev = this;
+    Node -> Prev = Prev;
+    Node -> Prev -> Next = Node;
+    Node -> Next = this;
+    Prev = Node;
 }
 
 void Queue::QueueSplit(Queue *Q, Queue *Q1, Queue *Q2) {
-
     Q2->Prev = Q->Prev;
     Q2->Prev->Next = Q2;
     Q2->Next = Q1;

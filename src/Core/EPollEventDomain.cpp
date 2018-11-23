@@ -40,9 +40,11 @@ EventError EPollEventDomain::AttachSocket(Socket &S, EventType Type) {
     unsigned int EPollCommand = (Attached == 0? EPOLL_CTL_ADD: EPOLL_CTL_MOD);
 
     Attached |= Type;
-
     Event.data.ptr = static_cast<void *> (&S);
-    Event.events = (Attached & ET_ACCEPT)? 0: EPOLLET;
+
+    if ((Attached & ET_ACCEPT) == 0) {
+        Event.events |= EPOLLET;
+    }
 
     if (Attached & ET_READ) {
         Event.events |= EPOLLIN | EPOLLRDHUP;
@@ -65,8 +67,11 @@ EventError EPollEventDomain::DetachSocket(Socket &S, EventType Type) {
     LockGuard LockGuard(&EPollLock);
 
     int SocketFD = S.GetSocketFD();
+
     uint32_t Attached = GetAttachedEvent(S);
     Attached &= ~Type;
+
+    epoll_event Event{0};
 
     unsigned int EPollCommand = (Attached == 0? EPOLL_CTL_DEL: EPOLL_CTL_MOD);
 
@@ -74,10 +79,11 @@ EventError EPollEventDomain::DetachSocket(Socket &S, EventType Type) {
         return {-1, "Bad Socket Descriptor!"};
     }
 
-    struct epoll_event Event = {
-            .data.ptr = static_cast<void *> (&S),
-            .events = (Attached & ET_ACCEPT)? 0: EPOLLET
-    };
+    Event.data.ptr = static_cast<void *>(&S);
+
+    if ((Attached & ET_ACCEPT) == 0) {
+        Event.events |= EPOLLET;
+    }
 
     if (Attached & ET_READ) {
         Event.events |= EPOLLIN | EPOLLRDHUP;
@@ -91,7 +97,7 @@ EventError EPollEventDomain::DetachSocket(Socket &S, EventType Type) {
         return {errno, "Failed to attach connection to epoll!"};
     }
 
-    SetAttachedEvent(S, Type, false);
+    SetAttachedEvent(S, Attached, false);
     return {0};
 }
 

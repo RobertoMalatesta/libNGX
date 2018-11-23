@@ -16,12 +16,13 @@ RuntimeError SocketEventDomain::EventDomainProcess() {
 
     Error = EventDomain::EventDomainProcess();
 
-    LockGuard LockGuard(&TimersLock);
-
     if (Error.GetCode() == 0) {
-        Timers.QueueExpiredTimer(&TPool);
-        return {0};
+        if (TimersLock.TryLock()) {
+            Timers.QueueExpiredTimer(&TPool);
+            TimersLock.Unlock();
+        }
     } else {
         return Error;
     }
+    return {0};
 }
