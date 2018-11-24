@@ -44,7 +44,7 @@ public:
 
     ~TimerTree();
 
-    int QueueExpiredTimer(ThreadPool *TPool);
+    int QueueExpiredTimer(ThreadPool *TPool, uint32_t Count = TIMER_PRCESS_COUNT);
 
     int AttachTimer(Timer &T);
 

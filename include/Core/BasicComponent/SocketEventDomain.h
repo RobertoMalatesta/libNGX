@@ -27,20 +27,24 @@ public:
 
     inline RuntimeError SetTimer(Socket &S, uint64_t Interval, TimerMode Mode) {
 
-        LockGuard LockGuard(&TimersLock);
+        TimersLock.Lock();
 
         Timers.DetachTimer(S.TimerNode);
         S.TimerNode.SeInterval(Interval, Mode);
         Timers.AttachTimer(S.TimerNode);
+
+        TimersLock.Unlock();
 
         return {0};
     }
 
     inline RuntimeError ResetTimer(Socket &S) {
 
-        LockGuard LockGuard(&TimersLock);
+        TimersLock.Lock();
 
         Timers.DetachTimer(S.TimerNode);
+
+        TimersLock.Unlock();
 
         return {0};
     }

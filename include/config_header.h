@@ -26,6 +26,7 @@ namespace ngx {
             const int THREAD_POOL_SPIN_TIME = 5;  // us
             const uint32_t THREAD_GC_ROUND = 10000;
             const uint32_t RECYCLE_GC_ROUND = 10000;
+            const uint32_t TIMER_PRCESS_COUNT = 500;
         }
     }
 }

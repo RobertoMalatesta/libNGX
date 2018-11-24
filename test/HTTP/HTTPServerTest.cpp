@@ -40,7 +40,7 @@ int HTTPServerTest() {
 
     } while (Error.GetCode() == 0);
 
-    LOG(INFO) << Server.DetachListening(Listen).GetError();
+    LOG(INFO) << "detach listening: " << Server.DetachListening(Listen).GetError();
 
     return 0;
 }

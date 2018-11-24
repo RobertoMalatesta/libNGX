@@ -31,12 +31,16 @@ TimerTree::~TimerTree() {
     RBTree::~RBTree();
 };
 
-int TimerTree::QueueExpiredTimer(ThreadPool *TPool) {
+int TimerTree::QueueExpiredTimer(ThreadPool *TPool, uint32_t Count) {
 
     Timer *Temp;
     uint64_t Timestamp = GetHighResolutionTimestamp();
 
     for (RBTreeNode *It = Minimum(); It != Sentinel && It != nullptr;) {
+
+        if (Count-- <= 0) {
+            break;
+        }
 
         Temp = (Timer *)It;
         Socket *S = Socket::TimerToSocket(Temp);

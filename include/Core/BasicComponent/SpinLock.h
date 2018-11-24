@@ -10,7 +10,7 @@ public:
 
     virtual void Unlock();
 
-    virtual bool TryLock();
+    virtual volatile bool TryLock();
 };
 
 class Mutex : public LockType{
@@ -20,7 +20,8 @@ public:
     Mutex();
     virtual void Lock();
     virtual void Unlock();
-    virtual bool TryLock();
+    virtual volatile bool TryLock();
+
 };
 
 class LockGuard {

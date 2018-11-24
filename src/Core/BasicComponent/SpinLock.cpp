@@ -17,7 +17,7 @@ void SpinLock::Unlock() {
     pthread_spin_unlock(&lock);
 }
 
-bool SpinLock::TryLock() {
+volatile bool SpinLock::TryLock() {
     return pthread_spin_trylock(&lock) == 0;
 }
 
@@ -31,6 +31,6 @@ void Mutex::Unlock() {
     BackendMutex.unlock();
 }
 
-bool Mutex::TryLock() {
+volatile bool Mutex::TryLock() {
     return BackendMutex.try_lock();
 }

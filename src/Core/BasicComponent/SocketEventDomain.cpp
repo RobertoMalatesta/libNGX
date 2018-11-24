@@ -17,10 +17,7 @@ RuntimeError SocketEventDomain::EventDomainProcess() {
     Error = EventDomain::EventDomainProcess();
 
     if (Error.GetCode() == 0) {
-        if (TimersLock.TryLock()) {
-            Timers.QueueExpiredTimer(&TPool);
-            TimersLock.Unlock();
-        }
+        Timers.QueueExpiredTimer(&TPool, TIMER_PRCESS_COUNT);
     } else {
         return Error;
     }
