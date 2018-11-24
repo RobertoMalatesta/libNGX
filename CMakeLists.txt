@@ -30,7 +30,7 @@ set(SOURCE_FILES
         src/Core/BasicComponent/ThreadPool.cpp
         src/Core/BasicComponent/TimerHub.cpp
         src/Core/BasicComponent/BufferCursor.cpp
-        src/Core/BasicComponent/Router/Router.cpp
+        src/HTTP/Router/Router.cpp
         src/Core/EPollEventDomain.cpp
         src/HTTP/HTTPListening.cpp
         src/HTTP/HTTPConnection.cpp
