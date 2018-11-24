@@ -7,7 +7,7 @@ SocketEventDomain::SocketEventDomain(size_t PoolSize, int ThreadCount) :
 }
 
 SocketEventDomain::~SocketEventDomain() {
-    Timers.~TimerTree();
+    Timers.~TimerHub();
 }
 
 RuntimeError SocketEventDomain::EventDomainProcess() {

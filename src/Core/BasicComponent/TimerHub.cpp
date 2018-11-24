@@ -12,11 +12,11 @@ int Timer::Compare(Timer *Node) {
     return 0;
 }
 
-TimerTree::TimerTree() : RBTree() {
+TimerHub::TimerHub() : RBTree() {
     Root = Sentinel = &_Sentinet;
 }
 
-TimerTree::~TimerTree() {
+TimerHub::~TimerHub() {
 
     Timer *Temp;
 
@@ -31,7 +31,7 @@ TimerTree::~TimerTree() {
     RBTree::~RBTree();
 };
 
-int TimerTree::QueueExpiredTimer(ThreadPool *TPool, uint32_t Count) {
+int TimerHub::QueueExpiredTimer(ThreadPool *TPool, uint32_t Count) {
 
     Timer *Temp;
     uint64_t Timestamp = GetHighResolutionTimestamp();
@@ -49,6 +49,8 @@ int TimerTree::QueueExpiredTimer(ThreadPool *TPool, uint32_t Count) {
             }
 
             TPool->PostPromise(Temp->Callback, Temp->Argument);
+
+            TimerHubLock.Lock();
             Delete(Temp);
 
             if (Temp->Mode == TM_INTERVAL && Temp->Interval > 0) {
@@ -57,28 +59,38 @@ int TimerTree::QueueExpiredTimer(ThreadPool *TPool, uint32_t Count) {
             } else {
                 Temp->Mode = TM_CLOSED;
             }
+
+            TimerHubLock.Unlock();
             S->Unlock();
         }
     }
     return 0;
 }
 
-int TimerTree::AttachTimer(Timer &T) {
+int TimerHub::AttachTimer(Timer &T) {
+
+    TimerHubLock.Lock();
 
     if (T.Interval > 0) {
         T.Timestamp = GetHighResolutionTimestamp() + T.Interval;
         Insert(&T);
     }
 
+    TimerHubLock.Unlock();
+
     return 0;
 }
 
-int TimerTree::DetachTimer(Timer &T) {
+int TimerHub::DetachTimer(Timer &T) {
+
+    TimerHubLock.Lock();
 
     if (T.IsTimerAttached()) {
         Delete(&T);
         T.Mode = TM_CLOSED, T.Interval = 0;
     }
+
+    TimerHubLock.Unlock();
 
     return 0;
 }

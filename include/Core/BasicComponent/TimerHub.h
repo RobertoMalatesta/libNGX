@@ -8,7 +8,7 @@ class Timer : public RBTreeNode, public CanReset {
 protected:
     virtual int Compare(Timer *Node);
     uint64_t Timestamp = 0;
-    friend class TimerTree;
+    friend class TimerHub;
 public:
     TimerMode Mode = TM_ONCE;
     uint64_t Interval = 0;
@@ -36,13 +36,14 @@ public:
     virtual void Reset() { Timestamp = 0; };
 };
 
-class TimerTree : public RBTree {
+class TimerHub : public RBTree {
 private:
+    SpinLock TimerHubLock;
     Timer _Sentinet;
 public:
-    TimerTree();
+    TimerHub();
 
-    ~TimerTree();
+    ~TimerHub();
 
     int QueueExpiredTimer(ThreadPool *TPool, uint32_t Count = TIMER_PROCESS_COUNT);
 

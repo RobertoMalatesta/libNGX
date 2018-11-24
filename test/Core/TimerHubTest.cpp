@@ -18,7 +18,7 @@ int TimerTreeTest() {
 
     Pool MemAllocator;
     ThreadPool T(7);
-    TimerTree Tree;
+    TimerHub Tree;
     TimeModuleInit();
 
 //    Tree.PostTimerPromise(1, func, nullptr);

@@ -86,7 +86,7 @@ public:
 
 // [TODO]
 // UInt32RBTree 哈希或整数检索树
-// TimerTree 定时器检索树 定时发出Promise
+// TimerHub 定时器检索树 定时发出Promise
 // FSTree 文件系统树 层级资源索引, 正则支持 要用哈希来优化加速
 // CacheTree 数据缓存树,版本控制+过期清除
 // PrefixSuffixTree 前缀后缀查询树

@@ -18,7 +18,7 @@ namespace ngx {
 #include "Core/BasicComponent/Digest.h"
 #include "Core/BasicComponent/ThreadPool.h"
 #include "Core/BasicComponent/Time.h"
-#include "Core/BasicComponent/TimerTree.h"
+#include "Core/BasicComponent/TimerHub.h"
 
 #include "Core/BasicComponent/EventEntity.h"
 #include "Core/BasicComponent/EventDomain.h"

@@ -28,7 +28,7 @@ set(SOURCE_FILES
         src/Core/BasicComponent/SocketEventDomain.cpp
         src/Core/BasicComponent/Time.cpp
         src/Core/BasicComponent/ThreadPool.cpp
-        src/Core/BasicComponent/TimerTree.cpp
+        src/Core/BasicComponent/TimerHub.cpp
         src/Core/BasicComponent/BufferCursor.cpp
         src/Core/BasicComponent/Router/Router.cpp
         src/Core/EPollEventDomain.cpp
@@ -51,7 +51,7 @@ set(TEST_FILES
         test/Core/HashTest.cpp
         test/Core/CRCTest.cpp
         test/Core/RBTreeTest.cpp
-        test/Core/TimerTreeTest.cpp
+        test/Core/TimerHubTest.cpp
         test/Core/SocketTest.cpp
         test/Core/EPollEventDomainTest.cpp
         test/Core/LockTest.cpp

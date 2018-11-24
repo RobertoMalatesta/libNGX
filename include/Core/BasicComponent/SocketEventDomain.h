@@ -1,8 +1,7 @@
 
 class SocketEventDomain : public EventDomain {
 protected:
-    TimerTree Timers;
-    SpinLock TimersLock;
+    TimerHub Timers;
 
     inline EventType GetAttachedEvent(Socket &S) {
         return S.AttachedEvent;
@@ -27,25 +26,17 @@ public:
 
     inline RuntimeError SetTimer(Socket &S, uint64_t Interval, TimerMode Mode) {
 
-        TimersLock.Lock();
-
         Timers.DetachTimer(S.TimerNode);
-        S.TimerNode.SeInterval(Interval, Mode);
-        Timers.AttachTimer(S.TimerNode);
 
-        TimersLock.Unlock();
+        S.TimerNode.SeInterval(Interval, Mode);
+
+        Timers.AttachTimer(S.TimerNode);
 
         return {0};
     }
 
     inline RuntimeError ResetTimer(Socket &S) {
-
-        TimersLock.Lock();
-
         Timers.DetachTimer(S.TimerNode);
-
-        TimersLock.Unlock();
-
         return {0};
     }
 
