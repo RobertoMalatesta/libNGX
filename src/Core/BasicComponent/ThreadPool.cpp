@@ -63,9 +63,13 @@ void* Thread::ThreadProcess(void *Argument) {
 
     T->Lock.Unlock();
 
+    LOG(INFO) << "thread start, tid: " << pthread_self();
+
+    ForceSleep(NANO_SECOND_SIZE);
+
     while (true) {
 
-        usleep(THREAD_WAIT_TIME);
+        ForceSleep(THREAD_WAIT_TIME);
 
         T->Lock.Lock();
 
@@ -86,6 +90,8 @@ void* Thread::ThreadProcess(void *Argument) {
 
         T->Lock.Unlock();
     }
+
+    LOG(INFO) << "thread exit, tid: " << pthread_self();
 
     return nullptr;
 }
@@ -127,7 +133,7 @@ void ThreadPool::PostPromise(PromiseCallback *Callback, void *PointerToArg) {
         }
 
         if (((i -= RetCode) - DeliverIndex) % NumThread == 0) {
-            usleep(THREAD_POOL_SPIN_TIME);
+            ForceSleep(THREAD_POOL_SPIN_TIME);
         }
     } while (true);
 

@@ -10,7 +10,7 @@ using namespace ngx::Core;
 static void func(void *, ThreadPool *) {
 
     char c[50];
-    WriteHTTPTime(c, HTTPTimeSize);
+    WriteHTTPTime(c, HTTP_TIME_SIZE);
     printf("Timer function: %s\n", c);
 }
 
@@ -32,7 +32,7 @@ int TimerTreeTest() {
 
     while (i++ < 20) {
         Tree.QueueExpiredTimer(&T);
-        usleep(1000 * 1000);
+        ForceSleep(NANO_SECOND_SIZE);
     }
     return 0;
 }

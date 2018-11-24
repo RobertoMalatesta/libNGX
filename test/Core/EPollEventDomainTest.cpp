@@ -51,7 +51,7 @@ int EPollEventDomainTest() {
 //        if (Error.GetCode() != 0) {
 //            Error.PrintError();
 //        }
-        usleep(500);
+        ForceSleep(NANO_SECOND_SIZE / 2000);
     }
 
     return 0;

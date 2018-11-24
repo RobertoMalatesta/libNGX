@@ -120,7 +120,7 @@ RuntimeError EPollEventDomain::EventDomainProcess(Server *S) {
         return {ENOENT, "EPollEventDomain initial failed!"};
     }
 
-    EventCount = epoll_pwait(EPollFD, Events, EPOLL_EVENT_BATCH_SIZE, EPOLL_EVENT_WAIT_TIME, &epoll_sig_mask);
+    EventCount = epoll_wait(EPollFD, Events, EPOLL_EVENT_BATCH_SIZE, EPOLL_EVENT_WAIT_TIME);
 
     EPollLock.Unlock();
 

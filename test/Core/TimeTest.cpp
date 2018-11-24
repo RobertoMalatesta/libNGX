@@ -16,37 +16,37 @@ int TimeTest() {
         printf("-----------------------------------------\n");
 
         {
-            char TimeBuf[ErrorLogTimeSize];
-            memset(TimeBuf, 0, ErrorLogTimeSize);
-            WriteErrorLogTime(TimeBuf, ErrorLogTimeSize);
+            char TimeBuf[ERROR_LOG_TIME_SIZE];
+            memset(TimeBuf, 0, ERROR_LOG_TIME_SIZE);
+            WriteErrorLogTime(TimeBuf, ERROR_LOG_TIME_SIZE);
             printf("%s\n", TimeBuf);
         }
 
         {
-            char TimeBuf[HTTPTimeSize];
-            WriteHTTPTime(TimeBuf, HTTPTimeSize);
+            char TimeBuf[HTTP_TIME_SIZE];
+            WriteHTTPTime(TimeBuf, HTTP_TIME_SIZE);
             printf("%s\n", TimeBuf);
         }
 
         {
-            char TimeBuf[HTTPLogTimeSize];
-            WriteHTTPLogTime(TimeBuf, HTTPLogTimeSize);
+            char TimeBuf[HTTP_LOG_TIME_SIZE];
+            WriteHTTPLogTime(TimeBuf, HTTP_LOG_TIME_SIZE);
             printf("%s\n", TimeBuf);
         }
 
         {
-            char TimeBuf[HTTPLogTimeISO8601Size];
-            WriteHTTPLogTimeISO8601(TimeBuf, HTTPLogTimeISO8601Size);
+            char TimeBuf[HTTP_LOG_TIME_ISO8601_SIZE];
+            WriteHTTPLogTimeISO8601(TimeBuf, HTTP_LOG_TIME_ISO8601_SIZE);
             printf("%s\n", TimeBuf);
         }
 
         {
-            char TimeBuf[SysLogTimeSize];
-            WriteSysLogTime(TimeBuf, SysLogTimeSize);
+            char TimeBuf[SYS_LOG_TIME_SIZE];
+            WriteSysLogTime(TimeBuf, SYS_LOG_TIME_SIZE);
             printf("%s\n", TimeBuf);
         }
 
-        usleep(1000 * 1000);
+        ForceSleep(NANO_SECOND_SIZE);
     }
 
     return 0;

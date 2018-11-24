@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 using namespace std;
+using namespace ngx::Core;
 using namespace ngx::Core::Arch::X86_64;
 using namespace ngx::Core::BasicComponent;
 
@@ -17,11 +18,11 @@ static uint64_t HighResolutionTimestamp;
 
 static struct {
     uint64_t Timestamp;
-    char ErrorLogTime[ErrorLogTimeSize];
-    char HTTPTime[HTTPTimeSize];
-    char HTTPLogTime[HTTPLogTimeSize];
-    char HTTPLogTimeISO8601[HTTPLogTimeISO8601Size];
-    char SysLogTime[SysLogTimeSize];
+    char ErrorLogTime[ERROR_LOG_TIME_SIZE];
+    char HTTPTime[HTTP_TIME_SIZE];
+    char HTTPLogTime[HTTP_LOG_TIME_SIZE];
+    char HTTPLogTimeISO8601[HTTP_LOG_TIME_ISO8601_SIZE];
+    char SysLogTime[SYS_LOG_TIME_SIZE];
 } TimeStringRingBuffer[NUM_TIME_SLOT];
 
 static const char *WeekString[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
@@ -92,10 +93,10 @@ int ngx::Core::BasicComponent::EnableTimer() {
 
     struct itimerval itv = {0};
 
-    itv.it_interval.tv_sec = TIME_RESOLUTION / 1000000;
-    itv.it_interval.tv_usec = (TIME_RESOLUTION % 1000000);
-    itv.it_value.tv_sec = TIME_RESOLUTION / 1000000;
-    itv.it_value.tv_usec = (TIME_RESOLUTION % 1000000);
+    itv.it_interval.tv_sec = TIME_RESOLUTION / U_SECOND_SIZE;
+    itv.it_interval.tv_usec = (TIME_RESOLUTION % U_SECOND_SIZE);
+    itv.it_value.tv_sec = TIME_RESOLUTION / U_SECOND_SIZE;
+    itv.it_value.tv_usec = (TIME_RESOLUTION % U_SECOND_SIZE);
 
     if (setitimer(ITIMER_REAL, &itv, nullptr) == -1) {
         return -1;
@@ -144,60 +145,60 @@ int ngx::Core::BasicComponent::WriteErrorLogTime(char *Buf, size_t Size) {
     int Version = FetchTimeVersion();
 
 
-    if (Size < ErrorLogTimeSize) {
+    if (Size < ERROR_LOG_TIME_SIZE) {
         return 0;
     }
 
-    memcpy(Buf, TimeStringRingBuffer[Version].ErrorLogTime, ErrorLogTimeSize - 1);
-    return ErrorLogTimeSize - 1;
+    memcpy(Buf, TimeStringRingBuffer[Version].ErrorLogTime, ERROR_LOG_TIME_SIZE - 1);
+    return ERROR_LOG_TIME_SIZE - 1;
 }
 
 int ngx::Core::BasicComponent::WriteHTTPTime(char *Buf, size_t Size) {
 
     int Version = FetchTimeVersion();
 
-    if (Size < HTTPTimeSize) {
+    if (Size < HTTP_TIME_SIZE) {
         return 0;
     }
 
-    memcpy(Buf, TimeStringRingBuffer[Version].HTTPTime, HTTPTimeSize - 1);
-    return HTTPTimeSize - 1;
+    memcpy(Buf, TimeStringRingBuffer[Version].HTTPTime, HTTP_TIME_SIZE - 1);
+    return HTTP_TIME_SIZE - 1;
 }
 
 int ngx::Core::BasicComponent::WriteHTTPLogTime(char *Buf, size_t Size) {
 
     int Version = FetchTimeVersion();
 
-    if (Size < HTTPLogTimeSize) {
+    if (Size < HTTP_LOG_TIME_SIZE) {
         return 0;
     }
 
-    memcpy(Buf, TimeStringRingBuffer[Version].HTTPLogTime, HTTPLogTimeSize - 1);
-    return HTTPLogTimeSize - 1;
+    memcpy(Buf, TimeStringRingBuffer[Version].HTTPLogTime, HTTP_LOG_TIME_SIZE - 1);
+    return HTTP_LOG_TIME_SIZE - 1;
 }
 
 int ngx::Core::BasicComponent::WriteHTTPLogTimeISO8601(char *Buf, size_t Size) {
 
     int Version = FetchTimeVersion();
 
-    if (Size < HTTPLogTimeISO8601Size) {
+    if (Size < HTTP_LOG_TIME_ISO8601_SIZE) {
         return 0;
     }
 
-    memcpy(Buf, TimeStringRingBuffer[Version].HTTPLogTimeISO8601, HTTPLogTimeISO8601Size - 1);
-    return HTTPLogTimeISO8601Size - 1;
+    memcpy(Buf, TimeStringRingBuffer[Version].HTTPLogTimeISO8601, HTTP_LOG_TIME_ISO8601_SIZE - 1);
+    return HTTP_LOG_TIME_ISO8601_SIZE - 1;
 }
 
 int ngx::Core::BasicComponent::WriteSysLogTime(char *Buf, size_t Size) {
 
     int Version = FetchTimeVersion();
 
-    if (Size < SysLogTimeSize) {
+    if (Size < SYS_LOG_TIME_SIZE) {
         return 0;
     }
 
-    memcpy(Buf, TimeStringRingBuffer[Version].SysLogTime, SysLogTimeSize - 1);
-    return SysLogTimeSize - 1;
+    memcpy(Buf, TimeStringRingBuffer[Version].SysLogTime, SYS_LOG_TIME_SIZE - 1);
+    return SYS_LOG_TIME_SIZE - 1;
 }
 
 static int FetchTimeVersion(bool Force) {
@@ -229,7 +230,7 @@ static void UpdateTimeString() {
     gettimeofday(&Timestamp, nullptr);
     Time = (uint64_t) Timestamp.tv_sec;
 
-    HighResolutionTimestamp = Time * 1000000 + (uint64_t) Timestamp.tv_usec;
+    HighResolutionTimestamp = Time * U_SECOND_SIZE + (uint64_t) Timestamp.tv_usec;
 
     if (Time == OldTime) {
         return;
@@ -287,4 +288,26 @@ static void UpdateTimeString() {
 
     UpdateTimestamp = false;
 }
+
+int ngx::Core::BasicComponent::ForceSleep(uint64_t NanoSeconds) {
+
+    struct timespec ts;
+
+    ts.tv_nsec = NanoSeconds %(NANO_SECOND_SIZE);
+    ts.tv_sec = NanoSeconds / (NANO_SECOND_SIZE);
+    while (-1 == nanosleep(&ts, &ts)) {
+        if (errno != EINTR) {
+            return errno;
+        }
+    }
+
+    return 0;
+}
+
+
+
+
+
+
+
 
