@@ -1,5 +1,3 @@
-
-
 class HTTPParser {
 protected:
     static HTTPError ParseMethod(Buffer &B, HTTPRequest &R);
@@ -22,3 +20,5 @@ protected:
 public:
     static HTTPError ParseHTTPRequest(Buffer &B, HTTPRequest &R);
 };
+
+HTTPCoreHeaderIn HeaderInToEnum (BoundCursor HeaderName);

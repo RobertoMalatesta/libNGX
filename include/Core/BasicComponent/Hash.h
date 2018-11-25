@@ -34,4 +34,8 @@ inline void murmur_hash2(u_char *data, size_t len, uint32_t &h) {
     h *= 0x5bd1e995;
     h ^= h >> 15;
 }
+
+inline void SimpleHash(uint32_t &Hash, u_char C) {
+    Hash = Hash * 31 + C;
+}
 }

@@ -40,6 +40,39 @@ const char BrokenHeaderErrorString[] = "Broken Header in buffer!";
 const char NoMoreHeaderErrorString[] = "No more header!";
 const char HeaderNoMemoryErrorString[] = "No sufficient memory to store header indexer";
 
+static bool HeaderInHashInit = false;
+static ConstStringHash CoreHeaderInNames[HI_SIZE] = {
+        {"Host", 0},
+        {"Connection", 0},
+        {"If-Midified-Since", 0},
+        {"If-Unmodified-Since", 0},
+        {"If-Match", 0},
+        {"If-None-Match", 0},
+        {"UserAgent", 0},
+        {"Referer", 0},
+        {"Content-Length", 0},
+        {"Content-Range", 0},
+        {"Content-Type", 0},
+        {"Range", 0},
+        {"If-Range", 0},
+        {"Transfer-Encoding", 0},
+        {"TE", 0},
+        {"Expect", 0},
+        {"Accept-Encoding", 0},
+        {"Via", 0},
+        {"Authorization", 0},
+        {"Keep-Alive", 0},
+        {"X-Forward-For", 0},
+        {"X-Real-IP", 0},
+        {"Accept", 0},
+        {"Accept-Language", 0},
+        {"Depth", 0},
+        {"Destination", 0},
+        {"Overwrite", 0},
+        {"Date", 0},
+        {"Cookie", 0},
+};
+
 HTTPError HTTPParser::ParseHTTPRequest(Buffer &B, HTTPRequest &R) {
 
     HTTPError Error(0);
@@ -1078,3 +1111,39 @@ HTTPError HTTPParser::ValidateURI(HTTPRequest &R) {
     return {0};
 }
 
+static void InitHTTPCoreHeaderInHashTable() {
+
+    size_t Length;
+    const char *TempPointer;
+
+    for (int i= 0; i < HI_SIZE - 1; i++) {
+        TempPointer = CoreHeaderInNames[i].String;
+        Length = strlen(TempPointer);
+        CoreHeaderInNames[i].Hash = 0 ^ Length;
+        for (u_char *P = (u_char *)TempPointer; *P != '\0'; P++) {
+            SimpleHash(CoreHeaderInNames[i].Hash, LowerCase[*P]);
+        }
+    }
+}
+
+HTTPCoreHeaderIn ngx::HTTP::HeaderInToEnum (BoundCursor HeaderName) {
+
+    if (!HeaderInHashInit) {
+        InitHTTPCoreHeaderInHashTable();
+        HeaderInHashInit = true;
+    }
+
+    uint32_t Hash = 0 ^ HeaderName.Size();
+
+    for(BoundCursor BC = HeaderName; *BC != '\0'; BC ++) {
+        SimpleHash(Hash, LowerCase[*BC]);
+    }
+
+    for (int i= 0; i < HI_SIZE - 1; i++) {
+        if (CoreHeaderInNames[i].Hash == Hash) {
+            return (HTTPCoreHeaderIn)i;
+        }
+    }
+
+    return HI_COMMON;
+}

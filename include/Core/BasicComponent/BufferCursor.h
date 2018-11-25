@@ -118,6 +118,5 @@ struct BoundCursor : public Cursor {
     bool CmpByte4(uint32_t Offset, u_char C1, u_char C2, u_char C3, u_char C4) const;
 
     size_t Size();
-    uint32_t Hash();
 };
 

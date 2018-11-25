@@ -38,7 +38,7 @@ set(SOURCE_FILES
         src/HTTP/HTTPParser.cpp
         src/HTTP/HTTPError.cpp
         src/HTTP/HTTPConnectionBuilder.cpp
-        src/HTTP/HTTPHeader.cpp)
+        )
 
 set(TEST_FILES
         test/Test.cpp

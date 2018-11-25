@@ -111,6 +111,16 @@ RuntimeError Buffer::ReadData(u_char *PointerToData, size_t DataLength) {
     size_t CurrentBlockFreeSize;
     BufferMemoryBlock *TempBufferBlock, *WriteBlock;
 
+    if (HeadBlock == nullptr) {
+        HeadBlock = AquireBlock(RecycleBin, BlockSize);
+
+        if (HeadBlock == nullptr) {
+            return {ENOMEM, "can not allocate buffer block"};
+        } else {
+            Cursor = {this, HeadBlock->Start, HeadBlock->Start};
+        }
+    }
+
     WriteBlock = AddressToMemoryBlock(Cursor.Bound);
 
     for (;;) {
