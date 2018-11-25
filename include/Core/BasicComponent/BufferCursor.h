@@ -62,10 +62,7 @@ struct BoundCursor : public Cursor {
         return Ret;
     }
 
-    inline bool operator!() const {
-
-        return Position == nullptr || Position >= Bound;
-    }
+    bool operator!();
 
     inline u_char operator[](uint16_t Offset) const {
 
@@ -108,47 +105,17 @@ struct BoundCursor : public Cursor {
 
     BoundCursor &operator-=(size_t Size) = delete;
 
-    bool ReadByte(uint32_t Offset, u_char &C1) const {
+    bool ReadByte(uint32_t Offset, u_char &C1) const;
 
-        BoundCursor TempCursor = (*this + Offset);
-
-        if (TempCursor.Position == nullptr) {
-            return false;
-        }
-
-        C1 = *TempCursor.Position;
-        return true;
-    }
-
-    bool CmpByte(uint32_t Offset, u_char C1) const {
-
-        u_char A1;
-        return this->ReadByte(Offset, A1) && A1 == C1;
-    }
+    bool CmpByte(uint32_t Offset, u_char C1) const;
 
     bool ReadBytes2(uint32_t Offset, u_char &C1, u_char &C2) const;
 
-    bool CmpByte2(uint32_t Offset, u_char C1, u_char C2) const {
-
-        u_char A1, A2;
-
-        return this->ReadBytes2(Offset, A1, A2)
-               && A1 == C1
-               && A2 == C2;
-    }
+    bool CmpByte2(uint32_t Offset, u_char C1, u_char C2) const;
 
     bool ReadBytes4(uint32_t Offset, u_char &C1, u_char &C2, u_char &C3, u_char &C4) const;
 
-    bool CmpByte4(uint32_t Offset, u_char C1, u_char C2, u_char C3, u_char C4) const {
-
-        u_char A1, A2, A3, A4;
-
-        return this->ReadBytes4(Offset, A1, A2, A3, A4)
-               && A1 == C1
-               && A2 == C2
-               && A3 == C3
-               && A4 == C4;
-    }
+    bool CmpByte4(uint32_t Offset, u_char C1, u_char C2, u_char C3, u_char C4) const;
 
     size_t Size();
     uint32_t Hash();

@@ -1,50 +1,36 @@
-namespace ngx {
-    namespace HTTP {
+class HTTPRequest {
+protected:
 
-        struct HTTPHeader {
-            BoundCursor Name;
-            BoundCursor Value;
-            bool Valid;
+    unsigned ComplexURI:1;
+    unsigned QuotedURI:1;
+    unsigned PlusInURI:1;
+    unsigned SpaceInURI:1;
+    unsigned short Version;
 
-            HTTPHeader() : Name(), Value(), Valid(true) {}
-        };
+    HTTPMethod Method;
+    BoundCursor URI;
+    BoundCursor URIExt;
+    BoundCursor Port;
+    BoundCursor HTTPProtocol;
+    BoundCursor Argument;
+    BoundCursor Content;
+    BoundCursor Schema;
+    BoundCursor Host;
+    BoundCursor IP;
+    Array<HTTPHeader> Headers;
+    Array<BoundCursor> ArgumentList;
+    HTTPRequestState State = HTTP_INIT_STATE;
 
-        class HTTPRequest {
-        protected:
+    friend class HTTPParser;
 
-            unsigned ComplexURI:1;
-            unsigned QuotedURI:1;
-            unsigned PlusInURI:1;
-            unsigned SpaceInURI:1;
-            unsigned short Version;
-
-            HTTPMethod Method;
-            BoundCursor URI;
-            BoundCursor URIExt;
-            BoundCursor Port;
-            BoundCursor HTTPProtocol;
-            BoundCursor Argument;
-            BoundCursor Content;
-            BoundCursor Schema;
-            BoundCursor Host;
-            BoundCursor IP;
-            Array Headers;
-            Array ArgumentList;
-            HTTPRequestState State = HTTP_INIT_STATE;
-
-            friend class HTTPParser;
-
-        public:
-            HTTPRequest(MemAllocator *Allocator) : Headers(Allocator, sizeof(HTTPHeader)),
-                                                   ArgumentList(Allocator, sizeof(BoundCursor)) {};
-            /* HTTPConnection
-            * CanReset
-            * enum Method
-            * Range URI
-            * Array *Headers
-            * Range Data
-            *
-            * */
-        };
-    }
-}
+public:
+    HTTPRequest(MemAllocator *Allocator) : Headers(Allocator), ArgumentList(Allocator) {};
+    /* HTTPConnection
+    * CanReset
+    * enum Method
+    * Range URI
+    * Array *Headers
+    * Range Data
+    *
+    * */
+};

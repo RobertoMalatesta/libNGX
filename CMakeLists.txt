@@ -6,7 +6,6 @@ set(CMAKE_CXX_STANDARD 11)
 
 set(SOURCE_FILES
         src/Core/Arch/ArchX86.cpp
-        src/Core/DataStructure/Array.cpp
         src/Core/DataStructure/Queue.cpp
         src/Core/DataStructure/List.cpp
         src/Core/DataStructure/RBTree.cpp
@@ -39,7 +38,7 @@ set(SOURCE_FILES
         src/HTTP/HTTPParser.cpp
         src/HTTP/HTTPError.cpp
         src/HTTP/HTTPConnectionBuilder.cpp
-        )
+        src/HTTP/HTTPHeader.cpp)
 
 set(TEST_FILES
         test/Test.cpp

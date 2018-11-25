@@ -1,21 +1,17 @@
-namespace ngx {
-    namespace HTTP {
 
-        class HTTPListening : public TCP4Listening {
-        protected:
+class HTTPListening : public TCP4Listening {
+protected:
 
-            HTTPServer *ParentServer;
-            SocketEventDomain *ParentEventDomain;
+    HTTPServer *ParentServer;
+    SocketEventDomain *ParentEventDomain;
 
-            friend class HTTPServer;
+    friend class HTTPServer;
 
-            virtual RuntimeError HandleEventDomain(uint32_t EventType);
+    virtual RuntimeError HandleEventDomain(uint32_t EventType);
 
-        public:
+public:
 
-            HTTPListening(struct SocketAddress &SocketAddress);
+    HTTPListening(struct SocketAddress &SocketAddress);
 
-            ~HTTPListening() = default;
-        };
-    }
-}
+    ~HTTPListening() = default;
+};

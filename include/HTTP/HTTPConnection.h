@@ -1,52 +1,48 @@
-namespace ngx {
-    namespace HTTP {
 
-        class HTTPConnection : protected TCP4Connection, protected Recyclable {
-        protected:
-            Pool MemPool;
+class HTTPConnection : public TCP4Connection, public Recyclable {
+protected:
+    Pool MemPool;
 
-            Buffer ReadBuffer;
-            HTTPRequest *Request;
+    Buffer ReadBuffer;
+    HTTPRequest Request;
 
-            HTTPServer *ParentServer = nullptr;
-            SocketEventDomain *ParentEventDomain = nullptr;
+    HTTPServer *ParentServer = nullptr;
+    SocketEventDomain *ParentEventDomain = nullptr;
 
-            RuntimeError SetSocketAddress(int SocketFD, struct SocketAddress &Address);
 
-            virtual RuntimeError HandleEventDomain(uint32_t EventType);
+    virtual RuntimeError HandleEventDomain(uint32_t EventType);
 
-            static void OnTimerEvent(void *PointerToConnection, ThreadPool *TPool);
+    static void OnTimerEvent(void *PointerToConnection, ThreadPool *TPool);
 
-            static void OnConnectionEvent(void *PointerToConnection, ThreadPool *TPool);
+    static void OnConnectionEvent(void *PointerToConnection, ThreadPool *TPool);
 
-            friend class HTTPServer;
-            friend class HTTPListening;
-            friend class HTTPConnectionRecycleBin;
-            friend class HTTPConnectionBuilder;
+    friend class HTTPListening;
 
-        public:
+    friend class HTTPConnectionBuilder;
 
-            HTTPConnection();
+public:
 
-            ~HTTPConnection() = default;
+    HTTPConnection();
 
-            inline RuntimeError ReadConnection() {
-                return ReadBuffer.ReadFromConnection(this);
-            }
+    ~HTTPConnection() = default;
 
-            inline RuntimeError WriteConnection() {
-                return RuntimeError(EINVAL);
-            }
-
-            RuntimeError ProcessRequest() {
-                return RuntimeError(0);
-            };
-
-            SocketError Close();
-
-            virtual void Reset();
-        };
+    inline RuntimeError ReadConnection() {
+        return ReadBuffer.ReadFromConnection(this);
     }
-}
+
+    inline RuntimeError WriteConnection() {
+        return RuntimeError(EINVAL);
+    }
+
+    RuntimeError ProcessRequest() {
+        return RuntimeError(0);
+    };
+
+    RuntimeError SetSocketAddress(int SocketFD, struct SocketAddress &Address);
+
+    SocketError Close();
+
+    virtual void Reset();
+};
 
 

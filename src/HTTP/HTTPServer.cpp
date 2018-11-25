@@ -27,7 +27,6 @@ EventError HTTPServer::AttachListening(HTTPListening &L) {
     }
 
     L.ParentServer = this;
-    L.ParentEventDomain = &EventDomain;
 
     return {0};
 }
@@ -45,7 +44,6 @@ EventError HTTPServer::DetachListening(HTTPListening &L) {
     }
 
     L.ParentServer = nullptr;
-    L.ParentEventDomain = nullptr;
 
     return {0};
 }

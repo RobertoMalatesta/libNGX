@@ -21,42 +21,45 @@ static inline void Free(MemAllocator *Allocator, void *&Pointer) {
     }
 }
 
-Array::Array(MemAllocator *Allocator, size_t Size, uint Count) {
+template <typename T>
+Array<T>::Array(MemAllocator *Allocator, uint32_t Count) {
 
     this->Allocator = Allocator;
-    this->Size = Size;
     this->NAlloc = Count;
 
-    PointerToData = (u_char *) Allocate(this->Allocator, Count * Size);
+    PointerToData = (u_char *) Allocate(this->Allocator, Count * sizeof(T));
 }
 
-Array::~Array() {
+template <typename T>
+Array<T>::~Array() {
     Free(Allocator, (void *&) PointerToData);
 }
 
-void *Array::Push() {
+template <typename T>
+T *Array<T>::Push() {
 
     if (ElementCount == NAlloc) {
 
-        void *NewDataPointer = Allocate(Allocator, 2 * (Size * NAlloc));
+        void *NewDataPointer = Allocate(Allocator, 2 * (sizeof(T) * NAlloc));
 
         if (NewDataPointer == nullptr) {
             return nullptr;
         }
 
-        memcpy(NewDataPointer, PointerToData, (Size * NAlloc));
+        memcpy(NewDataPointer, PointerToData, (sizeof(T) * NAlloc));
         Free(Allocator, (void *&) PointerToData);
         PointerToData = (u_char *) NewDataPointer;
         NAlloc = 2 * NAlloc;
     }
 
-    u_char *Ret = (u_char *) PointerToData + Size * ElementCount;
+    u_char *Ret = (u_char *) PointerToData + sizeof(T) * ElementCount;
     ElementCount += 1;
 
     return Ret;
 }
 
-void *Array::PushN(uint N) {
+template <typename T>
+T *Array<T>::PushN(uint32_t N) {
 
     if (ElementCount + N > NAlloc) {
 
@@ -64,20 +67,20 @@ void *Array::PushN(uint N) {
 
         uint32_t NewAlloc = 2 * (N >= NAlloc ? N : NAlloc);
 
-        NewDataPointer = Allocate(Allocator, NewAlloc * Size);
+        NewDataPointer = Allocate(Allocator, NewAlloc * sizeof(T));
 
         if (NewDataPointer == nullptr) {
             return nullptr;
         }
 
-        memcpy(NewDataPointer, PointerToData, (Size * ElementCount));
+        memcpy(NewDataPointer, PointerToData, (sizeof(T) * ElementCount));
 
         Free(Allocator, (void *&) PointerToData);
         PointerToData = (u_char *) NewDataPointer;
         NAlloc = NewAlloc;
     }
 
-    u_char *Ret = (u_char *) PointerToData + Size * ElementCount;
+    u_char *Ret = (u_char *) PointerToData + sizeof(T) * ElementCount;
     ElementCount += N;
 
     return Ret;

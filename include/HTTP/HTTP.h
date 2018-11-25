@@ -68,10 +68,8 @@ namespace ngx {
         enum HTTPResponseState {
 
         };
-    }
-}
-
 #include "HTTP/HTTPError.h"
+#include "HTTP/HTTPHeader.h"
 #include "HTTP/HTTPRequest.h"
 #include "HTTP/HTTPParser.h"
 #include "HTTP/HTTPListening.h"
@@ -79,3 +77,7 @@ namespace ngx {
 #include "HTTP/HTTPConnectionRecycleBin.h"
 #include "HTTP/HTTPConnectionBuilder.h"
 #include "HTTP/HTTPServer.h"
+#include "HTTP/Router/Router.h"
+    }
+}
+

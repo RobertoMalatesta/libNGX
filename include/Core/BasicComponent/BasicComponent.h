@@ -35,7 +35,6 @@ namespace ngx {
 #include "Core/BasicComponent/BufferAllocator.h"
 #include "Core/BasicComponent/BufferBuilder.h"
 
-#include "Core/BasicComponent/Router/Router.h"
         }
     }
 }
