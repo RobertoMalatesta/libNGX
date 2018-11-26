@@ -33,4 +33,12 @@ public:
     BufferMemoryBlock *GetNextBlock() { return NextBlock; }
 
     virtual void Reset();
+
+    static inline BufferMemoryBlock *FromRecycleQueue(Queue *Q) {
+
+        if (Q == nullptr) {
+            return nullptr;
+        }
+        return (BufferMemoryBlock *)((uintptr_t)Q - (uintptr_t)(&((BufferMemoryBlock*)0)->RecycleItem));
+    }
 };

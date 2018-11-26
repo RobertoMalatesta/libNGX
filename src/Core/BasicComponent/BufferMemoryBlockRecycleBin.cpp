@@ -16,7 +16,7 @@ BufferMemoryBlockRecycleBin::~BufferMemoryBlockRecycleBin() {
 
     while (!RecycleSentinel.IsEmpty()) {
         TempBlock = (BufferMemoryBlock *) RecycleSentinel.GetNext();
-        TempBlock->Detach();
+        TempBlock->RecycleItem.Detach();
         BufferMemoryBlock::Destroy(TempBlock);
     }
 }
@@ -31,8 +31,8 @@ BufferMemoryBlock *BufferMemoryBlockRecycleBin::Get() {
         BufferMemoryBlock::Build(Ret, BufferMemoryBlockSize);
     } else {
         RecycleSize -= 1;
-        Ret = (BufferMemoryBlock *) RecycleSentinel.GetNext();
-        Ret->Detach();
+        Ret = BufferMemoryBlock::FromRecycleQueue(RecycleSentinel.GetNext());
+        Ret->RecycleItem.Detach();
     }
 
     return Ret;
@@ -47,6 +47,6 @@ void BufferMemoryBlockRecycleBin::Put(BufferMemoryBlock *Item) {
     } else {
         RecycleSize += 1;
         Item->Reset();
-        RecycleSentinel.Append(Item);
+        RecycleSentinel.Append(&Item->RecycleItem);
     }
 }

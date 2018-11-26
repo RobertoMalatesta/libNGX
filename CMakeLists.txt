@@ -7,7 +7,6 @@ set(CMAKE_CXX_STANDARD 11)
 set(SOURCE_FILES
         src/Core/Arch/ArchX86.cpp
         src/Core/Types/Queue.cpp
-        src/Core/Types/List.cpp
         src/Core/Types/RBTree.cpp
         src/Core/BasicComponent/Buffer.cpp
         src/Core/BasicComponent/BasicMemoryBlock.cpp

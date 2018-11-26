@@ -1,6 +1,5 @@
 #include "HTTP/HTTP.h"
 
-using namespace ngx::Core;
 using namespace ngx::HTTP;
 
 HTTPConnection::HTTPConnection() :
@@ -43,7 +42,7 @@ RuntimeError HTTPConnection::HandleEventDomain(uint32_t EventType) {
     return ParentEventDomain->PostPromise(HTTPConnection::OnConnectionEvent, static_cast<void *>(this));
 }
 
-void HTTPConnection::OnTimerEvent(void *PointerToConnection, ThreadPool *TPool) {
+void HTTPConnection::OnTimerEvent(void *PointerToConnection, ThreadPool *) {
 
     HTTPConnection *C;
 

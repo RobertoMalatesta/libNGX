@@ -1,6 +1,6 @@
 class RecycleBin {
 protected:
-    Recyclable RecycleSentinel;
+    Queue RecycleSentinel;
     uint64_t RecycleMaxSize = DEFAULT_RECYCLE_SIZE, RecycleSize = 0;
 public:
     RecycleBin(uint64_t RecycleMaxSize) : RecycleSentinel() {

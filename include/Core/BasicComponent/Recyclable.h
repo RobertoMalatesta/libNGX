@@ -1,6 +1,7 @@
-class Recyclable : public CanReset, public Queue {
+class Recyclable : public CanReset {
 public:
-    Recyclable() : Queue() {};
+    Queue RecycleItem;
+    Recyclable() : RecycleItem() {};
 
     virtual void Reset() {};
 };

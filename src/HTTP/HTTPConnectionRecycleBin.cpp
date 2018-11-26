@@ -16,7 +16,7 @@ int HTTPConnectionRecycleBin::Get(HTTPConnection *&C, int SocketFD, SocketAddres
     if (!RecycleSentinel.IsEmpty()) {
         C = (HTTPConnection *) RecycleSentinel.GetNext();
         RecycleSize -= 1;
-        C->Detach();
+        C->RecycleItem.Detach();
     }
     else{
         if (Build(C) != 0) {
@@ -36,7 +36,7 @@ int HTTPConnectionRecycleBin::Put(HTTPConnection *&Item) {
     } else {
         Item->Reset();
         RecycleSize += 1;
-        RecycleSentinel.Append(Item);
+        RecycleSentinel.Append(&Item->RecycleItem);
     }
 
     if (AllocateCount++ % (RECYCLE_GC_ROUND) == 0) {
@@ -51,9 +51,9 @@ HTTPConnectionRecycleBin::~HTTPConnectionRecycleBin() {
     HTTPConnection *Item;
 
     while (!RecycleSentinel.IsEmpty()) {
-        Item = static_cast<HTTPConnection *> (RecycleSentinel.GetNext());
+        Item = HTTPConnection::FromRecycleQueue(RecycleSentinel.GetNext());
         RecycleSize -= 1;
-        Item->Detach();
+        Item->RecycleItem.Detach();
         Item->~HTTPConnection();
         Destroy(Item);
     }

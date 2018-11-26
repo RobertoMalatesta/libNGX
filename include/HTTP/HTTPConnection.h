@@ -43,6 +43,14 @@ public:
     SocketError Close();
 
     virtual void Reset();
+
+    static inline HTTPConnection *FromRecycleQueue(Queue *Q) {
+
+        if (Q == nullptr) {
+            return nullptr;
+        }
+        return (HTTPConnection *)((uintptr_t)Q - (uintptr_t)(&((HTTPConnection*)0)->RecycleItem));
+    }
 };
 
 
