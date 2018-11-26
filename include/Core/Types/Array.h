@@ -1,5 +1,3 @@
-
-
 //===- Array.h - Array to hold contiguous element   -------------*- C++ -*-===//
 //
 //                     The NGX Server Infrastructure
@@ -12,8 +10,9 @@
 //  This file provide Array facility to enable alloc contiguous elements
 //
 //===----------------------------------------------------------------------===//
+
 template <typename T>
-class Array: public CanReset{
+class Array: public CanReset {
 private:
     MemAllocator *Allocator = nullptr;
     u_char *PointerToData = nullptr;
@@ -21,36 +20,41 @@ private:
     uint32_t ElementCount = 0;
 
 public:
-    Array(MemAllocator *Allocator, uint32_t Count = ARRAY_DEFAULT_ELEMENT_COUNT) {
-        this->Allocator = Allocator;
+    Array(MemAllocator *Allocator) {
 
-        if (Allocator != nullptr) {
-            PointerToData = (u_char *)Allocator->Allocate(Count * sizeof(T));
-        } else {
-            PointerToData = (u_char *)malloc(Count * sizeof(T));
-        }
+        // specify memory allocator, use malloc() if nullptr
+        this->Allocator = Allocator;
     }
 
     ~Array() {
+
+        // free all memory used
         Reset();
     }
 
-    void *operator[](uint32_t Index) {
+    T *operator[](uint32_t Index) const {
 
+        // not init yet?
         if (PointerToData == nullptr || Index >= ElementCount) {
             return nullptr;
         }
 
-        return PointerToData + (Index * sizeof(T));
+        return (T *)(PointerToData + (Index * sizeof(T)));
+    }
 
+    uint32_t Size() const {
+
+        return ElementCount;
     }
 
     T *Push() {
+
         return PushN(1);
     }
 
     T *PushN(uint32_t N) {
 
+        // need init ?
         if (AllocateCount == 0 || PointerToData == nullptr) {
             if (Allocator != nullptr) {
                 PointerToData = (u_char *)Allocator->Allocate(ARRAY_DEFAULT_ELEMENT_COUNT * sizeof(T));
@@ -65,6 +69,7 @@ public:
             }
         }
 
+        // need reallocate?
         if (ElementCount + N > AllocateCount) {
 
             void *NewDataPointer;
@@ -94,6 +99,7 @@ public:
             AllocateCount = NewAlloc;
         }
 
+        // allocate Array item
         u_char *Ret = PointerToData + sizeof(T) * ElementCount;
         ElementCount += N;
 
@@ -101,11 +107,14 @@ public:
     }
 
     virtual void Reset() {
+
+        // free all memory and reset state
         if (Allocator != nullptr) {
             Allocator->Free((void *&)PointerToData);
         } else {
             free(PointerToData);
         }
+
         PointerToData = nullptr, AllocateCount = ElementCount = 0;
     }
 };

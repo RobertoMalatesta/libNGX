@@ -26,11 +26,6 @@ namespace ngx {
         using namespace BasicComponent;
         using namespace Arch::X86_64;
 
-
-        class FSEntity;
-
-        class FSTree;
-
         class EPollEventDomain;
     }
 }

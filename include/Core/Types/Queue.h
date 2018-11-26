@@ -6,13 +6,13 @@ protected:
 public:
     Queue();
 
-    bool IsEmpty();
+    bool IsEmpty() const;
 
-    Queue *GetNext();
+    Queue *GetNext() const;
 
-    Queue *GetPrev();
+    Queue *GetPrev() const;
 
-    void Attach(Queue *Node);
+    void Attach(Queue *Q);
 
     void Detach();
 

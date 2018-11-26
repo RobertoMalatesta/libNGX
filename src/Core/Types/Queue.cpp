@@ -6,15 +6,15 @@ Queue::Queue() {
     this->Prev = this -> Next = this;
 }
 
-bool Queue::IsEmpty() {
+bool Queue::IsEmpty() const {
     return this == this->Prev;
 }
 
-Queue *Queue::GetNext() {
+Queue *Queue::GetNext() const {
     return Next;
 }
 
-Queue *Queue::GetPrev() {
+Queue *Queue::GetPrev() const {
     return Prev;
 }
 
