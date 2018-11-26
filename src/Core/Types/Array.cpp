@@ -1,6 +1,6 @@
 #include "Core/Core.h"
 
-using namespace ngx::Core::DataStructure;
+using namespace ngx::Core::Types;
 
 static inline void *Allocate(MemAllocator *Allocator, size_t Size) {
 

@@ -1,6 +1,6 @@
 #include "Core/Core.h"
 
-using namespace ngx::Core::DataStructure;
+using namespace ngx::Core::Types;
 
 void *ListIterator::Next() {
     if (nullptr != CurrentCarriage) {

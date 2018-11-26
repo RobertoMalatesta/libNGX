@@ -14,7 +14,7 @@
 #include "ngx.h"
 #include "Core/Arch/Arch.h"
 #include "Core/MetaClass/MetaClass.h"
-#include "Core/DataStructure/DataStructure.h"
+#include "Core/Types/Types.h"
 #include "Core/BasicComponent/BasicComponent.h"
 
 namespace ngx {
@@ -22,7 +22,7 @@ namespace ngx {
 
         using namespace MetaClass;
         using namespace DefaultConfig;
-        using namespace DataStructure;
+        using namespace Types;
         using namespace BasicComponent;
         using namespace Arch::X86_64;
 

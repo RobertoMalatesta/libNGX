@@ -3,7 +3,7 @@ namespace ngx {
         namespace BasicComponent {
             using namespace ngx::Core::DefaultConfig;
             using namespace ngx::Core::MetaClass;
-            using namespace ngx::Core::DataStructure;
+            using namespace ngx::Core::Types;
 
 #include "Core/BasicComponent/Error.h"
 #include "Core/BasicComponent/Recyclable.h"

@@ -12,7 +12,7 @@ namespace ngx {
             const uint64_t TIME_RESOLUTION = 1000;  // us
             const uint32_t NUM_TIME_SLOT = 128;
 
-            // DataStructure Configuration
+            // Types Configuration
             const size_t BUILD_DEFAULT_SIZE = 4096; // Byte(s)
             const uint32_t ARRAY_DEFAULT_ELEMENT_COUNT = 32;
 
