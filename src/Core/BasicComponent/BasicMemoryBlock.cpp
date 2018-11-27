@@ -11,8 +11,7 @@ BasicMemoryBlock::BasicMemoryBlock(size_t Size) : Reference() {
 }
 
 BasicMemoryBlock::~BasicMemoryBlock() {
-    Magic = nullptr;
-    PointerToData = PointerToHead = nullptr;
+    Magic = PointerToData = PointerToHead = nullptr;
 }
 
 BasicMemoryBlock *BasicMemoryBlock::AddressToMemoryBlock(void *Address, size_t Size) {

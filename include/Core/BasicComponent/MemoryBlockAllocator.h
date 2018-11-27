@@ -8,7 +8,7 @@ protected:
 public:
     MemoryBlockAllocator(size_t Size);
 
-    ~MemoryBlockAllocator();
+    ~MemoryBlockAllocator() = default;
 
     virtual void *Allocate(size_t Size);
 

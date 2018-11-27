@@ -9,10 +9,6 @@ MemoryBlockAllocator::MemoryBlockAllocator(size_t Size) : BasicMemoryBlock(Size)
     Magic = (void *) this;
 }
 
-MemoryBlockAllocator::~MemoryBlockAllocator() {
-    BasicMemoryBlock::~BasicMemoryBlock();
-}
-
 void *MemoryBlockAllocator::Allocate(size_t Size) {
     void *ret = nullptr;
 

@@ -1,5 +1,4 @@
 
-#include <zconf.h>
 #include <cstdio>
 extern int HTTPServerTest();
 
