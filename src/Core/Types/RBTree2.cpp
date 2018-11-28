@@ -224,7 +224,7 @@ int RBT::Insert(RBNode *Node) {
         } else if (Result > 0){
             Place = &(*Place)->Right;
         } else {
-            return 0;
+            Place = &(*Place)->Left;
         }
     }
 
@@ -360,6 +360,29 @@ RBNode* RBT::Next(RBNode *Node) {
     }
 
     while ((Parent = Node->Parent) && Node == Parent->Right) {
+        Node = Parent;
+    }
+
+    return Parent;
+}
+
+RBNode* RBT::Prev(RBNode *Node) {
+
+    RBNode *Parent;
+
+    if (Node->Parent == Node) {
+        return nullptr;
+    }
+
+    if (Node -> Left) {
+        Node = Node->Left;
+        while(Node->Right) {
+            Node = Node->Right;
+        }
+        return Node;
+    }
+
+    while((Parent = Node->Parent) && Node == Parent->Left) {
         Node = Parent;
     }
 

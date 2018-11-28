@@ -7,22 +7,25 @@ int RBTree2Test() {
 
     UInt32RBT HashTree;
 
-    UInt32RBNode Node1(1);
-    UInt32RBNode Node2(2);
-    UInt32RBNode Node3(3);
-    UInt32RBNode Node4(4);
-    UInt32RBNode Node5(5);
-
-
-    HashTree.Insert(&Node1);
-    HashTree.Insert(&Node2);
-    HashTree.Insert(&Node3);
-    HashTree.Insert(&Node4);
-    HashTree.Insert(&Node5);
+    for (uint32_t i = 0; i < 1000000; i++) {
+        HashTree.Insert(new UInt32RBNode(i));
+    }
 
     for (RBNode *It = HashTree.Begin(); It; It = HashTree.Next(It)) {
-        printf("%u\n", ((UInt32RBNode *)It)->GetKey());
+        UInt32RBNode *Node = (UInt32RBNode *)It;
+
+        if (Node->GetKey() % 3 == 0) {
+//            printf("%u\n", Node->GetKey());
+            HashTree.Erase(It);
+            delete (UInt32RBNode *)It;
+        }
+    }
+
+    for (RBNode *It = HashTree.Begin(); It; It = HashTree.Next(It)) {
+        UInt32RBNode *Node = (UInt32RBNode *)It;
+//        printf("%u\n", Node->GetKey());
         HashTree.Erase(It);
+        delete (UInt32RBNode *)It;
     }
 
     return 0;

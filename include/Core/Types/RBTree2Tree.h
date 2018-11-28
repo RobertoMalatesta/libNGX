@@ -61,6 +61,7 @@ public:
     RBNode *Begin();
     RBNode *End();
     RBNode *Next(RBNode *Node);
+    RBNode *Prev(RBNode *Node);
 };
 
 class UInt32RBT : public RBT {
