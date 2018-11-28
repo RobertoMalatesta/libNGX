@@ -58,7 +58,7 @@ set(TEST_FILES
         test/HTTP/HTTPTest.cpp
         test/HTTP/HTTPServerTest.cpp
         test/HTTP/HTTPConnectionRecycleBin.cpp
-        test/HTTP/HTTPParseTest.cpp)
+        test/HTTP/HTTPParseTest.cpp test/Core/RBTree2Tree.cpp)
 
 include_directories(./include)
 

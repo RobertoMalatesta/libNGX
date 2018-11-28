@@ -1,15 +1,15 @@
 // https://github.com/forhappy/rbtree/blob/master/rbtree.h
 
-const unsigned RB_RED = 1;
-const unsigned RB_BLACK = 0;
+const bool RB_RED = false;
+const bool RB_BLACK = true;
 
 class RBNode {
 protected:
-    unsigned Color:1;
+    bool Color;
     RBNode *Left, *Right, *Parent;
-    inline unsigned GetColor() { return Color; }
-    inline unsigned IsRed() { return Color; }
-    inline unsigned IsBlack() { return !Color; }
+    inline bool GetColor() { return Color; }
+    inline bool IsRed() { return !Color; }
+    inline bool IsBlack() { return Color; }
     inline void SetRed() { Color = RB_RED; }
     inline void SetBlack() { Color = RB_BLACK; }
     friend class RBT;
@@ -19,9 +19,26 @@ public:
     inline RBNode *GetLeft(){ return Left; }
     inline RBNode *GetRight() { return Right; }
 
-    virtual int operator > (RBNode &R) = 0;
-    virtual int operator < (RBNode &R) = 0;
-    virtual int operator == (RBNode &R) = 0;
+    virtual int operator - (RBNode &R) = 0;
+};
+
+class UInt32RBNode: public RBNode {
+protected:
+    uint32_t Key;
+
+public:
+
+    UInt32RBNode(uint32_t Key): RBNode(), Key(Key) {}
+
+    uint32_t GetKey() { return Key; }
+
+    virtual int operator - (RBNode &R) {
+       return Key -  ((UInt32RBNode &)R).Key;
+    }
+
+    virtual int operator - (uint32_t R) {
+        return this->Key - R;
+    }
 };
 
 class RBT {
@@ -40,9 +57,14 @@ public:
 
     int Insert(RBNode *Node);
     void Erase(RBNode *Node);
-    virtual RBNode *Find() = 0;
 
     RBNode *Begin();
     RBNode *End();
     RBNode *Next(RBNode *Node);
+};
+
+class UInt32RBT : public RBT {
+
+public:
+    virtual UInt32RBNode *Find(uint32_t Key);
 };

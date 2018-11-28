@@ -20,6 +20,8 @@ extern int CRCTest();
 
 extern int RBTreeTest();
 
+extern int RBTree2Test();
+
 extern int TimerTreeTest();
 
 extern int FSTreeTest();
@@ -42,6 +44,7 @@ int CoreTest() {
 //	HashTest();
 //  CRCTest();
 //  RBTreeTest();
+    RBTree2Test();
 //  TimerTreeTest();
 //	FSTreeTest();
 //	TCPSocketTest();

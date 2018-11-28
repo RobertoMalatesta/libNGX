@@ -5,6 +5,6 @@ extern int HTTPTest();
 int main() {
 
     CoreTest();
-    HTTPTest();
+//    HTTPTest();
     return 0;
 }

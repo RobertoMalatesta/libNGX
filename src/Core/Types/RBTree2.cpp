@@ -7,7 +7,7 @@ void RBT::RotateLeft(RBNode *Node) {
 
     RBNode *Right = Node->Right, *Parent = Node->Parent;
 
-    if (Node->Right = Right) {
+    if ((Node->Right = Right->Left) != nullptr) {
 
         Right->Left->Parent = Node;
     }
@@ -37,7 +37,7 @@ void RBT::RotateRight(RBNode *Node) {
 
     RBNode *Left = Node->Left, *Parent = Node->Parent;
 
-    if (Node->Left = Left->Right) {
+    if ((Node->Left = Left->Right) != nullptr) {
 
         Left->Parent = Node;
     }
@@ -61,7 +61,7 @@ void RBT::RotateRight(RBNode *Node) {
     Node->Parent = Left;
 }
 
-void RBT::InsertColor(ngx::Core::Types::RBNode *Node) {
+void RBT::InsertColor(RBNode *Node) {
 
     RBNode *Parent, *GParent;
 
@@ -71,7 +71,7 @@ void RBT::InsertColor(ngx::Core::Types::RBNode *Node) {
 
         if (Parent == GParent->Left) {
             {
-                register RBNode *Uncle = GParent->Right;
+                RBNode *Uncle = GParent->Right;
 
                 if (Uncle && Uncle->IsRed()) {
 
@@ -85,7 +85,7 @@ void RBT::InsertColor(ngx::Core::Types::RBNode *Node) {
 
             if (Parent->Right == Node) {
 
-                register RBNode *Temp;
+                RBNode *Temp;
                 RotateLeft(Parent);
                 Temp = Parent;
                 Parent = Node;
@@ -97,7 +97,7 @@ void RBT::InsertColor(ngx::Core::Types::RBNode *Node) {
             RotateRight(GParent);
         } else {
             {
-                register RBNode *Uncle = GParent->Left;
+                RBNode *Uncle = GParent->Left;
 
                 if (Uncle && Uncle->IsRed()) {
 
@@ -111,7 +111,7 @@ void RBT::InsertColor(ngx::Core::Types::RBNode *Node) {
 
             if (Parent->Left == Node) {
 
-                register RBNode *Temp;
+                RBNode *Temp;
                 RotateRight(Parent);
                 Temp = Parent;
                 Parent = Node;
@@ -217,7 +217,7 @@ int RBT::Insert(RBNode *Node) {
 
         Parent = *Place;
 
-        int Result = **Place < *Node;
+        int Result = *Node -**Place;
 
         if (Result < 0) {
             Place = &(*Place)->Left;
@@ -238,7 +238,7 @@ int RBT::Insert(RBNode *Node) {
 
 void RBT::Erase(RBNode *Node) {
 
-    unsigned Color;
+    bool Color;
     RBNode *Child, *Parent;
 
     if (!Node->Left) {
@@ -306,8 +306,8 @@ void RBT::Erase(RBNode *Node) {
     }
 
     color:
-    if (Color == RB_BLACK) {
-        EraseColor(Node, Parent);
+    if (Color) {
+        EraseColor(Child, Parent);
     }
 }
 
@@ -364,4 +364,24 @@ RBNode* RBT::Next(RBNode *Node) {
     }
 
     return Parent;
+}
+
+UInt32RBNode* UInt32RBT::Find(uint32_t Key) {
+
+    RBNode *Place = Root;
+
+    while (Place) {
+
+        int Result = ((UInt32RBNode *)Place)->operator-(Key);
+
+        if (Result < 0) {
+            Place = Place->GetLeft();
+        } else if (Result > 0){
+            Place = Place->GetRight();
+        } else {
+            return (UInt32RBNode *)Place;
+        }
+    }
+
+    return nullptr;
 }
