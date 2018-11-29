@@ -9,7 +9,7 @@ TimerHub::TimerHub() : RBT() {
 TimerHub::~TimerHub() {
 
     for (RBNode *It = this->Begin(); It ; It = Next(It)) {
-        Erase(It)
+        Erase(It);
     }
 };
 
@@ -32,7 +32,7 @@ int TimerHub::QueueExpiredTimer(ThreadPool *TPool, uint32_t Count) {
             TPool->PostPromise(Temp->Callback, Temp->Argument);
 
             TimerHubLock.Lock();
-            Erase(It)
+            Erase(It);
 
             if (Temp->Mode == TM_INTERVAL && Temp->Interval > 0) {
                 Temp->Timestamp = Timestamp + Temp->Interval;

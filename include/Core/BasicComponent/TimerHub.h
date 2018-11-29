@@ -5,9 +5,8 @@ enum TimerMode {
 };
 
 class Timer: public RBNode, public CanReset {
-protected:
-    uint64_t Timestamp = 0;
 public:
+    uint64_t Timestamp = 0;
     TimerMode Mode = TM_ONCE;
     uint64_t Interval = 0;
     void *Argument = nullptr;

@@ -9,7 +9,6 @@ namespace ngx {
 #include "Core/Types/Queue.h"
 #include "Core/Types/List.h"
 #include "Core/Types/RBTree.h"
-#include "Core/Types/RBTree2.h"
 
         }
     }

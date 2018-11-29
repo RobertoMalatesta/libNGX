@@ -8,7 +8,6 @@ set(SOURCE_FILES
         src/Core/Arch/ArchX86.cpp
         src/Core/Types/Queue.cpp
         src/Core/Types/RBTree.cpp
-        src/Core/Types/RBTree2.cpp
         src/Core/BasicComponent/Buffer.cpp
         src/Core/BasicComponent/BasicMemoryBlock.cpp
         src/Core/BasicComponent/BufferMemoryBlock.cpp
@@ -48,7 +47,6 @@ set(TEST_FILES
         test/Core/ThreadPool.cpp
         test/Core/HashTest.cpp
         test/Core/CRCTest.cpp
-        test/Core/RBTreeTest.cpp
         test/Core/TimerHubTest.cpp
         test/Core/SocketTest.cpp
         test/Core/EPollEventDomainTest.cpp
@@ -59,7 +57,7 @@ set(TEST_FILES
         test/HTTP/HTTPServerTest.cpp
         test/HTTP/HTTPConnectionRecycleBin.cpp
         test/HTTP/HTTPParseTest.cpp
-        test/Core/RBTree2.cpp)
+        test/Core/RBTree.cpp)
 
 include_directories(./include)
 

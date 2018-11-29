@@ -1,6 +1,6 @@
 #include "Core/Core.h"
 
-using namespace ngx::Core;
+using namespace ngx::Core::Types;
 
 
 int RBTree2Test() {

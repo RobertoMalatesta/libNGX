@@ -1,92 +1,72 @@
-class RBTreeNode {
+//
+// https://github.com/forhappy/rbtree/blob/master/rbtree.h
+
+const bool RB_RED = false;
+const bool RB_BLACK = true;
+
+class RBNode {
+protected:
+    bool Color;
+    RBNode *Left, *Right, *Parent;
+    inline bool GetColor() { return Color; }
+    inline bool IsRed() { return !Color; }
+    inline bool IsBlack() { return Color; }
+    inline void SetRed() { Color = RB_RED; }
+    inline void SetBlack() { Color = RB_BLACK; }
+    friend class RBT;
+public:
+    RBNode(): Color(RB_RED),Left(nullptr), Right(nullptr), Parent(this){};
+
+    inline RBNode *GetLeft(){ return Left; }
+    inline RBNode *GetRight() { return Right; }
+
+    virtual int operator - (RBNode &R) = 0;
+};
+
+class UInt32RBNode: public RBNode {
+protected:
+    uint32_t Key;
+
+public:
+
+    UInt32RBNode(uint32_t Key): RBNode(), Key(Key) {}
+
+    uint32_t GetKey() { return Key; }
+
+    virtual int operator - (RBNode &R) {
+       return Key -  ((UInt32RBNode &)R).Key;
+    }
+
+    virtual int operator - (uint32_t R) {
+        return this->Key - R;
+    }
+};
+
+class RBT {
+private:
+    void RotateLeft(RBNode *Node);
+    void RotateRight(RBNode *Node);
+
+    void InsertColor(RBNode *Node);
+
+    void EraseColor(RBNode *Node, RBNode *Parent);
 
 protected:
-    RBTreeNode *Left = nullptr, *Right = nullptr, *Parent = nullptr;
-    u_char Color = 0;
+    RBNode *Root = nullptr;
+public:
+    RBT() = default;
 
-    bool IsBlack() { return !Color; };
+    int Insert(RBNode *Node);
+    void Erase(RBNode *Node);
 
-    bool IsRed() { return Color; };
+    RBNode *Begin();
+    RBNode *End();
+    RBNode *Next(RBNode *Node);
+    RBNode *Prev(RBNode *Node);
+};
 
-    void SetBlack() { Color = 0; };
-
-    void SetRed() { Color = 1; };
-
-    void CopyColor(RBTreeNode *Node) { if (nullptr != Node) { Color = Node->Color; }};
-
-    virtual int Compare(RBTreeNode *Node) { return 0; }
-
-    RBTreeNode *GetLeft() { return this->Left; }
-
-    RBTreeNode *GetRight() { return this->Right; }
+class UInt32RBT : public RBT {
 
 public:
-    friend class RBTree;
+    virtual UInt32RBNode *Find(uint32_t Key);
 };
-
-class RBTree {
-
-protected:
-    RBTreeNode *Root = nullptr;
-    RBTreeNode *Sentinel = nullptr;
-
-    RBTree() = default;
-
-    ~RBTree() = default;
-
-    void RotateLeft(RBTreeNode *Node);
-
-    void RotateRight(RBTreeNode *Node);
-
-public:
-    void Insert(RBTreeNode *Node);
-
-    void Delete(RBTreeNode *Node);
-
-    RBTreeNode *Next(RBTreeNode *Node);
-
-    RBTreeNode *Minimum();
-};
-
-union UInt32TreeValue {
-    void *Ptr;
-    uint32_t UInt;
-};
-
-
-class UInt32RBTreeNode : public RBTreeNode {
-
-    friend class UInt32RBTree;
-
-protected:
-    uint32_t Key = 0;
-
-public:
-
-    UInt32TreeValue Value;
-
-    UInt32RBTreeNode() = default;
-
-    ~UInt32RBTreeNode() = default;
-
-    void SetKey(uint32_t Key) { this->Key = Key; };
-
-    virtual int Compare(UInt32RBTreeNode *Node);
-};
-
-class UInt32RBTree : public RBTree, public AllocatorBuild<UInt32RBTreeNode> {
-
-public:
-    UInt32RBTree(MemAllocator *Allocator);
-
-    ~UInt32RBTree();
-
-    UInt32RBTreeNode *Find(uint32_t Key);
-};
-
-// [TODO]
-// UInt32RBTree 哈希或整数检索树
-// TimerHub 定时器检索树 定时发出Promise
-// FSTree 文件系统树 层级资源索引, 正则支持 要用哈希来优化加速
-// CacheTree 数据缓存树,版本控制+过期清除
-// PrefixSuffixTree 前缀后缀查询树

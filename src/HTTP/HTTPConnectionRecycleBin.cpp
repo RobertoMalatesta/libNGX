@@ -11,12 +11,14 @@ HTTPConnectionRecycleBin::HTTPConnectionRecycleBin(uint64_t RecycleBinSize) :
 
 int HTTPConnectionRecycleBin::Get(HTTPConnection *&C, int SocketFD, SocketAddress &TargetSocketAddress) {
 
+    Queue *Q;
     C = nullptr;
 
     if (!RecycleSentinel.IsEmpty()) {
-        C = (HTTPConnection *) RecycleSentinel.GetNext();
+        Q = RecycleSentinel.GetNext();
+        Q->Detach();
         RecycleSize -= 1;
-        C->RecycleItem.Detach();
+        C = HTTPConnection::FromRecycleQueue(Q);
     }
     else{
         if (Build(C) != 0) {

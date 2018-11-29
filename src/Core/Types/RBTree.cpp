@@ -2,373 +2,409 @@
 
 using namespace ngx::Core::Types;
 
-RBTreeNode *RBTree::Minimum() {
+void RBT::RotateLeft(RBNode *Node) {
 
-    RBTreeNode *Temp = Root;
 
-    if (Temp == Sentinel) {
-        return Temp;
+    RBNode *Right = Node->Right, *Parent = Node->Parent;
+
+    if ((Node->Right = Right->Left) != nullptr) {
+
+        Right->Left->Parent = Node;
     }
 
-    while (Temp->GetLeft() != Sentinel) {
-        Temp = Temp->Left;
-    }
+    Right->Left = Node;
+    Right->Parent = Parent;
 
-    return Temp;
-}
+    if (Parent != nullptr) {
 
-void RBTree::RotateLeft(RBTreeNode *Node) {
+        if (Node == Parent->Left) {
 
-    RBTreeNode *Temp;
-
-    Temp = Node->Right;
-    Node->Right = Temp->Left;
-
-    if (Temp->Left != Sentinel) {
-        Temp->Left->Parent = Node;
-    }
-
-    Temp->Parent = Node->Parent;
-
-    if (Node == Root) {
-        Root = Temp;
-    } else if (Node == Node->Parent->Left) {
-        Node->Parent->Left = Temp;
-    } else {
-        Node->Parent->Right = Temp;
-    }
-
-    Temp->Left = Node;
-    Node->Parent = Temp;
-
-}
-
-void RBTree::RotateRight(RBTreeNode *Node) {
-
-    RBTreeNode *Temp;
-
-    Temp = Node->Left;
-    Node->Left = Temp->Right;
-
-    if (Temp->Right != Sentinel) {
-        Temp->Right->Parent = Node;
-    }
-
-    Temp->Parent = Node->Parent;
-
-    if (Node == Root) {
-        Root = Temp;
-    } else if (Node == Node->Parent->Right) {
-        Node->Parent->Right = Temp;
-    } else {
-        Node->Parent->Left = Temp;
-    }
-
-    Temp->Right = Node;
-    Node->Parent = Temp;
-}
-
-void RBTree::Insert(RBTreeNode *Node) {
-
-    if (Node->Left != nullptr || Node->Right != nullptr) {
-        return;
-    }
-
-    if (Root == Sentinel) {
-        Node->Parent = nullptr;
-        Node->Left = Sentinel;
-        Node->Right = Sentinel;
-        Node->SetBlack();
-        Root = Node;
-        return;
-    }
-
-    RBTreeNode *Temp = Root, **P = nullptr;
-
-    for (;;) {
-
-        P = (Node->Compare(Temp) > 0) ? &Temp->Left : &Temp->Right;
-
-        if (*P == Sentinel) {
-            break;
-        }
-        Temp = *P;
-    }
-
-    *P = Node;
-    Node->Parent = Temp;
-    Node->Left = Sentinel;
-    Node->Right = Sentinel;
-    Node->SetRed();
-
-    while (Node != Root && Node->Parent->IsRed()) {
-
-        if (Node->Parent == Node->Parent->Parent->Left) {
-
-            Temp = Node->Parent->Parent->Right;
-
-            if (Temp->IsRed()) {
-                Node->Parent->SetBlack();
-                Temp->SetBlack();
-                Node->Parent->Parent->SetRed();
-                Node = Node->Parent->Parent;
-            } else {
-
-                if (Node == Node->Parent->Right) {
-                    Node = Node->Parent;
-                    RotateLeft(Node);
-                }
-
-                Node->Parent->SetBlack();
-                Node->Parent->Parent->SetRed();
-                RotateRight(Node->Parent->Parent);
-            }
+            Parent->Left = Right;
         } else {
-            Temp = Node->Parent->Parent->Left;
 
-            if (Temp->IsRed()) {
-                Node->Parent->SetBlack();
-                Temp->SetBlack();
-                Node->Parent->Parent->SetRed();
-                Node = Node->Parent->Parent;
-            } else {
-
-                if (Node == Node->Parent->Left) {
-                    Node = Node->Parent;
-                    RotateRight(Node);
-                }
-                Node->Parent->SetBlack();
-                Node->Parent->Parent->SetRed();
-                RotateLeft(Node->Parent->Parent);
-            }
+            Parent->Right = Right;
         }
+    } else {
 
+        Root = Right;
     }
+
+    Node->Parent = Right;
+}
+
+
+void RBT::RotateRight(RBNode *Node) {
+
+    RBNode *Left = Node->Left, *Parent = Node->Parent;
+
+    if ((Node->Left = Left->Right) != nullptr) {
+
+        Left->Parent = Node;
+    }
+
+    Left->Right = Node;
+    Left->Parent = Parent;
+
+    if (Parent) {
+
+        if (Node == Parent->Right) {
+
+            Parent->Right = Left;
+        } else {
+
+            Parent->Left = Left;
+        }
+    } else {
+        Root = Left;
+    }
+
+    Node->Parent = Left;
+}
+
+void RBT::InsertColor(RBNode *Node) {
+
+    RBNode *Parent, *GParent;
+
+    while ((Parent = Node->Parent) && Parent->IsRed()) {
+
+        GParent = Parent->Parent;
+
+        if (Parent == GParent->Left) {
+            {
+                RBNode *Uncle = GParent->Right;
+
+                if (Uncle && Uncle->IsRed()) {
+
+                    Uncle->SetBlack();
+                    Parent->SetBlack();
+                    GParent->SetRed();
+                    Node = GParent;
+                    continue;
+                }
+            }
+
+            if (Parent->Right == Node) {
+
+                RBNode *Temp;
+                RotateLeft(Parent);
+                Temp = Parent;
+                Parent = Node;
+                Node = Temp;
+            }
+
+            Parent->SetBlack();
+            GParent->SetRed();
+            RotateRight(GParent);
+        } else {
+            {
+                RBNode *Uncle = GParent->Left;
+
+                if (Uncle && Uncle->IsRed()) {
+
+                    Uncle->SetBlack();
+                    Parent->SetBlack();
+                    GParent->SetRed();
+                    Node = GParent;
+                    continue;
+                }
+            }
+
+            if (Parent->Left == Node) {
+
+                RBNode *Temp;
+                RotateRight(Parent);
+                Temp = Parent;
+                Parent = Node;
+                Node = Temp;
+            }
+
+            Parent->SetBlack();
+            GParent->SetRed();
+            RotateLeft(GParent);
+        }
+    }
+
     Root->SetBlack();
 }
 
-RBTreeNode *RBTree::Next(RBTreeNode *Node) {
+void RBT::EraseColor(RBNode *Node, RBNode *Parent) {
 
-    RBTreeNode *Ret, *Parent;
+    RBNode *Other;
 
-    if (Node->Right != Sentinel) {
+    while ((!Node || Node->IsBlack()) && Node != Root) {
 
-        Ret = Node->Right;
+        if (Parent->Left == Node) {
 
-        while (Ret->Left != Sentinel) {
-            Ret = Ret->Left;
+            Other = Parent->Right;
+
+            if (Other->IsRed()) {
+
+                Other->SetBlack();
+                Parent->SetRed();
+                RotateLeft(Parent);
+                Other = Parent->Right;
+            }
+
+            if ((!Other->Left || Other->Left->IsBlack()) &&
+                (!Other->Right || Other->Right->IsBlack())) {
+
+                Other->SetRed();
+                Node = Parent;
+                Parent = Node->Parent;
+            } else {
+
+                if (!Other->Right || Other->Right->IsBlack()) {
+                    Other->Left->SetBlack();
+                    Other->SetRed();
+                    RotateRight(Other);
+                    Other = Parent->Right;
+                }
+
+                Parent->GetColor() ? Other->SetBlack() : Other->SetRed();
+
+                Parent->SetBlack();
+                Other->Right->SetBlack();
+                RotateLeft(Parent);
+                Node = Root;
+                break;
+            }
+        } else {
+            Other = Parent->Left;
+            if (Other->IsRed()) {
+
+                Other->SetBlack();
+                Parent->SetRed();
+                RotateRight(Parent);
+                Other = Parent->Left;
+            }
+
+            if ((!Other->Left || Other->Left->IsBlack()) &&
+                (!Other->Right || Other->Right->IsBlack())) {
+
+                Other->SetRed();
+                Node = Parent;
+                Parent = Node->Parent;
+            } else {
+
+                if (!Other->Left || Other->Left->IsBlack()) {
+                    Other->Right->SetBlack();
+                    Other->SetBlack();
+                    RotateLeft(Other);
+                    Other = Parent->Left;
+                }
+
+                Parent->GetColor() ? Other->SetBlack() : Other->SetRed();
+                Parent->SetBlack();
+                Other->Left->SetBlack();
+                RotateRight(Parent);
+                Node = Root;
+                break;
+            }
+
         }
-        return Ret;
     }
 
-    for (;;) {
+    if (Node) {
+        Node->SetBlack();
+    }
+}
+
+int RBT::Insert(RBNode *Node) {
+
+    RBNode **Place = &Root, *Parent = nullptr;
+
+    while (*Place) {
+
+        Parent = *Place;
+
+        int Result = *Node -**Place;
+
+        if (Result < 0) {
+            Place = &(*Place)->Left;
+        } else if (Result > 0){
+            Place = &(*Place)->Right;
+        } else {
+            Place = &(*Place)->Left;
+        }
+    }
+
+    Node->Parent = Parent;
+    Node->Left = Node->Right = nullptr;
+    *Place = Node;
+    InsertColor(Node);
+
+    return 1;
+}
+
+void RBT::Erase(RBNode *Node) {
+
+    bool Color;
+    RBNode *Child, *Parent;
+
+    if (!Node->Left) {
+        Child = Node->Right;
+    } else if (!Node->Right) {
+        Child = Node->Left;
+    } else {
+        RBNode *Old = Node, *Left;
+
+        Node = Node->Right;
+
+        while ((Left = Node->Left) != nullptr) {
+            Node = Left;
+        }
+
+        if (Old->Parent) {
+            if (Old->Parent->Left == Old) {
+                Old->Parent->Left = Node;
+            } else {
+                Old->Parent->Right = Node;
+            }
+        } else {
+            Root = Node;
+        }
+
+        Color = Node->Color;
+        Child = Node->Right;
         Parent = Node->Parent;
 
-        if (Root == Node) {
-            return nullptr;
+        if (Parent == Old) {
+            Parent = Node;
+        } else {
+            if (Child) {
+                Child->Parent = Parent;
+            }
+
+            Parent->Left = Child;
+            Node->Right = Old->Right;
+            Old->Right->Parent = Node;
         }
 
-        if (Node == Parent->Left) {
-            return Parent;
-        }
-        Node = Node->Parent;
+        Node->Color = Old->Color;
+        Node->Parent = Old->Parent;
+        Node->Left = Old->Left;
+        Old->Left->Parent = Node;
+
+        goto color;
     }
-}
 
-void RBTree::Delete(RBTreeNode *Node) {
+    Color = Node->Color;
+    Parent = Node->Parent;
 
-    RBTreeNode *Subst, *Temp, *W;
+    if (Child) {
+        Child->Parent = Parent;
+    }
 
-    if (Node->Left == Sentinel) {
-        Temp = Node->Right;
-        Subst = Node;
-    } else if (Node->Right == Sentinel) {
-        Temp = Node->Left;
-        Subst = Node;
+    if (Parent) {
+        if (Parent->Left == Node) {
+            Parent->Left = Child;
+        } else {
+            Parent->Right = Child;
+        }
     } else {
-        Subst = Node->Right;
-
-        while (Subst->Left != Sentinel) {
-            Subst = Subst->Left;
-        }
-
-        if (Subst->Left != Sentinel) {
-            Temp = Subst->Left;
-        } else {
-            Temp = Subst->Right;
-        }
+        Root = Child;
     }
 
-    if (Subst == Root) {
-        Root = Temp;
-        Temp->SetBlack();
-        Node->Left = nullptr;
-        Node->Right = nullptr;
-        Node->Parent = nullptr;
-        return;
-    }
-
-    bool Red = Subst->IsRed();
-
-    if (Subst == Subst->Parent->Left) {
-        Subst->Parent->Left = Temp;
-    } else {
-        Subst->Parent->Right = Temp;
-    }
-
-    if (Subst == Node) {
-        Temp->Parent = Subst->Parent;
-    } else {
-
-        if (Subst->Parent == Node) {
-            Temp->Parent = Subst;
-        } else {
-            Temp->Parent = Subst->Parent;
-        }
-        Subst->Left = Node->Left;
-        Subst->Right = Node->Right;
-        Subst->Parent = Node->Parent;
-        Subst->CopyColor(Node);
-
-        if (Node == Root) {
-            Root = Subst;
-        } else {
-            if (Node == Node->Parent->Left) {
-                Node->Parent->Left = Subst;
-            } else {
-                Node->Parent->Right = Subst;
-            }
-        }
-
-        if (Subst->Left != Sentinel) {
-            Subst->Left->Parent = Subst;
-        }
-        if (Subst->Right != Sentinel) {
-            Subst->Right->Parent = Subst;
-        }
-    }
-
-    Node->Left = nullptr;
-    Node->Right = nullptr;
-    Node->Parent = nullptr;
-
-    if (Red) {
-        return;
-    }
-
-    while (Temp != Root && Temp->IsBlack()) {
-
-        if (Temp == Temp->Parent->Left) {
-            W = Temp->Parent->Right;
-
-            if (W->IsRed()) {
-                W->SetBlack();
-                Temp->Parent->SetRed();
-                RotateLeft(Temp->Parent);
-                W = Temp->Parent->Right;
-            }
-
-            if (W->Left->IsBlack() && W->Right->IsBlack()) {
-                W->SetRed();
-                Temp = Temp->Parent;
-            } else {
-                if (W->Right->IsBlack()) {
-                    W->Left->SetBlack();
-                    W->SetRed();
-                    RotateRight(W);
-                    W = Temp->Parent->Right;
-                }
-
-                W->CopyColor(Temp->Parent);
-                Temp->Parent->SetBlack();
-                W->Right->SetBlack();
-                RotateLeft(Temp->Parent);
-                Temp = Root;
-            }
-        } else {
-
-            W = Temp->Parent->Left;
-
-            if (W->IsRed()) {
-                W->SetBlack();
-                Temp->Parent->SetRed();
-                RotateRight(Temp->Parent);
-                W = Temp->Parent->Left;
-            }
-
-            if (W->Left->IsBlack() && W->Right->IsBlack()) {
-                W->SetRed();
-                Temp = Temp->Parent;
-            } else {
-
-                if (W->Left->IsBlack()) {
-                    W->Right->SetBlack();
-                    W->SetRed();
-                    RotateLeft(W);
-                    W = Temp->Parent->Left;
-                }
-
-                W->CopyColor(Temp->Parent);
-                Temp->Parent->SetBlack();
-                W->Left->SetBlack();
-                RotateRight(Temp->Parent);
-                Temp = Root;
-            }
-        }
-    }
-    Temp->SetBlack();
-}
-
-int UInt32RBTreeNode::Compare(UInt32RBTreeNode *Node) {
-    if (this->Key == Node->Key) {
-        return 0;
-    } else if (this->Key > Node->Key) {
-        return 1;
-    } else {
-        return -1;
+    color:
+    if (Color) {
+        EraseColor(Child, Parent);
     }
 }
 
-UInt32RBTree::UInt32RBTree(MemAllocator *Allocator) : RBTree(), AllocatorBuild(Allocator) {
+RBNode *RBT::Begin() {
 
-    UInt32RBTreeNode *Temp;
+    RBNode *N = Root;
 
-    Build(Temp);
-
-    if (Build(Temp) == 0) {
-        Root = Sentinel = Temp;
+    if (N == nullptr) {
+        return nullptr;
     }
+
+    while (N->Left) {
+        N = N->Left;
+    }
+
+    return N;
 }
 
-UInt32RBTree::~UInt32RBTree() {
+RBNode *RBT::End() {
 
-    UInt32RBTreeNode *Temp;
+    RBNode *N = Root;
 
-    Temp = (UInt32RBTreeNode *) Sentinel;
-    Destroy(Temp);
+    if (!N) {
+        return nullptr;
+    }
+
+    while (N->Right) {
+        N = N->Right;
+    }
+
+    return N;
 }
 
-UInt32RBTreeNode *UInt32RBTree::Find(uint32_t Key) {
+RBNode* RBT::Next(RBNode *Node) {
 
-    auto *Temp = (UInt32RBTreeNode *) Root;
+    RBNode *Parent;
 
-    uint32_t TempKey;
+    Parent = Node->Parent;
 
-    do {
+    if (Node == Parent) {
+        return nullptr;
+    }
 
-        if (Temp == Sentinel) {
-            return nullptr;
+    if (Node->Right) {
+        Node = Node->Right;
+        while (Node->Left) {
+            Node = Node->Left;
         }
+        return Node;
+    }
 
-        TempKey = Temp->Key;
+    while ((Parent = Node->Parent) && Node == Parent->Right) {
+        Node = Parent;
+    }
 
-        if (Key == TempKey) {
-            return Temp;
-        } else if (Key > TempKey) {
-            Temp = (UInt32RBTreeNode *) Temp->GetRight();
+    return Parent;
+}
+
+RBNode* RBT::Prev(RBNode *Node) {
+
+    RBNode *Parent;
+
+    if (Node->Parent == Node) {
+        return nullptr;
+    }
+
+    if (Node -> Left) {
+        Node = Node->Left;
+        while(Node->Right) {
+            Node = Node->Right;
+        }
+        return Node;
+    }
+
+    while((Parent = Node->Parent) && Node == Parent->Left) {
+        Node = Parent;
+    }
+
+    return Parent;
+}
+
+UInt32RBNode* UInt32RBT::Find(uint32_t Key) {
+
+    RBNode *Place = Root;
+
+    while (Place) {
+
+        int Result = ((UInt32RBNode *)Place)->operator-(Key);
+
+        if (Result < 0) {
+            Place = Place->GetLeft();
+        } else if (Result > 0){
+            Place = Place->GetRight();
         } else {
-            Temp = (UInt32RBTreeNode *) Temp->GetLeft();
+            return (UInt32RBNode *)Place;
         }
+    }
 
-    } while (true);
+    return nullptr;
 }
