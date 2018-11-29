@@ -11,12 +11,10 @@ Connection::Connection() : Socket() {
 
 Connection::Connection(struct SocketAddress &SocketAddress) :
         Socket(SocketAddress) {
-    IsListen = 0;
 }
 
 Connection::Connection(int SocketFD, struct SocketAddress &SocketAddress)
         : Socket(SocketFD, SocketAddress) {
-    IsListen = 0;
 };
 
 TCP4Connection::TCP4Connection(int SocketFD, struct SocketAddress &SocketAddress) :
@@ -30,6 +28,7 @@ TCP4Connection::TCP4Connection(struct SocketAddress &SocketAddress) :
 }
 
 SocketError TCP4Connection::Connect() {
+
     if (SocketFD == -1) {
         return {EFAULT, "Invalid Socket"};
     }
@@ -49,9 +48,11 @@ SocketError TCP4Connection::Connect() {
 }
 
 SocketError TCP4Connection::Close() {
+
     if (SocketFD != -1 || Open == 1) {
         close(SocketFD);
         SocketFD = -1, Open = 0;
     }
+
     return {0};
 }

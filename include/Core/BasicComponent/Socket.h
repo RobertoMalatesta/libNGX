@@ -16,6 +16,7 @@ struct SocketAddress {
 
 class Socket : public EventEntity, public Achor{
 protected:
+
     int SocketFD = -1;
     SpinLock SocketLock;
     Timer TimerNode;
@@ -38,6 +39,7 @@ protected:
     friend class SocketEventDomain;
 
 public:
+
     Socket();
 
     Socket(struct SocketAddress &SocketAddress);
