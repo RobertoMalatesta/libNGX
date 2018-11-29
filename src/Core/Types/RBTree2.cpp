@@ -160,7 +160,7 @@ void RBT::EraseColor(RBNode *Node, RBNode *Parent) {
                     Other = Parent->Right;
                 }
 
-                Parent->GetColor() == RB_RED ? Other->SetRed() : Other->SetBlack();
+                Parent->GetColor() ? Other->SetBlack() : Other->SetRed();
 
                 Parent->SetBlack();
                 Other->Right->SetBlack();
@@ -193,7 +193,7 @@ void RBT::EraseColor(RBNode *Node, RBNode *Parent) {
                     Other = Parent->Left;
                 }
 
-                Parent->GetColor() == RB_RED ? Other->SetRed() : Other->SetBlack();
+                Parent->GetColor() ? Other->SetBlack() : Other->SetRed();
                 Parent->SetBlack();
                 Other->Left->SetBlack();
                 RotateRight(Parent);

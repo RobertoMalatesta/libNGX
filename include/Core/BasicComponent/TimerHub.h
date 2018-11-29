@@ -4,11 +4,9 @@ enum TimerMode {
     TM_INTERVAL,
 };
 
-class Timer : public RBTreeNode, public CanReset {
+class Timer: public RBNode, public CanReset {
 protected:
-    virtual int Compare(Timer *Node);
     uint64_t Timestamp = 0;
-    friend class TimerHub;
 public:
     TimerMode Mode = TM_ONCE;
     uint64_t Interval = 0;
@@ -33,13 +31,22 @@ public:
         return GetLeft() != nullptr && GetRight() != nullptr;
     }
 
+    uint64_t GetTimestamp() { return Timestamp; }
+
+    virtual int operator - (RBNode &R) {
+        return Timestamp >  ((Timer &)R).Timestamp ? 1 : -1;
+    }
+
+    virtual int operator - (uint64_t R) {
+        return this->Timestamp > R? 1 : -1;
+    }
+
     virtual void Reset() { Timestamp = 0; };
 };
 
-class TimerHub : public RBTree {
+class TimerHub : public RBT {
 private:
     SpinLock TimerHubLock;
-    Timer _Sentinet;
 public:
     TimerHub();
 

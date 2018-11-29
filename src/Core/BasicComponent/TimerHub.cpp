@@ -2,33 +2,15 @@
 
 using namespace ngx::Core::BasicComponent;
 
-int Timer::Compare(Timer *Node) {
 
-    if (Timestamp > Node->Timestamp) {
-        return 1;
-    } else if (Timestamp < Node->Timestamp) {
-        return -1;
-    }
-    return 0;
-}
-
-TimerHub::TimerHub() : RBTree() {
-    Root = Sentinel = &_Sentinet;
+TimerHub::TimerHub() : RBT() {
 }
 
 TimerHub::~TimerHub() {
 
-    Timer *Temp;
-
-    for (RBTreeNode *It = Minimum(); It != Sentinel && It != nullptr;) {
-        Temp = (Timer *) It;
-        It = Next(It);
-        Delete(Temp);
+    for (RBNode *It = this->Begin(); It ; It = Next(It)) {
+        Erase(It)
     }
-
-    Root = Sentinel = nullptr;
-
-    RBTree::~RBTree();
 };
 
 int TimerHub::QueueExpiredTimer(ThreadPool *TPool, uint32_t Count) {
@@ -36,11 +18,10 @@ int TimerHub::QueueExpiredTimer(ThreadPool *TPool, uint32_t Count) {
     Timer *Temp;
     uint64_t Timestamp = GetHighResolutionTimestamp();
 
-    for (RBTreeNode *It = Minimum(); It != Sentinel && It != nullptr && Count >= 0; Count--) {
+    for (RBNode *It = Begin(); It && Count-- >0 ; It = Next(It)) {
 
         Temp = (Timer *)It;
         Socket *S = Socket::TimerToSocket(Temp);
-        It = Next(It);
 
         if (S->TryLock()) {
             if (Temp->Timestamp > Timestamp) {
@@ -51,7 +32,7 @@ int TimerHub::QueueExpiredTimer(ThreadPool *TPool, uint32_t Count) {
             TPool->PostPromise(Temp->Callback, Temp->Argument);
 
             TimerHubLock.Lock();
-            Delete(Temp);
+            Erase(It)
 
             if (Temp->Mode == TM_INTERVAL && Temp->Interval > 0) {
                 Temp->Timestamp = Timestamp + Temp->Interval;
@@ -86,7 +67,7 @@ int TimerHub::DetachTimer(Timer &T) {
     TimerHubLock.Lock();
 
     if (T.IsTimerAttached()) {
-        Delete(&T);
+        Erase(&T);
         T.Mode = TM_CLOSED, T.Interval = 0;
     }
 

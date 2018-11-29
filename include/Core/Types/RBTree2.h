@@ -1,3 +1,4 @@
+//
 // https://github.com/forhappy/rbtree/blob/master/rbtree.h
 
 const bool RB_RED = false;
