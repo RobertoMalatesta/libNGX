@@ -17,7 +17,7 @@ class BoundCursor;
 
 class Range;
 
-class Buffer : public CanReset {
+class Buffer : public CanReset, public CanGC {
 protected:
     size_t BlockSize;
     BoundCursor Cursor;

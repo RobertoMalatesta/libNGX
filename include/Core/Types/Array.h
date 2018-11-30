@@ -14,13 +14,13 @@
 template <typename T>
 class Array: public CanReset {
 private:
-    MemAllocator *Allocator = nullptr;
+    Allocator *Allocator = nullptr;
     u_char *PointerToData = nullptr;
     uint32_t AllocateCount = 0;
     uint32_t ElementCount = 0;
 
 public:
-    Array(MemAllocator *Allocator) {
+    Array(Allocator *Allocator) {
 
         // specify memory allocator, use malloc() if nullptr
         this->Allocator = Allocator;

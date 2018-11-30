@@ -1,10 +1,10 @@
 template<class ItemType>
 class AllocatorBuild {
 private:
-    MemAllocator *Allocator;
+    Allocator *BackendAllocator;
 public:
-    AllocatorBuild(MemAllocator *Allocator = nullptr) {
-        this->Allocator = Allocator;
+    AllocatorBuild(Allocator *Allocator = nullptr) {
+        this->BackendAllocator = Allocator;
     }
 
     int Build(ItemType *&Item) {
@@ -13,8 +13,8 @@ public:
 
         Item = nullptr;
 
-        if (Allocator != nullptr) {
-            TempPointer = Allocator->Allocate(sizeof(ItemType));
+        if (BackendAllocator != nullptr) {
+            TempPointer = BackendAllocator->Allocate(sizeof(ItemType));
         } else {
             TempPointer = malloc(sizeof(ItemType));
         }
@@ -34,9 +34,9 @@ public:
             return 0;
         }
 
-        if (Allocator != nullptr) {
+        if (BackendAllocator != nullptr) {
             Item->~ItemType();
-            Allocator->Free((void *&) Item);
+            BackendAllocator->Free((void *&) Item);
         } else {
             free((void *) Item);
             Item = nullptr;

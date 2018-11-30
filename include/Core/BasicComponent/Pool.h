@@ -1,4 +1,4 @@
-class Pool : public MemAllocator, public CanReset {
+class Pool : public Allocator, public CanReset, public CanGC {
 private:
     uint32_t AllocateRound = 0;
 protected:

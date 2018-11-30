@@ -1,7 +1,7 @@
 #include "Core/Core.h"
-#include <sys/time.h>
 #include <csignal>
 #include <unistd.h>
+#include <sys/time.h>
 
 using namespace std;
 using namespace ngx::Core;

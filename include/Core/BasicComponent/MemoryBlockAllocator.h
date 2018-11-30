@@ -1,7 +1,8 @@
 class MemoryBlockAllocator
         : public BasicMemoryBlock,
-          public MemAllocator,
+          public Allocator,
           public CanReset,
+          public CanGC,
           public AlignBuild<MemoryBlockAllocator> {
 protected:
     MemoryBlockAllocator *Next;

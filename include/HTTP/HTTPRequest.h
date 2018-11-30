@@ -24,7 +24,7 @@ protected:
     friend class HTTPParser;
 
 public:
-    HTTPRequest(MemAllocator *Allocator) : Headers(Allocator), ArgumentList(Allocator) {};
+    HTTPRequest(Allocator *Allocator) : Headers(Allocator), ArgumentList(Allocator) {};
     /* HTTPConnection
     * CanReset
     * enum Method

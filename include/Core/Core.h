@@ -1,4 +1,4 @@
-//===- Core.h - Declare and export all Core classes ---*- C++ -*-===//
+//===- Core.h - Declare and export all Core classes ----------------*- C++ -*-===//
 //
 //                     The NGX Server Infrastructure
 //
