@@ -25,7 +25,8 @@ BufferMemoryBlockRecycleBin::~BufferMemoryBlockRecycleBin() {
     BufferMemoryBlock *TempBlock;
 
     while (!RecycleSentinel.IsEmpty()) {
-        TempBlock = (BufferMemoryBlock *) RecycleSentinel.GetNext();
+
+        TempBlock = BufferMemoryBlock::FromRecycleQueue(RecycleSentinel.GetNext());
         TempBlock->RecycleItem.Detach();
         BufferMemoryBlock::Destroy(TempBlock);
     }
