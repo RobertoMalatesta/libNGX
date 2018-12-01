@@ -4,13 +4,12 @@ using namespace ngx::Core::BasicComponent;
 
 DictionaryItem::DictionaryItem(const char *Key) {
 
+    if (Key == nullptr) {
+        return;
+    }
+
     this -> Key = Key;
     Length = strlen(Key);
-    Hash = 0 ^ Length;
-
-    for (size_t i=0; i<Length; i++) {
-        SimpleHash(Hash, Key[i]);
-    }
 }
 
 int DictionaryItem::operator-(RBNode &R) {

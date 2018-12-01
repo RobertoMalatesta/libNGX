@@ -40,38 +40,69 @@ const char BrokenHeaderErrorString[] = "Broken Header in buffer!";
 const char NoMoreHeaderErrorString[] = "No more header!";
 const char HeaderNoMemoryErrorString[] = "No sufficient memory to store header indexer";
 
+HTTPError DummyHeaderProcess(HTTPCoreHeader &CH, HTTPRequest &R, HTTPHeader &H){
+    return {EINVAL, "dummy header process"};
+}
+
 static bool HeaderInHashInit = false;
-static ConstStringHash CoreHeaderInNames[HI_SIZE] = {
-        {"Host", 0},
-        {"Connection", 0},
-        {"If-Midified-Since", 0},
-        {"If-Unmodified-Since", 0},
-        {"If-Match", 0},
-        {"If-None-Match", 0},
-        {"UserAgent", 0},
-        {"Referer", 0},
-        {"Content-Length", 0},
-        {"Content-Range", 0},
-        {"Content-Type", 0},
-        {"Range", 0},
-        {"If-Range", 0},
-        {"Transfer-Encoding", 0},
-        {"TE", 0},
-        {"Expect", 0},
-        {"Accept-Encoding", 0},
-        {"Via", 0},
-        {"Authorization", 0},
-        {"Keep-Alive", 0},
-        {"X-Forward-For", 0},
-        {"X-Real-IP", 0},
-        {"Accept", 0},
-        {"Accept-Language", 0},
-        {"Depth", 0},
-        {"Destination", 0},
-        {"Overwrite", 0},
-        {"Date", 0},
-        {"Cookie", 0},
+static Dictionary CoreHeaderInDictionary;
+
+const HTTPCoreHeader CoreHeadersIn[] = {
+        {"Host", HI_HOST, &DummyHeaderProcess},
+        {"Connection", HI_CONNECTION, &DummyHeaderProcess},
+        {"If-Modified-Since", HI_IF_MODIFY_SINCE, &DummyHeaderProcess},
+        {"If-Unmodified-Since", HI_IF_UNMODIFY_SINCE, &DummyHeaderProcess},
+        {"If-Match", HI_IF_MATCH, &DummyHeaderProcess},
+        {"If-None-Match", HI_IF_NON_MATCH, &DummyHeaderProcess},
+        {"UserAgent", HI_USERAGENT, &DummyHeaderProcess},
+        {"Referer", HI_REFERENCE, &DummyHeaderProcess},
+        {"Content-Length", HI_CONTENT_LENGTH, &DummyHeaderProcess},
+        {"Content-Range", HI_CONTENT_RANGE, &DummyHeaderProcess},
+        {"Content-Type", HI_CONTENT_TYPE, &DummyHeaderProcess},
+        {"Range", HI_RANGE, &DummyHeaderProcess},
+        {"If-Range", HI_RANGE, &DummyHeaderProcess},
+        {"Transfer-Encoding", HI_TRANSFER_ENCODING, &DummyHeaderProcess},
+        {"TE", HI_TE, &DummyHeaderProcess},
+        {"Epect", HI_EXPECT, &DummyHeaderProcess},
+        {"Accept-Encoding", HI_ACCEPT_ENCODING, &DummyHeaderProcess},
+        {"Via", HI_VIA, &DummyHeaderProcess},
+        {"Authorization", HI_AUTHORIZATION, &DummyHeaderProcess},
+        {"Keep-Alive", HI_KEEPALIVE, &DummyHeaderProcess},
+        {"X-Forward-For", HI_XFORWARD_FOR, &DummyHeaderProcess},
+        {"X-Real-IP", HI_X_REAL_IP, &DummyHeaderProcess},
+        {"Accept", HI_ACCEPT, &DummyHeaderProcess},
+        {"Accept-Language", HI_ACCEPT_LANGUAGE, &DummyHeaderProcess},
+        {"Depth", HI_DEPTH, &DummyHeaderProcess},
+        {"Destinaion", HI_DESTINATION, &DummyHeaderProcess},
+        {"Overwrite", HI_OVERWRITE, &DummyHeaderProcess},
+        {"Date", HI_DATE, &DummyHeaderProcess},
+        {"Cookie", HI_COOKIE, &DummyHeaderProcess},
+        {nullptr, HI_COMMON, nullptr},
 };
+
+HTTPCoreHeader::HTTPCoreHeader(const char *Key, HTTPCoreHeaderIn  HeaderInEnum, HTTPHeaderProcess *HeaderProcess): DictionaryItem(Key){
+
+    if (Key == nullptr) {
+        return;
+    }
+
+    Hash = 0 ^ Length;
+
+    for (size_t i=0; i< Length; i++) {
+
+        SimpleHash(Hash, LowerCase[Key[i]]);
+    }
+
+    Type = HeaderInEnum, Callback = HeaderProcess;
+}
+
+HTTPError HTTPCoreHeader::Process(HTTPRequest &Request, HTTPHeader &Header) {
+
+    if (Callback == nullptr) {
+        return {EINVAL, "invalid header process"};
+    }
+    return Callback(*this, Request, Header);
+}
 
 HTTPError HTTPParser::ParseHTTPRequest(Buffer &B, HTTPRequest &R) {
 
@@ -1111,39 +1142,49 @@ HTTPError HTTPParser::ValidateURI(HTTPRequest &R) {
     return {0};
 }
 
-static void InitHTTPCoreHeaderInHashTable() {
+HTTPError HTTPParser::HeaderInProcess(HTTPRequest &R, HTTPHeader &H) {
 
-    size_t Length;
-    const char *TempPointer;
+    static bool HeaderInDictionaryInit = false;
 
-    for (int i= 0; i < HI_SIZE - 1; i++) {
-        TempPointer = CoreHeaderInNames[i].String;
-        Length = strlen(TempPointer);
-        CoreHeaderInNames[i].Hash = 0 ^ Length;
-        for (u_char *P = (u_char *)TempPointer; *P != '\0'; P++) {
-            SimpleHash(CoreHeaderInNames[i].Hash, LowerCase[*P]);
+    if (!HeaderInDictionaryInit) {
+        for (uint32_t i = 0; CoreHeadersIn[i].IsValid(); i++) {
+            CoreHeaderInDictionary.AddItem((HTTPCoreHeader &)CoreHeadersIn[i]);
         }
-    }
-}
 
-HTTPCoreHeaderIn ngx::HTTP::HeaderInToEnum (BoundCursor HeaderName) {
-
-    if (!HeaderInHashInit) {
-        InitHTTPCoreHeaderInHashTable();
-        HeaderInHashInit = true;
+        HeaderInDictionaryInit = true;
     }
 
-    uint32_t Hash = 0 ^ HeaderName.Size();
+    uint32_t Hash = 0 ^ H.Name.Size();
 
-    for(BoundCursor BC = HeaderName; *BC != '\0'; BC ++) {
+    for(BoundCursor BC = H.Name; *BC != '\0'; BC ++) {
         SimpleHash(Hash, LowerCase[*BC]);
     }
 
-    for (int i= 0; i < HI_SIZE - 1; i++) {
-        if (CoreHeaderInNames[i].Hash == Hash) {
-            return (HTTPCoreHeaderIn)i;
-        }
-    }
+    DictionaryItem *DI = CoreHeaderInDictionary.FindItem(Hash);
 
-    return HI_COMMON;
+    if (DI != nullptr) {
+
+        for (RBNode *N = CoreHeaderInDictionary.Prev(DI); N != nullptr; ) {
+
+            if (((DictionaryItem *) N)->GetHash() != Hash) {
+                break;
+            }
+            // compare to avoid collision
+            N = CoreHeaderInDictionary.Prev(N);
+        }
+
+        for (RBNode *N = CoreHeaderInDictionary.Next(DI); N != nullptr; ) {
+
+            if (((DictionaryItem *)N) ->GetHash() != Hash) {
+                break;
+            }
+            // compare to avoid collision
+            N = CoreHeaderInDictionary.Prev(N);
+        }
+
+        return ((HTTPCoreHeader *)DI)->Process(R, H);
+    } else {
+        // common header process
+        return {EINVAL, "unhandled http header"};
+    }
 }

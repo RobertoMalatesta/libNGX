@@ -1,3 +1,21 @@
+class HTTPCoreHeader;
+
+typedef HTTPError (HTTPHeaderProcess)(HTTPCoreHeader &, HTTPRequest &, HTTPHeader&H);
+
+class HTTPCoreHeader: public DictionaryItem {
+protected:
+    HTTPCoreHeaderIn Type;
+    HTTPHeaderProcess *Callback = nullptr;
+public:
+    HTTPCoreHeader(const char *Key, HTTPCoreHeaderIn HeaderInEnum, HTTPHeaderProcess *HeaderProcess);
+
+    HTTPError Process(HTTPRequest &Request, HTTPHeader &Header);
+
+    inline bool IsValid() const {
+        return Key != nullptr && Callback != nullptr;
+    };
+};
+
 class HTTPParser {
 protected:
     static HTTPError ParseMethod(Buffer &B, HTTPRequest &R);
@@ -19,6 +37,7 @@ protected:
 
 public:
     static HTTPError ParseHTTPRequest(Buffer &B, HTTPRequest &R);
+
+    static HTTPError HeaderInProcess(HTTPRequest &R, HTTPHeader &H);
 };
 
-HTTPCoreHeaderIn HeaderInToEnum (BoundCursor HeaderName);
