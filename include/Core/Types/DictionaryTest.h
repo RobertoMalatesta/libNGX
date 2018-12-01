@@ -23,25 +23,6 @@ public:
     virtual int operator - (RBNode &R) = 0;
 };
 
-class UInt32RBNode: public RBNode {
-protected:
-    uint32_t Key;
-
-public:
-
-    UInt32RBNode(uint32_t Key): RBNode(), Key(Key) {}
-
-    uint32_t GetKey() { return Key; }
-
-    virtual int operator - (RBNode &R) {
-       return Key -  ((UInt32RBNode &)R).Key;
-    }
-
-    virtual int operator - (uint32_t R) {
-        return this->Key - R;
-    }
-};
-
 class RBT {
 private:
     void RotateLeft(RBNode *Node);
@@ -63,10 +44,4 @@ public:
     RBNode *End();
     RBNode *Next(RBNode *Node);
     RBNode *Prev(RBNode *Node);
-};
-
-class UInt32RBT : public RBT {
-
-public:
-    virtual UInt32RBNode *Find(uint32_t Key);
 };

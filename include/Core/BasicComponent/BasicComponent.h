@@ -20,6 +20,11 @@ namespace ngx {
 #include "Core/BasicComponent/Time.h"
 #include "Core/BasicComponent/TimerHub.h"
 
+#include "Core/BasicComponent/BufferMemoryBlock.h"
+#include "Core/BasicComponent/BufferMemoryBlockRecycleBin.h"
+#include "Core/BasicComponent/BufferCursor.h"
+#include "Core/BasicComponent/Dictionary.h"
+
 #include "Core/BasicComponent/EventEntity.h"
 #include "Core/BasicComponent/EventDomain.h"
 #include "Core/BasicComponent/Socket.h"
@@ -28,13 +33,9 @@ namespace ngx {
 #include "Core/BasicComponent/Listening.h"
 #include "Core/BasicComponent/Server.h"
 
-#include "Core/BasicComponent/BufferMemoryBlock.h"
-#include "Core/BasicComponent/BufferMemoryBlockRecycleBin.h"
-#include "Core/BasicComponent/BufferCursor.h"
 #include "Core/BasicComponent/Buffer.h"
 #include "Core/BasicComponent/BufferAllocator.h"
 #include "Core/BasicComponent/BufferBuilder.h"
-
         }
     }
 }

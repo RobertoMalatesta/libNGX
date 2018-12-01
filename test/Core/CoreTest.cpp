@@ -18,9 +18,7 @@ extern int HashTest();
 
 extern int CRCTest();
 
-extern int RBTreeTest();
-
-extern int RBTree2Test();
+extern int DictionaryTest();
 
 extern int TimerTreeTest();
 
@@ -44,7 +42,7 @@ int CoreTest() {
 //	HashTest();
 //  CRCTest();
 //  RBTreeTest();
-    RBTree2Test();
+    DictionaryTest();
 //  TimerTreeTest();
 //	FSTreeTest();
 //	TCPSocketTest();

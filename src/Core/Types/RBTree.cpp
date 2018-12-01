@@ -388,23 +388,3 @@ RBNode* RBT::Prev(RBNode *Node) {
 
     return Parent;
 }
-
-UInt32RBNode* UInt32RBT::Find(uint32_t Key) {
-
-    RBNode *Place = Root;
-
-    while (Place) {
-
-        int Result = ((UInt32RBNode *)Place)->operator-(Key);
-
-        if (Result < 0) {
-            Place = Place->GetLeft();
-        } else if (Result > 0){
-            Place = Place->GetRight();
-        } else {
-            return (UInt32RBNode *)Place;
-        }
-    }
-
-    return nullptr;
-}

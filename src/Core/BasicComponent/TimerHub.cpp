@@ -2,10 +2,6 @@
 
 using namespace ngx::Core::BasicComponent;
 
-
-TimerHub::TimerHub() : RBT() {
-}
-
 TimerHub::~TimerHub() {
 
     for (RBNode *It = this->Begin(); It ; It = Next(It)) {

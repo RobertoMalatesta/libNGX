@@ -14,7 +14,7 @@
 template <typename T>
 class Array: public CanReset {
 private:
-    Allocator *Allocator = nullptr;
+    Allocator *BackendAllocator = nullptr;
     u_char *PointerToData = nullptr;
     uint32_t AllocateCount = 0;
     uint32_t ElementCount = 0;
@@ -23,7 +23,7 @@ public:
     Array(Allocator *Allocator) {
 
         // specify memory allocator, use malloc() if nullptr
-        this->Allocator = Allocator;
+        this->BackendAllocator = Allocator;
     }
 
     ~Array() {
@@ -56,8 +56,8 @@ public:
 
         // need init ?
         if (AllocateCount == 0 || PointerToData == nullptr) {
-            if (Allocator != nullptr) {
-                PointerToData = (u_char *)Allocator->Allocate(ARRAY_DEFAULT_ELEMENT_COUNT * sizeof(T));
+            if (BackendAllocator != nullptr) {
+                PointerToData = (u_char *)BackendAllocator->Allocate(ARRAY_DEFAULT_ELEMENT_COUNT * sizeof(T));
             } else {
                 PointerToData = (u_char *)malloc(ARRAY_DEFAULT_ELEMENT_COUNT * sizeof(T));
             }
@@ -76,8 +76,8 @@ public:
 
             uint32_t NewAlloc = 2 * (N >= AllocateCount ? N : AllocateCount);
 
-            if (Allocator != nullptr) {
-                NewDataPointer = Allocator->Allocate(NewAlloc * sizeof(T));
+            if (BackendAllocator != nullptr) {
+                NewDataPointer = BackendAllocator->Allocate(NewAlloc * sizeof(T));
             } else {
                 NewDataPointer = malloc(NewAlloc * sizeof(T));
             }
@@ -88,8 +88,8 @@ public:
 
             memcpy(NewDataPointer, PointerToData, (sizeof(T) * ElementCount));
 
-            if (Allocator != nullptr) {
-                Allocator->Free((void *&)PointerToData);
+            if (BackendAllocator != nullptr) {
+                BackendAllocator->Free((void *&)PointerToData);
             } else {
                 free(PointerToData);
             }
@@ -109,8 +109,8 @@ public:
     virtual void Reset() {
 
         // free all memory and reset state
-        if (Allocator != nullptr) {
-            Allocator->Free((void *&)PointerToData);
+        if (BackendAllocator != nullptr) {
+            BackendAllocator->Free((void *&)PointerToData);
         } else {
             free(PointerToData);
         }

@@ -966,8 +966,8 @@ HTTPError HTTPParser::ParseHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderSco
 
     if (!NoMoreHeader) {
         void *TempPointer;
-        HTTPHeader *TempHeader;
-        TempPointer = R.Headers.Push();
+        HTTPHeader *TempHeader = nullptr;
+//        TempPointer = R.Headers.Push();
 
         if (TempPointer == nullptr) {
             return {ENOMEM, HeaderNoMemoryErrorString};

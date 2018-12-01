@@ -47,7 +47,7 @@ class TimerHub : public RBT {
 private:
     SpinLock TimerHubLock;
 public:
-    TimerHub();
+    TimerHub() = default;
 
     ~TimerHub();
 

@@ -36,7 +36,7 @@ set(SOURCE_FILES
         src/HTTP/HTTPConnectionRecycleBin.cpp
         src/HTTP/HTTPParser.cpp
         src/HTTP/HTTPError.cpp
-        src/HTTP/HTTPConnectionBuilder.cpp)
+        src/HTTP/HTTPConnectionBuilder.cpp src/Core/BasicComponent/Dictionary.cpp)
 
 set(TEST_FILES
         test/Test.cpp
@@ -57,7 +57,7 @@ set(TEST_FILES
         test/HTTP/HTTPServerTest.cpp
         test/HTTP/HTTPConnectionRecycleBin.cpp
         test/HTTP/HTTPParseTest.cpp
-        test/Core/RBTree.cpp)
+        test/Core/DictionaryTest.cpp)
 
 include_directories(./include)
 
