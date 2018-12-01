@@ -10,7 +10,7 @@ protected:
     ThreadPool TPool;
     SpinLock TPoolLock;
 public:
-    EventDomain(size_t PoolSize, int ThreadCount);
+    EventDomain(int ThreadCount);
 
     ~EventDomain() {
         LockGuard LockGuard(&TPoolLock);

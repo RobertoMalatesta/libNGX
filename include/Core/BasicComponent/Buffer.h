@@ -19,7 +19,7 @@ class Range;
 
 class Buffer : public CanReset, public CanGC {
 protected:
-    size_t BlockSize;
+    u_char Lg2BlockSize;
     BoundCursor Cursor;
     BufferMemoryBlock *HeadBlock = nullptr;
     BufferMemoryBlockRecycleBin *RecycleBin = nullptr;
@@ -36,7 +36,7 @@ public:
     Buffer &operator>>(BoundCursor &BC) &;
 
     inline BufferMemoryBlock *AddressToMemoryBlock(void *Cursor) const {
-        return (BufferMemoryBlock *) BufferMemoryBlock::AddressToMemoryBlock(Cursor, BlockSize);
+        return (BufferMemoryBlock *) BufferMemoryBlock::AddressToMemoryBlock(Cursor, 1ULL << Lg2BlockSize);
     }
 
     RuntimeError ReadFromConnection(Connection *C);

@@ -2,11 +2,11 @@ class Pool : public Allocator, public CanReset, public CanGC {
 private:
     uint32_t AllocateRound = 0;
 protected:
-    size_t BlockSize;
+    u_char Lg2BlockSize;
     MemoryBlockAllocator *HeadBlock, *CurrentBlock;
 
 public:
-    Pool(size_t BlockSize = POOL_MEMORY_BLOCK_SIZE);
+    Pool(u_char Lg2BlockSize = LG2_POOL_MEMORY_BLOCK_SIZE);
 
     Pool(Pool &Copy);
 

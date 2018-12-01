@@ -20,7 +20,7 @@ protected:
     virtual RuntimeError PostProcessFinished();
 
 public:
-    HTTPServer(size_t PoolSize, int ThreadCount, int EPollSize, size_t BufferBlockSize,
+    HTTPServer(int ThreadCount, int EPollSize, u_char Lg2BufferBlockSize,
                uint64_t ConnectionRecycleSize, uint64_t BufferRecycleSize);
 
     virtual EventError AttachListening(HTTPListening &L);
