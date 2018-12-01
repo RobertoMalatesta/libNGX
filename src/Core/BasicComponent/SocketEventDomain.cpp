@@ -2,8 +2,8 @@
 
 using namespace ngx::Core::BasicComponent;
 
-SocketEventDomain::SocketEventDomain(int ThreadCount) :
-        EventDomain(ThreadCount), THub() {
+SocketEventDomain::SocketEventDomain(size_t PoolSize, int ThreadCount) :
+        EventDomain(PoolSize, ThreadCount), THub() {
 }
 
 RuntimeError SocketEventDomain::EventDomainProcess() {

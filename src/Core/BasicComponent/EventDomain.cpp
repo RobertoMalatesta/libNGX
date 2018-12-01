@@ -2,7 +2,7 @@
 
 using namespace ngx::Core::BasicComponent;
 
-EventDomain::EventDomain(int ThreadCount)
+EventDomain::EventDomain(size_t PoolSize, int ThreadCount)
         : TPoolLock(), TPool(ThreadCount) {}
 
 RuntimeError EventDomain::EventDomainProcess() {

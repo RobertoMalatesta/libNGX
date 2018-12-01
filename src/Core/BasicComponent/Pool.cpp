@@ -2,22 +2,19 @@
 
 using namespace ngx::Core::BasicComponent;
 
-Pool::Pool(u_char Lg2BlockSize) {
+Pool::Pool(size_t BlockSize) {
 
-    if (Lg2BlockSize < LG2_MEMORY_BLOCK_SIZE_MIN) {
-        Lg2BlockSize = LG2_MEMORY_BLOCK_SIZE_MIN;
-        //[WARNING] Block Size too small
-    } else if (Lg2BlockSize > LG2_MEMORY_BLOCK_SIZE_MAX) {
-        Lg2BlockSize = LG2_MEMORY_BLOCK_SIZE_MAX;
+    if (BlockSize < 1024) {
+        BlockSize = 1024;
         //[WARNING] Block Size too small
     }
 
-    this->Lg2BlockSize = Lg2BlockSize;
+    this->BlockSize = BlockSize;
     CurrentBlock = HeadBlock = nullptr;
 }
 
 Pool::Pool(Pool &Copy) {
-    Lg2BlockSize = Copy.Lg2BlockSize;
+    BlockSize = Copy.BlockSize;
     HeadBlock = Copy.HeadBlock;
     CurrentBlock = Copy.CurrentBlock;
 }
@@ -27,13 +24,13 @@ void *Pool::Allocate(size_t Size) {
     void *ret = nullptr;
     MemoryBlockAllocator *TempAllocator = nullptr;
 
-    if ( HeadBlock == nullptr && MemoryBlockAllocator::Build(HeadBlock, 1ULL << Lg2BlockSize) == 0) {
+    if ( HeadBlock == nullptr && MemoryBlockAllocator::Build(HeadBlock, BlockSize) == 0) {
         CurrentBlock = HeadBlock;
     } else if (HeadBlock == nullptr || Size == 0) {
         return nullptr;
     }
 
-    if (Size > (1ULL << Lg2BlockSize) - 2 * sizeof(MemoryBlockAllocator)) {
+    if (Size > BlockSize - 2 * sizeof(MemoryBlockAllocator)) {
         return malloc(Size);
     } else {
         ret = CurrentBlock->Allocate(Size);
@@ -42,7 +39,7 @@ void *Pool::Allocate(size_t Size) {
             return ret;
         } else if (CurrentBlock->GetNextBlock() != nullptr) {
             CurrentBlock = CurrentBlock->GetNextBlock();
-        } else if (MemoryBlockAllocator::Build(TempAllocator, 1ULL << Lg2BlockSize) != 0) {
+        } else if (MemoryBlockAllocator::Build(TempAllocator, BlockSize) != 0) {
             return nullptr;
         } else  {
             CurrentBlock->SetNextBlock(TempAllocator);

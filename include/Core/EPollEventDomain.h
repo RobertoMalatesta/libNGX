@@ -40,7 +40,7 @@ namespace ngx {
             SpinLock EPollLock;
         public:
 
-            EPollEventDomain(int ThreadCount, int EPollSize);
+            EPollEventDomain(size_t PoolSize, int ThreadCount, int EPollSize);
 
             ~EPollEventDomain();
 

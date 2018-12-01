@@ -24,7 +24,7 @@ protected:
     uint32_t WriteTimeout = 1 * 60;
 
 public:
-    HTTPConnectionBuilder(u_char Lg2BufferBlockSize, uint64_t BufferRecycleBinSize,
+    HTTPConnectionBuilder(size_t BufferBlockSize, uint64_t BufferRecycleBinSize,
                           uint64_t ConnectionRecycleBinSize);
 
     ~HTTPConnectionBuilder() = default;

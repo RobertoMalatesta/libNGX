@@ -14,10 +14,10 @@
 
 class BufferBuilder {
 protected:
-    u_char Lg2BlockSize;
+    size_t BlockSize;
     BufferMemoryBlockRecycleBin RecycleBin;
 public:
-    BufferBuilder(u_char Lg2BlockSize = LG2_BUFFER_MEMORY_BLOCK_SIZE, uint64_t RecycleSize = DEFAULT_RECYCLE_SIZE);
+    BufferBuilder(size_t BlockSize = BUFFER_MEMORY_BLOCK_SIZE, uint64_t RecycleSize = DEFAULT_RECYCLE_SIZE);
 
     ~BufferBuilder();
 

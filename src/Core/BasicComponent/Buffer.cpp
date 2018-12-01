@@ -59,12 +59,12 @@ RuntimeError Buffer::ReadFromConnection(Connection *C) {
     BufferMemoryBlock *TempBlock, *WriteBlock;
 
     if (HeadBlock == nullptr) {
-        HeadBlock = AquireBlock(RecycleBin, 1ULL << Lg2BlockSize);
+        HeadBlock = AquireBlock(RecycleBin, BlockSize);
 
         if (HeadBlock == nullptr) {
             return {ENOMEM, "can not allocate buffer block"};
         } else {
-            Cursor = {Lg2BlockSize, HeadBlock->Start, HeadBlock->Start};
+            Cursor = {this, HeadBlock->Start, HeadBlock->Start};
         }
     }
 
@@ -77,7 +77,7 @@ RuntimeError Buffer::ReadFromConnection(Connection *C) {
 
         if (ReadLength == 0) {
 
-            TempBlock = AquireBlock(RecycleBin, 1ULL << Lg2BlockSize);
+            TempBlock = AquireBlock(RecycleBin, BlockSize);
 
             if (TempBlock == nullptr) {
                 return {ENOMEM, "Can not allocate BufferMemoryBlock when recv()"};
@@ -112,12 +112,12 @@ RuntimeError Buffer::ReadData(u_char *PointerToData, size_t DataLength) {
     BufferMemoryBlock *TempBufferBlock, *WriteBlock;
 
     if (HeadBlock == nullptr) {
-        HeadBlock = AquireBlock(RecycleBin, 1ULL << Lg2BlockSize);
+        HeadBlock = AquireBlock(RecycleBin, BlockSize);
 
         if (HeadBlock == nullptr) {
             return {ENOMEM, "can not allocate buffer block"};
         } else {
-            Cursor = {Lg2BlockSize, HeadBlock->Start, HeadBlock->Start};
+            Cursor = {this, HeadBlock->Start, HeadBlock->Start};
         }
     }
 
@@ -129,7 +129,7 @@ RuntimeError Buffer::ReadData(u_char *PointerToData, size_t DataLength) {
 
         if (DataLength > CurrentBlockFreeSize) {
 
-            TempBufferBlock = AquireBlock(RecycleBin, 1ULL << Lg2BlockSize);
+            TempBufferBlock = AquireBlock(RecycleBin, BlockSize);
 
             if (TempBufferBlock == nullptr) {
                 return {ENOMEM, "no enough memory"};
@@ -166,7 +166,7 @@ void Buffer::Reset() {
     }
 
     HeadBlock = nullptr;
-    Cursor = {Lg2BlockSize, nullptr, nullptr};
+    Cursor = {this, nullptr, nullptr};
 }
 
 void Buffer::GC() {

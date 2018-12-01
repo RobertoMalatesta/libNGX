@@ -7,16 +7,6 @@ BufferMemoryBlockRecycleBin::BufferMemoryBlockRecycleBin(
         size_t BufferMemoryBlockSize,
         uint64_t RecycleBinSize) :
         RecycleBin(RecycleBinSize) {
-
-    if (BufferMemoryBlockSize < MEMORY_BLOCK_SIZE_MIN) {
-        BufferMemoryBlockSize = MEMORY_BLOCK_SIZE_MIN;
-    }
-
-    if (BufferMemoryBlockSize > MEMORY_BLOCK_SIZE_MAX) {
-        BufferMemoryBlockSize = MEMORY_BLOCK_SIZE_MAX;
-    }
-
-
     this->BufferMemoryBlockSize = BufferMemoryBlockSize;
 }
 

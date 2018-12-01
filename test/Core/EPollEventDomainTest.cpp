@@ -36,7 +36,7 @@ int EPollEventDomainTest() {
     };
 
     TCP4Listening Listen(SocketAddress);
-    EPollEventDomain Domain(4, 31723);
+    EPollEventDomain Domain(40960, 4, 31723);
 
     Listen.SetPortReuse(true).PrintError();
     Listen.Listen().PrintError();

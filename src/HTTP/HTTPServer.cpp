@@ -3,14 +3,15 @@
 using namespace ngx::HTTP;
 
 HTTPServer::HTTPServer(
+        size_t PoolSize,
         int ThreadCount,
         int EPollSize,
-        u_char Lg2BufferBlockSize,
+        size_t BufferBlockSize,
         uint64_t ConnectionRecycleSize,
         uint64_t BufferRecycleSize) :
         Server(),
-        ConnectionBuilder(Lg2BufferBlockSize, BufferRecycleSize, ConnectionRecycleSize),
-        EventDomain(ThreadCount, EPollSize) {
+        ConnectionBuilder(BufferBlockSize, BufferRecycleSize, ConnectionRecycleSize),
+        EventDomain(PoolSize, ThreadCount, EPollSize) {
 
 }
 

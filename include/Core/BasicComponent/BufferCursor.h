@@ -1,12 +1,13 @@
 class Buffer;
 
 struct Cursor {
-    u_char Lg2BlockSize;
+
     u_char *Position = nullptr;
+    Buffer *ParentBuffer = nullptr;
 
     Cursor() = default;
 
-    Cursor(u_char Lg2BlockSize, u_char *Position);
+    Cursor(Buffer *ParentBuffer, u_char *Position);
 
     uint32_t IncRef();
 
@@ -21,15 +22,13 @@ struct Cursor {
     }
 
     inline Cursor &operator=(Cursor const &Right) {
-        Lg2BlockSize = Right.Lg2BlockSize, Position = Right.Position;
+        ParentBuffer = Right.ParentBuffer, Position = Right.Position;
         return *this;
     }
 
     inline bool operator==(Cursor const &Right) const {
         return Position == Right.Position;
     }
-
-    static BufferMemoryBlock *AddressToBlock(u_char* Position, u_char Lg2BlockSize);
 };
 
 struct BoundCursor : public Cursor {
@@ -38,7 +37,7 @@ struct BoundCursor : public Cursor {
 
     BoundCursor() = default;
 
-    BoundCursor(u_char Lg2BlockSize, u_char *Position, u_char *Bound);
+    BoundCursor(Buffer *ParentBuffer, u_char *Position, u_char *Bound);
 
     uint32_t IncRef();
 
@@ -72,19 +71,19 @@ struct BoundCursor : public Cursor {
 
     inline BoundCursor &operator=(BoundCursor const &Right) {
 
-        Lg2BlockSize = Right.Lg2BlockSize,  Position = Right.Position, Bound = Right.Bound;
+        ParentBuffer = Right.ParentBuffer, Position = Right.Position, Bound = Right.Bound;
         return *this;
     }
 
     inline BoundCursor &operator<(Cursor Cursor) {
 
-        Lg2BlockSize = Cursor.Lg2BlockSize, Position = Cursor.Position;
+        ParentBuffer = Cursor.ParentBuffer, Position = Cursor.Position;
         return *this;
     }
 
     inline BoundCursor &operator>(Cursor Cursor) {
 
-        Lg2BlockSize = Cursor.Lg2BlockSize, this->Bound = Cursor.Position;
+        ParentBuffer = Cursor.ParentBuffer, this->Bound = Cursor.Position;
         return *this;
     }
 

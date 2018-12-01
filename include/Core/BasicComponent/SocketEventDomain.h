@@ -18,7 +18,7 @@ protected:
 
 public:
 
-    SocketEventDomain(int ThreadCount);
+    SocketEventDomain(size_t PoolSize, int ThreadCount);
     ~SocketEventDomain() = default;
 
     virtual EventError AttachSocket(Socket &S, EventType Type) = 0;

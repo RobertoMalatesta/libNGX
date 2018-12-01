@@ -2,10 +2,10 @@
 
 using namespace ngx::HTTP;
 
-HTTPConnectionBuilder::HTTPConnectionBuilder(u_char Lg2BufferBlockSize, uint64_t BufferRecycleBinSize,
+HTTPConnectionBuilder::HTTPConnectionBuilder(size_t BufferBlockSize, uint64_t BufferRecycleBinSize,
                                              uint64_t ConnectionRecycleBinSize) :
         BackendRecycleBin(ConnectionRecycleBinSize),
-        BB(Lg2BufferBlockSize, BufferRecycleBinSize),
+        BB(BufferBlockSize, BufferRecycleBinSize),
         TCPNoDelay(1), TCPNoPush(0) {
 
 }

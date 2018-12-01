@@ -2,13 +2,15 @@
 
 using namespace ngx::Core::BasicComponent;
 
-Cursor::Cursor(u_char Lg2BlockSize, u_char *Position) : Lg2BlockSize(Lg2BlockSize), Position(Position) {
+Cursor::Cursor(Buffer *ParentBuffer, u_char *Position) : ParentBuffer(ParentBuffer), Position(Position) {
+    this->ParentBuffer = ParentBuffer, this->Position = Position;
 }
 
 uint32_t Cursor::IncRef() {
 
     BufferMemoryBlock *MemoryBlock;
-    MemoryBlock = AddressToBlock(Position, Lg2BlockSize);
+
+    MemoryBlock = ParentBuffer->AddressToMemoryBlock(Position);
 
     if (MemoryBlock != nullptr) {
         return MemoryBlock->IncRef();
@@ -20,7 +22,7 @@ uint32_t Cursor::IncRef() {
 uint32_t Cursor::DecRef() {
     BufferMemoryBlock *MemoryBlock;
 
-    MemoryBlock = AddressToBlock(Position,Lg2BlockSize);
+    MemoryBlock = ParentBuffer->AddressToMemoryBlock(Position);
 
     if (MemoryBlock != nullptr) {
         return MemoryBlock->DecRef();
@@ -29,16 +31,7 @@ uint32_t Cursor::DecRef() {
     return 0;
 }
 
-BufferMemoryBlock* Cursor::AddressToBlock(u_char *Position, u_char Lg2BlockSize) {
-
-    BasicMemoryBlock *BasicBlock;
-
-    BasicBlock = BasicMemoryBlock::AddressToMemoryBlock(Position, (1ULL << Lg2BlockSize));
-
-    return (BufferMemoryBlock *)BasicBlock;
-}
-
-BoundCursor::BoundCursor(u_char Lg2BlockSize, u_char *Position, u_char *Bound) : Cursor(Lg2BlockSize, Position),
+BoundCursor::BoundCursor(Buffer *ParentBuffer, u_char *Position, u_char *Bound) : Cursor(ParentBuffer, Position),
                                                                                   Bound(Bound) {
 }
 
@@ -46,8 +39,8 @@ uint32_t BoundCursor::IncRef() {
 
     BufferMemoryBlock *LeftBlock, *RightBlock;
 
-    LeftBlock = AddressToBlock(Position, Lg2BlockSize);
-    RightBlock = AddressToBlock(Position, Lg2BlockSize);
+    LeftBlock = ParentBuffer->AddressToMemoryBlock(Position);
+    RightBlock = ParentBuffer->AddressToMemoryBlock(Bound);
 
     while (LeftBlock != RightBlock && LeftBlock != nullptr) {
         LeftBlock->IncRef();
@@ -63,8 +56,9 @@ uint32_t BoundCursor::DecRef() {
 
     BufferMemoryBlock *LeftBlock, *RightBlock;
 
-    LeftBlock = AddressToBlock(Position, Lg2BlockSize);
-    RightBlock = AddressToBlock(Position, Lg2BlockSize);
+    LeftBlock = ParentBuffer->AddressToMemoryBlock(Position);
+    RightBlock = ParentBuffer->AddressToMemoryBlock(Bound);
+
 
     while (LeftBlock != RightBlock && LeftBlock != nullptr) {
         LeftBlock->DecRef();
@@ -80,11 +74,11 @@ BoundCursor BoundCursor::operator+(size_t Size) const {
 
     BoundCursor R = *this;
 
-    if (Lg2BlockSize >= LG2_MEMORY_BLOCK_SIZE_MIN && Lg2BlockSize < LG2_MEMORY_BLOCK_SIZE_MAX) {
+    if (ParentBuffer != nullptr) {
         BufferMemoryBlock *ThisBlock, *BoundBlock;
 
-        ThisBlock = AddressToBlock(Position, Lg2BlockSize);
-        BoundBlock = AddressToBlock(Bound, Lg2BlockSize);
+        ThisBlock = ParentBuffer->AddressToMemoryBlock(Position);
+        BoundBlock = ParentBuffer->AddressToMemoryBlock(Bound);
 
         if (ThisBlock != nullptr && BoundBlock != nullptr) {
             while (Size > 0) {
@@ -113,11 +107,12 @@ bool BoundCursor::operator!() {
 
     BufferMemoryBlock *L, *R;
 
-    if (Lg2BlockSize >= LG2_MEMORY_BLOCK_SIZE_MIN && Lg2BlockSize < LG2_MEMORY_BLOCK_SIZE_MAX) {
+    if (ParentBuffer == nullptr || Position == nullptr) {
         return true;
     }
-    L = AddressToBlock(Position, Lg2BlockSize);
-    R = AddressToBlock(Bound, Lg2BlockSize);
+
+    L = ParentBuffer->AddressToMemoryBlock(Position);
+    R = ParentBuffer->AddressToMemoryBlock(Bound);
 
     return Position == nullptr || (L == R && Position >= Bound);
 }
@@ -146,8 +141,8 @@ bool BoundCursor::ReadBytes2(uint32_t Offset, u_char &C1, u_char &C2) const {
 
     Cur = (*this + (Offset + 1));
 
-    Block1 = AddressToBlock(Position, Lg2BlockSize);
-    Block2 = AddressToBlock(Cur.Position, Cur.Lg2BlockSize);
+    Block1 = ParentBuffer->AddressToMemoryBlock(Position);
+    Block2 = ParentBuffer->AddressToMemoryBlock(Cur.Position);
 
     if (Cur.Position == nullptr || Block1 == nullptr || Block2 == nullptr) {
         return false;
@@ -178,8 +173,8 @@ bool BoundCursor::ReadBytes4(uint32_t Offset, u_char &C1, u_char &C2, u_char &C3
     BoundCursor Cur = (*this + (Offset + 3));
     BufferMemoryBlock *Block1, *Block2;
 
-    Block1 = AddressToBlock(Position, Lg2BlockSize);
-    Block2 = AddressToBlock(Cur.Position, Cur.Lg2BlockSize);
+    Block1 = ParentBuffer->AddressToMemoryBlock(Position);
+    Block2 = ParentBuffer->AddressToMemoryBlock(Cur.Position);
 
     if (Cur.Position == nullptr || Block1 == nullptr || Block2 == nullptr) {
         return false;
@@ -214,13 +209,12 @@ size_t BoundCursor::Size() {
     size_t Size;
     BufferMemoryBlock *L, *R;
 
-
-    if (!*this) {
+    if (ParentBuffer == nullptr || Position == nullptr) {
         return 0;
     }
 
-    L = AddressToBlock(Position, Lg2BlockSize);
-    R = AddressToBlock(Bound, Lg2BlockSize);
+    L = ParentBuffer->AddressToMemoryBlock(Position);
+    R = ParentBuffer->AddressToMemoryBlock(Bound);
 
     if (L == R) {
         Size = Bound - Position;

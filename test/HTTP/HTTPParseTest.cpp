@@ -6,7 +6,7 @@ int HTTPParseTest() {
 
     Pool MemoryAllocator;
     Buffer buffer;
-    BufferBuilder Builder(LG2_BUFFER_MEMORY_BLOCK_SIZE, 1000);
+    BufferBuilder Builder(BUFFER_MEMORY_BLOCK_SIZE, 1000);
     HTTPRequest Request(&MemoryAllocator);
     BoundCursor BC;
 

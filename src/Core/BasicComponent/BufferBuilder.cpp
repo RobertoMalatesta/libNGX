@@ -2,9 +2,9 @@
 
 using namespace ngx::Core::BasicComponent;
 
-BufferBuilder::BufferBuilder(u_char Lg2BlockSize, uint64_t RecycleSize) :
-        Lg2BlockSize(Lg2BlockSize),
-        RecycleBin(1ULL << Lg2BlockSize, RecycleSize) {
+BufferBuilder::BufferBuilder(size_t BlockSize, uint64_t RecycleSize) :
+        BlockSize(BlockSize),
+        RecycleBin(BlockSize, RecycleSize) {
 
 }
 
@@ -15,6 +15,6 @@ BufferBuilder::~BufferBuilder() {
 bool BufferBuilder::BuildBuffer(Buffer &Buf) {
 
     Buf.RecycleBin = &RecycleBin;
-    Buf.Lg2BlockSize = Lg2BlockSize;
+    Buf.BlockSize = BlockSize;
     return true;
 }

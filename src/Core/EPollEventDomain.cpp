@@ -6,8 +6,8 @@ using namespace ngx::Core;
 static bool SignalSetInited = false;
 static sigset_t epoll_sig_mask = {0};
 
-EPollEventDomain::EPollEventDomain(int ThreadCount, int EPollSize) :
-        SocketEventDomain(ThreadCount) , EPollLock() {
+EPollEventDomain::EPollEventDomain(size_t PoolSize, int ThreadCount, int EPollSize) :
+        SocketEventDomain(PoolSize, ThreadCount) , EPollLock() {
 
     if (!SignalSetInited) {
         sigemptyset(&epoll_sig_mask);
