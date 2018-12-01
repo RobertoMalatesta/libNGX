@@ -83,7 +83,7 @@ namespace ngx {
             HI_VIA,
             HI_AUTHORIZATION,
             HI_KEEPALIVE,
-            HI_XFORWARD_FOR,
+            HI_FORWARD_FOR,
             HI_X_REAL_IP,
             HI_ACCEPT,
             HI_ACCEPT_LANGUAGE,
