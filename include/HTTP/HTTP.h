@@ -4,29 +4,12 @@
 namespace ngx {
     namespace HTTP {
 
-        const u_char LF = '\n';
-        const u_char CR = '\r';
-        const u_char CRLF[] = "\r\n";
-        const bool DEFAULT_HTTP_ALLOW_UNDERSCORE = true;
-
         using namespace ngx::Core;
         using namespace ngx::HTTP::DefaultConfig;
 
-        class HTTPError;
-
-        class HTTPServer;
-
-        class HTTPConnection;
-
-        class HTTPConnectionRecycleBin;
-
-        class HTTPConnectionBuilder;
-
-        class HTTPParser;
-
-        class HTTPRequest;
-
-        struct HTTPPerformanceUnit;
+        const u_char LF = '\n';
+        const u_char CR = '\r';
+        const u_char CRLF[] = "\r\n";
 
         enum HTTPVersion {
             HTTP_V1 = 1,
@@ -50,14 +33,6 @@ namespace ngx {
             OPTIONS,
             PROPFIND,
             PROPPATCH,
-        };
-
-        struct HTTPHeader {
-            BoundCursor Name;
-            BoundCursor Value;
-            bool Valid;
-
-            HTTPHeader() : Name(), Value(), Valid(true) {}
         };
 
         enum HTTPCoreHeaderIn {
@@ -95,11 +70,6 @@ namespace ngx {
             HI_SIZE
         };
 
-        struct ConstStringHash {
-            const char *String;
-            uint32_t Hash;
-        };
-
         enum HTTPRequestState {
             HTTP_BAD_REQUEST_STATE = -1,
             HTTP_INIT_STATE,
@@ -116,7 +86,24 @@ namespace ngx {
         enum HTTPResponseState {
 
         };
+
+        class HTTPServer;
+
+        class HTTPConnection;
+
+        class HTTPConnectionRecycleBin;
+
+        class HTTPConnectionBuilder;
+
+        class HTTPParser;
+
+        class HTTPRequest;
+
+        struct HTTPPMU;
+
+
 #include "HTTP/HTTPError.h"
+#include "HTTP/HTTPHeader.h"
 #include "HTTP/HTTPRequest.h"
 #include "HTTP/HTTPParser.h"
 #include "HTTP/HTTPListening.h"
@@ -125,5 +112,6 @@ namespace ngx {
 #include "HTTP/HTTPConnectionBuilder.h"
 #include "HTTP/HTTPServer.h"
 #include "HTTP/Router/Router.h"
+
     }
 }

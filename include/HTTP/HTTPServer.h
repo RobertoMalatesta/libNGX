@@ -1,5 +1,5 @@
 
-struct HTTPPerformanceUnit {
+struct HTTPPMU {
     std::atomic_uint64_t ProcessRound = {0};
     std::atomic_uint64_t ConnectionCount = {0};
     std::atomic_uint64_t ActiveConnecionCount = {0};
@@ -13,9 +13,11 @@ struct HTTPPerformanceUnit {
 
 class HTTPServer : public Server {
 protected:
+
     HTTPConnectionBuilder ConnectionBuilder;
     EPollEventDomain EventDomain;
-    HTTPPerformanceUnit PerformanceCounters;
+    HTTPParser Parser;
+    HTTPPMU PMU;
 
     virtual RuntimeError PostProcessFinished();
 

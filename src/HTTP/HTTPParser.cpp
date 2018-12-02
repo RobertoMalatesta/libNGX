@@ -20,88 +20,25 @@ const uint32_t usual[] = {
         0xffffffff  /* 1111 1111 1111 1111  1111 1111 1111 1111 */
 };
 
-const u_char LowerCase[] =
-        "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-        "\0\0\0\0\0\0\0\0\0\0\0\0\0-\0\0" "0123456789\0\0\0\0\0\0"
-        "\0abcdefghijklmnopqrstuvwxyz\0\0\0\0\0"
-        "\0abcdefghijklmnopqrstuvwxyz\0\0\0\0\0"
-        "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-        "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-        "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-        "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
-
-const char BadURIErrorString[] = "Bad URI!";
-const char BadRequestErrorString[] = "Bad Request!";
-const char BadVersionErrorString[] = "Bad HTTP Version!";
-const char InvalidMethodErrorString[] = "Invalid Method!";
-const char InvalidHeaderErrorString[] = "Invalid Header!";
-const char BrokenRequestErrorString[] = "Broken Request in buffer!";
-const char BrokenHeaderErrorString[] = "Broken Header in buffer!";
-const char NoMoreHeaderErrorString[] = "No more header!";
+const char BadURIErrorString[] = "Bad URI";
+const char BadRequestErrorString[] = "Bad Request";
+const char BadVersionErrorString[] = "Bad HTTP Version";
+const char InvalidMethodErrorString[] = "Invalid Method";
+const char InvalidHeaderErrorString[] = "Invalid Header";
+const char BrokenRequestErrorString[] = "Broken Request in buffer";
+const char BrokenHeaderErrorString[] = "Broken Header in buffer";
+const char NoMoreHeaderErrorString[] = "No more header";
 const char HeaderNoMemoryErrorString[] = "No sufficient memory to store header indexer";
 
 HTTPError DummyHeaderProcess(HTTPCoreHeader &CH, HTTPRequest &R, HTTPHeader &H){
     return {EINVAL, "dummy header process"};
 }
 
-static bool HeaderInHashInit = false;
-static Dictionary CoreHeaderInDictionary;
+HTTPParser::HTTPParser() {
 
-const HTTPCoreHeader CoreHeadersIn[] = {
-        {"Host", HI_HOST, &DummyHeaderProcess},
-        {"Connection", HI_CONNECTION, &DummyHeaderProcess},
-        {"If-Modified-Since", HI_IF_MODIFY_SINCE, &DummyHeaderProcess},
-        {"If-Unmodified-Since", HI_IF_UNMODIFY_SINCE, &DummyHeaderProcess},
-        {"If-Match", HI_IF_MATCH, &DummyHeaderProcess},
-        {"If-None-Match", HI_IF_NON_MATCH, &DummyHeaderProcess},
-        {"UserAgent", HI_USERAGENT, &DummyHeaderProcess},
-        {"Referer", HI_REFERENCE, &DummyHeaderProcess},
-        {"Content-Length", HI_CONTENT_LENGTH, &DummyHeaderProcess},
-        {"Content-Range", HI_CONTENT_RANGE, &DummyHeaderProcess},
-        {"Content-Type", HI_CONTENT_TYPE, &DummyHeaderProcess},
-        {"Range", HI_RANGE, &DummyHeaderProcess},
-        {"If-Range", HI_RANGE, &DummyHeaderProcess},
-        {"Transfer-Encoding", HI_TRANSFER_ENCODING, &DummyHeaderProcess},
-        {"TE", HI_TE, &DummyHeaderProcess},
-        {"Epect", HI_EXPECT, &DummyHeaderProcess},
-        {"Accept-Encoding", HI_ACCEPT_ENCODING, &DummyHeaderProcess},
-        {"Via", HI_VIA, &DummyHeaderProcess},
-        {"Authorization", HI_AUTHORIZATION, &DummyHeaderProcess},
-        {"Keep-Alive", HI_KEEPALIVE, &DummyHeaderProcess},
-        {"X-Forward-For", HI_XFORWARD_FOR, &DummyHeaderProcess},
-        {"X-Real-IP", HI_X_REAL_IP, &DummyHeaderProcess},
-        {"Accept", HI_ACCEPT, &DummyHeaderProcess},
-        {"Accept-Language", HI_ACCEPT_LANGUAGE, &DummyHeaderProcess},
-        {"Depth", HI_DEPTH, &DummyHeaderProcess},
-        {"Destinaion", HI_DESTINATION, &DummyHeaderProcess},
-        {"Overwrite", HI_OVERWRITE, &DummyHeaderProcess},
-        {"Date", HI_DATE, &DummyHeaderProcess},
-        {"Cookie", HI_COOKIE, &DummyHeaderProcess},
-        {nullptr, HI_COMMON, nullptr},
-};
-
-HTTPCoreHeader::HTTPCoreHeader(const char *Key, HTTPCoreHeaderIn  HeaderInEnum, HTTPHeaderProcess *HeaderProcess): DictionaryItem(Key){
-
-    if (Key == nullptr) {
-        return;
+    for (uint32_t i = 0; HeaderInProcesses[i].IsValid(); i++) {
+        HeaderProcess.AddItem((HTTPCoreHeader &)HeaderInProcesses[i]);
     }
-
-    Hash = 0 ^ Length;
-
-    for (size_t i=0; i< Length; i++) {
-
-        SimpleHash(Hash, LowerCase[Key[i]]);
-    }
-
-    Type = HeaderInEnum, Callback = HeaderProcess;
-}
-
-HTTPError HTTPCoreHeader::Process(HTTPRequest &Request, HTTPHeader &Header) {
-
-    if (Callback == nullptr) {
-        return {EINVAL, "invalid header process"};
-    }
-    return Callback(*this, Request, Header);
 }
 
 HTTPError HTTPParser::ParseHTTPRequest(Buffer &B, HTTPRequest &R) {
@@ -1144,42 +1081,32 @@ HTTPError HTTPParser::ValidateURI(HTTPRequest &R) {
 
 HTTPError HTTPParser::HeaderInProcess(HTTPRequest &R, HTTPHeader &H) {
 
-    static bool HeaderInDictionaryInit = false;
-
-    if (!HeaderInDictionaryInit) {
-        for (uint32_t i = 0; CoreHeadersIn[i].IsValid(); i++) {
-            CoreHeaderInDictionary.AddItem((HTTPCoreHeader &)CoreHeadersIn[i]);
-        }
-
-        HeaderInDictionaryInit = true;
-    }
-
     uint32_t Hash = 0 ^ H.Name.Size();
 
     for(BoundCursor BC = H.Name; *BC != '\0'; BC ++) {
         SimpleHash(Hash, LowerCase[*BC]);
     }
 
-    DictionaryItem *DI = CoreHeaderInDictionary.FindItem(Hash);
+    DictionaryItem *DI = HeaderProcess.FindItem(Hash);
 
     if (DI != nullptr) {
 
-        for (RBNode *N = CoreHeaderInDictionary.Prev(DI); N != nullptr; ) {
+        for (RBNode *N = HeaderProcess.Prev(DI); N != nullptr; ) {
 
             if (((DictionaryItem *) N)->GetHash() != Hash) {
                 break;
             }
             // compare to avoid collision
-            N = CoreHeaderInDictionary.Prev(N);
+            N = HeaderProcess.Prev(N);
         }
 
-        for (RBNode *N = CoreHeaderInDictionary.Next(DI); N != nullptr; ) {
+        for (RBNode *N = HeaderProcess.Next(DI); N != nullptr; ) {
 
             if (((DictionaryItem *)N) ->GetHash() != Hash) {
                 break;
             }
             // compare to avoid collision
-            N = CoreHeaderInDictionary.Prev(N);
+            N = HeaderProcess.Prev(N);
         }
 
         return ((HTTPCoreHeader *)DI)->Process(R, H);

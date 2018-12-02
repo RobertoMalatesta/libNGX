@@ -6,6 +6,7 @@ int HTTPParseTest() {
 
     Pool MemoryAllocator;
     Buffer buffer;
+    HTTPParser Parser;
     BufferBuilder Builder(BUFFER_MEMORY_BLOCK_SIZE, 1000);
     HTTPRequest Request(&MemoryAllocator);
     BoundCursor BC;
@@ -22,7 +23,7 @@ int HTTPParseTest() {
     HTTPHeader H;
     H.Name = BC;
 
-    HTTPParser::HeaderInProcess(R, H);
+    Parser.HeaderInProcess(R, H);
 
 //    HTTPError Error = HTTPParser::ParseHTTPRequest(buffer, Request);
 //
