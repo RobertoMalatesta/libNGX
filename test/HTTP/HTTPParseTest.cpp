@@ -17,7 +17,12 @@ int HTTPParseTest() {
 
     buffer >> BC;
 
-    HeaderInToEnum(BC);
+    HTTPRequest R(&MemoryAllocator);
+
+    HTTPHeader H;
+    H.Name = BC;
+
+    HTTPParser::HeaderInProcess(R, H);
 
 //    HTTPError Error = HTTPParser::ParseHTTPRequest(buffer, Request);
 //

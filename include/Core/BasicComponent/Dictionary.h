@@ -8,13 +8,13 @@ public:
 
     DictionaryItem(const char*Key);
 
+    inline uint32_t GetHash() const { return Hash; }
+
     inline int32_t operator - (uint32_t RHash) {
 
-        int32_t Delta = Hash - RHash;
-
-        if (Delta > 0) {
+        if (Hash > RHash) {
             return 1;
-        } else if (Delta < 0) {
+        } else if (Hash < RHash) {
             return -1;
         } else {
             return 0;
