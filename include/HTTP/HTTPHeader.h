@@ -24,14 +24,14 @@ struct HTTPHeader {
 class HTTPCoreHeader: public DictionaryItem {
 protected:
     HTTPCoreHeaderIn Type;
-    HTTPHeaderProcess *Callback = nullptr;
+    HTTPHeaderProcess *Setter = nullptr;
 public:
     HTTPCoreHeader(const char *Key, HTTPCoreHeaderIn HeaderInEnum, HTTPHeaderProcess *HeaderProcess);
 
     HTTPError Process(HTTPRequest &Request, HTTPHeader &Header);
 
     inline bool IsValid() const {
-        return Key != nullptr && Callback != nullptr;
+        return Key != nullptr && Setter != nullptr;
     };
 
 };

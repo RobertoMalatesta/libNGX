@@ -8,7 +8,7 @@ HTTPCoreHeader::HTTPCoreHeader(const char *Key, HTTPCoreHeaderIn  HeaderInEnum, 
         return;
     }
 
-    Type = HeaderInEnum, Callback = HeaderProcess;
+    Type = HeaderInEnum, Setter = HeaderProcess;
 
     Hash = 0 ^ Length;
 
@@ -20,8 +20,8 @@ HTTPCoreHeader::HTTPCoreHeader(const char *Key, HTTPCoreHeaderIn  HeaderInEnum, 
 
 HTTPError HTTPCoreHeader::Process(HTTPRequest &Request, HTTPHeader &Header) {
 
-    if (Callback == nullptr) {
+    if (Setter == nullptr) {
         return {EINVAL, "invalid header process"};
     }
-    return Callback(*this, Request, Header);
+    return Setter(*this, Request, Header);
 }
