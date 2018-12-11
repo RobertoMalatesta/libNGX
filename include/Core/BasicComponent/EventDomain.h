@@ -19,7 +19,9 @@ public:
 
     static void DiscardPromise(void *Argument, ThreadPool *TPool) {};
 
-    RuntimeError PostPromise(PromiseCallback *Callback, void *Argument);
+    RuntimeError BindEventThread(EventEntity &Entity);
+
+    RuntimeError UnbindEventThread(EventEntity &Entity);
 
     virtual RuntimeError EventDomainProcess();
 };

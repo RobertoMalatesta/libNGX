@@ -129,6 +129,7 @@ RuntimeError EPollEventDomain::EventDomainProcess(Server *S) {
     } else if (EventCount <= -1) {
         return {errno, "epoll_wait() failed!"};
     } else if (EventCount > 0) {
+
         for (int i = 0; i < EventCount; i++) {
 
             if (Events[i].data.ptr == nullptr) {

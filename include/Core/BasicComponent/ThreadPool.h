@@ -54,7 +54,8 @@ public:
 
     void Stop();
 
-    int TryPostPromise(PromiseCallback *Callback, void *Argument);
+    RuntimeError PostPromise(PromiseCallback *Callback, void *Argument);
+
 };
 
 class ThreadPool {
@@ -71,5 +72,5 @@ public:
 
     ~ThreadPool();
 
-    void PostPromise(PromiseCallback *Callback, void *PointerToArg);
+    Thread *GetOneThread();
 };

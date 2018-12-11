@@ -24,21 +24,18 @@ Thread::Thread(ThreadPool *TPool) : Sentinel(), Allocator() {
     }
 }
 
-int Thread::TryPostPromise(PromiseCallback *Callback, void *Argument) {
+RuntimeError Thread::PostPromise(PromiseCallback *Callback, void *Argument) {
 
     Promise *P = nullptr;
 
-    if (!Lock.TryLock()) {
-        return -1;
-    }
+    LockGuard Guard(&Lock);
 
     if (!Running) {
-        return 0;
+        return {EFAULT, "thread is not running"};
     }
 
     if (Build(P) != 0 || P == nullptr) {
-        Lock.Unlock();
-        return -1;
+        return {ENOMEM, "insufficent memory"};
     }
 
     P->TPool = TPool;
@@ -50,9 +47,9 @@ int Thread::TryPostPromise(PromiseCallback *Callback, void *Argument) {
         Allocator.GC();
     }
 
-    Lock.Unlock();
-    return 0;
+    return {0};
 }
+
 
 void* Thread::ThreadProcess(void *Argument) {
 
@@ -121,22 +118,7 @@ ThreadPool::~ThreadPool() {
     Threads.clear();
 }
 
-void ThreadPool::PostPromise(PromiseCallback *Callback, void *PointerToArg) {
-
-    int RetCode, i = DeliverIndex;
-
-    do {
-        RetCode = Threads[(i) % NumThread]->TryPostPromise(Callback, PointerToArg);
-
-        if (RetCode == 0) {
-            break;
-        }
-
-        if (((i -= RetCode) - DeliverIndex) % NumThread == 0) {
-            ForceSleep(THREAD_POOL_SPIN_TIME);
-        }
-    } while (true);
-
-    DeliverIndex = i;
+Thread *ThreadPool::GetOneThread() {
+    return Threads[DeliverIndex++ % NumThread];
 }
 

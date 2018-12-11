@@ -9,8 +9,29 @@ RuntimeError EventDomain::EventDomainProcess() {
     return {0};
 }
 
-RuntimeError EventDomain::PostPromise(PromiseCallback *Callback, void *Argument) {
-    LockGuard Guard(&TPoolLock);
-    TPool.PostPromise(Callback, Argument);
+RuntimeError EventDomain::BindEventThread(EventEntity &Entity) {
+
+    Thread *T = TPool.GetOneThread();
+
+    if (T == nullptr) {
+        return {ENOENT, "can not get a thread"};
+    }
+
+    Entity.BackendWorker = T;
+
     return {0};
+}
+
+RuntimeError EventDomain::UnbindEventThread(EventEntity &Entity) {
+    Entity.BackendWorker = nullptr;
+    return {0};
+}
+
+RuntimeError EventEntity::PostPromise(PromiseCallback *Callback, void *Argument) {
+
+    if (BackendWorker == nullptr) {
+        return {EFAULT, "no backend worker"};
+    }
+
+    return BackendWorker->PostPromise(Callback, Argument);
 }

@@ -25,7 +25,7 @@ int TimerHub::QueueExpiredTimer(ThreadPool *TPool, uint32_t Count) {
                 break;
             }
 
-            TPool->PostPromise(Temp->Callback, Temp->Argument);
+            S->PostPromise(Temp->Callback, Temp->Argument);
 
             TimerHubLock.Lock();
             Erase(It);

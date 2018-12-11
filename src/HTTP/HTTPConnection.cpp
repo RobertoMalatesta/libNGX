@@ -39,7 +39,7 @@ RuntimeError HTTPConnection::HandleEventDomain(uint32_t EventType) {
         return {EFAULT, "connection not open"};
     };
 
-    return ParentEventDomain->PostPromise(HTTPConnection::OnConnectionEvent, static_cast<void *>(this));
+    return PostPromise(HTTPConnection::OnConnectionEvent, static_cast<void *>(this));
 }
 
 void HTTPConnection::OnTimerEvent(void *PointerToConnection, ThreadPool *) {
@@ -69,8 +69,6 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) 
     HTTPConnection *C;
 
     C = static_cast<HTTPConnection *>(PointerToConnection);
-
-    C->SocketLock.Lock();
 
     LOG(INFO) << "in connection event, fd: "<< C->SocketFD;
 
@@ -102,8 +100,6 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) 
     } else {
         LOG(INFO) << "connection already closed, skip it`s event" << C->SocketFD;
     }
-
-    C->SocketLock.Unlock();
 }
 
 void HTTPConnection::Reset() {
