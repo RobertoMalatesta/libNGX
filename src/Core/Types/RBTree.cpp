@@ -8,7 +8,6 @@ void RBT::RotateLeft(RBNode *Node) {
     RBNode *Right = Node->Right, *Parent = Node->Parent;
 
     if ((Node->Right = Right->Left) != nullptr) {
-
         Right->Left->Parent = Node;
     }
 
@@ -24,6 +23,7 @@ void RBT::RotateLeft(RBNode *Node) {
 
             Parent->Right = Right;
         }
+
     } else {
 
         Root = Right;
@@ -54,6 +54,7 @@ void RBT::RotateRight(RBNode *Node) {
 
             Parent->Left = Left;
         }
+
     } else {
         Root = Left;
     }
@@ -70,6 +71,7 @@ void RBT::InsertColor(RBNode *Node) {
         GParent = Parent->Parent;
 
         if (Parent == GParent->Left) {
+
             {
                 RBNode *Uncle = GParent->Right;
 
@@ -95,7 +97,9 @@ void RBT::InsertColor(RBNode *Node) {
             Parent->SetBlack();
             GParent->SetRed();
             RotateRight(GParent);
+
         } else {
+
             {
                 RBNode *Uncle = GParent->Left;
 
@@ -169,7 +173,9 @@ void RBT::EraseColor(RBNode *Node, RBNode *Parent) {
                 break;
             }
         } else {
+
             Other = Parent->Left;
+
             if (Other->IsRed()) {
 
                 Other->SetBlack();
@@ -246,6 +252,7 @@ void RBT::Erase(RBNode *Node) {
     } else if (!Node->Right) {
         Child = Node->Left;
     } else {
+
         RBNode *Old = Node, *Left;
 
         Node = Node->Right;
@@ -255,11 +262,13 @@ void RBT::Erase(RBNode *Node) {
         }
 
         if (Old->Parent) {
+
             if (Old->Parent->Left == Old) {
                 Old->Parent->Left = Node;
             } else {
                 Old->Parent->Right = Node;
             }
+
         } else {
             Root = Node;
         }
@@ -297,11 +306,13 @@ void RBT::Erase(RBNode *Node) {
     }
 
     if (Parent) {
+
         if (Parent->Left == Node) {
             Parent->Left = Child;
         } else {
             Parent->Right = Child;
         }
+
     } else {
         Root = Child;
     }
@@ -353,10 +364,13 @@ RBNode* RBT::Next(RBNode *Node) {
     }
 
     if (Node->Right) {
+
         Node = Node->Right;
+
         while (Node->Left) {
             Node = Node->Left;
         }
+
         return Node;
     }
 
@@ -376,7 +390,9 @@ RBNode* RBT::Prev(RBNode *Node) {
     }
 
     if (Node -> Left) {
+
         Node = Node->Left;
+
         while(Node->Right) {
             Node = Node->Right;
         }
