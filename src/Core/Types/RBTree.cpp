@@ -39,7 +39,7 @@ void RBT::RotateRight(RBNode *Node) {
 
     if ((Node->Left = Left->Right) != nullptr) {
 
-        Left->Parent = Node;
+        Left->Right->Parent = Node;
     }
 
     Left->Right = Node;
@@ -188,7 +188,7 @@ void RBT::EraseColor(RBNode *Node, RBNode *Parent) {
 
                 if (!Other->Left || Other->Left->IsBlack()) {
                     Other->Right->SetBlack();
-                    Other->SetBlack();
+                    Other->SetRed();
                     RotateLeft(Other);
                     Other = Parent->Left;
                 }
@@ -264,13 +264,14 @@ void RBT::Erase(RBNode *Node) {
             Root = Node;
         }
 
-        Color = Node->Color;
-        Child = Node->Right;
-        Parent = Node->Parent;
+        Color = Node->GetColor();
+        Child = Node->GetRight();
+        Parent = Node->GetParent();
 
         if (Parent == Old) {
             Parent = Node;
         } else {
+
             if (Child) {
                 Child->Parent = Parent;
             }
@@ -280,16 +281,16 @@ void RBT::Erase(RBNode *Node) {
             Old->Right->Parent = Node;
         }
 
-        Node->Color = Old->Color;
-        Node->Parent = Old->Parent;
-        Node->Left = Old->Left;
+        Node->Color = Old->GetColor();
+        Node->Parent = Old->GetParent();
+        Node->Left = Old->GetLeft();
         Old->Left->Parent = Node;
 
         goto color;
     }
 
-    Color = Node->Color;
-    Parent = Node->Parent;
+    Color = Node->GetColor();
+    Parent = Node->GetParent();
 
     if (Child) {
         Child->Parent = Parent;

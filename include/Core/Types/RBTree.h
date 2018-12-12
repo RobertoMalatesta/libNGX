@@ -19,6 +19,7 @@ public:
 
     inline RBNode *GetLeft(){ return Left; }
     inline RBNode *GetRight() { return Right; }
+    inline RBNode *GetParent() { return Parent; }
 
     virtual int operator - (RBNode &R) = 0;
 };
