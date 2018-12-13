@@ -1,9 +1,7 @@
 class HTTPParser {
 protected:
-
-    static const HTTPCoreHeader HeaderInProcesses[31];
-
-    Dictionary HeaderProcess;
+// mark public for test
+public:
 
     /** Parse HTTP Method from Buffer into HTTPRequest */
     static HTTPError ParseMethod(Buffer &B, HTTPRequest &R);
@@ -12,10 +10,10 @@ protected:
     static HTTPError ParseRequestLine(Buffer &B, HTTPRequest &R);
 
     /** Parse HTTP Header from Buffer into HTTPHeader */
-    static HTTPError ParseHeader(Buffer &B, HTTPHeader &R, bool AllowUnderScore = ALLOW_UNDERSCORE);
+    static HTTPError ParseHeader(Buffer &B, HTTPHeader &Header, bool AllowUnderScore = ALLOW_UNDERSCORE);
 
     /** Parse HTTP Header In through ParseHeader, and do some process */
-    HTTPError ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderScore = ALLOW_UNDERSCORE);
+    static HTTPError ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderScore = ALLOW_UNDERSCORE);
 
     /** Write HTTP Request to Buffer */
 //    HTTPError WriteRequest(HTTPRequest &R, Buffer &B);
@@ -40,10 +38,6 @@ protected:
 
 public:
 
-    HTTPParser();
-
     HTTPError ParseHTTPRequest(Buffer &B, HTTPRequest &R);
-
-    HTTPError HeaderInProcess(HTTPRequest &R, HTTPHeader &H);
 };
 

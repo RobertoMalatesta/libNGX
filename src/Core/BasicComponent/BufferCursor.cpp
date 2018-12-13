@@ -31,6 +31,14 @@ uint32_t Cursor::DecRef() {
     return 0;
 }
 
+BufferMemoryBlock *Cursor::GetParentBlock() {
+
+    if (ParentBuffer == nullptr) {
+        return nullptr;
+    }
+
+    return ParentBuffer->AddressToMemoryBlock(Position);
+}
 BoundCursor::BoundCursor(Buffer *ParentBuffer, u_char *Position, u_char *Bound) : Cursor(ParentBuffer, Position),
                                                                                   Bound(Bound) {
 }

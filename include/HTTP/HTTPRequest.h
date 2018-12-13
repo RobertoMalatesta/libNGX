@@ -1,4 +1,5 @@
 struct HTTPHeaderIn {
+
     BoundCursor Host;
     BoundCursor Connection;
     BoundCursor IfModufiedSince;
@@ -34,6 +35,7 @@ struct HTTPHeaderIn {
     BoundCursor User;
     BoundCursor Passwrod;
 
+    BoundCursor Cookie;
     Array<BoundCursor> Cookies;
 
     BoundCursor Server;
@@ -47,7 +49,6 @@ struct HTTPHeaderIn {
     Array<HTTPHeader> OtherHeaders;
 
     HTTPHeaderIn(Allocator *BackendAllocator): XForwardFor(BackendAllocator), Cookies(BackendAllocator), OtherHeaders(BackendAllocator){};
-
 };
 
 

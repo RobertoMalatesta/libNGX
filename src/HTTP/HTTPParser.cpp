@@ -28,9 +28,9 @@ const char InvalidHeaderErrorString[] = "Invalid Header";
 const char BrokenRequestErrorString[] = "Broken Request in buffer";
 const char BrokenHeaderErrorString[] = "Broken Header in buffer";
 const char NoMoreHeaderErrorString[] = "No more header";
-const char HeaderNoMemoryErrorString[] = "No sufficient memory to store header indexer";
+const char NoMemoryErrorString[] = "No sufficient memory to store header indexer";
 
-const HTTPCoreHeader HTTPParser::HeaderInProcesses[31] = {
+const HTTPCoreHeader HeaderInProcesses[31] = {
         {"Host", HI_HOST, nullptr},
         {"Connection", HI_CONNECTION, nullptr},
         {"If-Modified-Since", HI_IF_MODIFY_SINCE, nullptr},
@@ -64,12 +64,7 @@ const HTTPCoreHeader HTTPParser::HeaderInProcesses[31] = {
         {"Size", HI_SIZE, nullptr},
 };
 
-HTTPParser::HTTPParser() {
-
-    for (uint32_t i = 0; HeaderInProcesses[i].IsValid(); i++) {
-        HeaderProcess.AddItem((HTTPCoreHeader &)HeaderInProcesses[i]);
-    }
-}
+static Dictionary HeaderProcess;
 
 HTTPError HTTPParser::ParseHTTPRequest(Buffer &B, HTTPRequest &R) {
 
@@ -98,7 +93,7 @@ HTTPError HTTPParser::ParseHTTPRequest(Buffer &B, HTTPRequest &R) {
             }
         case HTTP_PARSE_HEADER:
             do {
-                Error = ParseHeaders(B, R);
+//                Error = ParseHeaders(B, R);
             } while (Error.GetCode() == 0 && Error.CodeMessage() == nullptr);
 
             if (Error.GetCode() != 0) {
@@ -755,7 +750,7 @@ HTTPError HTTPParser::ParseRequestLine(Buffer &B, HTTPRequest &R) {
     return {0};
 }
 
-HTTPError HTTPParser::ParseHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderScore) {
+HTTPError HTTPParser::ParseHeader(Buffer &B, HTTPHeader &Header, bool AllowUnderScore) {
 
     enum HTTPHeaderParseState {
         HDR_START = 0,
@@ -771,7 +766,6 @@ HTTPError HTTPParser::ParseHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderSco
     bool NoMoreHeader = false;
 
     BoundCursor BC;
-    HTTPHeader Header;
     HTTPHeaderParseState State = HDR_START;
 
     B >> BC;
@@ -963,20 +957,83 @@ HTTPError HTTPParser::ParseHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderSco
     B << BC;
 
     if (!NoMoreHeader) {
-        void *TempPointer;
-        HTTPHeader *TempHeader = nullptr;
-//        TempPointer = R.Headers.Push();
-
-        if (TempPointer == nullptr) {
-            return {ENOMEM, HeaderNoMemoryErrorString};
-        }
-
-        TempHeader = static_cast<HTTPHeader *>(TempPointer);
-        *TempHeader = Header;
         return {0};
     } else {
         return {0, NoMoreHeaderErrorString};
     }
+}
+
+HTTPError HTTPParser::ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderScore) {
+
+    uint32_t Hash;
+    HTTPError Error{0};
+    HTTPHeader Header;
+
+    // init header process if not
+    if (HeaderProcess.Begin() == nullptr) {
+        for (uint32_t i = 0; HeaderInProcesses[i].IsValid(); i++) {
+            HeaderProcess.AddItem((HTTPCoreHeader &)HeaderInProcesses[i]);
+        }
+    }
+
+    do {
+
+        Error = ParseHeader(B, Header, AllowUnderScore);
+
+        if (Error.GetCode() != 0) {
+            return Error;
+        }
+
+        if (Error.CodeMessage() == NoMoreHeaderErrorString) {
+            break;
+        }
+
+        Hash = 0 ^ Header.Name.Size();
+
+        for(BoundCursor BC = Header.Name; *BC != '\0'; BC ++) {
+            SimpleHash(Hash, LowerCase[*BC]);
+        }
+
+        DictionaryItem *DI = HeaderProcess.FindItem(Hash);
+
+        if (DI != nullptr) {
+
+            for (RBNode *N = HeaderProcess.Prev(DI); N != nullptr; ) {
+
+                if (((DictionaryItem *) N)->GetHash() != Hash) {
+                    break;
+                }
+                // compare to avoid collision
+                N = HeaderProcess.Prev(N);
+            }
+
+            for (RBNode *N = HeaderProcess.Next(DI); N != nullptr; ) {
+
+                if (((DictionaryItem *)N) ->GetHash() != Hash) {
+                    break;
+                }
+                // compare to avoid collision
+                N = HeaderProcess.Prev(N);
+            }
+
+            Error = ((HTTPCoreHeader *)DI)->Process(R, Header);
+
+            if (Error.GetCode() != 0) {
+                return Error;
+            }
+        } else {
+
+            HTTPHeader *H = R.HeaderIn.OtherHeaders.Push();
+
+            if (H == nullptr) {
+                return {ENOMEM, NoMemoryErrorString};
+            }
+
+            *H = Header;
+        }
+    } while (true);
+
+    return Error;
 }
 
 HTTPError HTTPParser::ValidateURI(HTTPRequest &R) {
@@ -1109,39 +1166,3 @@ HTTPError HTTPParser::ValidateURI(HTTPRequest &R) {
     return {0};
 }
 
-HTTPError HTTPParser::HeaderInProcess(HTTPRequest &R, HTTPHeader &H) {
-
-    uint32_t Hash = 0 ^ H.Name.Size();
-
-    for(BoundCursor BC = H.Name; *BC != '\0'; BC ++) {
-        SimpleHash(Hash, LowerCase[*BC]);
-    }
-
-    DictionaryItem *DI = HeaderProcess.FindItem(Hash);
-
-    if (DI != nullptr) {
-
-        for (RBNode *N = HeaderProcess.Prev(DI); N != nullptr; ) {
-
-            if (((DictionaryItem *) N)->GetHash() != Hash) {
-                break;
-            }
-            // compare to avoid collision
-            N = HeaderProcess.Prev(N);
-        }
-
-        for (RBNode *N = HeaderProcess.Next(DI); N != nullptr; ) {
-
-            if (((DictionaryItem *)N) ->GetHash() != Hash) {
-                break;
-            }
-            // compare to avoid collision
-            N = HeaderProcess.Prev(N);
-        }
-
-        return ((HTTPCoreHeader *)DI)->Process(R, H);
-    } else {
-        // common header process
-        return {EINVAL, "unhandled http header"};
-    }
-}

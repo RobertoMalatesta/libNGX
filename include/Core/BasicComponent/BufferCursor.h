@@ -29,6 +29,12 @@ struct Cursor {
     inline bool operator==(Cursor const &Right) const {
         return Position == Right.Position;
     }
+
+    inline Buffer *GetParentBuffer() {
+        return ParentBuffer;
+    }
+
+    BufferMemoryBlock *GetParentBlock();
 };
 
 struct BoundCursor : public Cursor {

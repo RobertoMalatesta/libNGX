@@ -48,7 +48,6 @@ void HTTPConnection::OnTimerEvent(void *PointerToConnection, ThreadPool *) {
 
     C = static_cast<HTTPConnection *>(PointerToConnection);
 
-    C->Lock();
     C->Event |= ET_TIMER;
 
     LOG(INFO) << "in timer func, fd: "<< C->SocketFD;
@@ -56,10 +55,6 @@ void HTTPConnection::OnTimerEvent(void *PointerToConnection, ThreadPool *) {
     if (C->Open == 0) {
         LOG(INFO) << "recycle connection, fd: "<< C->SocketFD;
         C-> ParentServer->PutConnection(C);
-    }
-
-    if (C != nullptr) {
-        C->Unlock();
     }
 }
 
