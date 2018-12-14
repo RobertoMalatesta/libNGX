@@ -123,6 +123,10 @@ struct BoundCursor : public Cursor {
 
     bool CmpByte4(uint32_t Offset, u_char C1, u_char C2, u_char C3, u_char C4) const;
 
+    size_t ReadBytes(u_char *Pointer, size_t Size);
+
+    bool CmpBytes(u_char *Pointer, size_t Size);
+
     size_t Size();
 };
 
