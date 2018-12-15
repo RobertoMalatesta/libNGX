@@ -101,7 +101,7 @@ EventError EPollEventDomain::DetachSocket(Socket &S, EventType Type) {
     return {0};
 }
 
-RuntimeError EPollEventDomain::EventDomainProcess(Server *S) {
+RuntimeError EPollEventDomain::EventLoop() {
 
     int EventCount;
     epoll_event Events[EPOLL_EVENT_BATCH_SIZE];
@@ -151,5 +151,5 @@ RuntimeError EPollEventDomain::EventDomainProcess(Server *S) {
         }
     }
 
-    return S->PostProcessFinished();
+    return {0};
 }

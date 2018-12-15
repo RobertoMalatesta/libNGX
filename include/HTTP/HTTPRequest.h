@@ -1,5 +1,6 @@
 struct HTTPHeaderIn {
 
+    // HTTP Core Headers
     BoundCursor Host;
     BoundCursor Connection;
     BoundCursor IfModufiedSince;
@@ -11,82 +12,104 @@ struct HTTPHeaderIn {
     BoundCursor ContentLength;
     BoundCursor ContentRange;
     BoundCursor ContentType;
-
     BoundCursor Range;
     BoundCursor IfRange;
-
     BoundCursor TransferEncoding;
     BoundCursor TE;
     BoundCursor Except;
     BoundCursor Upgrade;
     BoundCursor AcceptEncoding;
     BoundCursor Via;
-
     BoundCursor Authorization;
     BoundCursor KeepAlive;
-
-    Array<HTTPHeader> XForwardFor;
-
     BoundCursor XRealIP;
-
     BoundCursor Accept;
     BoundCursor AcceptLanguage;
-
     BoundCursor User;
     BoundCursor Passwrod;
-
     BoundCursor Cookie;
-    Array<BoundCursor> Cookies;
-
     BoundCursor Server;
 
-    uint32_t ContentLengthUInt32;
-    uint32_t KeepAliveUInt32;
+    // HTTP Custom Headers
+    Array<HTTPHeader> Headers;
 
-    unsigned ConnectionType:2;
-    unsigned Chunked:1;
+    // HTTP Forward Headers
+    Array<HTTPHeader> XForwardFor;
 
-    Array<HTTPHeader> OtherHeaders;
+    // Cookies extracted from Cookie Header
+    Array<BoundCursor> Cookies;
 
-    HTTPHeaderIn(Allocator *BackendAllocator): XForwardFor(BackendAllocator), Cookies(BackendAllocator), OtherHeaders(BackendAllocator){};
+    // Parsed HTTP Core Parameters
+    struct {
+        uint32_t ContentLengthSize;
+        uint32_t KeepAliveTime;
+        unsigned ConnectionType:2;
+        unsigned Chunked:1;
+    };
+
+    // Browser info extracted from UserAgent
+    struct {
+        unsigned MSIE:1;
+        unsigned MSIE6:1;
+        unsigned Opera:1;
+        unsigned Gecko:1;
+        unsigned Chrome:1;
+        unsigned Safari:1;
+        unsigned Konqueror:1;
+    };
+
+    HTTPHeaderIn(Allocator *BackendAllocator): XForwardFor(BackendAllocator), Cookies(BackendAllocator), Headers(BackendAllocator){};
 };
-
 
 class HTTPRequest {
 protected:
 
-    unsigned ComplexURI:1;
-    unsigned QuotedURI:1;
-    unsigned PlusInURI:1;
-    unsigned SpaceInURI:1;
-    unsigned short Version;
-
+    // HTTP Method GET, POST, PUT, DELETE, ...
     HTTPMethod Method;
+
+    // URI http URI index
     BoundCursor URI;
+
+    // Postfix of HTTP URI Entity
     BoundCursor URIExt;
-    BoundCursor Port;
+
+    // HTTP Protocol Version eg: HTTP/1.1
     BoundCursor HTTPProtocol;
+
+    // Pointer to request line argument
     BoundCursor Argument;
-    BoundCursor Content;
+
+    // Schema Proxy Schema?
     BoundCursor Schema;
+
+    // Proxy Host
     BoundCursor Host;
+
+    // Proxy IP
     BoundCursor IP;
 
-    HTTPHeaderIn HeaderIn;
-    // HTTPResponse Response;
+    // Proxy Port
+    BoundCursor Port;
 
+    // HTTPRequest Headers
+    HTTPHeaderIn HeaderIn;
+
+    // HTTPRequest Parse State
     HTTPRequestState State = HTTP_INIT_STATE;
+
+    // HTTP URI Flags
+    struct {
+        unsigned ComplexURI:1;
+        unsigned QuotedURI:1;
+        unsigned PlusInURI:1;
+        unsigned SpaceInURI:1;
+    };
+
+    // HTTP Version
+    unsigned short Version;
 
     friend class HTTPParser;
 
 public:
     HTTPRequest(Allocator *Allocator): HeaderIn(Allocator) {};
-    /* HTTPConnection
-    * CanReset
-    * enum Method
-    * Range URI
-    * Array *Headers
-    * Range Data
-    *
-    * */
 };

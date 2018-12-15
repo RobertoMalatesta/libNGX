@@ -17,11 +17,9 @@ public:
         TPool.~ThreadPool();
     }
 
-    static void DiscardPromise(void *Argument, ThreadPool *TPool) {};
-
     RuntimeError BindEventThread(EventEntity &Entity);
 
     RuntimeError UnbindEventThread(EventEntity &Entity);
 
-    virtual RuntimeError EventDomainProcess();
+    virtual RuntimeError EventLoop();
 };

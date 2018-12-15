@@ -19,7 +19,6 @@ protected:
 public:
 
     SocketEventDomain(int ThreadCount);
-    ~SocketEventDomain() = default;
 
     virtual EventError AttachSocket(Socket &S, EventType Type) = 0;
 
@@ -41,5 +40,5 @@ public:
         return {0};
     }
 
-    RuntimeError EventDomainProcess();
+    RuntimeError EventLoop();
 };

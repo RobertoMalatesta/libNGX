@@ -9,28 +9,31 @@ TimerHub::~TimerHub() {
     }
 };
 
-int TimerHub::QueueExpiredTimer(ThreadPool *TPool, uint32_t Count) {
+int TimerHub::QueueExpiredTimer() {
 
     Timer *Temp;
     uint64_t Timestamp = GetHighResolutionTimestamp();
 
-    for (RBNode *It = Begin(); It && Count-- >0 ; It = Next(It)) {
+    for (RBNode *It = Begin(); It ; It = Next(It)) {
 
         Temp = (Timer *)It;
         Socket *S = Socket::TimerToSocket(Temp);
 
         if (S->TryLock()) {
+            
             if (Temp->Timestamp > Timestamp) {
+                
                 S->Unlock();
                 break;
             }
-
+            
             S->PostPromise(Temp->Callback, Temp->Argument);
 
             TimerHubLock.Lock();
             Erase(It);
 
             if (Temp->Mode == TM_INTERVAL && Temp->Interval > 0) {
+                
                 Temp->Timestamp = Timestamp + Temp->Interval;
                 Insert(Temp);
             } else {
@@ -63,6 +66,7 @@ int TimerHub::DetachTimer(Timer &T) {
     TimerHubLock.Lock();
 
     if (T.IsTimerAttached()) {
+        
         Erase(&T);
         T.Mode = TM_CLOSED, T.Interval = 0;
     }

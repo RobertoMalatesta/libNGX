@@ -5,7 +5,7 @@ using namespace ngx::Core::BasicComponent;
 EventDomain::EventDomain(int ThreadCount)
         : TPoolLock(), TPool(ThreadCount) {}
 
-RuntimeError EventDomain::EventDomainProcess() {
+RuntimeError EventDomain::EventLoop() {
     return {0};
 }
 

@@ -12,7 +12,7 @@ public:
     void *Argument = nullptr;
     PromiseCallback *Callback = nullptr;
 
-    Timer() {};
+    Timer() = default;
 
     Timer(uint64_t Timestamp, PromiseCallback *Callback, void *Argument) {
         this->Timestamp = Timestamp;
@@ -51,7 +51,7 @@ public:
 
     ~TimerHub();
 
-    int QueueExpiredTimer(ThreadPool *TPool, uint32_t Count = TIMER_PROCESS_COUNT);
+    int QueueExpiredTimer();
 
     int AttachTimer(Timer &T);
 
