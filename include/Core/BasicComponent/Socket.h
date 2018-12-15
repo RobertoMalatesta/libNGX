@@ -36,6 +36,7 @@ protected:
         u_short Flags = 0;
     };
 
+    friend class TimerHub;
     friend class SocketEventDomain;
 
 public:

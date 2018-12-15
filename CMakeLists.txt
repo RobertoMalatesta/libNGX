@@ -26,7 +26,7 @@ set(SOURCE_FILES
         src/Core/BasicComponent/SocketEventDomain.cpp
         src/Core/BasicComponent/Time.cpp
         src/Core/BasicComponent/ThreadPool.cpp
-        src/Core/BasicComponent/TimerHub.cpp
+        src/Core/BasicComponent/SocketTimerHub.cpp
         src/Core/BasicComponent/BufferCursor.cpp
         src/Core/EPollEventDomain.cpp
         src/HTTP/Router/Router.cpp
@@ -36,7 +36,9 @@ set(SOURCE_FILES
         src/HTTP/HTTPConnectionRecycleBin.cpp
         src/HTTP/HTTPParser.cpp
         src/HTTP/HTTPError.cpp
-        src/HTTP/HTTPConnectionBuilder.cpp src/Core/BasicComponent/Dictionary.cpp src/HTTP/HTTPHeader.cpp)
+        src/HTTP/HTTPConnectionBuilder.cpp
+        src/Core/BasicComponent/Dictionary.cpp
+        src/HTTP/HTTPHeader.cpp)
 
 set(TEST_FILES
         test/Test.cpp

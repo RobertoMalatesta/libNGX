@@ -2,14 +2,14 @@
 
 using namespace ngx::Core::BasicComponent;
 
-TimerHub::~TimerHub() {
+SocketTimerHub::~SocketTimerHub() {
 
     for (RBNode *It = this->Begin(); It ; It = Next(It)) {
         Erase(It);
     }
 };
 
-int TimerHub::QueueExpiredTimer() {
+int SocketTimerHub::QueueExpiredTimer() {
 
     Timer *Temp;
     uint64_t Timestamp = GetHighResolutionTimestamp();
@@ -20,20 +20,20 @@ int TimerHub::QueueExpiredTimer() {
         Socket *S = Socket::TimerToSocket(Temp);
 
         if (S->TryLock()) {
-            
+
             if (Temp->Timestamp > Timestamp) {
-                
+
                 S->Unlock();
                 break;
             }
-            
+
             S->PostPromise(Temp->Callback, Temp->Argument);
 
             TimerHubLock.Lock();
             Erase(It);
 
             if (Temp->Mode == TM_INTERVAL && Temp->Interval > 0) {
-                
+
                 Temp->Timestamp = Timestamp + Temp->Interval;
                 Insert(Temp);
             } else {
@@ -47,7 +47,7 @@ int TimerHub::QueueExpiredTimer() {
     return 0;
 }
 
-int TimerHub::AttachTimer(Timer &T) {
+int SocketTimerHub::AttachTimer(Timer &T) {
 
     TimerHubLock.Lock();
 
@@ -61,12 +61,12 @@ int TimerHub::AttachTimer(Timer &T) {
     return 0;
 }
 
-int TimerHub::DetachTimer(Timer &T) {
+int SocketTimerHub::DetachTimer(Timer &T) {
 
     TimerHubLock.Lock();
 
     if (T.IsTimerAttached()) {
-        
+
         Erase(&T);
         T.Mode = TM_CLOSED, T.Interval = 0;
     }

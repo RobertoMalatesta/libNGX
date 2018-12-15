@@ -1,7 +1,7 @@
 
 class SocketEventDomain : public EventDomain {
 protected:
-    TimerHub THub;
+    SocketTimerHub THub;
 
     inline EventType GetAttachedEvent(Socket &S) {
         return S.AttachedEvent;

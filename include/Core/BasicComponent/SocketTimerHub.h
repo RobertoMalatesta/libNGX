@@ -43,13 +43,13 @@ public:
     virtual void Reset() { Timestamp = 0; };
 };
 
-class TimerHub : public RBT {
+class SocketTimerHub : public RBT {
 private:
     SpinLock TimerHubLock;
 public:
-    TimerHub() = default;
+    SocketTimerHub() = default;
 
-    ~TimerHub();
+    ~SocketTimerHub();
 
     int QueueExpiredTimer();
 

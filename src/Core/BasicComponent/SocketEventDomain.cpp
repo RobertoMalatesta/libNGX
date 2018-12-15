@@ -13,7 +13,7 @@ RuntimeError SocketEventDomain::EventLoop() {
     Error = EventDomain::EventLoop();
 
     if (Error.GetCode() == 0) {
-        THub.QueueExpiredTimer(&TPool, TIMER_PROCESS_COUNT);
+        THub.QueueExpiredTimer();
     } else {
         return Error;
     }
