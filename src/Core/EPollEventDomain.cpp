@@ -108,7 +108,7 @@ RuntimeError EPollEventDomain::EventLoop() {
 
     RuntimeError Error{0}, PostError{0};
 
-    Error = SocketEventDomain::EventDomainProcess();
+    Error = SocketEventDomain::EventLoop();
 
     if (Error.GetCode() != 0) {
         return Error;

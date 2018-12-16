@@ -1023,7 +1023,7 @@ HTTPError HTTPParser::ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool AllowU
             }
         } else {
 
-            HTTPHeader *H = R.HeaderIn.OtherHeaders.Push();
+            HTTPHeader *H = R.HeaderIn.Headers.Push();
 
             if (H == nullptr) {
                 return {ENOMEM, NoMemoryErrorString};

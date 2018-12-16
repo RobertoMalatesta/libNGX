@@ -18,7 +18,7 @@ int TimerTreeTest() {
 
     Pool MemAllocator;
     ThreadPool T(7);
-    TimerHub Tree;
+    SocketTimerHub Tree;
     TimeModuleInit();
 
 //    Tree.PostTimerPromise(1, func, nullptr);
@@ -31,7 +31,7 @@ int TimerTreeTest() {
     int i = 0;
 
     while (i++ < 20) {
-        Tree.QueueExpiredTimer(&T);
+//        Tree.QueueExpiredTimer(&T);
         ForceSleep(NANO_SECOND_SIZE);
     }
     return 0;

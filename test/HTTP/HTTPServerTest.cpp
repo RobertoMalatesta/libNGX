@@ -18,7 +18,7 @@ int HTTPServerTest() {
     LOG(INFO) << "Init time module end";
 
     HTTPListening Listen(SocketAddress);
-    HTTPServer Server(2, EPOLL_EVENT_MAX_CONNECTION, BUFFER_MEMORY_BLOCK_SIZE, 5120, 1024);
+    HTTPServer Server(BUFFER_MEMORY_BLOCK_SIZE, 5120, 1024, nullptr);
 
     LOG(INFO) << "Bind() Listening: " << Listen.Bind().GetError();
     LOG(INFO) << "Set NON_BLOCK: " <<Listen.SetNonBlock(true).GetError();
@@ -31,10 +31,10 @@ int HTTPServerTest() {
 
     do {
 
-        Error = Server.ServerEventProcess();
+        Error = Server.ServerEventLoop();
 
         if (Error.GetCode() == 0 && IsInterrupted()) {
-            Server.ServerEventProcess();
+            Server.ServerEventLoop();
             break;
         }
 
