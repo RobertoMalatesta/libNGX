@@ -55,11 +55,11 @@ set(TEST_FILES
         test/Core/LockTest.cpp
         test/Core/BufferTest.cpp
         test/Core/CoreTest.cpp
+        test/Core/DictionaryTest.cpp
         test/HTTP/HTTPTest.cpp
         test/HTTP/HTTPServerTest.cpp
         test/HTTP/HTTPConnectionRecycleBin.cpp
-        test/HTTP/HTTPParseTest.cpp
-        test/Core/DictionaryTest.cpp)
+        test/HTTP/HTTPParseTest.cpp)
 
 include_directories(./include)
 

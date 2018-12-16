@@ -77,7 +77,7 @@ int ngx::Core::BasicComponent::TimeModuleInit() {
             return -1;
         }
 
-        if (EnableTimer() == -1) {
+        if (StartTimer() == -1) {
             return -1;
         }
 
@@ -89,7 +89,7 @@ int ngx::Core::BasicComponent::TimeModuleInit() {
     return 0;
 }
 
-int ngx::Core::BasicComponent::EnableTimer() {
+int ngx::Core::BasicComponent::StartTimer() {
 
     struct itimerval itv = {0};
 
@@ -99,20 +99,6 @@ int ngx::Core::BasicComponent::EnableTimer() {
     itv.it_value.tv_usec = (TIME_RESOLUTION % U_SECOND_SIZE);
 
     if (setitimer(ITIMER_REAL, &itv, nullptr) == -1) {
-        return -1;
-    }
-    return 0;
-}
-
-int ngx::Core::BasicComponent::DisableTimer() {
-
-    struct itimerval itv = {0};
-
-    itv.it_value.tv_sec = 0;
-    itv.it_value.tv_usec = 0;
-    itv.it_interval = itv.it_value;
-
-    if (setitimer(ITIMER_REAL, nullptr, nullptr) == -1) {
         return -1;
     }
     return 0;

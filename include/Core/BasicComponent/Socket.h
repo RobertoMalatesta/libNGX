@@ -18,9 +18,12 @@ class Socket : public EventEntity, public Achor{
 protected:
 
     int SocketFD = -1;
+
     SpinLock SocketLock;
-    Timer TimerNode;
+
     SocketAddress Address;
+
+    Timer TimerNode;
 
     union {
         struct {
@@ -36,7 +39,6 @@ protected:
         u_short Flags = 0;
     };
 
-    friend class TimerHub;
     friend class SocketEventDomain;
 
 public:

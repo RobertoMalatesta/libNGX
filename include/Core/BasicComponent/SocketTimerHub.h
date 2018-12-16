@@ -9,15 +9,12 @@ public:
     uint64_t Timestamp = 0;
     TimerMode Mode = TM_ONCE;
     uint64_t Interval = 0;
-    void *Argument = nullptr;
-    PromiseCallback *Callback = nullptr;
+    Job TimerJob;
 
     Timer() = default;
 
-    Timer(uint64_t Timestamp, PromiseCallback *Callback, void *Argument) {
+    Timer(uint64_t Timestamp, ThreadFn *Callback, void *Argument): TimerJob(Callback, Argument) {
         this->Timestamp = Timestamp;
-        this->Callback = Callback;
-        this->Argument = Argument;
     };
 
     ~Timer() = default;

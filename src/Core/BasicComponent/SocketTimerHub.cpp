@@ -27,7 +27,7 @@ int SocketTimerHub::QueueExpiredTimer() {
                 break;
             }
 
-            S->PostPromise(Temp->Callback, Temp->Argument);
+            S->PostJob(Temp->TimerJob);
 
             TimerHubLock.Lock();
             Erase(It);

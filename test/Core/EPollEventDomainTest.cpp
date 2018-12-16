@@ -2,7 +2,7 @@
 
 using namespace ngx::Core;
 
-static void HTTPEventProcessPromise(void *Args, ThreadPool *TPool) {
+static void HTTPEventProcessJob(void *Args, ThreadPool *TPool) {
 
 //    EPollEventDomainArgument *EPollArguments;
 //

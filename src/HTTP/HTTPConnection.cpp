@@ -4,16 +4,16 @@ using namespace ngx::HTTP;
 
 HTTPConnection::HTTPConnection() :
         TCP4Connection(Address),
-        Request(nullptr) {
-    TimerNode.Callback = HTTPConnection::OnTimerEvent;
-    TimerNode.Argument = this;
-
+        Request(nullptr),
+        EventJob(HTTPConnection::OnConnectionEvent, this) {
+    TimerNode = {0, HTTPConnection::OnTimerEvent, this};
     Type = SOCK_TYPE_STREAM, Version = 4, IsListen = 1;
 }
 
 RuntimeError HTTPConnection::SetSocketAddress(int SocketFD, struct SocketAddress &Address) {
 
     LockGuard Guard(&SocketLock);
+
     this->SocketFD = SocketFD;
     this->Address = Address;
 
@@ -39,10 +39,10 @@ RuntimeError HTTPConnection::HandleEventDomain(uint32_t EventType) {
         return {EFAULT, "connection not open"};
     };
 
-    return PostPromise(HTTPConnection::OnConnectionEvent, static_cast<void *>(this));
+    return PostJob(EventJob);
 }
 
-void HTTPConnection::OnTimerEvent(void *PointerToConnection, ThreadPool *) {
+void HTTPConnection::OnTimerEvent(void *PointerToConnection) {
 
     HTTPConnection *C;
 
@@ -52,23 +52,30 @@ void HTTPConnection::OnTimerEvent(void *PointerToConnection, ThreadPool *) {
 
     LOG(INFO) << "in timer func, fd: "<< C->SocketFD;
 
-    if (C->Open == 0) {
-        LOG(INFO) << "recycle connection, fd: "<< C->SocketFD;
-        C-> ParentServer->PutConnection(C);
-    }
+    HTTPConnection::OnConnectionEvent(PointerToConnection);
 }
 
-void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) {
+void HTTPConnection::OnConnectionEvent(void *PointerToConnection) {
 
     EventType Type;
+
     HTTPConnection *C;
 
     C = static_cast<HTTPConnection *>(PointerToConnection);
 
     LOG(INFO) << "in connection event, fd: "<< C->SocketFD;
 
+    Type = C->Event;
+
     if (C->Open == 1) {
-        Type = C->Event;
+
+        // Sequence
+        //
+        // 1.   Read Buffer
+        // 2.   Process Request
+        // 3.   Handle Write Buffer
+        // 4.   Handle Timer
+
         LOG(INFO) << "handle connection event, fd: "<< C->SocketFD << ", event type: " << Type;
 
         if ((Type & ET_READ) != 0) {
@@ -93,14 +100,28 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection, ThreadPool *) 
         LOG(INFO) << "will close socket: " << C->SocketFD;
         C->Close();
     } else {
+
         LOG(INFO) << "connection already closed, skip it`s event" << C->SocketFD;
+
+        if (Type & ET_TIMER) {
+            LOG(INFO) << "recycle connection, fd: "<< C->SocketFD;
+            C-> ParentServer->PutConnection(C);
+        }
     }
 }
 
 void HTTPConnection::Reset() {
+
+    // Clear all attached events
     AttachedEvent = Event = 0;
+
+    // Reset read buffer
     ReadBuffer.Reset();
+
+    // Reset memory pool
     MemPool.Reset();
+
+    // Reset timer node
     TimerNode.Reset();
 }
 
@@ -108,8 +129,13 @@ SocketError HTTPConnection::Close() {
 
     HTTPConnection *C = this;
 
+    // Detach read write event
     ParentEventDomain->DetachSocket(*this, ET_READ | ET_WRITE);
+
+    // Close TCP Connection
     TCP4Connection::Close();
+
+    // Set a timer to put Connection to recycler
     ParentEventDomain->SetTimer(*C, CONNECTION_RECYCLE_WAIT_TIME, TM_ONCE);
 
     return {0};

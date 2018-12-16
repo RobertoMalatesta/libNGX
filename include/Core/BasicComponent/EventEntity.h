@@ -8,5 +8,5 @@ protected:
     friend class EventDomain;
 
 public:
-    RuntimeError PostPromise(PromiseCallback *Callback, void *Argument);
+    RuntimeError PostJob(Job &J);
 };

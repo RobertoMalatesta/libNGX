@@ -21,12 +21,12 @@ int TimerTreeTest() {
     SocketTimerHub Tree;
     TimeModuleInit();
 
-//    Tree.PostTimerPromise(1, func, nullptr);
-//    Tree.PostTimerPromise(3, func, nullptr);
-//    Tree.PostTimerPromise(5, func, nullptr);
-//    Tree.PostTimerPromise(10, func, nullptr);
-//    Tree.PostTimerPromise(15, func, nullptr);
-//    Tree.PostTimerPromise(18, func, nullptr);
+//    Tree.PostTimerJob(1, func, nullptr);
+//    Tree.PostTimerJob(3, func, nullptr);
+//    Tree.PostTimerJob(5, func, nullptr);
+//    Tree.PostTimerJob(10, func, nullptr);
+//    Tree.PostTimerJob(15, func, nullptr);
+//    Tree.PostTimerJob(18, func, nullptr);
 
     int i = 0;
 

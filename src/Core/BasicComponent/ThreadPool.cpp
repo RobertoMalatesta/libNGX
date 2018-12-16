@@ -3,18 +3,24 @@
 
 using namespace ngx::Core::BasicComponent;
 
-void Promise::doPromise() {
+Job::Job(ThreadFn *Fn, void *Argument): Callback(Fn), PointerToArg(Argument) {
+}
+
+Job::Job(Job &J): Callback(J.Callback), PointerToArg(J.PointerToArg) {
+}
+
+void Job::doJob() {
+
     if (Callback != nullptr) {
-        Callback(PointerToArg, TPool);
+        Callback(PointerToArg);
     }
 }
 
-Thread::Thread(ThreadPool *TPool) : Sentinel(), Allocator() {
+Thread::Thread() : Sentinel(), Allocator() {
 
     int ret;
 
     this->Running = true;
-    this->TPool = TPool;
     this->Lock.Lock();
 
     ret = pthread_create(&WorkerThread, nullptr,Thread::ThreadProcess, (void *)this);
@@ -24,9 +30,9 @@ Thread::Thread(ThreadPool *TPool) : Sentinel(), Allocator() {
     }
 }
 
-RuntimeError Thread::PostPromise(PromiseCallback *Callback, void *Argument) {
+RuntimeError Thread::PostJob(Job &J) {
 
-    Promise *P = nullptr;
+    Job *J1 = nullptr;
 
     LockGuard Guard(&Lock);
 
@@ -34,14 +40,13 @@ RuntimeError Thread::PostPromise(PromiseCallback *Callback, void *Argument) {
         return {EFAULT, "thread is not running"};
     }
 
-    if (Build(P) != 0 || P == nullptr) {
+    if (Build(J1) != 0 || J1 == nullptr) {
         return {ENOMEM, "insufficent memory"};
     }
 
-    P->TPool = TPool;
-    P->Callback = Callback;
-    P->PointerToArg = Argument;
-    Sentinel.Append(&P->Q);
+    *J1 = J;
+
+    Sentinel.Append(&J1->Q);
 
     if (PostCount++ % THREAD_GC_ROUND == 0) {
         Allocator.GC();
@@ -50,11 +55,10 @@ RuntimeError Thread::PostPromise(PromiseCallback *Callback, void *Argument) {
     return {0};
 }
 
-
 void* Thread::ThreadProcess(void *Argument) {
 
     Queue *Q;
-    Promise *P;
+    Job *J;
 
     auto *T = static_cast<Thread *>(Argument);
 
@@ -71,17 +75,20 @@ void* Thread::ThreadProcess(void *Argument) {
         T->Lock.Lock();
 
         if (!T->Running) {
+
             T->Lock.Unlock();
             break;
         } else {
+
             while (!T->Sentinel.IsEmpty()) {
+
                 Q = T->Sentinel.GetNext();
-                P = Promise::FromQueue(Q);
-
                 Q->Detach();
-                P->doPromise();
 
-                T->Destroy(P);
+                J = Job::FromQueue(Q);
+                J->doJob();
+
+                T->Destroy(J);
             }
         }
 
@@ -105,13 +112,14 @@ void Thread::Stop() {
 ThreadPool::ThreadPool(int NumThread) : NumThread(NumThread) {
 
     while (NumThread-- > 0) {
-        Threads.push_back(new Thread(this));
+        Threads.push_back(new Thread());
     }
 }
 
 ThreadPool::~ThreadPool() {
 
     for (Thread *Temp: Threads) {
+
         Temp->Stop(), delete Temp;
     }
 

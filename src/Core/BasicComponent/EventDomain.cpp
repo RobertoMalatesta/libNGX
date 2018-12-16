@@ -27,11 +27,11 @@ RuntimeError EventDomain::UnbindEventThread(EventEntity &Entity) {
     return {0};
 }
 
-RuntimeError EventEntity::PostPromise(PromiseCallback *Callback, void *Argument) {
+RuntimeError EventEntity::PostJob(Job &J) {
 
     if (BackendWorker == nullptr) {
         return {EFAULT, "no backend worker"};
     }
 
-    return BackendWorker->PostPromise(Callback, Argument);
+    return BackendWorker->PostJob(J);
 }

@@ -1,20 +1,20 @@
-
 class HTTPConnection : public TCP4Connection, public Recyclable {
 protected:
-    Pool MemPool;
 
-    Buffer ReadBuffer;
-    HTTPRequest Request;
+    Job EventJob;
+    Pool MemPool;
 
     HTTPServer *ParentServer = nullptr;
     SocketEventDomain *ParentEventDomain = nullptr;
 
+    Buffer ReadBuffer;
+    HTTPRequest Request;
 
     virtual RuntimeError HandleEventDomain(uint32_t EventType);
 
-    static void OnTimerEvent(void *PointerToConnection, ThreadPool *TPool);
+    static void OnTimerEvent(void *PointerToConnection);
 
-    static void OnConnectionEvent(void *PointerToConnection, ThreadPool *TPool);
+    static void OnConnectionEvent(void *PointerToConnection);
 
     friend class HTTPListening;
 

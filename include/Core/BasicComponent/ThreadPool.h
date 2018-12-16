@@ -3,39 +3,38 @@ class Thread;
 
 class ThreadPool;
 
-typedef void (PromiseCallback)(void *PointerToArguments, ThreadPool *TPool);
+typedef void (ThreadFn)(void *PointerToArguments);
 
-class Promise {
+class Job {
 
 private:
 
     Queue Q;
-    ThreadPool *TPool = nullptr;
 
 protected:
 
     void *PointerToArg = nullptr;
-    PromiseCallback *Callback = nullptr;
+    ThreadFn *Callback = nullptr;
 
     friend class Thread;
-    friend class ThreadPool;
 
 public:
 
-    Promise() = default;
+    Job() = default;
+    Job(ThreadFn *Fn, void *Argument);
+    Job(Job &J);
 
-    static inline Promise *FromQueue(Queue *Q) {
-        return (Promise *)((uintptr_t)Q - (uintptr_t)&(((Promise*)0)->Q));
+    static inline Job *FromQueue(Queue *Q) {
+        return (Job *)((uintptr_t)Q - (uintptr_t)&(((Job*)0)->Q));
     }
 
-    void doPromise();
+    void doJob();
 };
 
-class Thread: public AllocatorBuild<Promise> {
+class Thread: public AllocatorBuild<Job> {
 
 private:
 
-    ThreadPool *TPool = nullptr;
     pthread_t WorkerThread;
     Mutex Lock;
     Queue Sentinel;
@@ -43,18 +42,16 @@ private:
     bool Running;
     uint32_t PostCount;
 
-    static void* ThreadProcess(void *Thread);
-
-    friend Promise;
+    static void* ThreadProcess(void *Argument);
 
 public:
-    Thread(ThreadPool *TPool);
+    Thread();
 
     ~Thread() = default;
 
     void Stop();
 
-    RuntimeError PostPromise(PromiseCallback *Callback, void *Argument);
+    RuntimeError PostJob(Job &J);
 
 };
 
@@ -64,8 +61,6 @@ private:
     int NumThread;
     int DeliverIndex = 0;
     std::vector<Thread *> Threads;
-
-    friend class Promise;
 
 public:
     ThreadPool(int NumThread = 8);

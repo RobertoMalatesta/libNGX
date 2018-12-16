@@ -14,9 +14,7 @@ int TimeModuleInit();
 
 int ForceSleep(uint64_t NanoSeconds);
 
-int EnableTimer();
-
-int DisableTimer();
+int StartTimer();
 
 uint64_t GetHighResolutionTimestamp();
 

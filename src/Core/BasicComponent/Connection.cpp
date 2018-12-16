@@ -49,6 +49,7 @@ SocketError TCP4Connection::Connect() {
 
 SocketError TCP4Connection::Close() {
 
+    // Close the connection if open
     if (SocketFD != -1 || Open == 1) {
         close(SocketFD);
         SocketFD = -1, Open = 0;
