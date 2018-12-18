@@ -18,7 +18,10 @@ int HTTPServerTest() {
     LOG(INFO) << "Init time module end";
 
     HTTPListening Listen(SocketAddress);
-    HTTPServer Server(BUFFER_MEMORY_BLOCK_SIZE, 5120, 1024, nullptr);
+
+    EPollEventDomain Domain(2, 32768);
+
+    HTTPServer Server(BUFFER_MEMORY_BLOCK_SIZE, 5120, 1024, &Domain);
 
     LOG(INFO) << "Bind() Listening: " << Listen.Bind().GetError();
     LOG(INFO) << "Set NON_BLOCK: " <<Listen.SetNonBlock(true).GetError();
