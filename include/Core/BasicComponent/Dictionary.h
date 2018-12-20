@@ -17,6 +17,7 @@ public:
         } else if (Hash < RHash) {
             return -1;
         } else {
+            // return strcmp result?
             return 0;
         }
     }
