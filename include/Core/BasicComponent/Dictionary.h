@@ -1,5 +1,7 @@
 class DictionaryItem: public RBNode, public Achor{
+
 protected:
+
     const char *Key;
     uint32_t  Hash;
 
@@ -29,7 +31,9 @@ public:
 
 
 class Dictionary : public RBT {
+
 public:
+
     Dictionary() = default;
 
     ~Dictionary();
@@ -38,9 +42,6 @@ public:
 
     // might got hash collison, should use prev, next to watch and avoid collision
     DictionaryItem *FindItem(uint32_t Hash);
+
     DictionaryItem *FindItem(DictionaryItem Item);
 };
-
-inline int32_t operator- (uint32_t Hash, DictionaryItem &D) {
-    return - (D - Hash);
-}

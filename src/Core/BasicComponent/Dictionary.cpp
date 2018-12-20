@@ -16,6 +16,7 @@ DictionaryItem::DictionaryItem(const char *Key) {
 void DictionaryItem::HashFn() {
 
     size_t Length = strlen(Key);
+
     Hash = 0 ^ Length;
 
     for (size_t i=0; i<Length; i++) {
@@ -57,7 +58,7 @@ DictionaryItem *Dictionary::FindItem(uint32_t Hash) {
 
     while (Place) {
 
-        int Result = Hash - *((DictionaryItem*)Place);
+        int Result = Hash - ((DictionaryItem*)Place)->GetHash();
 
         if (Result < 0) {
             Place = Place->GetLeft();
