@@ -1,14 +1,16 @@
 class DictionaryItem: public RBNode, public Achor{
 protected:
     const char *Key;
-    size_t Length;
     uint32_t  Hash;
+
+    virtual int operator - (DictionaryItem &R);
+    virtual void HashFn();
 
 public:
 
     DictionaryItem(const char*Key);
 
-    inline uint32_t GetHash() const { return Hash; }
+    inline uint32_t GetHash() { return Hash; }
 
     inline int32_t operator - (uint32_t RHash) {
 
@@ -37,6 +39,7 @@ public:
     // might got hash collison, should use prev, next to watch and avoid collision
     DictionaryItem *FindItem(uint32_t Hash);
     DictionaryItem *FindItem(const char *Key);
+    DictionaryItem *FindItem(DictionaryItem Item);
 };
 
 inline int32_t operator- (uint32_t Hash, DictionaryItem &D) {

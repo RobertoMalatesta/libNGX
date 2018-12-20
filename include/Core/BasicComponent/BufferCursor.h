@@ -9,10 +9,6 @@ struct Cursor {
 
     Cursor(Buffer *ParentBuffer, u_char *Position);
 
-    uint32_t IncRef();
-
-    uint32_t DecRef();
-
     inline u_char operator*() const {
         return (!*this) ? (u_char) '\0' : *Position;
     }
@@ -44,10 +40,6 @@ struct BoundCursor : public Cursor {
     BoundCursor() = default;
 
     BoundCursor(Buffer *ParentBuffer, u_char *Position, u_char *Bound);
-
-    uint32_t IncRef();
-
-    uint32_t DecRef();
 
     BoundCursor operator+(size_t Size) const;
 

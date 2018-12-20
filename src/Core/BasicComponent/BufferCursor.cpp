@@ -6,32 +6,6 @@ Cursor::Cursor(Buffer *ParentBuffer, u_char *Position) : ParentBuffer(ParentBuff
     this->ParentBuffer = ParentBuffer, this->Position = Position;
 }
 
-uint32_t Cursor::IncRef() {
-
-    BufferMemoryBlock *MemoryBlock;
-
-    MemoryBlock = ParentBuffer->AddressToMemoryBlock(Position);
-
-    if (MemoryBlock != nullptr) {
-        return MemoryBlock->IncRef();
-    }
-
-    return 0;
-}
-
-uint32_t Cursor::DecRef() {
-
-    BufferMemoryBlock *MemoryBlock;
-
-    MemoryBlock = ParentBuffer->AddressToMemoryBlock(Position);
-
-    if (MemoryBlock != nullptr) {
-        return MemoryBlock->DecRef();
-    }
-
-    return 0;
-}
-
 BufferMemoryBlock *Cursor::GetParentBlock() {
 
     if (ParentBuffer == nullptr) {
@@ -42,41 +16,6 @@ BufferMemoryBlock *Cursor::GetParentBlock() {
 }
 BoundCursor::BoundCursor(Buffer *ParentBuffer, u_char *Position, u_char *Bound) : Cursor(ParentBuffer, Position),
                                                                                   Bound(Bound) {
-}
-
-uint32_t BoundCursor::IncRef() {
-
-    BufferMemoryBlock *LeftBlock, *RightBlock;
-
-    LeftBlock = ParentBuffer->AddressToMemoryBlock(Position);
-    RightBlock = ParentBuffer->AddressToMemoryBlock(Bound);
-
-    while (LeftBlock != RightBlock && LeftBlock != nullptr) {
-        LeftBlock->IncRef();
-        LeftBlock = LeftBlock->GetNextBlock();
-    }
-
-    RightBlock->IncRef();
-
-    return 0;
-}
-
-uint32_t BoundCursor::DecRef() {
-
-    BufferMemoryBlock *LeftBlock, *RightBlock;
-
-    LeftBlock = ParentBuffer->AddressToMemoryBlock(Position);
-    RightBlock = ParentBuffer->AddressToMemoryBlock(Bound);
-
-
-    while (LeftBlock != RightBlock && LeftBlock != nullptr) {
-        LeftBlock->DecRef();
-        LeftBlock = LeftBlock->GetNextBlock();
-    }
-
-    RightBlock->DecRef();
-
-    return 0;
 }
 
 BoundCursor BoundCursor::operator+(size_t Size) const {

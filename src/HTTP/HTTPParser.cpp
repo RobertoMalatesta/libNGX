@@ -64,7 +64,7 @@ const HTTPCoreHeader HeaderInProcesses[31] = {
         {"Size", HI_SIZE, nullptr},
 };
 
-static Dictionary HeaderProcess;
+static Dictionary HeaderInDictionary;
 
 HTTPError HTTPParser::ParseHTTPRequest(Buffer &B, HTTPRequest &R) {
 
@@ -970,9 +970,9 @@ HTTPError HTTPParser::ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool AllowU
     HTTPHeader Header;
 
     // init header process if not
-    if (HeaderProcess.Begin() == nullptr) {
+    if (HeaderInDictionary.Begin() == nullptr) {
         for (uint32_t i = 0; HeaderInProcesses[i].IsValid(); i++) {
-            HeaderProcess.AddItem((HTTPCoreHeader &)HeaderInProcesses[i]);
+            HeaderInDictionary.AddItem((HTTPCoreHeader &)HeaderInProcesses[i]);
         }
     }
 
@@ -994,26 +994,26 @@ HTTPError HTTPParser::ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool AllowU
             SimpleHash(Hash, LowerCase[*BC]);
         }
 
-        DictionaryItem *DI = HeaderProcess.FindItem(Hash);
+        DictionaryItem *DI = HeaderInDictionary.FindItem(Hash);
 
         if (DI != nullptr) {
 
-            for (RBNode *N = HeaderProcess.Prev(DI); N != nullptr; ) {
+            for (RBNode *N = HeaderInDictionary.Prev(DI); N != nullptr; ) {
 
                 if (((DictionaryItem *) N)->GetHash() != Hash) {
                     break;
                 }
                 // compare to avoid collision
-                N = HeaderProcess.Prev(N);
+                N = HeaderInDictionary.Prev(N);
             }
 
-            for (RBNode *N = HeaderProcess.Next(DI); N != nullptr; ) {
+            for (RBNode *N = HeaderInDictionary.Next(DI); N != nullptr; ) {
 
                 if (((DictionaryItem *)N) ->GetHash() != Hash) {
                     break;
                 }
                 // compare to avoid collision
-                N = HeaderProcess.Prev(N);
+                N = HeaderInDictionary.Next(N);
             }
 
             Error = ((HTTPCoreHeader *)DI)->Process(R, Header);

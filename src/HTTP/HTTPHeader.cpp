@@ -8,12 +8,17 @@ HTTPCoreHeader::HTTPCoreHeader(const char *Key, HTTPCoreHeaderIn  HeaderInEnum, 
         return;
     }
 
-    Type = HeaderInEnum, Setter = HeaderProcess;
+    HashFn();
 
+    Type = HeaderInEnum, Setter = HeaderProcess;
+}
+
+void HTTPCoreHeader::HashFn() {
+
+    size_t Length = strlen(Key);
     Hash = 0 ^ Length;
 
-    for (size_t i=0; i< Length; i++) {
-
+    for (size_t i=0; i<Length; i++) {
         SimpleHash(Hash, LowerCase[Key[i]]);
     }
 }

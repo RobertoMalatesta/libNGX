@@ -21,6 +21,7 @@ protected:
     BufferMemoryBlock *NextBlock = nullptr;
 
     friend class Buffer;
+    friend class BoundCursor;
 
 public:
 

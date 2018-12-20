@@ -26,12 +26,12 @@ int DictionaryTest() {
     D.AddItem(I5);
     D.AddItem(I6);
 
-    printf("result: %u\n", ((DictItem *)D.FindItem("Item1"))->Value);
-    printf("result: %u\n", ((DictItem *)D.FindItem("Item2"))->Value);
-    printf("result: %u\n", ((DictItem *)D.FindItem("Item3"))->Value);
-    printf("result: %u\n", ((DictItem *)D.FindItem("Item4"))->Value);
-    printf("result: %u\n", ((DictItem *)D.FindItem("Item5"))->Value);
-    printf("result: %u\n", ((DictItem *)D.FindItem("Item6"))->Value);
+    printf("result: %u\n", ((DictItem *)D.FindItem(DictionaryItem{"Item1"}))->Value);
+    printf("result: %u\n", ((DictItem *)D.FindItem(DictionaryItem{"Item2"}))->Value);
+    printf("result: %u\n", ((DictItem *)D.FindItem(DictionaryItem{"Item3"}))->Value);
+    printf("result: %u\n", ((DictItem *)D.FindItem(DictionaryItem{"Item4"}))->Value);
+    printf("result: %u\n", ((DictItem *)D.FindItem(DictionaryItem{"Item5"}))->Value);
+    printf("result: %u\n", ((DictItem *)D.FindItem(DictionaryItem{"Item6"}))->Value);
 
     return 0;
 }

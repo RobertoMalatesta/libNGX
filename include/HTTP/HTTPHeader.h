@@ -25,6 +25,8 @@ class HTTPCoreHeader: public DictionaryItem {
 protected:
     HTTPCoreHeaderIn Type;
     HTTPHeaderProcess *Setter = nullptr;
+
+    virtual void HashFn();
 public:
     HTTPCoreHeader(const char *Key, HTTPCoreHeaderIn HeaderInEnum, HTTPHeaderProcess *HeaderProcess);
 
@@ -33,5 +35,4 @@ public:
     inline bool IsValid() const {
         return Key != nullptr && Setter != nullptr;
     };
-
 };
