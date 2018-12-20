@@ -71,10 +71,6 @@ DictionaryItem *Dictionary::FindItem(uint32_t Hash) {
     return nullptr;
 }
 
-DictionaryItem *Dictionary::FindItem(const char *Key) {
-    return FindItem(DictionaryItem{Key});
-}
-
 DictionaryItem *Dictionary::FindItem(DictionaryItem Item) {
 
     RBNode *Place = Root;

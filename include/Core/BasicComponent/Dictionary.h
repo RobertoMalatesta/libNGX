@@ -38,7 +38,6 @@ public:
 
     // might got hash collison, should use prev, next to watch and avoid collision
     DictionaryItem *FindItem(uint32_t Hash);
-    DictionaryItem *FindItem(const char *Key);
     DictionaryItem *FindItem(DictionaryItem Item);
 };
 
