@@ -3,8 +3,11 @@ class MemoryBlockAllocator
           public Allocator,
           public CanReset,
           public CanGC,
+          public Reference,
           public AlignBuild<MemoryBlockAllocator> {
 protected:
+    u_char *Pos;
+    size_t FreeSize;
     MemoryBlockAllocator *Next;
 public:
     MemoryBlockAllocator(size_t Size);
@@ -22,7 +25,13 @@ public:
     MemoryBlockAllocator *GetNextBlock() { return Next; }
 
     inline void Reset() {
-        PointerToData = PointerToHead, FreeSize = TotalSize;
+        Start = Pos = (u_char *)this + sizeof(MemoryBlockAllocator);
+        End = Start + TotalSize;
+        FreeSize = TotalSize - sizeof(MemoryBlockAllocator);
     };
+
+    inline bool IsFreeBlock() {
+        return RefCount() == 0;
+    }
 };
 

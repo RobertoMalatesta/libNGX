@@ -1,8 +1,7 @@
-class BasicMemoryBlock : public Reference {
+class BasicMemoryBlock {
 protected:
     size_t TotalSize = 0;
-    size_t FreeSize = 0;
-    void *PointerToData = nullptr, *PointerToHead = nullptr;
+    u_char *Start, *End;
     void *Magic = nullptr;
 
     BasicMemoryBlock(size_t Size);
@@ -14,8 +13,4 @@ public:
     static BasicMemoryBlock *AddressToMemoryBlock(void *Address, size_t Size);
 
     bool IsInBlock(void *Address);
-
-    inline bool IsFreeBlock() {
-        return RefCount() == 0;
-    }
 };

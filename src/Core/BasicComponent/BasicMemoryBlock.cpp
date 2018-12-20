@@ -2,16 +2,15 @@
 
 using namespace ngx::Core::BasicComponent;
 
-BasicMemoryBlock::BasicMemoryBlock(size_t Size) : Reference() {
-    PointerToHead = (u_char *) this + sizeof(BasicMemoryBlock);
-    TotalSize = Size - sizeof(BasicMemoryBlock);
-    PointerToData = PointerToHead;
-    FreeSize = TotalSize;
+BasicMemoryBlock::BasicMemoryBlock(size_t Size): TotalSize(Size) {
+    Start = (u_char *)this + sizeof(BasicMemoryBlock);
+    End = (u_char *)this + Size;
     Magic = (void *) this;
 }
 
 BasicMemoryBlock::~BasicMemoryBlock() {
-    Magic = PointerToData = PointerToHead = nullptr;
+    Start = End = nullptr;
+    Magic = nullptr;
 }
 
 BasicMemoryBlock *BasicMemoryBlock::AddressToMemoryBlock(void *Address, size_t Size) {
@@ -19,7 +18,7 @@ BasicMemoryBlock *BasicMemoryBlock::AddressToMemoryBlock(void *Address, size_t S
     BasicMemoryBlock *MemBlk;
     MemBlk = (BasicMemoryBlock *) ((size_t) Address & ~(Size - 1));
 
-    if (MemBlk != nullptr && MemBlk->Magic == (void *) MemBlk) {
+    if (MemBlk != nullptr && MemBlk->Magic == (void *) MemBlk && MemBlk->TotalSize == Size) {
         return MemBlk;
     }
 
@@ -27,5 +26,5 @@ BasicMemoryBlock *BasicMemoryBlock::AddressToMemoryBlock(void *Address, size_t S
 }
 
 bool BasicMemoryBlock::IsInBlock(void *Address) {
-    return (Address >= PointerToHead && Address < ((u_char *) PointerToData));
+    return (Address >= Start && Address < End);
 }

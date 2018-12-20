@@ -3,19 +3,18 @@
 using namespace ngx::Core::BasicComponent;
 
 MemoryBlockAllocator::MemoryBlockAllocator(size_t Size) : BasicMemoryBlock(Size) {
-    PointerToHead = (u_char *) this + sizeof(MemoryBlockAllocator);
-    TotalSize = Size - sizeof(MemoryBlockAllocator);
     Reset();
-    Magic = (void *) this;
 }
 
 void *MemoryBlockAllocator::Allocate(size_t Size) {
+
     void *ret = nullptr;
 
-    if (FreeSize >= Size) {
+    if (Pos + Size <= End) {
         IncRef();
-        ret = PointerToData;
-        PointerToData = (u_char *) PointerToData + Size;
+
+        ret = Pos;
+        Pos += Size;
         FreeSize -= Size;
     }
 
@@ -23,6 +22,7 @@ void *MemoryBlockAllocator::Allocate(size_t Size) {
 }
 
 void MemoryBlockAllocator::Free(void *&Pointer) {
+
     if (nullptr != Pointer && IsInBlock(Pointer)) {
         Pointer = nullptr;
         DecRef();

@@ -17,12 +17,12 @@ class BufferMemoryBlock
           public Recyclable,
           public AlignBuild<BufferMemoryBlock, BUFFER_MEMORY_BLOCK_SIZE> {
 protected:
+    u_char *Pos;
     BufferMemoryBlock *NextBlock = nullptr;
 
     friend class Buffer;
 
 public:
-    u_char *Start, *End;
 
     BufferMemoryBlock(size_t Size);
 

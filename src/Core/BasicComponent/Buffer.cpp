@@ -178,26 +178,19 @@ void Buffer::GC() {
 
     while (NextBlock != nullptr && NextBlock != ReadBlock) {
 
-        if (NextBlock->RefCount() == 0) {
-            TempBlock->SetNextBlock(NextBlock->GetNextBlock());
+        TempBlock->SetNextBlock(NextBlock->GetNextBlock());
 
-            if (RecycleBin == nullptr) {
-                BufferMemoryBlock::Destroy(NextBlock);
-            } else {
-                RecycleBin->Put(NextBlock);
-            }
-
-            NextBlock = TempBlock->GetNextBlock();
+        if (RecycleBin == nullptr) {
+            BufferMemoryBlock::Destroy(NextBlock);
         } else {
-            TempBlock = NextBlock;
-            NextBlock = TempBlock->GetNextBlock();
+            RecycleBin->Put(NextBlock);
         }
+
+        NextBlock = TempBlock->GetNextBlock();
     }
 
-    if (HeadBlock->RefCount() == 0) {
-        NextBlock = HeadBlock;
-        HeadBlock = HeadBlock->GetNextBlock();
-        NextBlock->Reset();
-        RecycleBlock(RecycleBin, NextBlock);
-    }
+    NextBlock = HeadBlock;
+    HeadBlock = HeadBlock->GetNextBlock();
+    NextBlock->Reset();
+    RecycleBlock(RecycleBin, NextBlock);
 }

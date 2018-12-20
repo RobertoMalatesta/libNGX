@@ -4,9 +4,9 @@ using namespace ngx::Core::BasicComponent;
 
 Pool::Pool(size_t BlockSize) {
 
-    if (BlockSize < 1024) {
-        BlockSize = 1024;
-        //[WARNING] Block Size too small
+    if (BlockSize < PAGE_SIZE) {
+        BlockSize = PAGE_SIZE;
+        //[WARNING] Block Size should big than page size
     }
 
     this->BlockSize = BlockSize;
