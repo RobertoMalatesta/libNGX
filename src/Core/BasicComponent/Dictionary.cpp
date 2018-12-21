@@ -43,7 +43,11 @@ Dictionary::~Dictionary() {
 }
 
 int Dictionary::AddItem(DictionaryItem &I) {
-    Insert(&I);
+
+    if (FindItem(I) == nullptr) {
+        return Insert(&I), 1;
+    }
+
     return 0;
 }
 
