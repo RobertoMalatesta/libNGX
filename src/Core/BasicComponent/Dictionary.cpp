@@ -9,31 +9,26 @@ DictionaryItem::DictionaryItem(const char *Key) {
     }
 
     this -> Key = Key;
-
-    HashFn();
 }
 
-void DictionaryItem::HashFn() {
+uint32_t DictionaryItem::HashFn() const {
 
     size_t Length = strlen(Key);
 
-    Hash = 0 ^ Length;
+    uint32_t TempHash = 0 ^ Length;
 
     for (size_t i=0; i<Length; i++) {
-        SimpleHash(Hash, Key[i]);
+        SimpleHash(TempHash, Key[i]);
     }
+
+    return TempHash;
 }
 
 int DictionaryItem::operator-(DictionaryItem &R) {
 
-    if (Hash > R.Hash) {
-        return 1;
-    } else if (Hash < R.Hash) {
-        return -1;
-    } else {
-        // return strcmp result?
-        return strcmp(Key, R.Key);
-    }
+    int HashDiff = *this - R.GetHash();
+
+    return  HashDiff == 0? strcmp(Key, R.Key): HashDiff;
 }
 
 int DictionaryItem::operator-(RBNode &R) {

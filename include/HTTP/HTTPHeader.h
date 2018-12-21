@@ -26,7 +26,7 @@ protected:
     HTTPCoreHeaderIn Type;
     HTTPHeaderProcess *Setter = nullptr;
 
-    virtual void HashFn();
+    virtual uint32_t HashFn() const;
 public:
     HTTPCoreHeader(const char *Key, HTTPCoreHeaderIn HeaderInEnum, HTTPHeaderProcess *HeaderProcess);
 

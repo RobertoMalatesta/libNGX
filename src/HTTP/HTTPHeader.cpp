@@ -8,19 +8,19 @@ HTTPCoreHeader::HTTPCoreHeader(const char *Key, HTTPCoreHeaderIn  HeaderInEnum, 
         return;
     }
 
-    HashFn();
-
     Type = HeaderInEnum, Setter = HeaderProcess;
 }
 
-void HTTPCoreHeader::HashFn() {
+uint32_t HTTPCoreHeader::HashFn() const {
 
     size_t Length = strlen(Key);
-    Hash = 0 ^ Length;
+    uint32_t TempHash = 0 ^ Length;
 
     for (size_t i=0; i<Length; i++) {
-        SimpleHash(Hash, LowerCase[Key[i]]);
+        SimpleHash(TempHash, LowerCase[Key[i]]);
     }
+
+    return TempHash;
 }
 
 HTTPError HTTPCoreHeader::Process(HTTPRequest &Request, HTTPHeader &Header) {

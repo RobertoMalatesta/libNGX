@@ -3,22 +3,29 @@ class DictionaryItem: public RBNode, public Achor{
 protected:
 
     const char *Key;
-    uint32_t  Hash;
+    uint32_t  Hash = 0;
 
     virtual int operator - (DictionaryItem &R);
-    virtual void HashFn();
+    virtual uint32_t HashFn() const;
 
 public:
 
-    DictionaryItem(const char*Key);
+    DictionaryItem(const char *Key);
 
-    inline uint32_t GetHash() { return Hash; }
+    inline uint32_t GetHash() {
+
+        if (Hash == 0) {
+            Hash = HashFn();
+        }
+
+        return Hash;
+    }
 
     inline int32_t operator - (uint32_t RHash) {
 
-        if (Hash > RHash) {
+        if (GetHash() > RHash) {
             return 1;
-        } else if (Hash < RHash) {
+        } else if (GetHash() < RHash) {
             return -1;
         } else {
             // return strcmp result?
