@@ -31,6 +31,10 @@ int DictionaryItem::operator-(DictionaryItem &R) {
     return  HashDiff == 0? strcmp(Key, R.Key): HashDiff;
 }
 
+int32_t DictionaryItem::operator-(uint32_t RHash) {
+    return GetHash() == 0? 0: GetHash() - RHash;
+}
+
 int DictionaryItem::operator-(RBNode &R) {
     return *this - ((DictionaryItem &)R);
 }
@@ -42,16 +46,27 @@ Dictionary::~Dictionary() {
     }
 }
 
-int Dictionary::AddItem(DictionaryItem &I) {
+int Dictionary::Insert(DictionaryItem &I) {
 
-    if (FindItem(I) == nullptr) {
-        return Insert(&I), 1;
+    if (Find(I) == nullptr) {
+        return RBT::Insert(&I), 1;
     }
 
     return 0;
 }
 
-DictionaryItem *Dictionary::FindItem(uint32_t Hash) {
+int Dictionary::Remove(DictionaryItem &I) {
+
+    DictionaryItem *Item = Find(I);
+
+    if (Item == nullptr) {
+        return 0;
+    }
+
+    return RBT::Erase(Item), 1;
+}
+
+DictionaryItem *Dictionary::Find(uint32_t Hash) {
 
     RBNode *Place = Root;
 
@@ -71,7 +86,7 @@ DictionaryItem *Dictionary::FindItem(uint32_t Hash) {
     return nullptr;
 }
 
-DictionaryItem *Dictionary::FindItem(DictionaryItem Item) {
+DictionaryItem *Dictionary::Find(DictionaryItem Item) {
 
     RBNode *Place = Root;
 

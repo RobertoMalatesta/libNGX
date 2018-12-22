@@ -972,7 +972,7 @@ HTTPError HTTPParser::ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool AllowU
     // init header process if not
     if (HeaderInDictionary.Begin() == nullptr) {
         for (uint32_t i = 0; HeaderInProcesses[i].IsValid(); i++) {
-            HeaderInDictionary.AddItem((HTTPCoreHeader &)HeaderInProcesses[i]);
+            HeaderInDictionary.Insert((HTTPCoreHeader &)HeaderInProcesses[i]);
         }
     }
 
@@ -994,7 +994,7 @@ HTTPError HTTPParser::ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool AllowU
             SimpleHash(Hash, LowerCase[*BC]);
         }
 
-        DictionaryItem *DI = HeaderInDictionary.FindItem(Hash);
+        DictionaryItem *DI = HeaderInDictionary.Find(Hash);
 
         if (DI != nullptr) {
 
