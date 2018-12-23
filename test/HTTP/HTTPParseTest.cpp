@@ -10,7 +10,7 @@ int HTTPParseTest() {
     HTTPRequest Request(&MemoryAllocator);
     BoundCursor BC;
 
-    u_char Text[] = "Accept-Encoding";
+    u_char Text[] = "Accept-Encoding: application/json\n\r\n";
 
     Builder.BuildBuffer(buffer);
     buffer.ReadData(Text, sizeof(Text) - 1);
@@ -22,7 +22,7 @@ int HTTPParseTest() {
     HTTPHeader H;
     H.Name = BC;
 
-    HTTPParser::ParseHeader(buffer, H);
+    HTTPParser::ParseRequestHeaders(buffer, R);
 
 //    HTTPError Error = HTTPParser::ParseHTTPRequest(buffer, Request);
 //

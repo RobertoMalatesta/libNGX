@@ -112,6 +112,7 @@ RuntimeError Buffer::ReadData(u_char *PointerToData, size_t DataLength) {
     BufferMemoryBlock *TempBufferBlock, *WriteBlock;
 
     if (HeadBlock == nullptr) {
+
         HeadBlock = AquireBlock(RecycleBin, BlockSize);
 
         if (HeadBlock == nullptr) {

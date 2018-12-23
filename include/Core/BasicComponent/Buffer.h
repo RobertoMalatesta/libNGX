@@ -36,7 +36,15 @@ public:
     Buffer &operator>>(BoundCursor &BC) &;
 
     inline BufferMemoryBlock *AddressToMemoryBlock(void *Cursor) const {
-        return (BufferMemoryBlock *) BufferMemoryBlock::AddressToMemoryBlock(Cursor, BlockSize);
+
+        BufferMemoryBlock *MemBlk;
+        MemBlk = (BufferMemoryBlock *) ((size_t) Cursor & ~(BlockSize - 1));
+
+        if (MemBlk != nullptr && MemBlk->Magic == (void *) MemBlk && MemBlk->TotalSize == BlockSize) {
+            return MemBlk;
+        }
+
+        return nullptr;
     }
 
     RuntimeError ReadFromConnection(Connection *C);

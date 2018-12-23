@@ -30,6 +30,8 @@ const char BrokenHeaderErrorString[] = "Broken Header in buffer";
 const char NoMoreHeaderErrorString[] = "No more header";
 const char NoMemoryErrorString[] = "No sufficient memory to store header indexer";
 
+static HTTPError HeaderInFillVariable(HTTPCoreHeader &C, HTTPRequest &R, HTTPHeader &H);
+
 const HTTPCoreHeader HeaderInProcesses[31] = {
         {"Host", HI_HOST, nullptr},
         {"Connection", HI_CONNECTION, nullptr},
@@ -48,7 +50,7 @@ const HTTPCoreHeader HeaderInProcesses[31] = {
         {"TE", HI_TE, nullptr},
         {"Epect", HI_EXPECT, nullptr},
         {"Upgrade", HI_UPGRADE, nullptr},
-        {"Accept-Encoding", HI_ACCEPT_ENCODING, nullptr},
+        {"Accept-Encoding", HI_ACCEPT_ENCODING, HeaderInFillVariable},
         {"Via", HI_VIA, nullptr},
         {"Authorization", HI_AUTHORIZATION, nullptr},
         {"Keep-Alive", HI_KEEPALIVE, nullptr},
@@ -965,16 +967,17 @@ HTTPError HTTPParser::ParseHeader(Buffer &B, HTTPHeader &Header, bool AllowUnder
 
 HTTPError HTTPParser::ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderScore) {
 
-    uint32_t Hash;
     HTTPError Error{0};
     HTTPHeader Header;
 
     // init header process if not
     if (HeaderInDictionary.Begin() == nullptr) {
-        for (uint32_t i = 0; HeaderInProcesses[i].IsValid(); i++) {
+        for (uint32_t i = 0; i < 31; i++) {
             HeaderInDictionary.Insert((HTTPCoreHeader &)HeaderInProcesses[i]);
         }
     }
+
+    uint32_t Hash;
 
     do {
 
@@ -994,26 +997,16 @@ HTTPError HTTPParser::ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool AllowU
             SimpleHash(Hash, LowerCase[*BC]);
         }
 
-        DictionaryItem *DI = HeaderInDictionary.Find(Hash);
+        DictionaryItem *TempPrev, *TempNext, *DI = HeaderInDictionary.Find(Hash);
 
         if (DI != nullptr) {
 
-            for (RBNode *N = HeaderInDictionary.Prev(DI); N != nullptr; ) {
+            TempPrev = (DictionaryItem *)HeaderInDictionary.Prev(DI);
+            TempNext = (DictionaryItem *)HeaderInDictionary.Next(DI);
 
-                if (((DictionaryItem *) N)->GetHash() != Hash) {
-                    break;
-                }
-                // compare to avoid collision
-                N = HeaderInDictionary.Prev(N);
-            }
-
-            for (RBNode *N = HeaderInDictionary.Next(DI); N != nullptr; ) {
-
-                if (((DictionaryItem *)N) ->GetHash() != Hash) {
-                    break;
-                }
-                // compare to avoid collision
-                N = HeaderInDictionary.Next(N);
+            if ((TempPrev != nullptr && TempPrev->GetHash() == DI->GetHash()) ||
+                (TempNext != nullptr && TempNext->GetHash() == DI->GetHash())) {
+                // [TODO] Collision found, should add warning here
             }
 
             Error = ((HTTPCoreHeader *)DI)->Process(R, Header);
@@ -1021,6 +1014,7 @@ HTTPError HTTPParser::ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool AllowU
             if (Error.GetCode() != 0) {
                 return Error;
             }
+
         } else {
 
             HTTPHeader *H = R.HeaderIn.Headers.Push();
@@ -1166,3 +1160,7 @@ HTTPError HTTPParser::ValidateURI(HTTPRequest &R) {
     return {0};
 }
 
+static HTTPError HeaderInFillVariable(HTTPCoreHeader &C, HTTPRequest &R, HTTPHeader &H) {
+    printf("HTTP Core Header\n");
+    return {0};
+}

@@ -3,6 +3,8 @@
 using namespace ngx::Core::BasicComponent;
 
 BufferMemoryBlock::BufferMemoryBlock(size_t Size) : BasicMemoryBlock(Size), Recyclable() {
+    Magic = (void *)this;
+    Reset();
 }
 
 BufferMemoryBlock::~BufferMemoryBlock() {

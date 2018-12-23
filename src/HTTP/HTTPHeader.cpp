@@ -30,3 +30,4 @@ HTTPError HTTPCoreHeader::Process(HTTPRequest &Request, HTTPHeader &Header) {
     }
     return Setter(*this, Request, Header);
 }
+

@@ -86,13 +86,13 @@ struct BoundCursor : public Cursor {
     }
 
     inline BoundCursor &operator<(BoundCursor Cursor) {
-
+        ParentBuffer = Cursor.ParentBuffer;
         Position = Cursor.Position;
         return *this;
     }
 
     inline BoundCursor &operator>(BoundCursor Cursor) {
-
+        ParentBuffer = Cursor.ParentBuffer;
         this->Bound = Cursor.Position;
         return *this;
     }
