@@ -29,9 +29,10 @@ const char BrokenRequestErrorString[] = "Broken Request in buffer";
 const char BrokenHeaderErrorString[] = "Broken Header in buffer";
 const char NoMoreHeaderErrorString[] = "No more header";
 const char NoMemoryErrorString[] = "No sufficient memory to store header indexer";
+const char BadCoreHeaderInErrorString[] = "Bad core header in";
 
 const HTTPCoreHeader HeaderInProcesses[31] = {
-        {"Host", HI_HOST, nullptr},
+        {"Host", HI_HOST, HTTPParser::HeaderInFillVariable},
         {"Connection", HI_CONNECTION, nullptr},
         {"If-Modified-Since", HI_IF_MODIFY_SINCE, nullptr},
         {"If-Unmodified-Since", HI_IF_UNMODIFY_SINCE, nullptr},
@@ -1161,11 +1162,58 @@ HTTPError HTTPParser::ValidateURI(HTTPRequest &R) {
 HTTPError HTTPParser::HeaderInFillVariable(HTTPCoreHeader &C, HTTPRequest &R, HTTPHeader &H) {
 
     switch (C.GetType()) {
-
+        case HI_HOST:
+            R.HeaderIn.Host = H.Value;
+            break;
+        case HI_CONNECTION:
+            R.HeaderIn.Connection = H.Value;
+            break;
+        case HI_IF_MODIFY_SINCE:
+            R.HeaderIn.IfModufiedSince = H.Value;
+            break;
+        case HI_IF_UNMODIFY_SINCE:
+            R.HeaderIn.IfUnModifiedSince = H.Value;
+            break;
+        case HI_IF_MATCH:
+            R.HeaderIn.IfMatch = H.Value;
+            break;
+        case HI_IF_NON_MATCH:
+            R.HeaderIn.IfNonMatch = H.Value;
+            break;
+        case HI_USERAGENT:
+            R.HeaderIn.UserAgent = H.Value;
+            // [TODO]support browser detection
+            break;
         case HI_ACCEPT_ENCODING:
-            R.HeaderIn.AcceptEncoding = H.Value; break;
+            R.HeaderIn.AcceptEncoding = H.Value;
+            break;
+        case HI_REFERENCE:
+            R.HeaderIn.Referer = H.Value;
+            break;
+        case HI_CONTENT_LENGTH:
+            R.HeaderIn.ContentLength = H.Value;
+            // [TODO] parse content size
+            break;
+        case HI_CONTENT_RANGE:
+            R.HeaderIn.ContentRange = H.Value;
+            break;
+        case HI_CONTENT_TYPE:
+            R.HeaderIn.ContentType = H.Value;
+            break;
+        case HI_RANGE:
+            R.HeaderIn.Range = H.Value;
+            break;
+        case HI_IF_RANGE:
+            R.HeaderIn.IfRange = H.Value;
+            break;
+        case HI_TRANSFER_ENCODING:
+            R.HeaderIn.TransferEncoding = H.Value;
+            break;
+        case HI_TE:
+            R.HeaderIn.TE = H.Value;
+            break;
         default:
-            printf("HTTP Core Header\n");
+            return {EINVAL, BadCoreHeaderInErrorString};
     }
 
     return {0};
