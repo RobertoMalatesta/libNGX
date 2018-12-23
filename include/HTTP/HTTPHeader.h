@@ -32,6 +32,8 @@ public:
 
     HTTPError Process(HTTPRequest &Request, HTTPHeader &Header);
 
+    HTTPCoreHeaderIn GetType() const { return Type; }
+
     inline bool IsValid() const {
         return Key != nullptr && Setter != nullptr;
     };

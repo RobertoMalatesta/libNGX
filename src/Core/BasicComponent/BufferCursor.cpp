@@ -211,7 +211,6 @@ size_t BoundCursor::ReadBytes(u_char *Pointer, size_t Size) {
     return (DestPointer - Pointer);
 }
 
-
 bool BoundCursor::CmpBytes(u_char *Pointer, size_t Size) {
 
     size_t  TempSize;

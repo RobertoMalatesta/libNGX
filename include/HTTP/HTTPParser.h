@@ -15,6 +15,9 @@ public:
     /** Parse HTTP Header In through ParseHeader, and do some process */
     static HTTPError ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderScore = ALLOW_UNDERSCORE);
 
+    /** Fill HTTP Core Header into HTTP Request */
+    static HTTPError HeaderInFillVariable(HTTPCoreHeader &C, HTTPRequest &R, HTTPHeader &H);
+
     /** Write HTTP Request to Buffer */
 //    HTTPError WriteRequest(HTTPRequest &R, Buffer &B);
 

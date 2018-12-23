@@ -30,8 +30,6 @@ const char BrokenHeaderErrorString[] = "Broken Header in buffer";
 const char NoMoreHeaderErrorString[] = "No more header";
 const char NoMemoryErrorString[] = "No sufficient memory to store header indexer";
 
-static HTTPError HeaderInFillVariable(HTTPCoreHeader &C, HTTPRequest &R, HTTPHeader &H);
-
 const HTTPCoreHeader HeaderInProcesses[31] = {
         {"Host", HI_HOST, nullptr},
         {"Connection", HI_CONNECTION, nullptr},
@@ -50,7 +48,7 @@ const HTTPCoreHeader HeaderInProcesses[31] = {
         {"TE", HI_TE, nullptr},
         {"Epect", HI_EXPECT, nullptr},
         {"Upgrade", HI_UPGRADE, nullptr},
-        {"Accept-Encoding", HI_ACCEPT_ENCODING, HeaderInFillVariable},
+        {"Accept-Encoding", HI_ACCEPT_ENCODING, HTTPParser::HeaderInFillVariable},
         {"Via", HI_VIA, nullptr},
         {"Authorization", HI_AUTHORIZATION, nullptr},
         {"Keep-Alive", HI_KEEPALIVE, nullptr},
@@ -1160,7 +1158,15 @@ HTTPError HTTPParser::ValidateURI(HTTPRequest &R) {
     return {0};
 }
 
-static HTTPError HeaderInFillVariable(HTTPCoreHeader &C, HTTPRequest &R, HTTPHeader &H) {
-    printf("HTTP Core Header\n");
+HTTPError HTTPParser::HeaderInFillVariable(HTTPCoreHeader &C, HTTPRequest &R, HTTPHeader &H) {
+
+    switch (C.GetType()) {
+
+        case HI_ACCEPT_ENCODING:
+            R.HeaderIn.AcceptEncoding = H.Value; break;
+        default:
+            printf("HTTP Core Header\n");
+    }
+
     return {0};
 }
