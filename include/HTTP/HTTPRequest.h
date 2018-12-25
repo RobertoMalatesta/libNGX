@@ -61,7 +61,7 @@ struct HTTPHeaderIn {
     HTTPHeaderIn(Allocator *BackendAllocator): XForwardFor(BackendAllocator), Cookies(BackendAllocator), Headers(BackendAllocator){};
 };
 
-class HTTPRequest {
+class HTTPRequest: public CanReset {
 protected:
 
     // HTTP Method GET, POST, PUT, DELETE, ...
@@ -108,8 +108,35 @@ protected:
     // HTTP Version
     unsigned short Version;
 
+    /** Parse HTTP Method from Buffer into HTTPRequest */
+    static HTTPError ParseMethod(Buffer &B, HTTPRequest &R);
+
+    /** Parse HTTP Request Line from Buffer into HTTPRequest */
+    static HTTPError ParseRequestLine(Buffer &B, HTTPRequest &R);
+
+    /** Parse HTTP Header from Buffer into HTTPHeader */
+    static HTTPError ParseHeader(Buffer &B, HTTPHeader &Header, bool AllowUnderScore = ALLOW_UNDERSCORE);
+
+    /** Parse HTTP Header In through ParseHeader, and do some process */
+    static HTTPError ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderScore = ALLOW_UNDERSCORE);
+
+    /** Judge if a request`s URI is valid, used when write request to buffer */
+    static HTTPError ValidateRequestURI(Buffer *B, HTTPRequest &R);
+
     friend class HTTPParser;
 
 public:
+
     HTTPRequest(Allocator *Allocator): HeaderIn(Allocator) {};
+
+    /** Read a request from buffer */
+    HTTPError ReadRequest(Buffer &B);
+
+    /** Write a request to buffer */
+    HTTPError WriteRequest(Buffer &B);
+
+    /** Fill HTTP Core Header into HTTP Request */
+    static HTTPError HeaderInFillVariable(HTTPCoreHeader &C, HTTPRequest &R, HTTPHeader &H);
+
+    virtual void Reset();
 };

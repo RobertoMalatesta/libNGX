@@ -18,8 +18,8 @@ int BufferTest() {
     buffer.ReadData(Text, sizeof(Text) - 1);
     buffer >> Cursor;
 
-    while (Cursor.ReadByte(0, c)) {
-        printf("%c", c);
+    while (!!Cursor) {
+        printf("%c", *Cursor);
         Cursor += 1;
     }
     printf("\n");
