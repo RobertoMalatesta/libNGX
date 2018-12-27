@@ -31,7 +31,7 @@ const uint32_t usual[] = {
         0xffffffff  /* 1111 1111 1111 1111  1111 1111 1111 1111 */
 };
 
-const HTTPCoreHeader HeaderInProcesses[31] = {
+const HTTPCoreHeader HTTPRequest::HeaderInProcesses[31] = {
         {"Host", HI_HOST, HTTPRequest::HeaderInFillVariable},
         {"Connection", HI_CONNECTION, nullptr},
         {"If-Modified-Since", HI_IF_MODIFY_SINCE, nullptr},
@@ -64,8 +64,6 @@ const HTTPCoreHeader HeaderInProcesses[31] = {
         {"Cookie", HI_COOKIE, nullptr},
         {"Size", HI_SIZE, nullptr},
 };
-
-static Dictionary HeaderInDictionary;
 
 HTTPError HTTPRequest::ParseMethod(Buffer &B, HTTPRequest &R) {
 
@@ -1089,9 +1087,9 @@ HTTPError HTTPRequest::ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool Allow
     return Error;
 }
 
-HTTPError HTTPRequest::ValidateRequestURI(Buffer *B, HTTPRequest &R) {
+HTTPError HTTPRequest::ParseRequestURI(Buffer *B, HTTPRequest &R) {
 
-    enum URI_PARSE_STATE {
+    enum URIParseState {
         URI_START = 0,
         URI_AFTER_SLASH_IN_URI,
         URI_CHECK_URI,
@@ -1099,7 +1097,7 @@ HTTPError HTTPRequest::ValidateRequestURI(Buffer *B, HTTPRequest &R) {
     };
 
     BoundCursor BC = R.URI;
-    URI_PARSE_STATE State = URI_START;
+    URIParseState State = URI_START;
 
     for (u_char C, C1; C = *BC, !!BC; BC++) {
 

@@ -70,19 +70,6 @@ namespace ngx {
             HI_SIZE
         };
 
-        enum HTTPRequestState {
-            HTTP_BAD_REQUEST_STATE = -1,
-            HTTP_INIT_STATE,
-            HTTP_PAESE_METHOD,
-            HTTP_PARSE_REQUEST_LINE,
-            HTTP_PARSE_HEADER,
-            HTTP_HEADER_DONE,
-        };
-
-        enum HTTPResponseState {
-
-        };
-
         class HTTPServer;
 
         class HTTPConnection;
@@ -90,8 +77,6 @@ namespace ngx {
         class HTTPConnectionRecycleBin;
 
         class HTTPConnectionBuilder;
-
-        class HTTPParser;
 
         class HTTPRequest;
 

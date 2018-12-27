@@ -1,3 +1,12 @@
+enum HTTPRequestState {
+    HTTP_BAD_REQUEST_STATE = -1,
+    HTTP_INIT_STATE,
+    HTTP_PAESE_METHOD,
+    HTTP_PARSE_REQUEST_LINE,
+    HTTP_PARSE_HEADER,
+    HTTP_HEADER_DONE,
+};
+
 struct HTTPHeaderIn {
 
     // HTTP Core Headers
@@ -120,10 +129,15 @@ protected:
     /** Parse HTTP Header In through ParseHeader, and do some process */
     static HTTPError ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderScore = ALLOW_UNDERSCORE);
 
-    /** Judge if a request`s URI is valid, used when write request to buffer */
-    static HTTPError ValidateRequestURI(Buffer *B, HTTPRequest &R);
+    /** Identify Request URI and set related flags */
+    static HTTPError ParseRequestURI(Buffer *B, HTTPRequest &R);
 
-    friend class HTTPParser;
+    /** Fill HTTP Core Header into HTTP Request */
+    static HTTPError HeaderInFillVariable(HTTPCoreHeader &C, HTTPRequest &R, HTTPHeader &H);
+
+    static const HTTPCoreHeader HeaderInProcesses[31];
+
+    static Dictionary HeaderInDictionary;
 
 public:
 
@@ -134,9 +148,6 @@ public:
 
     /** Write a request to buffer */
     HTTPError WriteRequest(Buffer &B);
-
-    /** Fill HTTP Core Header into HTTP Request */
-    static HTTPError HeaderInFillVariable(HTTPCoreHeader &C, HTTPRequest &R, HTTPHeader &H);
 
     virtual void Reset();
 };
