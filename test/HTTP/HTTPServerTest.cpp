@@ -4,27 +4,28 @@ using namespace ngx::Core;
 using namespace ngx::HTTP;
 
 int HTTPServerTest() {
-    SocketAddress SocketAddress = {
-            .sockaddr_in = {
-                    .sin_family = AF_INET,
-                    .sin_port = htons(8080),
-                    .sin_addr = htonl(INADDR_ANY)
-            },
-            .SocketLength = sizeof(sockaddr_in)
+
+
+    SocketAddress Address;
+
+    Address.sockaddr_in = {
+            .sin_family = AF_INET,
+            .sin_port = htons(8080),
+            .sin_addr = htonl(INADDR_ANY),
     };
 
     LOG(INFO) << "Init time module start";
     TimeModuleInit();
     LOG(INFO) << "Init time module end";
 
-    HTTPListening Listen(SocketAddress);
+    HTTPListening Listen(Address);
 
     EPollEventDomain Domain(2, 32768);
 
     HTTPServer Server(BUFFER_MEMORY_BLOCK_SIZE, 5120, 1024, &Domain);
 
     LOG(INFO) << "Bind() Listening: " << Listen.Bind().GetError();
-    LOG(INFO) << "Set NON_BLOCK: " <<Listen.SetNonBlock(true).GetError();
+    LOG(INFO) << "Set NON_BLOCK: " << Listen.SetNonBlock(true).GetError();
     LOG(INFO) << "Set PORT_REUSE: " << Listen.SetPortReuse(true).GetError();
     LOG(INFO) << "Start listening: " << Listen.Listen().GetError();
 

@@ -1,20 +1,29 @@
-enum {
-    SOCK_TYPE_DGRAM = 0,
-    SOCK_TYPE_STREAM = 1,
-    SOCK_TYPE_RESERVED1,
-    SOCK_TYPE_RESERVED2
+
+union SocketAddress {
+
+    struct sockaddr sockaddr;
+    struct sockaddr_in sockaddr_in;
+    struct sockaddr_in6 sockaddr_in6;
+
+    SocketAddress(){
+        sockaddr.sa_len = 0;
+    }
+
+    inline char IPVersion() const {
+
+        if (sockaddr.sa_len > 0) {
+            if (sockaddr.sa_family & AF_INET) {
+                return 4;
+            } else if (sockaddr.sa_family & AF_INET6) {
+                return 6;
+            }
+        }
+
+        return -1;
+    }
 };
 
-struct SocketAddress {
-    socklen_t SocketLength;
-    union {
-        struct sockaddr sockaddr;
-        struct sockaddr_in sockaddr_in;
-        struct sockaddr_in6 sockaddr_in6;
-    };
-};
-
-class Socket : public EventEntity, public Achor{
+class Socket : public EventEntity, public Achor {
 protected:
 
     int SocketFD = -1;
@@ -25,40 +34,19 @@ protected:
 
     Timer TimerNode;
 
-    union {
-        struct {
-            unsigned Open: 1;
-            unsigned Active: 1;
-            unsigned Type: 2;
-            unsigned Expired:1;
-            unsigned IsListen:1;
-            unsigned Version:3;
-            unsigned Readable:1;
-            unsigned Writable:1;
-        };
-        u_short Flags = 0;
-    };
-
     friend class SocketEventDomain;
 
 public:
 
     Socket();
 
-    Socket(struct SocketAddress &SocketAddress);
+    Socket(SocketAddress &Address);
 
-    Socket(int SocketFD, struct SocketAddress &SocketAddress);
+    Socket(int SocketFD, SocketAddress &Address);
 
     inline int GetSocketFD() const {
         return SocketFD;
     }
-
-    SocketError SetNonBlock(bool On);
-
-    SocketError SetNoDelay(bool On);
-
-    virtual RuntimeError HandleEventDomain(EventType Type) = 0;
-
 
     inline void Lock() {
         SocketLock.Lock();
@@ -72,10 +60,20 @@ public:
         return SocketLock.TryLock();
     }
 
+    SocketError SetSocketAddress(int SocketFD, SocketAddress &Address);
+
+    SocketError SetNonBlock(bool On);
+
+    SocketError SetNoDelay(bool On);
+
     static inline Socket *TimerToSocket(Timer *T) {
         if (T == nullptr) {
             return nullptr;
         }
-        return (Socket *)((uintptr_t)T - (uintptr_t)(&((Socket*)0)->TimerNode));
+        return (Socket *) ((uintptr_t) T - (uintptr_t) (&((Socket *) 0)->TimerNode));
     }
+
+    virtual RuntimeError HandleEventDomain(EventType Type) = 0;
+
+    virtual SocketError Close();
 };

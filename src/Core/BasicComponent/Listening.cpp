@@ -2,34 +2,41 @@
 
 using namespace ngx::Core::BasicComponent;
 
-Listening::Listening() : Socket() {
-    IsListen = 1;
+Listening::Listening() : Socket() {}
+
+Listening::Listening(SocketAddress &Address) :
+        Socket(Address) {}
+
+Listening::Listening(int SocketFD, SocketAddress &Address) :
+        Socket(SocketFD, Address) {
 }
 
-Listening::Listening(SocketAddress &SocketAddress) :
-        Socket(SocketAddress) {
-    IsListen = 1;
+SocketError Listening::SetPortReuse(bool On) {
+
+    int Val = On ? 1 : 0;
+
+    if (setsockopt(SocketFD, SOL_SOCKET, SO_REUSEPORT, &Val, sizeof(int))) {
+        return {errno, "setsockopt() failed"};
+    }
+
+    return {0};
 }
 
-Listening::Listening(int SocketFD, SocketAddress &SocketAddress) :
-        Socket(SocketFD, SocketAddress) {
-    IsListen = 1;
+TCPListening::TCPListening(SocketAddress &Address)
+        : Listening(Address) {
 }
 
-TCP4Listening::TCP4Listening(SocketAddress &SocketAddress)
-        : Listening(SocketAddress) {
-    Type = SOCK_TYPE_STREAM, Version = 4;
-}
-
-TCP4Listening::~TCP4Listening() {
+TCPListening::~TCPListening() {
     Close();
 }
 
-SocketError TCP4Listening::Bind() {
+SocketError TCPListening::Bind() {
 
     int Code =0;
 
-    if (SocketFD == -1 || Active == 0) {
+    if (SocketFD == -1) {
+
+        socklen_t SocketLength = sizeof(SocketAddress);
 
         SocketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
@@ -37,47 +44,27 @@ SocketError TCP4Listening::Bind() {
             return {errno, "failed to create socket"};
         }
 
-        Code = bind(SocketFD, &Address.sockaddr, Address.SocketLength);
+        Code = bind(SocketFD, &Address.sockaddr, SocketLength);
 
         if (Code == -1) {
+
+            close(SocketFD), SocketFD = -1;
+
             return {errno, "failed to bind socket"};
         }
-
-        Active = 1;
     }
 
     return {0};
 }
 
-SocketError TCP4Listening::Listen() {
+SocketError Listening::Listen() {
 
     if (SocketFD == -1) {
-        return {EINVAL, "bad Socket!"};
+        return {EINVAL, "bad socket!"};
     }
 
     if (-1 == listen(SocketFD, Backlog)) {
         return {errno, "listen to Socket failed!"};
-    }
-
-    return {0};
-}
-
-SocketError TCP4Listening::Close() {
-
-    if (SocketFD != -1 || Active == 1) {
-        close(SocketFD);
-        SocketFD = -1, Active = 0;
-    }
-
-    return {0};
-}
-
-SocketError TCP4Listening::SetPortReuse(bool Open) {
-
-    int Val = Open ? 1 : 0;
-
-    if (setsockopt(SocketFD, SOL_SOCKET, SO_REUSEPORT, &Val, sizeof(int))) {
-        return {errno, "setsockopt() failed"};
     }
 
     return {0};

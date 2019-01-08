@@ -1,4 +1,4 @@
-class HTTPConnection : public TCP4Connection, public Recyclable {
+class HTTPConnection : public TCPConnection, public Recyclable {
 protected:
 
     Job EventJob;
@@ -38,7 +38,6 @@ public:
         return RuntimeError(0);
     };
 
-    RuntimeError SetSocketAddress(int SocketFD, struct SocketAddress &Address);
 
     SocketError Close();
 

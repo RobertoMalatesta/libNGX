@@ -10,12 +10,12 @@ HTTPConnectionBuilder::HTTPConnectionBuilder(size_t BufferBlockSize, uint64_t Bu
 
 }
 
-int HTTPConnectionBuilder::Get(HTTPConnection *&C, int SocketFD, SocketAddress &SocketAddress, HTTPServer *Server,
+int HTTPConnectionBuilder::Get(HTTPConnection *&C, int SocketFD, SocketAddress &Address, HTTPServer *Server,
                                SocketEventDomain *EventDomain) {
 
     LockGuard LockGuard(&Lock);
 
-    if (SocketFD == -1 || BackendRecycleBin.Get(C, SocketFD, SocketAddress) != 0) {
+    if (SocketFD == -1 || BackendRecycleBin.Get(C, SocketFD, Address) != 0) {
         return C = nullptr, -1;
     }
 
@@ -27,7 +27,6 @@ int HTTPConnectionBuilder::Get(HTTPConnection *&C, int SocketFD, SocketAddress &
     }
 
     // configure connection
-    C->Open = 1;
     C->ParentServer = Server;
     C->ParentEventDomain = EventDomain;
 

@@ -3,14 +3,17 @@
 using namespace ngx::Core;
 using namespace ngx::HTTP;
 
-HTTPListening::HTTPListening(SocketAddress &SocketAddress) : TCP4Listening(SocketAddress) {
+HTTPListening::HTTPListening(SocketAddress &Address) : TCPListening(Address) {
 }
 
 RuntimeError HTTPListening::HandleEventDomain(uint32_t EventType) {
 
     int NewFD;
-    SocketAddress Address{0};
+    RuntimeError Error{0};
+
     HTTPConnection *C;
+    SocketAddress Address;
+    socklen_t SocketLength = sizeof(Address);
 
     LockGuard Lock(&SocketLock);
 
@@ -20,9 +23,8 @@ RuntimeError HTTPListening::HandleEventDomain(uint32_t EventType) {
 
     if ((EventType & ET_READ) != 0) {
 
-        RuntimeError Error{0};
 
-        NewFD = accept4(SocketFD, &Address.sockaddr, &Address.SocketLength, O_NONBLOCK);
+        NewFD = accept4(SocketFD, &Address.sockaddr, &SocketLength, O_NONBLOCK);
 
         if (NewFD == -1) {
             LOG(WARNING) << "failed to accept, errno: " << errno;

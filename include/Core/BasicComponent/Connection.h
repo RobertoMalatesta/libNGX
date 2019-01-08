@@ -1,4 +1,4 @@
-//===- Connection.h - represent a Connection -----*- C++ -*-===//
+//===--------------- Connection.h - represent a Connection ---------*- C++ -*-===//
 //
 //                     The NGX Server Infrastructure
 //
@@ -17,23 +17,19 @@ protected:
 public:
     Connection();
 
-    Connection(struct SocketAddress &SocketAddress);
+    Connection(SocketAddress &Address);
 
-    Connection(int SocketFD, struct SocketAddress &SocketAddress);
+    Connection(int SocketFD, SocketAddress &Address);
 
     virtual SocketError Connect() = 0;
-
-    virtual SocketError Close() = 0;
 };
 
 
-class TCP4Connection : public Connection {
+class TCPConnection : public Connection {
 public:
-    TCP4Connection(struct SocketAddress &SocketAddress);
+    TCPConnection(SocketAddress &Address);
 
-    TCP4Connection(int SocketFD, struct SocketAddress &SocketAddress);
+    TCPConnection(int SocketFD, SocketAddress &Address);
 
     virtual SocketError Connect();
-
-    virtual SocketError Close();
 };

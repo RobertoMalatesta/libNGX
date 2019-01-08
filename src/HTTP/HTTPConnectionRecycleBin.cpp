@@ -9,7 +9,7 @@ HTTPConnectionRecycleBin::HTTPConnectionRecycleBin(uint64_t RecycleBinSize) :
 }
 
 
-int HTTPConnectionRecycleBin::Get(HTTPConnection *&C, int SocketFD, SocketAddress &TargetSocketAddress) {
+int HTTPConnectionRecycleBin::Get(HTTPConnection *&C, int SocketFD, SocketAddress &Address) {
 
     Queue *Q;
     C = nullptr;
@@ -26,7 +26,7 @@ int HTTPConnectionRecycleBin::Get(HTTPConnection *&C, int SocketFD, SocketAddres
         }
     }
     C->Unlock();
-    C->SetSocketAddress(SocketFD, TargetSocketAddress);
+    C->SetSocketAddress(SocketFD, Address);
     return 0;
 }
 

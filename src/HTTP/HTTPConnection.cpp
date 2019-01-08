@@ -3,21 +3,10 @@
 using namespace ngx::HTTP;
 
 HTTPConnection::HTTPConnection() :
-        TCP4Connection(Address),
+        TCPConnection(Address),
         Request(nullptr),
         EventJob(HTTPConnection::OnConnectionEvent, this) {
     TimerNode = {0, HTTPConnection::OnTimerEvent, this};
-    Type = SOCK_TYPE_STREAM, Version = 4, IsListen = 1;
-}
-
-RuntimeError HTTPConnection::SetSocketAddress(int SocketFD, struct SocketAddress &Address) {
-
-    LockGuard Guard(&SocketLock);
-
-    this->SocketFD = SocketFD;
-    this->Address = Address;
-
-    return {0};
 }
 
 RuntimeError HTTPConnection::HandleEventDomain(uint32_t EventType) {
@@ -33,8 +22,7 @@ RuntimeError HTTPConnection::HandleEventDomain(uint32_t EventType) {
 
     Event = EventType;
 
-    if (Open == 0) {
-        SocketFD = -1;
+    if (SocketFD == -1) {
         LOG(WARNING) << "connection not open, fd: "<< SocketFD;
         return {EFAULT, "connection not open"};
     };
@@ -67,7 +55,7 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection) {
 
     Type = C->Event;
 
-    if (C->Open == 1) {
+    if (C->SocketFD != -1) {
 
         // Sequence
         //
@@ -133,7 +121,7 @@ SocketError HTTPConnection::Close() {
     ParentEventDomain->DetachSocket(*this, ET_READ | ET_WRITE);
 
     // Close TCP Connection
-    TCP4Connection::Close();
+    TCPConnection::Close();
 
     // Set a timer to put Connection to recycler
     ParentEventDomain->SetTimer(*C, CONNECTION_RECYCLE_WAIT_TIME, TM_ONCE);

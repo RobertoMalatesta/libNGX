@@ -1,5 +1,5 @@
 
-class HTTPListening : public TCP4Listening {
+class HTTPListening : public TCPListening {
 protected:
 
     HTTPServer *ParentServer;
@@ -11,7 +11,7 @@ protected:
 
 public:
 
-    HTTPListening(struct SocketAddress &SocketAddress);
+    HTTPListening(SocketAddress &Address);
 
     ~HTTPListening() = default;
 };

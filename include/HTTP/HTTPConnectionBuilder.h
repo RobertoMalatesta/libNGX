@@ -29,27 +29,30 @@ public:
 
     ~HTTPConnectionBuilder() = default;
 
-    inline HTTPError SetTCPNoDelay(bool Open) {
+    inline HTTPError SetTCPNoDelay(bool On) {
 
         LockGuard LockGuard(&Lock);
-        TCPNoDelay = (Open) ? 1 : 0;
+        TCPNoDelay = (On) ? 1 : 0;
         return {0};
     }
 
-    inline HTTPError SetTCPNoPush(bool Open) {
+    inline HTTPError SetTCPNoPush(bool On) {
 
         LockGuard LockGuard(&Lock);
-        TCPNoPush = (Open) ? 1 : 0;
+        TCPNoPush = (On) ? 1 : 0;
         return {0};
     };
 
     inline HTTPError SetReadBufferSize(uint32_t Size) {
+
         LockGuard LockGuard(&Lock);
         ReadBufferSize = Size;
         return {0};
     };
 
-    int Get(HTTPConnection *&C, int SocketFD, SocketAddress &SocketAddress,
+    int Get(HTTPConnection *&C,
+            int SocketFD,
+            SocketAddress &Address,
             HTTPServer *Server,
             SocketEventDomain *EventDomain);
 

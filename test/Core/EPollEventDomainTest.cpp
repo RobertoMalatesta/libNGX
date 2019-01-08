@@ -26,16 +26,15 @@ static void HTTPEventProcessJob(void *Args, ThreadPool *TPool) {
 
 int EPollEventDomainTest() {
 
-    SocketAddress SocketAddress = {
-            .sockaddr_in = {
-                    .sin_family = AF_INET,
-                    .sin_port = htons(8080),
-                    .sin_addr = htonl(INADDR_ANY)
-            },
-            .SocketLength = sizeof(sockaddr_in)
+    SocketAddress Address;
+
+    Address.sockaddr_in = {
+            .sin_family = AF_INET,
+            .sin_port = htons(8080),
+            .sin_addr = htonl(INADDR_ANY),
     };
 
-    TCP4Listening Listen(SocketAddress);
+    TCPListening Listen(Address);
     EPollEventDomain Domain(4, 31723);
 
     Listen.SetPortReuse(true).PrintError();

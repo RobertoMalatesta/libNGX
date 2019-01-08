@@ -5,18 +5,27 @@ using namespace ngx::Core::BasicComponent;
 
 Socket::Socket() :
         SocketFD(-1),
-        Address({0}) {
+        Address() {
 }
 
-Socket::Socket(struct SocketAddress &SocketAddress) :
+Socket::Socket(SocketAddress &Address) :
         SocketFD(-1),
-        Address(SocketAddress) {
+        Address(Address) {
 }
 
-Socket::Socket(int SocketFD, struct SocketAddress &SocketAddress) :
+Socket::Socket(int SocketFD, SocketAddress &Address) :
         SocketFD(SocketFD),
-        Address(SocketAddress) {
-    Active = (SocketFD == -1 ? 0 : 1);
+        Address(Address) {
+}
+
+SocketError Socket::SetSocketAddress(int SocketFD, SocketAddress &Address) {
+
+    LockGuard Guard(&SocketLock);
+
+    this->SocketFD = SocketFD;
+    this->Address = Address;
+
+    return {0};
 }
 
 SocketError Socket::SetNonBlock(bool On) {
@@ -42,5 +51,14 @@ SocketError Socket::SetNoDelay(bool On) {
 
     Code = setsockopt(SocketFD, IPPROTO_TCP, TCP_NODELAY, (void *) &NoDelay, sizeof(NoDelay));
 
-    return {Code, "setsockopt() failed"};
+    return {Code, Code == 0 ? "" :"setsockopt() failed"};
+}
+
+SocketError Socket::Close() {
+
+    if (SocketFD != -1) {
+        close(SocketFD), SocketFD = -1;
+    }
+
+    return {0};
 }
