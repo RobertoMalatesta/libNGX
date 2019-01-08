@@ -16,7 +16,6 @@ static void Stage1() {
             .sin_family = AF_INET,
             .sin_port = htons(8080),
             .sin_addr = htonl(INADDR_ANY),
-            .sin_len = sizeof(sockaddr_in),
     };
 
     int j = 0;

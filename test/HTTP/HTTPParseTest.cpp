@@ -13,7 +13,7 @@ int HTTPParseTest() {
     u_char Text[] = "GET / HTTP/1.1\r\n ";
 
     Builder.BuildBuffer(buffer);
-    buffer.ReadData(Text, sizeof(Text) - 1);
+    buffer.ReadBytes(Text, sizeof(Text) - 1);
 
     buffer >> BC;
 

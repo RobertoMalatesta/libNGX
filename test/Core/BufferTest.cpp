@@ -15,7 +15,7 @@ int BufferTest() {
 
     Builder.BuildBuffer(buffer);
 
-    buffer.ReadData(Text, sizeof(Text) - 1);
+    buffer.ReadBytes(Text, sizeof(Text) - 1);
     buffer >> Cursor;
 
     while (!!Cursor) {

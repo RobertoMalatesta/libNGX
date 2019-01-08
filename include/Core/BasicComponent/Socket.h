@@ -6,17 +6,15 @@ union SocketAddress {
     struct sockaddr_in6 sockaddr_in6;
 
     SocketAddress() {
-        sockaddr.sa_len = 0;
+        sockaddr = {0};
     }
 
     inline char IPVersion() const {
 
-        if (sockaddr.sa_len > 0) {
-            if (sockaddr.sa_family & AF_INET) {
-                return 4;
-            } else if (sockaddr.sa_family & AF_INET6) {
-                return 6;
-            }
+        if (sockaddr.sa_family & AF_INET) {
+            return 4;
+        } else if (sockaddr.sa_family & AF_INET6) {
+            return 6;
         }
 
         return -1;
