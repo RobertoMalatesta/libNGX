@@ -17,7 +17,7 @@ uint32_t HTTPCoreHeader::HashFn() const {
     uint32_t TempHash = 0 ^ Length;
 
     for (size_t i=0; i<Length; i++) {
-        SimpleHash(TempHash, LowerCase[Key[i]]);
+        SimpleHash(TempHash, lower_case[Key[i]]);
     }
 
     return TempHash;

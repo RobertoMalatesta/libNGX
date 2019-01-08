@@ -13,57 +13,41 @@ const char NoMoreHeaderErrorString[] = "No more header";
 const char NoMemoryErrorString[] = "No sufficient memory to store header indexer";
 const char BadCoreHeaderInErrorString[] = "Bad core header in";
 
-const uint32_t usual[] = {
-        0xffffdbfe, /* 1111 1111 1111 1111  1101 1011 1111 1110 */
-        /* ?>=< ;:98 7654 3210  /.-, +*)( '&%$ #"!  */
-        0x7fff37d6, /* 0111 1111 1111 1111  0011 0111 1101 0110 */
-        /* _^]\ [ZYX WVUT SRQP  ONML KJIH GFED CBA@ */
-//#if (NGX_WIN32)
-//        0xefffffff, /* 1110 1111 1111 1111  1111 1111 1111 1111 */
-//#else
-        0xffffffff, /* 1111 1111 1111 1111  1111 1111 1111 1111 */
-//#endif
-        /*  ~}| {zyx wvut srqp  onml kjih gfed cba` */
-        0xffffffff, /* 1111 1111 1111 1111  1111 1111 1111 1111 */
-        0xffffffff, /* 1111 1111 1111 1111  1111 1111 1111 1111 */
-        0xffffffff, /* 1111 1111 1111 1111  1111 1111 1111 1111 */
-        0xffffffff, /* 1111 1111 1111 1111  1111 1111 1111 1111 */
-        0xffffffff  /* 1111 1111 1111 1111  1111 1111 1111 1111 */
+HTTPCoreHeader HTTPRequest::HeaderInProcesses[] = {
+        {"Host", HI_HOST, HeaderInFillVariable},
+        {"Connection", HI_CONNECTION, HeaderInFillVariable},
+        {"If-Modified-Since", HI_IF_MODIFY_SINCE, HeaderInFillVariable},
+        {"If-Unmodified-Since", HI_IF_UNMODIFY_SINCE, HeaderInFillVariable},
+        {"If-Match", HI_IF_MATCH, HeaderInFillVariable},
+        {"If-None-Match", HI_IF_NON_MATCH, HeaderInFillVariable},
+        {"UserAgent", HI_USERAGENT, HeaderInFillVariable},
+        {"Referer", HI_REFERENCE, HeaderInFillVariable},
+        {"Content-Length", HI_CONTENT_LENGTH, HeaderInFillVariable},
+        {"Content-Range", HI_CONTENT_RANGE, HeaderInFillVariable},
+        {"Content-Type", HI_CONTENT_TYPE, HeaderInFillVariable},
+        {"Range", HI_RANGE, HeaderInFillVariable},
+        {"If-Range", HI_IF_RANGE, HeaderInFillVariable},
+        {"Transfer-Encoding", HI_TRANSFER_ENCODING, HeaderInFillVariable},
+        {"TE", HI_TE, HeaderInFillVariable},
+        {"Expect", HI_EXPECT, HeaderInFillVariable},
+        {"Upgrade", HI_UPGRADE, HeaderInFillVariable},
+        {"Accept-Encoding", HI_ACCEPT_ENCODING, HeaderInFillVariable},
+        {"Via", HI_VIA, HeaderInFillVariable},
+        {"Authorization", HI_AUTHORIZATION, HeaderInFillVariable},
+        {"Keep-Alive", HI_KEEPALIVE, HeaderInFillVariable},
+        {"X-Forward-For", HI_X_FORWARD_FOR, HeaderInFillVariable},
+        {"X-Real-IP", HI_X_REAL_IP, HeaderInFillVariable},
+        {"Accept", HI_ACCEPT, HeaderInFillVariable},
+        {"Accept-Language", HI_ACCEPT_LANGUAGE, HeaderInFillVariable},
+        {"Depth", HI_DEPTH, HeaderInFillVariable},
+        {"Destination", HI_DESTINATION, HeaderInFillVariable},
+        {"Overwrite", HI_OVERWRITE, HeaderInFillVariable},
+        {"Date", HI_DATE, HeaderInFillVariable},
+        {"Cookie", HI_COOKIE, HeaderInFillVariable},
+        {nullptr, HI_COMMON, nullptr},
 };
 
-const HTTPCoreHeader HTTPRequest::HeaderInProcesses[31] = {
-        {"Host", HI_HOST, HTTPRequest::HeaderInFillVariable},
-        {"Connection", HI_CONNECTION, nullptr},
-        {"If-Modified-Since", HI_IF_MODIFY_SINCE, nullptr},
-        {"If-Unmodified-Since", HI_IF_UNMODIFY_SINCE, nullptr},
-        {"If-Match", HI_IF_MATCH, nullptr},
-        {"If-None-Match", HI_IF_NON_MATCH, nullptr},
-        {"UserAgent", HI_USERAGENT, nullptr},
-        {"Referer", HI_REFERENCE, nullptr},
-        {"Content-Length", HI_CONTENT_LENGTH, nullptr},
-        {"Content-Range", HI_CONTENT_RANGE, nullptr},
-        {"Content-Type", HI_CONTENT_TYPE, nullptr},
-        {"Range", HI_RANGE, nullptr},
-        {"If-Range", HI_IF_RANGE, nullptr},
-        {"Transfer-Encoding", HI_TRANSFER_ENCODING, nullptr},
-        {"TE", HI_TE, nullptr},
-        {"Epect", HI_EXPECT, nullptr},
-        {"Upgrade", HI_UPGRADE, nullptr},
-        {"Accept-Encoding", HI_ACCEPT_ENCODING, HTTPRequest::HeaderInFillVariable},
-        {"Via", HI_VIA, nullptr},
-        {"Authorization", HI_AUTHORIZATION, nullptr},
-        {"Keep-Alive", HI_KEEPALIVE, nullptr},
-        {"X-Forward-For", HI_X_FORWARD_FOR, nullptr},
-        {"X-Real-IP", HI_X_REAL_IP, nullptr},
-        {"Accept", HI_ACCEPT, nullptr},
-        {"Accept-Language", HI_ACCEPT_LANGUAGE, nullptr},
-        {"Depth", HI_DEPTH, nullptr},
-        {"Destinaion", HI_DESTINATION, nullptr},
-        {"Overwrite", HI_OVERWRITE, nullptr},
-        {"Date", HI_DATE, nullptr},
-        {"Cookie", HI_COOKIE, nullptr},
-        {"Size", HI_SIZE, nullptr},
-};
+static Dictionary HeaderInDictionary;
 
 HTTPError HTTPRequest::ParseMethod(Buffer &B, HTTPRequest &R) {
 
@@ -812,7 +796,7 @@ HTTPError HTTPRequest::ParseHeader(Buffer &B, HTTPHeader &Header, bool AllowUnde
                         break;
                     default:
                         State = HDR_NAME;
-                        C1 = LowerCase[C];
+                        C1 = lower_case[C];
 
                         if (C1) {
                             break;
@@ -839,7 +823,7 @@ HTTPError HTTPRequest::ParseHeader(Buffer &B, HTTPHeader &Header, bool AllowUnde
 
             case HDR_NAME:
 
-                C1 = LowerCase[C];
+                C1 = lower_case[C];
 
                 if (C1) {
                     break;
@@ -1027,10 +1011,11 @@ HTTPError HTTPRequest::ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool Allow
     // init header process if not
     if (HeaderInDictionary.Begin() == nullptr) {
 
-        for (uint32_t i = 0; i < 31; i++) {
-            HeaderInDictionary.Insert((HTTPCoreHeader &)HeaderInProcesses[i]);
-        }
+        int i = 0;
 
+        while (HeaderInProcesses[i].GetKey() != nullptr) {
+            HeaderInDictionary.Insert(HeaderInProcesses[i]);
+        }
     }
 
     uint32_t Hash;
@@ -1050,7 +1035,7 @@ HTTPError HTTPRequest::ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool Allow
         Hash = 0 ^ Header.Name.Size();
 
         for(BoundCursor BC = Header.Name; *BC != '\0'; BC ++) {
-            SimpleHash(Hash, LowerCase[*BC]);
+            SimpleHash(Hash, lower_case[*BC]);
         }
 
         DictionaryItem *TempPrev, *TempNext, *DI = HeaderInDictionary.Find(Hash);
@@ -1352,5 +1337,5 @@ HTTPError HTTPRequest::ReadRequest(Buffer &B) {
 }
 
 void HTTPRequest::Reset() {
-
+    State = HTTP_INIT_STATE, Context = nullptr;
 }

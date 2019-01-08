@@ -29,7 +29,7 @@ set(SOURCE_FILES
         src/Core/BasicComponent/SocketTimerHub.cpp
         src/Core/BasicComponent/BufferCursor.cpp
         src/Core/EPollEventDomain.cpp
-        src/HTTP/Router/Router.cpp
+        src/HTTP/Router/Mux.cpp
         src/HTTP/HTTPListening.cpp
         src/HTTP/HTTPConnection.cpp
         src/HTTP/HTTPServer.cpp

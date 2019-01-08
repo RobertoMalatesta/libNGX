@@ -1,12 +1,3 @@
-enum HTTPRequestState {
-    HTTP_BAD_REQUEST_STATE = -1,
-    HTTP_INIT_STATE,
-    HTTP_PAESE_METHOD,
-    HTTP_PARSE_REQUEST_LINE,
-    HTTP_PARSE_HEADER,
-    HTTP_HEADER_DONE,
-};
-
 struct HTTPHeaderIn {
 
     // HTTP Core Headers
@@ -73,6 +64,15 @@ struct HTTPHeaderIn {
 class HTTPRequest: public CanReset {
 protected:
 
+    enum HTTPRequestState {
+        HTTP_BAD_REQUEST_STATE = -1,
+        HTTP_INIT_STATE,
+        HTTP_PAESE_METHOD,
+        HTTP_PARSE_REQUEST_LINE,
+        HTTP_PARSE_HEADER,
+        HTTP_HEADER_DONE,
+    };
+
     // HTTP Method GET, POST, PUT, DELETE, ...
     HTTPMethod Method;
 
@@ -117,6 +117,9 @@ protected:
     // HTTP Version
     unsigned short Version;
 
+    // Pointer to service context
+    void *Context;
+
     /** Parse HTTP Method from Buffer into HTTPRequest */
     static HTTPError ParseMethod(Buffer &B, HTTPRequest &R);
 
@@ -135,13 +138,13 @@ protected:
     /** Fill HTTP Core Header into HTTP Request */
     static HTTPError HeaderInFillVariable(HTTPCoreHeader &C, HTTPRequest &R, HTTPHeader &H);
 
-    static const HTTPCoreHeader HeaderInProcesses[31];
-
-    static Dictionary HeaderInDictionary;
+    static HTTPCoreHeader HeaderInProcesses[];
 
 public:
 
-    HTTPRequest(Allocator *Allocator): HeaderIn(Allocator) {};
+    HTTPRequest(Allocator *Allocator): HeaderIn(Allocator) {
+        Reset();
+    };
 
     /** Read a request from buffer */
     HTTPError ReadRequest(Buffer &B);
@@ -149,5 +152,6 @@ public:
     /** Write a request to buffer */
     HTTPError WriteRequest(Buffer &B);
 
+    /** Reset state and release memory */
     virtual void Reset();
 };
