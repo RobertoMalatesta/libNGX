@@ -15,8 +15,11 @@ class Cursor;
 
 class BoundCursor;
 
-class Range;
-
+/**
+ *  @name Buffer
+ *
+ *  @brief Block based buffer used to store and write connection data
+ * */
 class Buffer : public CanReset, public CanGC {
 protected:
     size_t BlockSize;
@@ -31,32 +34,38 @@ public:
 
     ~Buffer();
 
+    /** Set the Buffer BoundCursor, used to update left bound */
     Buffer &operator<<(BoundCursor &BC) &;
 
+    /** Get the Buffer BoundCursor, used to iterate the buffer */
     Buffer &operator>>(BoundCursor &BC) &;
 
+    /** Retrieval the BufferMemoryBlock by the memory address */
     inline BufferMemoryBlock *AddressToMemoryBlock(void *Cursor) const {
-
-        BufferMemoryBlock *MemBlk;
-        MemBlk = (BufferMemoryBlock *) ((size_t) Cursor & ~(BlockSize - 1));
-
-        if (MemBlk != nullptr && MemBlk->Magic == (void *) MemBlk && MemBlk->TotalSize == BlockSize) {
-            return MemBlk;
-        }
-
-        return nullptr;
+        return BufferMemoryBlock::AddressToMemoryBlock(Cursor, BlockSize);
     }
 
-    RuntimeError ReadFromConnection(Connection *C);
+    /** Read Connection data to Buffer and move right bound */
+    RuntimeError ReadConnection(Connection *C);
 
-    RuntimeError ReadData(u_char *PointerToData, size_t DataLength);
+    /** Read raw bytes to Buffer and move right bound */
+    RuntimeError ReadBytes(u_char *PointerToData, size_t DataLength);
 
-    inline bool HasBytes(uint32_t Count = 1) {
-        return (Cursor + 1).Position == nullptr;
+    /** Write Buffer data to connection and move left bound, return EAGAIN when nonblocking write failed */
+    RuntimeError WriteConnection(Connection *C);
+
+    /** Write Buffer data to target buffer */
+    RuntimeError WriteBytes(u_char *PointerToData, size_t DataLength);
+
+    /** If the Buffer is empty */
+    inline bool IsEmpty() const {
+        return !(Cursor + 1);
     }
 
+    /** Release all memory buffer used */
     virtual void Reset();
 
+    /** Release all blocks before read cursor */
     virtual void GC();
 };
 

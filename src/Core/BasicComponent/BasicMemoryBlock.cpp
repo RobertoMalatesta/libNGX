@@ -2,14 +2,13 @@
 
 using namespace ngx::Core::BasicComponent;
 
-BasicMemoryBlock::BasicMemoryBlock(size_t Size): TotalSize(Size) {
-    Start = (u_char *)this + sizeof(BasicMemoryBlock);
-    End = (u_char *)this + Size;
+BasicMemoryBlock::BasicMemoryBlock(size_t Size) : TotalSize(Size) {
+    Start = (u_char *) this + sizeof(BasicMemoryBlock);
+    End = (u_char *) this + Size;
     Magic = (void *) this;
 }
 
 BasicMemoryBlock::~BasicMemoryBlock() {
-    Start = End = nullptr;
     Magic = nullptr;
 }
 

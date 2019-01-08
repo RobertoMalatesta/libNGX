@@ -17,18 +17,18 @@
 *  DictionaryItem should have key and hashable
 *
 */
-class DictionaryItem: public RBNode, public Achor{
+class DictionaryItem : public RBNode, public Achor {
 
 protected:
 
     const char *Key;
-    uint32_t  Hash = 0;
+    uint32_t Hash = 0;
 
     // DictionaryItem compare
-    virtual int32_t operator - (DictionaryItem &R);
+    virtual int32_t operator-(DictionaryItem &R);
 
     // Hash compare
-    virtual int32_t operator - (uint32_t RHash);
+    virtual int32_t operator-(uint32_t RHash);
 
     /** HashFn
      *  define how to calc Hash
@@ -55,7 +55,7 @@ public:
     }
 
     // implement RBNode operator - to compare
-    virtual int operator - (RBNode &R);
+    virtual int operator-(RBNode &R);
 };
 
 /**
@@ -64,7 +64,7 @@ public:
  *  Dictionary is designed to store and index key-value data within log(N) time
  *
  */
-class Dictionary : public RBT {
+class Dictionary : public RBTree {
 
 public:
 

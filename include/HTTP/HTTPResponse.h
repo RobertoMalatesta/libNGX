@@ -2,13 +2,13 @@ struct HTTPHeaderOut {
 
     // HTTP Core Headers
     // HTTP Custom Headers
-    Array<HTTPHeader> Headers;
-    Array<HTTPHeader> Trailers;
+    Array <HTTPHeader> Headers;
+    Array <HTTPHeader> Trailers;
 
-    HTTPHeaderOut(Allocator *BackendAllocator): Headers(BackendAllocator), Trailers(BackendAllocator){};
+    HTTPHeaderOut(Allocator *BackendAllocator) : Headers(BackendAllocator), Trailers(BackendAllocator) {};
 };
 
-class HTTPResponse: public CanReset {
+class HTTPResponse : public CanReset {
 protected:
 
     enum HTTPResponseState {
@@ -26,7 +26,7 @@ protected:
 
 public:
 
-    HTTPResponse(Allocator *Allocator): HeaderOut(Allocator) {
+    HTTPResponse(Allocator *Allocator) : HeaderOut(Allocator) {
         Reset();
     };
 

@@ -14,6 +14,7 @@ BufferMemoryBlock *Cursor::GetParentBlock() {
 
     return ParentBuffer->AddressToMemoryBlock(Position);
 }
+
 BoundCursor::BoundCursor(Buffer *ParentBuffer, u_char *Position, u_char *Bound) : Cursor(ParentBuffer, Position),
                                                                                   Bound(Bound) {
 }
@@ -67,7 +68,7 @@ bool BoundCursor::operator!() {
 
 size_t BoundCursor::ReadBytes(u_char *Pointer, size_t Size) {
 
-    size_t  TempSize;
+    size_t TempSize;
     u_char *TempPointer, *DestPointer;
     BufferMemoryBlock *Block, *BoundBlock;
 
@@ -126,7 +127,7 @@ size_t BoundCursor::ReadBytes(u_char *Pointer, size_t Size) {
 
 bool BoundCursor::CmpBytes(u_char *Pointer, size_t Size) {
 
-    size_t  TempSize;
+    size_t TempSize;
     u_char *TempPointer;
     BufferMemoryBlock *Block, *BoundBlock;
 
@@ -139,7 +140,7 @@ bool BoundCursor::CmpBytes(u_char *Pointer, size_t Size) {
         || Block == nullptr
         || BoundBlock == nullptr) {
 
-        return  Pointer == nullptr || Size == 0;
+        return Pointer == nullptr || Size == 0;
     }
 
     // the remaining readable size of this block

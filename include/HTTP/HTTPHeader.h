@@ -1,7 +1,4 @@
-class HTTPHeader;
-class HTTPCoreHeader;
-
-typedef HTTPError (HTTPHeaderProcess)(HTTPCoreHeader &, HTTPRequest &, HTTPHeader&H);
+typedef HTTPError (HTTPHeaderProcess)(HTTPCoreHeader &, HTTPRequest &, HTTPHeader &H);
 
 struct HTTPHeader {
     BoundCursor Name;
@@ -11,12 +8,13 @@ struct HTTPHeader {
     HTTPHeader() : Name(), Value(), Valid(true) {}
 };
 
-class HTTPCoreHeader: public DictionaryItem {
+class HTTPCoreHeader : public DictionaryItem {
 protected:
     HTTPCoreHeaderIn Type;
     HTTPHeaderProcess *Setter = nullptr;
 
     virtual uint32_t HashFn() const;
+
 public:
     HTTPCoreHeader(const char *Key, HTTPCoreHeaderIn HeaderInEnum, HTTPHeaderProcess *HeaderProcess);
 

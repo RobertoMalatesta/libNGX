@@ -104,6 +104,10 @@ namespace ngx {
 
         class HTTPRequest;
 
+        class HTTPHeader;
+
+        class HTTPCoreHeader;
+
         struct HTTPPMU;
 
 

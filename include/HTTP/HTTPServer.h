@@ -49,10 +49,10 @@ protected:
 
 public:
 
-    HTTPServer( size_t BufferBlockSize,
-                uint64_t ConnectionRecycleSize,
-                uint64_t BufferRecycleSize,
-                SocketEventDomain *EventDomain);
+    HTTPServer(size_t BufferBlockSize,
+               uint64_t ConnectionRecycleSize,
+               uint64_t BufferRecycleSize,
+               SocketEventDomain *EventDomain);
 
     // Attach a listening to this server
     virtual EventError AttachListening(HTTPListening &L);

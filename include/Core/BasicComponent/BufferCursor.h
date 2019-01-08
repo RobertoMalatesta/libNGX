@@ -1,3 +1,16 @@
+//===- BufferCursor.h - Cursor to index Buffer memory -----------*- C++ -*-===//
+//
+//                     The NGX Server Infrastructure
+//
+// This file is distributed under the MIT Open Source License. See LICENSE.TXT
+// for detail.
+//
+//===----------------------------------------------------------------------===//
+//
+//  This file define Cursor
+//
+//===----------------------------------------------------------------------===//
+
 class Buffer;
 
 struct Cursor {

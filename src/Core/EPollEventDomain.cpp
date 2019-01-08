@@ -7,7 +7,7 @@ static bool SignalSetInited = false;
 static sigset_t epoll_sig_mask = {0};
 
 EPollEventDomain::EPollEventDomain(int ThreadCount, int EPollSize) :
-        SocketEventDomain(ThreadCount) , EPollLock() {
+        SocketEventDomain(ThreadCount), EPollLock() {
 
     if (!SignalSetInited) {
         sigemptyset(&epoll_sig_mask);
@@ -37,7 +37,7 @@ EventError EPollEventDomain::AttachSocket(Socket &S, EventType Type) {
     struct epoll_event Event = {0};
     uint32_t Attached = GetAttachedEvent(S);
 
-    unsigned int EPollCommand = (Attached == 0? EPOLL_CTL_ADD: EPOLL_CTL_MOD);
+    unsigned int EPollCommand = (Attached == 0 ? EPOLL_CTL_ADD : EPOLL_CTL_MOD);
 
     Attached |= Type;
     Event.data.ptr = static_cast<void *> (&S);
@@ -73,7 +73,7 @@ EventError EPollEventDomain::DetachSocket(Socket &S, EventType Type) {
 
     epoll_event Event{0};
 
-    unsigned int EPollCommand = (Attached == 0? EPOLL_CTL_DEL: EPOLL_CTL_MOD);
+    unsigned int EPollCommand = (Attached == 0 ? EPOLL_CTL_DEL : EPOLL_CTL_MOD);
 
     if (EPollFD == -1 || SocketFD == -1) {
         return {-1, "Bad Socket Descriptor!"};

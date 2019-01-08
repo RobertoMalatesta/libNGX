@@ -14,37 +14,37 @@ const char NoMemoryErrorString[] = "No sufficient memory to store header indexer
 const char BadCoreHeaderInErrorString[] = "Bad core header in";
 
 HTTPCoreHeader HTTPRequest::HeaderInProcesses[] = {
-        {"Host", HI_HOST, HeaderInFillVariable},
-        {"Connection", HI_CONNECTION, HeaderInFillVariable},
-        {"If-Modified-Since", HI_IF_MODIFY_SINCE, HeaderInFillVariable},
+        {"Host",                HI_HOST,              HeaderInFillVariable},
+        {"Connection",          HI_CONNECTION,        HeaderInFillVariable},
+        {"If-Modified-Since",   HI_IF_MODIFY_SINCE,   HeaderInFillVariable},
         {"If-Unmodified-Since", HI_IF_UNMODIFY_SINCE, HeaderInFillVariable},
-        {"If-Match", HI_IF_MATCH, HeaderInFillVariable},
-        {"If-None-Match", HI_IF_NON_MATCH, HeaderInFillVariable},
-        {"UserAgent", HI_USERAGENT, HeaderInFillVariable},
-        {"Referer", HI_REFERENCE, HeaderInFillVariable},
-        {"Content-Length", HI_CONTENT_LENGTH, HeaderInFillVariable},
-        {"Content-Range", HI_CONTENT_RANGE, HeaderInFillVariable},
-        {"Content-Type", HI_CONTENT_TYPE, HeaderInFillVariable},
-        {"Range", HI_RANGE, HeaderInFillVariable},
-        {"If-Range", HI_IF_RANGE, HeaderInFillVariable},
-        {"Transfer-Encoding", HI_TRANSFER_ENCODING, HeaderInFillVariable},
-        {"TE", HI_TE, HeaderInFillVariable},
-        {"Expect", HI_EXPECT, HeaderInFillVariable},
-        {"Upgrade", HI_UPGRADE, HeaderInFillVariable},
-        {"Accept-Encoding", HI_ACCEPT_ENCODING, HeaderInFillVariable},
-        {"Via", HI_VIA, HeaderInFillVariable},
-        {"Authorization", HI_AUTHORIZATION, HeaderInFillVariable},
-        {"Keep-Alive", HI_KEEPALIVE, HeaderInFillVariable},
-        {"X-Forward-For", HI_X_FORWARD_FOR, HeaderInFillVariable},
-        {"X-Real-IP", HI_X_REAL_IP, HeaderInFillVariable},
-        {"Accept", HI_ACCEPT, HeaderInFillVariable},
-        {"Accept-Language", HI_ACCEPT_LANGUAGE, HeaderInFillVariable},
-        {"Depth", HI_DEPTH, HeaderInFillVariable},
-        {"Destination", HI_DESTINATION, HeaderInFillVariable},
-        {"Overwrite", HI_OVERWRITE, HeaderInFillVariable},
-        {"Date", HI_DATE, HeaderInFillVariable},
-        {"Cookie", HI_COOKIE, HeaderInFillVariable},
-        {nullptr, HI_COMMON, nullptr},
+        {"If-Match",            HI_IF_MATCH,          HeaderInFillVariable},
+        {"If-None-Match",       HI_IF_NON_MATCH,      HeaderInFillVariable},
+        {"UserAgent",           HI_USERAGENT,         HeaderInFillVariable},
+        {"Referer",             HI_REFERENCE,         HeaderInFillVariable},
+        {"Content-Length",      HI_CONTENT_LENGTH,    HeaderInFillVariable},
+        {"Content-Range",       HI_CONTENT_RANGE,     HeaderInFillVariable},
+        {"Content-Type",        HI_CONTENT_TYPE,      HeaderInFillVariable},
+        {"Range",               HI_RANGE,             HeaderInFillVariable},
+        {"If-Range",            HI_IF_RANGE,          HeaderInFillVariable},
+        {"Transfer-Encoding",   HI_TRANSFER_ENCODING, HeaderInFillVariable},
+        {"TE",                  HI_TE,                HeaderInFillVariable},
+        {"Expect",              HI_EXPECT,            HeaderInFillVariable},
+        {"Upgrade",             HI_UPGRADE,           HeaderInFillVariable},
+        {"Accept-Encoding",     HI_ACCEPT_ENCODING,   HeaderInFillVariable},
+        {"Via",                 HI_VIA,               HeaderInFillVariable},
+        {"Authorization",       HI_AUTHORIZATION,     HeaderInFillVariable},
+        {"Keep-Alive",          HI_KEEPALIVE,         HeaderInFillVariable},
+        {"X-Forward-For",       HI_X_FORWARD_FOR,     HeaderInFillVariable},
+        {"X-Real-IP",           HI_X_REAL_IP,         HeaderInFillVariable},
+        {"Accept",              HI_ACCEPT,            HeaderInFillVariable},
+        {"Accept-Language",     HI_ACCEPT_LANGUAGE,   HeaderInFillVariable},
+        {"Depth",               HI_DEPTH,             HeaderInFillVariable},
+        {"Destination",         HI_DESTINATION,       HeaderInFillVariable},
+        {"Overwrite",           HI_OVERWRITE,         HeaderInFillVariable},
+        {"Date",                HI_DATE,              HeaderInFillVariable},
+        {"Cookie",              HI_COOKIE,            HeaderInFillVariable},
+        {nullptr,               HI_COMMON,            nullptr},
 };
 
 static Dictionary HeaderInDictionary;
@@ -128,11 +128,11 @@ HTTPError HTTPRequest::ParseMethod(Buffer &B, HTTPRequest &R) {
         }
 
         BC += 7;
-    } else if (ReadSize > 8 && C[7] == ' ' && strncmp((char *)C, "OPTIONS", 7) == 0) {
+    } else if (ReadSize > 8 && C[7] == ' ' && strncmp((char *) C, "OPTIONS", 7) == 0) {
         R.Method = OPTIONS;
-    } else if (ReadSize > 9 && C[8] == ' ' && strncmp((char *)C, "PROPFIND", 8) == 0) {
+    } else if (ReadSize > 9 && C[8] == ' ' && strncmp((char *) C, "PROPFIND", 8) == 0) {
         R.Method = PROPFIND;
-    } else if (ReadSize > 10 && C[9] == ' ' && strncmp((char *)C, "PROPPATCH", 9) == 0) {
+    } else if (ReadSize > 10 && C[9] == ' ' && strncmp((char *) C, "PROPPATCH", 9) == 0) {
         R.Method = PROPPATCH;
     } else {
         return {EFAULT, InvalidMethodErrorString};
@@ -870,7 +870,7 @@ HTTPError HTTPRequest::ParseHeader(Buffer &B, HTTPHeader &Header, bool AllowUnde
 
                 if (C == '/') {
 
-                    if (Header.Name.CmpBytes((u_char *)"HTTP", 4)) {
+                    if (Header.Name.CmpBytes((u_char *) "HTTP", 4)) {
                         State = HDR_IGNORE_LINE;
                         break;
                     }
@@ -993,14 +993,14 @@ HTTPError HTTPRequest::ParseHeader(Buffer &B, HTTPHeader &Header, bool AllowUnde
 
     done:
 
-    if (!(BC+1)) {
+    if (!(BC + 1)) {
         return {EAGAIN, BrokenHeaderErrorString};
     }
 
     BC += 1;
     B << BC;
 
-    return {0, NoMoreHeader? NoMoreHeaderErrorString: nullptr};
+    return {0, NoMoreHeader ? NoMoreHeaderErrorString : nullptr};
 }
 
 HTTPError HTTPRequest::ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderScore) {
@@ -1034,7 +1034,7 @@ HTTPError HTTPRequest::ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool Allow
 
         Hash = 0 ^ Header.Name.Size();
 
-        for(BoundCursor BC = Header.Name; *BC != '\0'; BC ++) {
+        for (BoundCursor BC = Header.Name; *BC != '\0'; BC++) {
             SimpleHash(Hash, lower_case[*BC]);
         }
 
@@ -1042,15 +1042,15 @@ HTTPError HTTPRequest::ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool Allow
 
         if (DI != nullptr) {
 
-            TempPrev = (DictionaryItem *)HeaderInDictionary.Prev(DI);
-            TempNext = (DictionaryItem *)HeaderInDictionary.Next(DI);
+            TempPrev = (DictionaryItem *) HeaderInDictionary.Prev(DI);
+            TempNext = (DictionaryItem *) HeaderInDictionary.Next(DI);
 
             if ((TempPrev != nullptr && TempPrev->GetHash() == DI->GetHash()) ||
                 (TempNext != nullptr && TempNext->GetHash() == DI->GetHash())) {
                 // [TODO] Collision found, should add warning here
             }
 
-            Error = ((HTTPCoreHeader *)DI)->Process(R, Header);
+            Error = ((HTTPCoreHeader *) DI)->Process(R, Header);
 
             if (Error.GetCode() != 0) {
                 return Error;

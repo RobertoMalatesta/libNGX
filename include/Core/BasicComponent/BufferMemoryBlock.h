@@ -21,6 +21,7 @@ protected:
     BufferMemoryBlock *NextBlock = nullptr;
 
     friend class Buffer;
+
     friend class BoundCursor;
 
 public:
@@ -35,11 +36,13 @@ public:
 
     virtual void Reset();
 
+    static BufferMemoryBlock *AddressToMemoryBlock(void *Address, size_t Size);
+
     static inline BufferMemoryBlock *FromRecycleQueue(Queue *Q) {
 
         if (Q == nullptr) {
             return nullptr;
         }
-        return (BufferMemoryBlock *)((uintptr_t)Q - (uintptr_t)(&((BufferMemoryBlock*)0)->RecycleItem));
+        return (BufferMemoryBlock *) ((uintptr_t) Q - (uintptr_t) (&((BufferMemoryBlock *) 0)->RecycleItem));
     }
 };

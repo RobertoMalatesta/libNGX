@@ -8,7 +8,7 @@ protected:
     virtual RuntimeError OnLoopFinished() = 0;
 
 public:
-    Server(SocketEventDomain *BackendEventDomain): EventDomain(BackendEventDomain), Lock() {};
+    Server(SocketEventDomain *BackendEventDomain) : EventDomain(BackendEventDomain), Lock() {};
 
     // Server Main EventLoop
     virtual RuntimeError ServerEventLoop() = 0;

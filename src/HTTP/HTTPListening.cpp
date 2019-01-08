@@ -1,5 +1,6 @@
 #include "HTTP/HTTP.h"
 #include <fcntl.h>
+
 using namespace ngx::Core;
 using namespace ngx::HTTP;
 
@@ -40,7 +41,8 @@ RuntimeError HTTPListening::HandleEventDomain(uint32_t EventType) {
                 LOG(INFO) << "get connection object failed, will close connection, error: " << Error.GetError();
                 close(NewFD);
             } else {
-                LOG(INFO) << "attach connection to event domain, fd: "<< NewFD << ", error: " << C->ParentEventDomain->AttachSocket(*C, ET_READ | ET_WRITE).GetError();
+                LOG(INFO) << "attach connection to event domain, fd: " << NewFD << ", error: "
+                          << C->ParentEventDomain->AttachSocket(*C, ET_READ | ET_WRITE).GetError();
             }
         }
     }

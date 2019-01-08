@@ -13,13 +13,16 @@ public:
     virtual volatile bool TryLock();
 };
 
-class Mutex : public LockType{
+class Mutex : public LockType {
 private:
     std::mutex BackendMutex;
 public:
     Mutex();
+
     virtual void Lock();
+
     virtual void Unlock();
+
     virtual volatile bool TryLock();
 
 };

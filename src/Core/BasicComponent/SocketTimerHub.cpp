@@ -4,7 +4,7 @@ using namespace ngx::Core::BasicComponent;
 
 SocketTimerHub::~SocketTimerHub() {
 
-    for (RBNode *It = this->Begin(); It ; It = Next(It)) {
+    for (RBNode *It = this->Begin(); It; It = Next(It)) {
         Erase(It);
     }
 };
@@ -14,9 +14,9 @@ int SocketTimerHub::QueueExpiredTimer() {
     Timer *Temp;
     uint64_t Timestamp = GetHighResolutionTimestamp();
 
-    for (RBNode *It = Begin(); It ; It = Next(It)) {
+    for (RBNode *It = Begin(); It; It = Next(It)) {
 
-        Temp = (Timer *)It;
+        Temp = (Timer *) It;
         Socket *S = Socket::TimerToSocket(Temp);
 
         if (S->TryLock()) {

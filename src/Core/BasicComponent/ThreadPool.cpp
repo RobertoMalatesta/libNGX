@@ -3,10 +3,10 @@
 
 using namespace ngx::Core::BasicComponent;
 
-Job::Job(ThreadFn *Fn, void *Argument): Callback(Fn), PointerToArg(Argument) {
+Job::Job(ThreadFn *Fn, void *Argument) : Callback(Fn), PointerToArg(Argument) {
 }
 
-Job::Job(Job &J): Callback(J.Callback), PointerToArg(J.PointerToArg) {
+Job::Job(Job &J) : Callback(J.Callback), PointerToArg(J.PointerToArg) {
 }
 
 void Job::doJob() {
@@ -23,7 +23,7 @@ Thread::Thread() : Sentinel(), Allocator() {
     this->Running = true;
     this->Lock.Lock();
 
-    ret = pthread_create(&WorkerThread, nullptr,Thread::ThreadProcess, (void *)this);
+    ret = pthread_create(&WorkerThread, nullptr, Thread::ThreadProcess, (void *) this);
 
     if (ret != 0) {
         this->Running = false;
@@ -55,7 +55,7 @@ RuntimeError Thread::PostJob(Job &J) {
     return {0};
 }
 
-void* Thread::ThreadProcess(void *Argument) {
+void *Thread::ThreadProcess(void *Argument) {
 
     Queue *Q;
     Job *J;

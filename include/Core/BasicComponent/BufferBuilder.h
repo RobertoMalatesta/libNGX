@@ -21,7 +21,6 @@ public:
 
     ~BufferBuilder();
 
+    /** Build and configure a Buffer */
     bool BuildBuffer(Buffer &Buf);
-
-    BufferAllocator BuildBufferAllocator();
 };

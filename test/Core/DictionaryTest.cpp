@@ -2,10 +2,11 @@
 
 using namespace ngx::Core::BasicComponent;
 
-class DictItem: public DictionaryItem {
+class DictItem : public DictionaryItem {
 public:
     uint32_t Value;
-    DictItem(const char *Key, uint32_t Value):DictionaryItem(Key), Value(Value){}
+
+    DictItem(const char *Key, uint32_t Value) : DictionaryItem(Key), Value(Value) {}
 };
 
 int DictionaryTest() {
@@ -38,18 +39,18 @@ int DictionaryTest() {
     D.Insert(I11);
     D.Insert(I12);
 
-    printf("result: %u\n", ((DictItem *)D.Find(DictionaryItem{"Item1"}))->Value);
-    printf("result: %u\n", ((DictItem *)D.Find(DictionaryItem{"Item2"}))->Value);
-    printf("result: %u\n", ((DictItem *)D.Find(DictionaryItem{"Item3"}))->Value);
-    printf("result: %u\n", ((DictItem *)D.Find(DictionaryItem{"Item4"}))->Value);
-    printf("result: %u\n", ((DictItem *)D.Find(DictionaryItem{"Item5"}))->Value);
-    printf("result: %u\n", ((DictItem *)D.Find(DictionaryItem{"Item6"}))->Value);
-    printf("result: %u\n", ((DictItem *)D.Find(DictionaryItem{"Item7"}))->Value);
-    printf("result: %u\n", ((DictItem *)D.Find(DictionaryItem{"Item8"}))->Value);
-    printf("result: %u\n", ((DictItem *)D.Find(DictionaryItem{"Item9"}))->Value);
-    printf("result: %u\n", ((DictItem *)D.Find(DictionaryItem{"Item10"}))->Value);
-    printf("result: %u\n", ((DictItem *)D.Find(DictionaryItem{"Item11"}))->Value);
-    printf("result: %u\n", ((DictItem *)D.Find(DictionaryItem{"Item12"}))->Value);
+    printf("result: %u\n", ((DictItem *) D.Find(DictionaryItem{"Item1"}))->Value);
+    printf("result: %u\n", ((DictItem *) D.Find(DictionaryItem{"Item2"}))->Value);
+    printf("result: %u\n", ((DictItem *) D.Find(DictionaryItem{"Item3"}))->Value);
+    printf("result: %u\n", ((DictItem *) D.Find(DictionaryItem{"Item4"}))->Value);
+    printf("result: %u\n", ((DictItem *) D.Find(DictionaryItem{"Item5"}))->Value);
+    printf("result: %u\n", ((DictItem *) D.Find(DictionaryItem{"Item6"}))->Value);
+    printf("result: %u\n", ((DictItem *) D.Find(DictionaryItem{"Item7"}))->Value);
+    printf("result: %u\n", ((DictItem *) D.Find(DictionaryItem{"Item8"}))->Value);
+    printf("result: %u\n", ((DictItem *) D.Find(DictionaryItem{"Item9"}))->Value);
+    printf("result: %u\n", ((DictItem *) D.Find(DictionaryItem{"Item10"}))->Value);
+    printf("result: %u\n", ((DictItem *) D.Find(DictionaryItem{"Item11"}))->Value);
+    printf("result: %u\n", ((DictItem *) D.Find(DictionaryItem{"Item12"}))->Value);
 
     return 0;
 }

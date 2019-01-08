@@ -25,9 +25,12 @@ public:
     MemoryBlockAllocator *GetNextBlock() { return Next; }
 
     inline void Reset() {
-        Start = Pos = (u_char *)this + sizeof(MemoryBlockAllocator);
-        End = Start + TotalSize;
-        FreeSize = TotalSize - sizeof(MemoryBlockAllocator);
+
+        Pos = Start;
+        Next = nullptr;
+        FreeSize = End - Start;
+
+        ClearRef();
     };
 
     inline bool IsFreeBlock() {

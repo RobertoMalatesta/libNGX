@@ -1,4 +1,5 @@
 #include "Core/Core.h"
+
 using namespace ngx::Core::BasicComponent;
 
 SpinLock::SpinLock() {
@@ -21,7 +22,7 @@ volatile bool SpinLock::TryLock() {
     return pthread_spin_trylock(&lock) == 0;
 }
 
-Mutex::Mutex() :BackendMutex(){}
+Mutex::Mutex() : BackendMutex() {}
 
 void Mutex::Lock() {
     BackendMutex.lock();

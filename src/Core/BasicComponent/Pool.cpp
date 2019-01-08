@@ -24,7 +24,7 @@ void *Pool::Allocate(size_t Size) {
     void *ret = nullptr;
     MemoryBlockAllocator *TempAllocator = nullptr;
 
-    if ( HeadBlock == nullptr && MemoryBlockAllocator::Build(HeadBlock, BlockSize) == 0) {
+    if (HeadBlock == nullptr && MemoryBlockAllocator::Build(HeadBlock, BlockSize) == 0) {
         CurrentBlock = HeadBlock;
     } else if (HeadBlock == nullptr || Size == 0) {
         return nullptr;
@@ -132,7 +132,11 @@ void Pool::GC() {
 
 void Pool::Reset() {
 
+    // free all memory used
+
     MemoryBlockAllocator *TempMemBlock = HeadBlock, *NextMemBlock;
+
+    AllocateRound = 0;
 
     while (TempMemBlock != nullptr) {
 

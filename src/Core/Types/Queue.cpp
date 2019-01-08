@@ -3,7 +3,7 @@
 using namespace ngx::Core::Types;
 
 Queue::Queue() {
-    this->Prev = this -> Next = this;
+    this->Prev = this->Next = this;
 }
 
 bool Queue::IsEmpty() const {
@@ -19,9 +19,9 @@ Queue *Queue::GetPrev() const {
 }
 
 void Queue::Attach(Queue *Q) {
-    Q -> Prev = Prev;
-    Q -> Prev -> Next = Q;
-    Q -> Next = this;
+    Q->Prev = Prev;
+    Q->Prev->Next = Q;
+    Q->Next = this;
     Prev = Q;
 }
 
@@ -32,9 +32,9 @@ void Queue::Detach() {
 }
 
 void Queue::Append(Queue *Node) {
-    Node -> Prev = Prev;
-    Node -> Prev -> Next = Node;
-    Node -> Next = this;
+    Node->Prev = Prev;
+    Node->Prev->Next = Node;
+    Node->Next = this;
     Prev = Node;
 }
 

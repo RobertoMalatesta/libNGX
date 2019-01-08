@@ -11,8 +11,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-template <typename T>
-class Array: public CanReset {
+template<typename T>
+class Array : public CanReset {
 private:
     Allocator *BackendAllocator = nullptr;
     u_char *PointerToData = nullptr;
@@ -39,7 +39,7 @@ public:
             return nullptr;
         }
 
-        return (T *)(PointerToData + (Index * sizeof(T)));
+        return (T *) (PointerToData + (Index * sizeof(T)));
     }
 
     uint32_t Size() const {
@@ -57,9 +57,9 @@ public:
         // need init ?
         if (AllocateCount == 0 || PointerToData == nullptr) {
             if (BackendAllocator != nullptr) {
-                PointerToData = (u_char *)BackendAllocator->Allocate(ARRAY_DEFAULT_ELEMENT_COUNT * sizeof(T));
+                PointerToData = (u_char *) BackendAllocator->Allocate(ARRAY_DEFAULT_ELEMENT_COUNT * sizeof(T));
             } else {
-                PointerToData = (u_char *)malloc(ARRAY_DEFAULT_ELEMENT_COUNT * sizeof(T));
+                PointerToData = (u_char *) malloc(ARRAY_DEFAULT_ELEMENT_COUNT * sizeof(T));
             }
 
             if (PointerToData != nullptr) {
@@ -89,7 +89,7 @@ public:
             memcpy(NewDataPointer, PointerToData, (sizeof(T) * ElementCount));
 
             if (BackendAllocator != nullptr) {
-                BackendAllocator->Free((void *&)PointerToData);
+                BackendAllocator->Free((void *&) PointerToData);
             } else {
                 free(PointerToData);
             }
@@ -103,14 +103,14 @@ public:
         u_char *Ret = PointerToData + sizeof(T) * ElementCount;
         ElementCount += N;
 
-        return (T *)Ret;
+        return (T *) Ret;
     }
 
     virtual void Reset() {
 
         // free all memory and reset state
         if (BackendAllocator != nullptr) {
-            BackendAllocator->Free((void *&)PointerToData);
+            BackendAllocator->Free((void *&) PointerToData);
         } else {
             free(PointerToData);
         }

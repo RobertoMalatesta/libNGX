@@ -4,7 +4,7 @@ enum TimerMode {
     TM_INTERVAL,
 };
 
-class Timer: public RBNode, public CanReset {
+class Timer : public RBNode, public CanReset {
 public:
     uint64_t Timestamp = 0;
     TimerMode Mode = TM_ONCE;
@@ -13,7 +13,7 @@ public:
 
     Timer() = default;
 
-    Timer(uint64_t Timestamp, ThreadFn *Callback, void *Argument): TimerJob(Callback, Argument) {
+    Timer(uint64_t Timestamp, ThreadFn *Callback, void *Argument) : TimerJob(Callback, Argument) {
         this->Timestamp = Timestamp;
     };
 
@@ -29,18 +29,18 @@ public:
 
     uint64_t GetTimestamp() { return Timestamp; }
 
-    virtual int operator - (RBNode &R) {
-        return Timestamp >  ((Timer &)R).Timestamp ? 1 : -1;
+    virtual int operator-(RBNode &R) {
+        return Timestamp > ((Timer &) R).Timestamp ? 1 : -1;
     }
 
-    virtual int operator - (uint64_t R) {
-        return this->Timestamp > R? 1 : -1;
+    virtual int operator-(uint64_t R) {
+        return this->Timestamp > R ? 1 : -1;
     }
 
     virtual void Reset() { Timestamp = 0; };
 };
 
-class SocketTimerHub : public RBT {
+class SocketTimerHub : public RBTree {
 private:
     SpinLock TimerHubLock;
 public:

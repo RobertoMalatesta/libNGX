@@ -3,6 +3,9 @@
 using namespace ngx::Core::BasicComponent;
 
 MemoryBlockAllocator::MemoryBlockAllocator(size_t Size) : BasicMemoryBlock(Size) {
+
+    // fix start position
+    Start = (u_char *) this + sizeof(MemoryBlockAllocator);
     Reset();
 }
 

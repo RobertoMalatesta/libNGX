@@ -7,7 +7,7 @@ static void Stage1() {
     int Random = 0;
     HTTPConnection *C;
     HTTPConnectionRecycleBin RecycleBin(100);
-    srandom((uint32_t)getpid());
+    srandom((uint32_t) getpid());
 
 
     SocketAddress Address;

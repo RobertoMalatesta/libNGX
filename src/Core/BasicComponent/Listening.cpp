@@ -32,7 +32,7 @@ TCPListening::~TCPListening() {
 
 SocketError TCPListening::Bind() {
 
-    int Code =0;
+    int Code = 0;
 
     if (SocketFD == -1) {
 

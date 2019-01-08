@@ -10,6 +10,7 @@ namespace ngx {
 #include "Core/MetaClass/Reference.h"
 #include "Core/MetaClass/CanReset.h"
 #include "Core/MetaClass/Lock.h"
+
         }
 
     }

@@ -34,8 +34,8 @@ namespace ngx {
 #include "Core/BasicComponent/Server.h"
 
 #include "Core/BasicComponent/Buffer.h"
-#include "Core/BasicComponent/BufferAllocator.h"
 #include "Core/BasicComponent/BufferBuilder.h"
+
         }
     }
 }

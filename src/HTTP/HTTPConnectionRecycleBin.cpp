@@ -19,8 +19,7 @@ int HTTPConnectionRecycleBin::Get(HTTPConnection *&C, int SocketFD, SocketAddres
         Q->Detach();
         RecycleSize -= 1;
         C = HTTPConnection::FromRecycleQueue(Q);
-    }
-    else{
+    } else {
         if (Build(C) != 0) {
             return C = nullptr, -1;
         }

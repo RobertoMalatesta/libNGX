@@ -2,7 +2,7 @@
 
 using namespace ngx::Core::Types;
 
-void RBT::RotateLeft(RBNode *Node) {
+void RBTree::RotateLeft(RBNode *Node) {
 
 
     RBNode *Right = Node->Right, *Parent = Node->Parent;
@@ -33,7 +33,7 @@ void RBT::RotateLeft(RBNode *Node) {
 }
 
 
-void RBT::RotateRight(RBNode *Node) {
+void RBTree::RotateRight(RBNode *Node) {
 
     RBNode *Left = Node->Left, *Parent = Node->Parent;
 
@@ -62,7 +62,7 @@ void RBT::RotateRight(RBNode *Node) {
     Node->Parent = Left;
 }
 
-void RBT::InsertColor(RBNode *Node) {
+void RBTree::InsertColor(RBNode *Node) {
 
     RBNode *Parent, *GParent;
 
@@ -131,7 +131,7 @@ void RBT::InsertColor(RBNode *Node) {
     Root->SetBlack();
 }
 
-void RBT::EraseColor(RBNode *Node, RBNode *Parent) {
+void RBTree::EraseColor(RBNode *Node, RBNode *Parent) {
 
     RBNode *Other;
 
@@ -215,7 +215,7 @@ void RBT::EraseColor(RBNode *Node, RBNode *Parent) {
     }
 }
 
-int RBT::Insert(RBNode *Node) {
+int RBTree::Insert(RBNode *Node) {
 
     RBNode **Place = &Root, *Parent = nullptr;
 
@@ -223,11 +223,11 @@ int RBT::Insert(RBNode *Node) {
 
         Parent = *Place;
 
-        int Result = *Node -**Place;
+        int Result = *Node - **Place;
 
         if (Result < 0) {
             Place = &(*Place)->Left;
-        } else if (Result > 0){
+        } else if (Result > 0) {
             Place = &(*Place)->Right;
         } else {
             Place = &(*Place)->Left;
@@ -242,7 +242,7 @@ int RBT::Insert(RBNode *Node) {
     return 1;
 }
 
-void RBT::Erase(RBNode *Node) {
+void RBTree::Erase(RBNode *Node) {
 
     bool Color;
     RBNode *Child, *Parent;
@@ -323,7 +323,7 @@ void RBT::Erase(RBNode *Node) {
     }
 }
 
-RBNode *RBT::Begin() {
+RBNode *RBTree::Begin() {
 
     RBNode *N = Root;
 
@@ -338,7 +338,7 @@ RBNode *RBT::Begin() {
     return N;
 }
 
-RBNode *RBT::End() {
+RBNode *RBTree::End() {
 
     RBNode *N = Root;
 
@@ -353,7 +353,7 @@ RBNode *RBT::End() {
     return N;
 }
 
-RBNode* RBT::Next(RBNode *Node) {
+RBNode *RBTree::Next(RBNode *Node) {
 
     RBNode *Parent;
 
@@ -381,7 +381,7 @@ RBNode* RBT::Next(RBNode *Node) {
     return Parent;
 }
 
-RBNode* RBT::Prev(RBNode *Node) {
+RBNode *RBTree::Prev(RBNode *Node) {
 
     RBNode *Parent;
 
@@ -389,17 +389,17 @@ RBNode* RBT::Prev(RBNode *Node) {
         return nullptr;
     }
 
-    if (Node -> Left) {
+    if (Node->Left) {
 
         Node = Node->Left;
 
-        while(Node->Right) {
+        while (Node->Right) {
             Node = Node->Right;
         }
         return Node;
     }
 
-    while((Parent = Node->Parent) && Node == Parent->Left) {
+    while ((Parent = Node->Parent) && Node == Parent->Left) {
         Node = Parent;
     }
 

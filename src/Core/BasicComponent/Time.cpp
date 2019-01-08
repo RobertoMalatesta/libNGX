@@ -279,7 +279,7 @@ int ngx::Core::BasicComponent::ForceSleep(uint64_t NanoSeconds) {
 
     struct timespec ts;
 
-    ts.tv_nsec = NanoSeconds %(NANO_SECOND_SIZE);
+    ts.tv_nsec = NanoSeconds % (NANO_SECOND_SIZE);
     ts.tv_sec = NanoSeconds / (NANO_SECOND_SIZE);
     while (-1 == nanosleep(&ts, &ts)) {
         if (errno != EINTR) {

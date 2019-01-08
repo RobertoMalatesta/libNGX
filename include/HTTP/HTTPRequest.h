@@ -1,6 +1,6 @@
 struct HTTPHeaderIn {
 
-    // HTTP Core Headers
+    // HTTP Core HeadersIn
     BoundCursor Host;
     BoundCursor Connection;
     BoundCursor IfModufiedSince;
@@ -31,13 +31,13 @@ struct HTTPHeaderIn {
     BoundCursor Server;
 
     // HTTP Custom Headers
-    Array<HTTPHeader> Headers;
+    Array <HTTPHeader> Headers;
 
     // HTTP Forward Headers
-    Array<HTTPHeader> XForwardFor;
+    Array <HTTPHeader> XForwardFor;
 
     // Cookies extracted from Cookie Header
-    Array<BoundCursor> Cookies;
+    Array <BoundCursor> Cookies;
 
     // Parsed HTTP Core Parameters
     struct {
@@ -58,10 +58,11 @@ struct HTTPHeaderIn {
         unsigned Konqueror:1;
     };
 
-    HTTPHeaderIn(Allocator *BackendAllocator): XForwardFor(BackendAllocator), Cookies(BackendAllocator), Headers(BackendAllocator){};
+    HTTPHeaderIn(Allocator *BackendAllocator) : XForwardFor(BackendAllocator), Cookies(BackendAllocator),
+                                                Headers(BackendAllocator) {};
 };
 
-class HTTPRequest: public CanReset {
+class HTTPRequest : public CanReset {
 protected:
 
     enum HTTPRequestState {
@@ -142,7 +143,7 @@ protected:
 
 public:
 
-    HTTPRequest(Allocator *Allocator): HeaderIn(Allocator) {
+    HTTPRequest(Allocator *Allocator) : HeaderIn(Allocator) {
         Reset();
     };
 

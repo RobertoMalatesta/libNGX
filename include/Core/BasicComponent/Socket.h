@@ -5,7 +5,7 @@ union SocketAddress {
     struct sockaddr_in sockaddr_in;
     struct sockaddr_in6 sockaddr_in6;
 
-    SocketAddress(){
+    SocketAddress() {
         sockaddr.sa_len = 0;
     }
 

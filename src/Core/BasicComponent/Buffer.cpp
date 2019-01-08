@@ -24,20 +24,8 @@ static inline void RecycleBlock(BufferMemoryBlockRecycleBin *R, BufferMemoryBloc
     }
 }
 
-
 Buffer::~Buffer() {
-
-    BufferMemoryBlock *TempBlock, *NextBlock;
-
-    TempBlock = HeadBlock;
-
-    HeadBlock = nullptr;
-
-    while (TempBlock != nullptr) {
-        NextBlock = TempBlock->GetNextBlock();
-        RecycleBlock(RecycleBin, TempBlock);
-        TempBlock = NextBlock;
-    }
+    Reset();
 }
 
 Buffer &Buffer::operator<<(BoundCursor &BC) &{
@@ -50,7 +38,7 @@ Buffer &Buffer::operator>>(BoundCursor &BC) &{
     return *this;
 }
 
-RuntimeError Buffer::ReadFromConnection(Connection *C) {
+RuntimeError Buffer::ReadConnection(Connection *C) {
 
     int SocketFD = C->GetSocketFD();
     u_char *PointerToData;
@@ -106,7 +94,7 @@ RuntimeError Buffer::ReadFromConnection(Connection *C) {
     return {0};
 }
 
-RuntimeError Buffer::ReadData(u_char *PointerToData, size_t DataLength) {
+RuntimeError Buffer::ReadBytes(u_char *PointerToData, size_t DataLength) {
 
     size_t CurrentBlockFreeSize;
     BufferMemoryBlock *TempBufferBlock, *WriteBlock;

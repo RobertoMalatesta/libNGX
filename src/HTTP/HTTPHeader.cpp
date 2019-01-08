@@ -2,7 +2,8 @@
 
 using namespace ngx::HTTP;
 
-HTTPCoreHeader::HTTPCoreHeader(const char *Key, HTTPCoreHeaderIn  HeaderInEnum, HTTPHeaderProcess *HeaderProcess): DictionaryItem(Key){
+HTTPCoreHeader::HTTPCoreHeader(const char *Key, HTTPCoreHeaderIn HeaderInEnum, HTTPHeaderProcess *HeaderProcess)
+        : DictionaryItem(Key) {
 
     if (Key == nullptr) {
         return;
@@ -14,9 +15,9 @@ HTTPCoreHeader::HTTPCoreHeader(const char *Key, HTTPCoreHeaderIn  HeaderInEnum, 
 uint32_t HTTPCoreHeader::HashFn() const {
 
     size_t Length = strlen(Key);
-    uint32_t TempHash = 0 ^ Length;
+    uint32_t TempHash = 0 ^Length;
 
-    for (size_t i=0; i<Length; i++) {
+    for (size_t i = 0; i < Length; i++) {
         SimpleHash(TempHash, lower_case[Key[i]]);
     }
 

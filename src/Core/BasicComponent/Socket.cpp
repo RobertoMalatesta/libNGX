@@ -3,19 +3,15 @@
 
 using namespace ngx::Core::BasicComponent;
 
-Socket::Socket() :
-        SocketFD(-1),
-        Address() {
+Socket::Socket() : SocketFD(-1), Address() {
 }
 
 Socket::Socket(SocketAddress &Address) :
-        SocketFD(-1),
-        Address(Address) {
+        SocketFD(-1), Address(Address) {
 }
 
 Socket::Socket(int SocketFD, SocketAddress &Address) :
-        SocketFD(SocketFD),
-        Address(Address) {
+        SocketFD(SocketFD), Address(Address) {
 }
 
 SocketError Socket::SetSocketAddress(int SocketFD, SocketAddress &Address) {
@@ -47,11 +43,11 @@ SocketError Socket::SetNonBlock(bool On) {
 
 SocketError Socket::SetNoDelay(bool On) {
 
-    int NoDelay = On? 1: 0, Code = 0;
+    int Code = 0, NoDelay = On ? 1 : 0;
 
     Code = setsockopt(SocketFD, IPPROTO_TCP, TCP_NODELAY, (void *) &NoDelay, sizeof(NoDelay));
 
-    return {Code, Code == 0 ? "" :"setsockopt() failed"};
+    return {Code, Code == 0 ? "" : "setsockopt() failed"};
 }
 
 SocketError Socket::Close() {

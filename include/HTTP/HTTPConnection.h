@@ -27,7 +27,7 @@ public:
     ~HTTPConnection() = default;
 
     inline RuntimeError ReadConnection() {
-        return ReadBuffer.ReadFromConnection(this);
+        return ReadBuffer.ReadConnection(this);
     }
 
     inline RuntimeError WriteConnection() {
@@ -48,7 +48,7 @@ public:
         if (Q == nullptr) {
             return nullptr;
         }
-        return (HTTPConnection *)((uintptr_t)Q - (uintptr_t)(&((HTTPConnection*)0)->RecycleItem));
+        return (HTTPConnection *) ((uintptr_t) Q - (uintptr_t) (&((HTTPConnection *) 0)->RecycleItem));
     }
 };
 
