@@ -1014,7 +1014,7 @@ HTTPError HTTPRequest::ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool Allow
         int i = 0;
 
         while (HeaderInProcesses[i].GetKey() != nullptr) {
-            HeaderInDictionary.Insert(HeaderInProcesses[i]);
+            HeaderInDictionary.Insert(HeaderInProcesses[i]), i++;
         }
     }
 
