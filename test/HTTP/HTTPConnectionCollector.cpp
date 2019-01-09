@@ -6,7 +6,7 @@ using namespace ngx::HTTP;
 static void Stage1() {
     int Random = 0;
     HTTPConnection *C;
-    HTTPConnectionRecycleBin RecycleBin(100);
+    HTTPConnectionCollector Collector(100);
     srandom((uint32_t) getpid());
 
 
@@ -22,18 +22,18 @@ static void Stage1() {
     HTTPConnection *Connections[10];
 
     for (int i = 0; i < 102400000; i++) {
-        if (RecycleBin.Get(C, -1, Address) == 0) {
+        if (Collector.Get(C, -1, Address) == 0) {
             Random = 1 + (int) (10.0 * (random() / (RAND_MAX + 1.0)));
 
             if (j == 10) {
                 for (int k = 0; k < 10; k++) {
-                    RecycleBin.Put(Connections[k]);
+                    Collector.Put(Connections[k]);
                 }
                 j = 0;
             }
 
             if (Random > 2) {
-                RecycleBin.Put(C);
+                Collector.Put(C);
             } else {
                 Connections[j++ % 10] = C;
             }
@@ -43,7 +43,7 @@ static void Stage1() {
     getchar();
 }
 
-int HTTPConnectionRecycleBinTest() {
+int HTTPConnectionCollectorTest() {
 
     Stage1();
     printf("stage2\n");

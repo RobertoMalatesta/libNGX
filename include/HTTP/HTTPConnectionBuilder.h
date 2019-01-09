@@ -15,7 +15,7 @@ class HTTPConnectionBuilder {
 protected:
     SpinLock Lock;
     BufferBuilder BB;
-    HTTPConnectionRecycleBin BackendRecycleBin;
+    HTTPConnectionCollector BackendCollector;
     uint32_t TCPNoDelay;
     uint32_t TCPNoPush;
     uint32_t ReadBufferSize = 8 * 1024 * 1024;
@@ -24,8 +24,8 @@ protected:
     uint32_t WriteTimeout = 1 * 60;
 
 public:
-    HTTPConnectionBuilder(size_t BufferBlockSize, uint64_t BufferRecycleBinSize,
-                          uint64_t ConnectionRecycleBinSize);
+    HTTPConnectionBuilder(size_t BufferBlockSize, uint32_t BufferCollectorSize,
+                          uint32_t ConnectionCollectorBinSize);
 
     ~HTTPConnectionBuilder() = default;
 

@@ -3,11 +3,11 @@
 using namespace ngx::HTTP;
 
 HTTPServer::HTTPServer(size_t BufferBlockSize,
-                       uint64_t ConnectionRecycleSize,
-                       uint64_t BufferRecycleSize,
-                       SocketEventDomain *EventDomain) : Server(EventDomain),
-                                                         ConnectionBuilder(BufferBlockSize, BufferRecycleSize,
-                                                                           ConnectionRecycleSize) {
+                       uint32_t ConnectionCollectorSize,
+                       uint32_t BufferCollectorSize,
+                       SocketEventDomain *EventDomain) :
+                       Server(EventDomain),
+                       ConnectionBuilder(BufferBlockSize, BufferCollectorSize, ConnectionCollectorSize) {
 }
 
 EventError HTTPServer::AttachListening(HTTPListening &L) {

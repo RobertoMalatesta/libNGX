@@ -98,7 +98,7 @@ namespace ngx {
 
         class HTTPConnection;
 
-        class HTTPConnectionRecycleBin;
+        class HTTPConnectionCollector;
 
         class HTTPConnectionBuilder;
 
@@ -117,7 +117,7 @@ namespace ngx {
 #include "HTTP/HTTPResponse.h"
 #include "HTTP/HTTPListening.h"
 #include "HTTP/HTTPConnection.h"
-#include "HTTP/HTTPConnectionRecycleBin.h"
+#include "HTTP/HTTPConnectionCollector.h"
 #include "HTTP/HTTPConnectionBuilder.h"
 #include "HTTP/HTTPServer.h"
 #include "HTTP/Mux/Mux.h"

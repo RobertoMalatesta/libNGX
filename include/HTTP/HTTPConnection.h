@@ -1,4 +1,4 @@
-class HTTPConnection : public TCPConnection, public Recyclable {
+class HTTPConnection : public TCPConnection, public Reusable {
 protected:
 
     Job EventJob;
@@ -43,12 +43,12 @@ public:
 
     virtual void Reset();
 
-    static inline HTTPConnection *FromRecycleQueue(Queue *Q) {
+    static inline HTTPConnection *FromCollectQueue(Queue *Q) {
 
         if (Q == nullptr) {
             return nullptr;
         }
-        return (HTTPConnection *) ((uintptr_t) Q - (uintptr_t) (&((HTTPConnection *) 0)->RecycleItem));
+        return (HTTPConnection *) ((uintptr_t) Q - (uintptr_t) (&((HTTPConnection *) 0)->ReuseItem));
     }
 };
 

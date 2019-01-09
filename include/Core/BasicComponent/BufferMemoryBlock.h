@@ -14,10 +14,9 @@
 
 class BufferMemoryBlock
         : public BasicMemoryBlock,
-          public Recyclable,
+          public Reusable,
           public AlignBuild<BufferMemoryBlock, BUFFER_MEMORY_BLOCK_SIZE> {
 protected:
-    u_char *Pos;
     BufferMemoryBlock *NextBlock = nullptr;
 
     friend class Buffer;
@@ -28,7 +27,7 @@ public:
 
     BufferMemoryBlock(size_t Size);
 
-    ~BufferMemoryBlock();
+    ~BufferMemoryBlock() = default;
 
     void SetNextBlock(BufferMemoryBlock *Next) { this->NextBlock = Next; }
 
@@ -38,11 +37,11 @@ public:
 
     static BufferMemoryBlock *AddressToMemoryBlock(void *Address, size_t Size);
 
-    static inline BufferMemoryBlock *FromRecycleQueue(Queue *Q) {
+    static inline BufferMemoryBlock *FromCollectorQueue(Queue *Q) {
 
         if (Q == nullptr) {
             return nullptr;
         }
-        return (BufferMemoryBlock *) ((uintptr_t) Q - (uintptr_t) (&((BufferMemoryBlock *) 0)->RecycleItem));
+        return (BufferMemoryBlock *) ((uintptr_t) Q - (uintptr_t) (&((BufferMemoryBlock *) 0)->ReuseItem));
     }
 };

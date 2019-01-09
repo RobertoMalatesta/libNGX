@@ -50,8 +50,8 @@ protected:
 public:
 
     HTTPServer(size_t BufferBlockSize,
-               uint64_t ConnectionRecycleSize,
-               uint64_t BufferRecycleSize,
+               uint32_t ConnectionCollectorSize,
+               uint32_t BufferCollectorSize,
                SocketEventDomain *EventDomain);
 
     // Attach a listening to this server

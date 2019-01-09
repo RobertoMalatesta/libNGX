@@ -2,28 +2,6 @@
 
 using namespace ngx::Core::BasicComponent;
 
-static inline BufferMemoryBlock *AquireBlock(BufferMemoryBlockRecycleBin *R, size_t Size) {
-
-    BufferMemoryBlock *Ret = nullptr;
-
-    if (R == nullptr) {
-        BufferMemoryBlock::Build(Ret, Size);
-    } else {
-        Ret = R->Get();
-    }
-
-    return Ret;
-}
-
-static inline void RecycleBlock(BufferMemoryBlockRecycleBin *R, BufferMemoryBlock *B) {
-
-    if (R == nullptr) {
-        BufferMemoryBlock::Destroy(B);
-    } else {
-        R->Put(B);
-    }
-}
-
 Buffer::~Buffer() {
     Reset();
 }
@@ -47,7 +25,12 @@ RuntimeError Buffer::ReadConnection(Connection *C) {
     BufferMemoryBlock *TempBlock, *WriteBlock;
 
     if (HeadBlock == nullptr) {
-        HeadBlock = AquireBlock(RecycleBin, BlockSize);
+
+        if (Collector == nullptr) {
+            BufferMemoryBlock::Build(HeadBlock, BUFFER_MEMORY_BLOCK_SIZE);
+        } else {
+            HeadBlock = Collector->Get();
+        }
 
         if (HeadBlock == nullptr) {
             return {ENOMEM, "can not allocate buffer block"};
@@ -65,7 +48,11 @@ RuntimeError Buffer::ReadConnection(Connection *C) {
 
         if (ReadLength == 0) {
 
-            TempBlock = AquireBlock(RecycleBin, BlockSize);
+            if (Collector == nullptr) {
+                BufferMemoryBlock::Build(TempBlock, BUFFER_MEMORY_BLOCK_SIZE);
+            } else {
+                TempBlock = Collector->Get();
+            }
 
             if (TempBlock == nullptr) {
                 return {ENOMEM, "Can not allocate BufferMemoryBlock when recv()"};
@@ -101,7 +88,11 @@ RuntimeError Buffer::ReadBytes(u_char *PointerToData, size_t DataLength) {
 
     if (HeadBlock == nullptr) {
 
-        HeadBlock = AquireBlock(RecycleBin, BlockSize);
+        if (Collector == nullptr) {
+            BufferMemoryBlock::Build(HeadBlock, BUFFER_MEMORY_BLOCK_SIZE);
+        } else {
+            HeadBlock = Collector->Get();
+        }
 
         if (HeadBlock == nullptr) {
             return {ENOMEM, "can not allocate buffer block"};
@@ -118,7 +109,11 @@ RuntimeError Buffer::ReadBytes(u_char *PointerToData, size_t DataLength) {
 
         if (DataLength > CurrentBlockFreeSize) {
 
-            TempBufferBlock = AquireBlock(RecycleBin, BlockSize);
+            if (Collector == nullptr) {
+                BufferMemoryBlock::Build(TempBufferBlock, BUFFER_MEMORY_BLOCK_SIZE);
+            } else {
+                TempBufferBlock = Collector->Get();
+            }
 
             if (TempBufferBlock == nullptr) {
                 return {ENOMEM, "no enough memory"};
@@ -143,43 +138,28 @@ RuntimeError Buffer::ReadBytes(u_char *PointerToData, size_t DataLength) {
 
 void Buffer::Reset() {
 
-    BufferMemoryBlock *TempBlock, *NextBlock;
-
-    TempBlock = HeadBlock;
-
-    while (TempBlock != nullptr) {
-
-        NextBlock = TempBlock->GetNextBlock();
-        RecycleBlock(RecycleBin, TempBlock);
-        TempBlock = NextBlock;
-    }
-
-    HeadBlock = nullptr;
     Cursor = {this, nullptr, nullptr};
+
+    GC();
 }
 
 void Buffer::GC() {
 
-    BufferMemoryBlock *TempBlock, *NextBlock, *ReadBlock;
+    BufferMemoryBlock *TempBlock, *ReadBlock;
 
-    TempBlock = HeadBlock, NextBlock = TempBlock->NextBlock;
-    ReadBlock = AddressToMemoryBlock(Cursor.Bound);
+    ReadBlock = AddressToMemoryBlock(Cursor.Position);
 
-    while (NextBlock != nullptr && NextBlock != ReadBlock) {
+    while (HeadBlock != nullptr && HeadBlock != ReadBlock) {
 
-        TempBlock->SetNextBlock(NextBlock->GetNextBlock());
+        TempBlock = HeadBlock -> GetNextBlock();
 
-        if (RecycleBin == nullptr) {
-            BufferMemoryBlock::Destroy(NextBlock);
+        if (Collector == nullptr){
+            HeadBlock->Reset();
+            BufferMemoryBlock::Destroy(HeadBlock);
         } else {
-            RecycleBin->Put(NextBlock);
+            Collector->Put(HeadBlock);
         }
 
-        NextBlock = TempBlock->GetNextBlock();
+        HeadBlock = TempBlock;
     }
-
-    NextBlock = HeadBlock;
-    HeadBlock = HeadBlock->GetNextBlock();
-    NextBlock->Reset();
-    RecycleBlock(RecycleBin, NextBlock);
 }

@@ -13,18 +13,29 @@
 //===----------------------------------------------------------------------===//
 
 /**
- *  @name Basic memory block
+ *  @name BasicMemoryBlock
  *
- *  @brief Basic memory block structure.
+ *  @brief Basic memory block structure. Implemented following some functions:
+ *      1.  fill block header
+ *      2.  retrieval MemoryBlock by memory address
  * */
-class BasicMemoryBlock {
+class BasicMemoryBlock : public MetaClass::Achor {
+
 protected:
-    size_t TotalSize = 0;
-    u_char *Start, *End;
+
+    /** Total block size */
+    size_t BlockSize = 0;
+
+    /** Magic to identify this block */
     void *Magic = nullptr;
 
+    /** Pointer to data, start can be simplified through &End */
+    u_char *Start, *End;
+
+    /** Construct a BasicMemoryBlock and fill the header variable specified before */
     BasicMemoryBlock(size_t Size);
 
+    /** Destruct the BasicMemoryBlock. Reset header variable to avoid UAF */
     ~BasicMemoryBlock();
 
 public:
@@ -34,4 +45,7 @@ public:
 
     /** Does this address belongs to this Basic Memory Block? */
     bool IsInBlock(void *Address);
+
+    /** Get Memory Block Size */
+    size_t GetBlockSize() const { return BlockSize; };
 };

@@ -15,6 +15,8 @@ class Cursor;
 
 class BoundCursor;
 
+class Connection;
+
 /**
  *  @name Buffer
  *
@@ -22,10 +24,18 @@ class BoundCursor;
  * */
 class Buffer : public CanReset, public CanGC {
 protected:
+
+    /** Buffer Memory Block Size */
     size_t BlockSize;
+
+    /** Buffer left - right bound */
     BoundCursor Cursor;
+
+    /** Header of Buffer memory block list */
     BufferMemoryBlock *HeadBlock = nullptr;
-    BufferMemoryBlockRecycleBin *RecycleBin = nullptr;
+
+    /** BackendCollector to fetch memory block */
+    BufferMemoryBlockCollector *Collector = nullptr;
 
     friend class BufferBuilder;
 

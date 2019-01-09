@@ -3,7 +3,7 @@
 
 extern int HTTPServerTest();
 
-extern int HTTPConnectionRecycleBinTest();
+extern int HTTPConnectionCollectorTest();
 
 extern int HTTPParseTest();
 
@@ -11,7 +11,7 @@ int HTTPTest() {
 //    {
 //        HTTPServerTest();
 //    }
-//    HTTPConnectionRecycleBinTest();
+//    HTTPConnectionCollectorTest();
     HTTPParseTest();
     return 0;
 }

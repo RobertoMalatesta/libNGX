@@ -2,15 +2,11 @@
 
 using namespace ngx::Core::BasicComponent;
 
-BufferMemoryBlock::BufferMemoryBlock(size_t Size) : BasicMemoryBlock(Size), Recyclable() {
+BufferMemoryBlock::BufferMemoryBlock(size_t Size) : BasicMemoryBlock(Size), Reusable() {
 
-    /**fix start position*/
+    /** fix start position */
     Start = (u_char *) this + sizeof(BufferMemoryBlock);
     Reset();
-}
-
-BufferMemoryBlock::~BufferMemoryBlock() {
-    Pos = nullptr;
 }
 
 BufferMemoryBlock* BufferMemoryBlock::AddressToMemoryBlock(void *Address, size_t Size) {
@@ -24,7 +20,7 @@ BufferMemoryBlock* BufferMemoryBlock::AddressToMemoryBlock(void *Address, size_t
 
         Magic = (void *)((size_t) MemBlk->Magic & ~(Size - 1));
 
-        if(Magic == MemBlk && MemBlk->TotalSize == Size) {
+        if(Magic == MemBlk && MemBlk->BlockSize == Size) {
             return MemBlk;
         }
     }
@@ -33,5 +29,5 @@ BufferMemoryBlock* BufferMemoryBlock::AddressToMemoryBlock(void *Address, size_t
 }
 
 void BufferMemoryBlock::Reset() {
-    Pos = Start, NextBlock = nullptr;
+    NextBlock = nullptr;
 }

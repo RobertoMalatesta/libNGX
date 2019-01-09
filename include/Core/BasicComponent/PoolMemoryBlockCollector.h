@@ -17,26 +17,6 @@
  *
  *  @brief Basic memory block structure.
  * */
-class BufferBuilder {
+class PoolMemoryBlockCollector: public Collector, MetaClass::CanReset {
 
-protected:
-
-    /** Backend collector to manage memory block */
-    BufferMemoryBlockCollector BackendCollector;
-
-public:
-
-    /** Build and configure a Buffer */
-    BufferBuilder(size_t BlockSize = BUFFER_MEMORY_BLOCK_SIZE, uint32_t CollectorSize = DEFAULT_COLLECTOR_SIZE);
-
-    ~BufferBuilder();
-
-    /** Set Buffer Block Size, should clear the collector */
-    RuntimeError SetBlockSize();
-
-    /** Set Buffer Block Size, should clear the collector */
-    RuntimeError SetCollectorSize();
-
-    /** Build and configure a Buffer */
-    bool BuildBuffer(Buffer &Buf);
 };

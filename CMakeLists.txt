@@ -11,7 +11,7 @@ set(SOURCE_FILES
         src/Core/BasicComponent/Buffer.cpp
         src/Core/BasicComponent/BasicMemoryBlock.cpp
         src/Core/BasicComponent/BufferMemoryBlock.cpp
-        src/Core/BasicComponent/BufferMemoryBlockRecycleBin.cpp
+        src/Core/BasicComponent/BufferMemoryBlockCollector.cpp
         src/Core/BasicComponent/BufferBuilder.cpp
         src/Core/BasicComponent/Checksum.cpp
         src/Core/BasicComponent/Connection.cpp
@@ -33,7 +33,7 @@ set(SOURCE_FILES
         src/HTTP/HTTPListening.cpp
         src/HTTP/HTTPConnection.cpp
         src/HTTP/HTTPServer.cpp
-        src/HTTP/HTTPConnectionRecycleBin.cpp
+        src/HTTP/HTTPConnectionCollector.cpp
         src/HTTP/HTTPError.cpp
         src/HTTP/HTTPConnectionBuilder.cpp
         src/Core/BasicComponent/Dictionary.cpp
@@ -57,7 +57,7 @@ set(TEST_FILES
         test/Core/DictionaryTest.cpp
         test/HTTP/HTTPTest.cpp
         test/HTTP/HTTPServerTest.cpp
-        test/HTTP/HTTPConnectionRecycleBin.cpp
+        test/HTTP/HTTPConnectionCollector.cpp
         test/HTTP/HTTPParseTest.cpp)
 
 include_directories(./include)
