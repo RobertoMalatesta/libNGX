@@ -9,7 +9,7 @@ SocketTimerHub::~SocketTimerHub() {
     }
 };
 
-int SocketTimerHub::QueueExpiredTimer() {
+RuntimeError SocketTimerHub::QueueExpiredTimer() {
 
     Timer *Temp;
     uint64_t Timestamp = GetHighResolutionTimestamp();
@@ -44,10 +44,10 @@ int SocketTimerHub::QueueExpiredTimer() {
             S->Unlock();
         }
     }
-    return 0;
+    return {0};
 }
 
-int SocketTimerHub::AttachTimer(Timer &T) {
+RuntimeError SocketTimerHub::AttachTimer(Timer &T) {
 
     TimerHubLock.Lock();
 
@@ -58,20 +58,38 @@ int SocketTimerHub::AttachTimer(Timer &T) {
 
     TimerHubLock.Unlock();
 
-    return 0;
+    return {0};
 }
 
-int SocketTimerHub::DetachTimer(Timer &T) {
+RuntimeError SocketTimerHub::DetachTimer(Timer &T) {
 
     TimerHubLock.Lock();
 
     if (T.IsTimerAttached()) {
 
         Erase(&T);
-        T.Mode = TM_CLOSED, T.Interval = 0;
+        T.Mode = TM_CLOSED;
     }
 
     TimerHubLock.Unlock();
 
-    return 0;
+    return {0};
+}
+
+RuntimeError SocketTimerHub::PreemptTimer(Timer &T) {
+
+    TimerHubLock.Lock();
+
+    if (T.IsTimerAttached()) {
+
+        Erase(&T);
+
+        T.Timestamp = 0;
+
+        Insert(&T);
+    }
+
+    TimerHubLock.Unlock();
+
+    return {0};
 }

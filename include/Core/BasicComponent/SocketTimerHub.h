@@ -5,16 +5,21 @@ enum TimerMode {
 };
 
 class Timer : public RBNode, public CanReset {
+
 public:
+
     uint64_t Timestamp = 0;
-    TimerMode Mode = TM_ONCE;
-    uint64_t Interval = 0;
+    TimerMode Mode;
+    uint64_t Interval;
     Job TimerJob;
 
     Timer() = default;
 
-    Timer(uint64_t Timestamp, ThreadFn *Callback, void *Argument) : TimerJob(Callback, Argument) {
-        this->Timestamp = Timestamp;
+    Timer(uint64_t Timestamp, ThreadFn *Callback, void *Argument) :
+            Timestamp(Timestamp),
+            Mode(TM_CLOSED),
+            Interval(0),
+            TimerJob(Callback, Argument) {
     };
 
     ~Timer() = default;
@@ -24,7 +29,7 @@ public:
     }
 
     inline bool IsTimerAttached() {
-        return GetLeft() != nullptr && GetRight() != nullptr;
+        return GetParent() != this;
     }
 
     uint64_t GetTimestamp() { return Timestamp; }
@@ -48,10 +53,12 @@ public:
 
     ~SocketTimerHub();
 
-    int QueueExpiredTimer();
+    RuntimeError QueueExpiredTimer();
 
-    int AttachTimer(Timer &T);
+    RuntimeError AttachTimer(Timer &T);
 
-    int DetachTimer(Timer &T);
+    RuntimeError DetachTimer(Timer &T);
+
+    RuntimeError PreemptTimer(Timer &T);
 };
 

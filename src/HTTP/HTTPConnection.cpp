@@ -115,7 +115,7 @@ void HTTPConnection::Reset() {
 
 SocketError HTTPConnection::Close() {
 
-    HTTPConnection *C = this;
+    // Reset Request, Response, BufferIn and BufferOut
 
     // Detach read write event
     ParentEventDomain->DetachSocket(*this, ET_READ | ET_WRITE);
@@ -123,8 +123,8 @@ SocketError HTTPConnection::Close() {
     // Close TCP Connection
     TCPConnection::Close();
 
-    // Set a timer to put Connection to recycler
-    ParentEventDomain->SetTimer(*C, CONNECTION_RECYCLE_WAIT_TIME, TM_ONCE);
+    // Set a timer to put Connection to collector
+    ParentEventDomain->SetTimer(*this, CONNECTION_RECYCLE_WAIT_TIME, TM_ONCE);
 
     return {0};
 }
