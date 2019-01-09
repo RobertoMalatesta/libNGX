@@ -35,7 +35,7 @@ RuntimeError Buffer::ReadConnection(Connection *C) {
         if (HeadBlock == nullptr) {
             return {ENOMEM, "can not allocate buffer block"};
         } else {
-            Cursor = {this, HeadBlock->Start, HeadBlock->Start};
+            Cursor = {this,  HeadBlock->Start(), HeadBlock->Start()};
         }
     }
 
@@ -44,7 +44,7 @@ RuntimeError Buffer::ReadConnection(Connection *C) {
     while (true) {
 
         PointerToData = Cursor.Bound;
-        ReadLength = WriteBlock->End - PointerToData;
+        ReadLength = WriteBlock->End() - PointerToData;
 
         if (ReadLength == 0) {
 
@@ -60,8 +60,8 @@ RuntimeError Buffer::ReadConnection(Connection *C) {
 
             WriteBlock->SetNextBlock(TempBlock);
             WriteBlock = TempBlock;
-            PointerToData = Cursor.Bound = WriteBlock->Start;
-            ReadLength = WriteBlock->End - PointerToData;
+            PointerToData = Cursor.Bound = WriteBlock->Start();
+            ReadLength = WriteBlock->End() - PointerToData;
         }
 
         RecievedSize = recv(SocketFD, PointerToData, ReadLength, 0);
@@ -97,7 +97,7 @@ RuntimeError Buffer::ReadBytes(u_char *PointerToData, size_t DataLength) {
         if (HeadBlock == nullptr) {
             return {ENOMEM, "can not allocate buffer block"};
         } else {
-            Cursor = {this, HeadBlock->Start, HeadBlock->Start};
+            Cursor = {this, HeadBlock->Start(), HeadBlock->Start()};
         }
     }
 
@@ -105,7 +105,7 @@ RuntimeError Buffer::ReadBytes(u_char *PointerToData, size_t DataLength) {
 
     for (;;) {
 
-        CurrentBlockFreeSize = WriteBlock->End - Cursor.Bound;
+        CurrentBlockFreeSize = WriteBlock->End() - Cursor.Bound;
 
         if (DataLength > CurrentBlockFreeSize) {
 
@@ -125,7 +125,7 @@ RuntimeError Buffer::ReadBytes(u_char *PointerToData, size_t DataLength) {
             DataLength -= CurrentBlockFreeSize;
 
             WriteBlock->SetNextBlock(TempBufferBlock);
-            Cursor.Bound = WriteBlock->Start;
+            Cursor.Bound = WriteBlock->Start();
         } else {
             memcpy(Cursor.Bound, PointerToData, DataLength);
             Cursor.Bound += DataLength;

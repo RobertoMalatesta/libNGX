@@ -5,7 +5,6 @@ using namespace ngx::Core::BasicComponent;
 BufferMemoryBlock::BufferMemoryBlock(size_t Size) : BasicMemoryBlock(Size), Reusable() {
 
     /** fix start position */
-    Start = (u_char *) this + sizeof(BufferMemoryBlock);
     Reset();
 }
 

@@ -29,11 +29,21 @@ public:
 
     ~BufferMemoryBlock() = default;
 
+    /** Get start address from address of start */
+    inline u_char *Start() const {
+        return (u_char *)((uintptr_t)this & ~(BlockSize - 1)) + sizeof(BufferMemoryBlock);
+    }
+
+    /** Get start address from address of end */
+    inline u_char *End() const {
+        return (u_char *)((uintptr_t)this | (BlockSize - 1));
+    }
+
+    virtual void Reset();
+
     void SetNextBlock(BufferMemoryBlock *Next) { this->NextBlock = Next; }
 
     BufferMemoryBlock *GetNextBlock() { return NextBlock; }
-
-    virtual void Reset();
 
     static BufferMemoryBlock *AddressToMemoryBlock(void *Address, size_t Size);
 
