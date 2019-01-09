@@ -1,6 +1,6 @@
 #include "Core/Core.h"
 
-using namespace ngx::Core::Arch::X86_64;
+using namespace ngx::Core::Arch::X86;
 using namespace ngx::Core::DefaultConfig;
 
 inline void cpuid(uint32_t i, uint32_t *buf) {

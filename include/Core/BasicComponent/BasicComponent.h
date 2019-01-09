@@ -6,6 +6,7 @@ namespace ngx {
             using namespace ngx::Core::Types;
 
 /** Abstract components */
+
 #include "Core/BasicComponent/Error.h"
 #include "Core/BasicComponent/Reusable.h"
 #include "Core/BasicComponent/Collector.h"
@@ -49,6 +50,7 @@ namespace ngx {
 
 /** Server */
 #include "Core/BasicComponent/Server.h"
+
         }
     }
 }

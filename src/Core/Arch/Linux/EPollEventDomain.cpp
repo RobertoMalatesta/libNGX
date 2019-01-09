@@ -1,7 +1,8 @@
 #include "Core/Core.h"
 #include <sys/epoll.h>
 
-using namespace ngx::Core;
+using namespace ngx::Core::Arch::Linux;
+using namespace ngx::Core::Arch::Linux::DefaultConfig;
 
 static bool SignalSetInited = false;
 static sigset_t epoll_sig_mask = {0};

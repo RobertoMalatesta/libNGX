@@ -5,7 +5,7 @@ project(libNGX)
 set(CMAKE_CXX_STANDARD 11)
 
 set(SOURCE_FILES
-        src/Core/Arch/ArchX86.cpp
+        src/Core/Arch/X86.cpp
         src/Core/Types/Queue.cpp
         src/Core/Types/RBTree.cpp
         src/Core/BasicComponent/Buffer.cpp
@@ -28,7 +28,7 @@ set(SOURCE_FILES
         src/Core/BasicComponent/ThreadPool.cpp
         src/Core/BasicComponent/SocketTimerHub.cpp
         src/Core/BasicComponent/BufferCursor.cpp
-        src/Core/EPollEventDomain.cpp
+        src/Core/Arch/Linux/EPollEventDomain.cpp
         src/HTTP/Router/Mux.cpp
         src/HTTP/HTTPListening.cpp
         src/HTTP/HTTPConnection.cpp

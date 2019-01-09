@@ -32,7 +32,7 @@ protected:
 
 public:
     BufferMemoryBlockCollector(size_t BlockSize = BUFFER_MEMORY_BLOCK_SIZE,
-                                uint32_t CollectorSize = DEFAULT_COLLECTOR_SIZE);
+                               uint32_t CollectorSize = DEFAULT_COLLECTOR_SIZE);
 
     ~BufferMemoryBlockCollector();
 

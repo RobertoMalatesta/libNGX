@@ -17,6 +17,6 @@
  *
  *  @brief Basic memory block structure.
  * */
-class PoolMemoryBlockCollector: public Collector, MetaClass::CanReset {
+class PoolMemoryBlockCollector : public Collector, MetaClass::CanReset {
 
 };

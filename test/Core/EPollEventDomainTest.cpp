@@ -1,6 +1,7 @@
 #include "Core/Core.h"
 
 using namespace ngx::Core;
+using namespace ngx::Core::Arch::Linux;
 
 static void HTTPEventProcessJob(void *Args, ThreadPool *TPool) {
 

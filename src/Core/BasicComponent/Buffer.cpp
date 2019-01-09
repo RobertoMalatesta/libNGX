@@ -151,9 +151,9 @@ void Buffer::GC() {
 
     while (HeadBlock != nullptr && HeadBlock != ReadBlock) {
 
-        TempBlock = HeadBlock -> GetNextBlock();
+        TempBlock = HeadBlock->GetNextBlock();
 
-        if (Collector == nullptr){
+        if (Collector == nullptr) {
             HeadBlock->Reset();
             BufferMemoryBlock::Destroy(HeadBlock);
         } else {

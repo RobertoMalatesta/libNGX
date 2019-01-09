@@ -5,7 +5,7 @@
 
 using namespace std;
 using namespace ngx::Core;
-using namespace ngx::Core::Arch::X86_64;
+using namespace ngx::Core::Arch::X86;
 using namespace ngx::Core::BasicComponent;
 
 static SpinLock Lock;

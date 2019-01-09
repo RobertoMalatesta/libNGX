@@ -9,7 +9,7 @@ BufferMemoryBlock::BufferMemoryBlock(size_t Size) : BasicMemoryBlock(Size), Reus
     Reset();
 }
 
-BufferMemoryBlock* BufferMemoryBlock::AddressToMemoryBlock(void *Address, size_t Size) {
+BufferMemoryBlock *BufferMemoryBlock::AddressToMemoryBlock(void *Address, size_t Size) {
 
     void *Magic = nullptr;
     BufferMemoryBlock *MemBlk;
@@ -18,9 +18,9 @@ BufferMemoryBlock* BufferMemoryBlock::AddressToMemoryBlock(void *Address, size_t
 
     if (MemBlk != nullptr) {
 
-        Magic = (void *)((size_t) MemBlk->Magic & ~(Size - 1));
+        Magic = (void *) ((size_t) MemBlk->Magic & ~(Size - 1));
 
-        if(Magic == MemBlk && MemBlk->BlockSize == Size) {
+        if (Magic == MemBlk && MemBlk->BlockSize == Size) {
             return MemBlk;
         }
     }

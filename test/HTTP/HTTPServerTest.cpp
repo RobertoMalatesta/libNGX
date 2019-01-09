@@ -1,6 +1,7 @@
 #include "HTTP/HTTP.h"
 
 using namespace ngx::Core;
+using namespace ngx::Core::Arch::Linux;
 using namespace ngx::HTTP;
 
 int HTTPServerTest() {

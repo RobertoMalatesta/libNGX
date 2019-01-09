@@ -12,10 +12,10 @@
 //===-------------------------------------------------------------------------===//
 
 #include "ngx.h"
-#include "Core/Arch/Arch.h"
 #include "Core/MetaClass/MetaClass.h"
 #include "Core/Types/Types.h"
 #include "Core/BasicComponent/BasicComponent.h"
+#include "Core/Arch/Arch.h"
 
 namespace ngx {
     namespace Core {
@@ -24,10 +24,6 @@ namespace ngx {
         using namespace DefaultConfig;
         using namespace Types;
         using namespace BasicComponent;
-        using namespace Arch::X86_64;
-
-        class EPollEventDomain;
+        using namespace Arch::X86;
     }
 }
-
-#include "Core/EPollEventDomain.h"
