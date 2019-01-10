@@ -3,8 +3,7 @@
 using namespace ngx::Core::BasicComponent;
 
 BufferMemoryBlock::BufferMemoryBlock(size_t Size) : BasicMemoryBlock(Size), Reusable() {
-
-    /** fix start position */
+    /** reset Next position */
     Reset();
 }
 
@@ -13,7 +12,7 @@ BufferMemoryBlock *BufferMemoryBlock::AddressToMemoryBlock(void *Address, size_t
     void *Magic = nullptr;
     BufferMemoryBlock *MemBlk;
 
-    MemBlk = (BufferMemoryBlock *) ((size_t) Address & ~(Size - 1));
+    MemBlk = (BufferMemoryBlock *) ((uintptr_t) Address & ~(Size - 1));
 
     if (MemBlk != nullptr) {
 

@@ -12,8 +12,6 @@ extern int TimeTest();
 
 extern int BufferTest();
 
-extern int ThreadPoolTest();
-
 extern int HashTest();
 
 extern int CRCTest();
@@ -22,8 +20,6 @@ extern int DictionaryTest();
 
 extern int TimerTreeTest();
 
-extern int FSTreeTest();
-
 extern int TCPSocketTest();
 
 extern int EPollEventDomainTest();
@@ -31,20 +27,15 @@ extern int EPollEventDomainTest();
 int CoreTest() {
 
 //	ArrayTest();
-//	MemBlockTest();
-//  PoolTest();
-//  BufferTest();
-//	BufTest();
-//	ArrayTest();
+	MemBlockTest();
+  PoolTest();
+  BufferTest();
 //	TimeTest();
-//	ThreadPoolTest();
 //	LockTest();
 //	HashTest();
 //  CRCTest();
-//  RBTreeTest();
-    DictionaryTest();
+//    DictionaryTest();
 //  TimerTreeTest();
-//	FSTreeTest();
 //	TCPSocketTest();
 //  EPollEventDomainTest();
     return 0;
