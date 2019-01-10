@@ -28,21 +28,21 @@ RuntimeError HTTPListening::HandleEventDomain(uint32_t EventType) {
         NewFD = accept4(SocketFD, &Address.sockaddr, &SocketLength, O_NONBLOCK);
 
         if (NewFD == -1) {
-            LOG(WARNING) << "failed to accept, errno: " << errno;
+//            LOG(WARNING) << "failed to accept, errno: " << errno;
             return {errno, "failed to accept socket"};
         } else {
 
-            LOG(INFO) << "accept() new connection, fd: " << NewFD;
+//            LOG(INFO) << "accept() new connection, fd: " << NewFD;
             Error = ParentServer->GetConnection(C, NewFD, Address);
 
-            LOG(INFO) << "get connection";
+//            LOG(INFO) << "get connection";
 
             if (Error.GetCode() != 0 || C == nullptr) {
-                LOG(INFO) << "get connection object failed, will close connection, error: " << Error.GetError();
+//                LOG(INFO) << "get connection object failed, will close connection, error: " << Error.GetError();
                 close(NewFD);
             } else {
-                LOG(INFO) << "attach connection to event domain, fd: " << NewFD << ", error: "
-                          << C->ParentEventDomain->AttachSocket(*C, ET_READ | ET_WRITE).GetError();
+//                LOG(INFO) << "attach connection to event domain, fd: " << NewFD << ", error: "
+                          C->ParentEventDomain->AttachSocket(*C, ET_READ | ET_WRITE).GetError();
             }
         }
     }

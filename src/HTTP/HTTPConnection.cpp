@@ -13,17 +13,17 @@ RuntimeError HTTPConnection::HandleEventDomain(uint32_t EventType) {
 
     LockGuard Guard(&SocketLock);
 
-    LOG(INFO) << "handle HTTPConnection event, fd: " << SocketFD << ", type: " << EventType;
+//    LOG(INFO) << "handle HTTPConnection event, fd: " << SocketFD << ", type: " << EventType;
 
     if (ParentServer == nullptr || ParentEventDomain == nullptr) {
-        LOG(WARNING) << "connection not attached, fd: " << SocketFD;
+//        LOG(WARNING) << "connection not attached, fd: " << SocketFD;
         return {EINVAL, "connection not attached"};
     }
 
     Event = EventType;
 
     if (SocketFD == -1) {
-        LOG(WARNING) << "connection not open, fd: " << SocketFD;
+//        LOG(WARNING) << "connection not open, fd: " << SocketFD;
         return {EFAULT, "connection not open"};
     };
 
@@ -38,7 +38,7 @@ void HTTPConnection::OnTimerEvent(void *PointerToConnection) {
 
     C->Event |= ET_TIMER;
 
-    LOG(INFO) << "in timer func, fd: " << C->SocketFD;
+//    LOG(INFO) << "in timer func, fd: " << C->SocketFD;
 
     HTTPConnection::OnConnectionEvent(PointerToConnection);
 }
@@ -51,7 +51,7 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection) {
 
     C = static_cast<HTTPConnection *>(PointerToConnection);
 
-    LOG(INFO) << "in connection event, fd: " << C->SocketFD;
+//    LOG(INFO) << "in connection event, fd: " << C->SocketFD;
 
     Type = C->Event;
 
@@ -64,7 +64,7 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection) {
         // 3.   Handle Write Buffer
         // 4.   Handle Timer
 
-        LOG(INFO) << "handle connection event, fd: " << C->SocketFD << ", event type: " << Type;
+//        LOG(INFO) << "handle connection event, fd: " << C->SocketFD << ", event type: " << Type;
 
         if ((Type & ET_READ) != 0) {
             C->ReadBuffer.ReadConnection(C);
@@ -76,23 +76,23 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection) {
 
         // Handle Request here
 
-        LOG(INFO) << "writing data to connection, fd: " << C->SocketFD;
+//        LOG(INFO) << "writing data to connection, fd: " << C->SocketFD;
 //            HTTPParser::ParseHTTPRequest(C->ReadBuffer, C->Request);
         const u_char Content[] = "HTTP/1.1 200 OK\r\nServer: NGX(TestServer)\nContent-Length: 12\r\n\nHello World!";
 
         ssize_t size = write(C->GetSocketFD(), Content, sizeof(Content) - 1);
 
         if (size < 0) {
-            LOG(INFO) << "bad write size < 0, fd: " << C->SocketFD;
+//            LOG(INFO) << "bad write size < 0, fd: " << C->SocketFD;
         }
-        LOG(INFO) << "will close socket: " << C->SocketFD;
+//        LOG(INFO) << "will close socket: " << C->SocketFD;
         C->Close();
     } else {
 
-        LOG(INFO) << "connection already closed, skip it`s event" << C->SocketFD;
+//        LOG(INFO) << "connection already closed, skip it`s event" << C->SocketFD;
 
         if (Type & ET_TIMER) {
-            LOG(INFO) << "recycle connection, fd: " << C->SocketFD;
+//            LOG(INFO) << "recycle connection, fd: " << C->SocketFD;
             C->ParentServer->PutConnection(C);
         }
     }

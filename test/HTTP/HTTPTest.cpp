@@ -8,10 +8,10 @@ extern int HTTPConnectionCollectorTest();
 extern int HTTPParseTest();
 
 int HTTPTest() {
-//    {
-//        HTTPServerTest();
-//    }
+    {
+        HTTPServerTest();
+    }
 //    HTTPConnectionCollectorTest();
-    HTTPParseTest();
+//    HTTPParseTest();
     return 0;
 }

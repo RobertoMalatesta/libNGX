@@ -18,12 +18,6 @@ Buffer &Buffer::operator>>(BoundCursor &BC) &{
 
 RuntimeError Buffer::ReadConnection(Connection *C) {
 
-    int SocketFD = C->GetSocketFD();
-    u_char *PointerToData;
-    size_t ReadLength;
-    ssize_t RecievedSize;
-    BufferMemoryBlock *TempBlock, *WriteBlock;
-
     if (HeadBlock == nullptr) {
 
         if (Collector == nullptr) {
@@ -39,41 +33,48 @@ RuntimeError Buffer::ReadConnection(Connection *C) {
         }
     }
 
+    BufferMemoryBlock *WriteBlock;
+
     WriteBlock = AddressToMemoryBlock(Cursor.Bound);
 
     while (true) {
 
-        PointerToData = Cursor.Bound;
-        ReadLength = WriteBlock->End() - PointerToData;
+        size_t FreeSize = WriteBlock->End() - Cursor.Bound;
 
-        if (ReadLength == 0) {
+        if (FreeSize == 0) {
+
+            BufferMemoryBlock *NewBlock = nullptr;
 
             if (Collector == nullptr) {
-                BufferMemoryBlock::Build(TempBlock, BUFFER_MEMORY_BLOCK_SIZE);
+                BufferMemoryBlock::Build(NewBlock, BUFFER_MEMORY_BLOCK_SIZE);
             } else {
-                TempBlock = Collector->Get();
+                NewBlock = Collector->Get();
             }
 
-            if (TempBlock == nullptr) {
+            if (NewBlock == nullptr) {
                 return {ENOMEM, "Can not allocate BufferMemoryBlock when recv()"};
             }
 
-            WriteBlock->SetNextBlock(TempBlock);
-            WriteBlock = TempBlock;
-            PointerToData = Cursor.Bound = WriteBlock->Start();
-            ReadLength = WriteBlock->End() - PointerToData;
+            WriteBlock->SetNextBlock(NewBlock);
+            WriteBlock = WriteBlock->GetNextBlock();
+
+            Cursor.Bound = WriteBlock->Start();
+
+            FreeSize = WriteBlock->End() - Cursor.Bound;
         }
 
-        RecievedSize = recv(SocketFD, PointerToData, ReadLength, 0);
+        int SocketFD = C->GetSocketFD();
 
-        if (RecievedSize == -1) {
+        ssize_t ReadSize = recv(SocketFD, Cursor.Bound, FreeSize, 0);
+
+        if (ReadSize == -1) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 break;
             } else {
                 return {errno, "failed to read from socket!"};
             }
-        } else if (RecievedSize > 0) {
-            Cursor.Bound += RecievedSize;
+        } else if (ReadSize > 0) {
+            Cursor.Bound += ReadSize;
         } else {
             break;
         }
@@ -83,8 +84,8 @@ RuntimeError Buffer::ReadConnection(Connection *C) {
 
 RuntimeError Buffer::ReadBytes(u_char *PointerToData, size_t DataLength) {
 
-    size_t CurrentBlockFreeSize;
-    BufferMemoryBlock *TempBufferBlock, *WriteBlock;
+    size_t FreeSize;
+    BufferMemoryBlock *WriteBlock;
 
     if (HeadBlock == nullptr) {
 
@@ -105,30 +106,35 @@ RuntimeError Buffer::ReadBytes(u_char *PointerToData, size_t DataLength) {
 
     for (;;) {
 
-        CurrentBlockFreeSize = WriteBlock->End() - Cursor.Bound;
+        FreeSize = WriteBlock->End() - Cursor.Bound;
 
-        if (DataLength > CurrentBlockFreeSize) {
+        if (DataLength > FreeSize) {
+
+            BufferMemoryBlock *NewBlock = nullptr;
 
             if (Collector == nullptr) {
-                BufferMemoryBlock::Build(TempBufferBlock, BUFFER_MEMORY_BLOCK_SIZE);
+                BufferMemoryBlock::Build(NewBlock, BUFFER_MEMORY_BLOCK_SIZE);
             } else {
-                TempBufferBlock = Collector->Get();
+                NewBlock = Collector->Get();
             }
 
-            if (TempBufferBlock == nullptr) {
+            if (NewBlock == nullptr) {
                 return {ENOMEM, "no enough memory"};
             }
 
-            memcpy(Cursor.Bound, PointerToData, CurrentBlockFreeSize);
+            memcpy(Cursor.Bound, PointerToData, FreeSize);
 
-            PointerToData += CurrentBlockFreeSize;
-            DataLength -= CurrentBlockFreeSize;
+            PointerToData += FreeSize, DataLength -= FreeSize;
 
-            WriteBlock->SetNextBlock(TempBufferBlock);
+            WriteBlock->SetNextBlock(NewBlock);
+            WriteBlock = WriteBlock->GetNextBlock();
+
             Cursor.Bound = WriteBlock->Start();
         } else {
+
             memcpy(Cursor.Bound, PointerToData, DataLength);
             Cursor.Bound += DataLength;
+
             break;
         }
     }
@@ -138,20 +144,18 @@ RuntimeError Buffer::ReadBytes(u_char *PointerToData, size_t DataLength) {
 
 void Buffer::Reset() {
 
-    Cursor = {this, nullptr, nullptr};
-
-    GC();
+    Cursor = {this, nullptr, nullptr}, GC();
 }
 
 void Buffer::GC() {
 
-    BufferMemoryBlock *TempBlock, *ReadBlock;
+    BufferMemoryBlock *NextBlock, *ReadBlock;
 
     ReadBlock = AddressToMemoryBlock(Cursor.Position);
 
     while (HeadBlock != nullptr && HeadBlock != ReadBlock) {
 
-        TempBlock = HeadBlock->GetNextBlock();
+        NextBlock = HeadBlock->GetNextBlock();
 
         if (Collector == nullptr) {
             HeadBlock->Reset();
@@ -160,6 +164,6 @@ void Buffer::GC() {
             Collector->Put(HeadBlock);
         }
 
-        HeadBlock = TempBlock;
+        HeadBlock = NextBlock;
     }
 }
