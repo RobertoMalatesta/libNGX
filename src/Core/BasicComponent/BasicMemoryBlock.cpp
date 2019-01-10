@@ -20,7 +20,3 @@ BasicMemoryBlock *BasicMemoryBlock::AddressToMemoryBlock(void *Address, size_t S
 
     return nullptr;
 }
-
-bool BasicMemoryBlock::IsInBlock(void *Address) const {
-    return (Address >= Start() && Address < End());
-}

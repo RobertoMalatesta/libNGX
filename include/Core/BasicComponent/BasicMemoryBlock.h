@@ -40,9 +40,6 @@ public:
     /** Retrieval a memory block through the Address and Size of the Block */
     static BasicMemoryBlock *AddressToMemoryBlock(void *Address, size_t Size);
 
-    /** Does this address belongs to this Basic Memory Block? */
-    bool IsInBlock(void *Address) const;
-
     /** Get start address from address of start */
     inline u_char *Start() const {
         return (u_char *)((uintptr_t)this & ~(BlockSize - 1)) + sizeof(BasicMemoryBlock);

@@ -31,6 +31,11 @@ public:
     }
 
     /** Get start address from address of end */
+    inline bool IsInBlock(void *Address) const {
+        return Address >= Start() && Address < End();
+    }
+
+    /** Get start address from address of end */
     virtual void Reset();
 
     void SetNextBlock(MemoryBlockAllocator *Next) { this->Next = Next; }
