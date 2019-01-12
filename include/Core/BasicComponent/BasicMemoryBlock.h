@@ -25,7 +25,7 @@ protected:
 
     /** Total block size */
     size_t BlockSize = 0;
-
+    u_char *Start, *End;
     /** Magic to identify this block */
     void *Magic = nullptr;
 
@@ -39,16 +39,6 @@ public:
 
     /** Retrieval a memory block through the Address and Size of the Block */
     static BasicMemoryBlock *AddressToMemoryBlock(void *Address, size_t Size);
-
-    /** Get start address from address of start */
-    inline u_char *Start() const {
-        return (u_char *)((uintptr_t)this & ~(BlockSize - 1)) + sizeof(BasicMemoryBlock);
-    }
-
-    /** Get start address from addre1ss of end */
-    inline u_char *End() const {
-        return (u_char *)((uintptr_t)this | (BlockSize - 1));
-    }
 
     /** Get Memory Block Size */
     size_t GetBlockSize() const { return BlockSize; };

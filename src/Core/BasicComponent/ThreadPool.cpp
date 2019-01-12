@@ -64,8 +64,6 @@ void *Thread::ThreadProcess(void *Argument) {
 
     T->Lock.Unlock();
 
-    LOG(INFO) << "thread start, tid: " << pthread_self();
-
     ForceSleep(NANO_SECOND_SIZE);
 
     while (true) {
@@ -94,8 +92,6 @@ void *Thread::ThreadProcess(void *Argument) {
 
         T->Lock.Unlock();
     }
-
-    LOG(INFO) << "thread exit, tid: " << pthread_self();
 
     return nullptr;
 }

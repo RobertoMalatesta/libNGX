@@ -39,16 +39,22 @@ void *Pool::Allocate(size_t Size) {
             return ret;
         } else if (CurrentBlock->GetNextBlock() != nullptr) {
             CurrentBlock = CurrentBlock->GetNextBlock();
-        } else if (MemoryBlockAllocator::Build(TempAllocator, BlockSize) != 0) {
-            return nullptr;
-        } else  {
-            CurrentBlock->SetNextBlock(TempAllocator);
-            CurrentBlock = CurrentBlock->GetNextBlock();
+        } else {
+
+            MemoryBlockAllocator *NewBlock;
+
+            if (MemoryBlockAllocator::Build(NewBlock, BlockSize) == 0) {
+                CurrentBlock->SetNextBlock(NewBlock);
+                CurrentBlock = CurrentBlock->GetNextBlock();
+            } else {
+                return nullptr;
+            }
         }
 
         if ((++AllocateRound) % POOL_RECYCLE_ROUND == 0) {
             GC();
         }
+
         return CurrentBlock->Allocate(Size);
     }
 }

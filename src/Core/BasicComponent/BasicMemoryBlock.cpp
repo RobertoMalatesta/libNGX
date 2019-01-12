@@ -3,6 +3,10 @@
 using namespace ngx::Core::BasicComponent;
 
 BasicMemoryBlock::BasicMemoryBlock(size_t Size) : BlockSize(Size) {
+
+    Start = (u_char *)((uintptr_t)this & ~(BlockSize - 1)) + sizeof(BasicMemoryBlock);
+    End = (u_char *)((uintptr_t)this | (BlockSize - 1));
+
     Magic = (void *) this;
 }
 

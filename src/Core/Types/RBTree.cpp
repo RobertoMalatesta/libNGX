@@ -317,15 +317,15 @@ void RBTree::Erase(RBNode *Node) {
         Root = Child;
     }
 
-    Node->Parent = Node;
-    Node->Left = Node->Right = nullptr;
-
     color:
 
     if (Color) {
         EraseColor(Child, Parent);
     }
 
+
+    Node->Parent = Node;
+    Node->Left = Node->Right = nullptr;
 }
 
 RBNode *RBTree::Begin() {

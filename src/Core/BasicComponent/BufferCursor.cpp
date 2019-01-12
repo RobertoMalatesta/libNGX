@@ -32,7 +32,7 @@ BoundCursor BoundCursor::operator+(size_t Size) const {
         if (ThisBlock != nullptr && BoundBlock != nullptr) {
             while (Size > 0) {
 
-                if ((R.Position + Size) < ThisBlock->End()) {
+                if ((R.Position + Size) < ThisBlock->End) {
                     if (ThisBlock == BoundBlock && (R.Position + Size) >= Bound) {
                         R.Position = nullptr;
                         break;
@@ -40,9 +40,9 @@ BoundCursor BoundCursor::operator+(size_t Size) const {
                         R.Position += Size, Size = 0;
                     }
                 } else {
-                    Size -= (ThisBlock->End() - R.Position);
+                    Size -= (ThisBlock->End - R.Position);
                     ThisBlock = ThisBlock->GetNextBlock();
-                    R.Position = ThisBlock->Start();
+                    R.Position = ThisBlock->Start;
                 }
             }
         }
@@ -88,7 +88,7 @@ size_t BoundCursor::ReadBytes(u_char *Pointer, size_t Size) {
     if (Block == BoundBlock) {
         TempSize = Bound - TempPointer;
     } else {
-        TempSize = Block->End() - Block->Start();
+        TempSize = Block->End - Block->Start;
     }
 
     // remains size exceeded this block remain size?
@@ -106,7 +106,7 @@ size_t BoundCursor::ReadBytes(u_char *Pointer, size_t Size) {
         }
 
         // move to next block start position
-        TempPointer = Block->Start();
+        TempPointer = Block->Start;
 
         // decrease compare size
         Size -= TempSize;
@@ -116,7 +116,7 @@ size_t BoundCursor::ReadBytes(u_char *Pointer, size_t Size) {
         if (Block == BoundBlock) {
             TempSize = Bound - TempPointer;
         } else {
-            TempSize = Block->End() - Block->Start();
+            TempSize = Block->End - Block->Start;
         }
     }
 
@@ -147,7 +147,7 @@ bool BoundCursor::CmpBytes(u_char *Pointer, size_t Size) {
     if (Block == BoundBlock) {
         TempSize = Bound - TempPointer;
     } else {
-        TempSize = Block->End() - Block->Start();
+        TempSize = Block->End - Block->Start;
     }
 
     // remains size exceeded this block remain size?
@@ -167,7 +167,7 @@ bool BoundCursor::CmpBytes(u_char *Pointer, size_t Size) {
         }
 
         // move to next block start position
-        TempPointer = Block->Start();
+        TempPointer = Block->Start;
 
         // decrease compare size
         Size -= TempSize;
@@ -177,7 +177,7 @@ bool BoundCursor::CmpBytes(u_char *Pointer, size_t Size) {
         if (Block == BoundBlock) {
             TempSize = Bound - TempPointer;
         } else {
-            TempSize = Block->End() - Block->Start();
+            TempSize = Block->End - Block->Start;
         }
     }
 
@@ -200,20 +200,20 @@ size_t BoundCursor::Size() {
     if (L == R) {
         Size = Bound - Position;
     } else {
-        Size = L->End() - Position;
+        Size = L->End - Position;
 
         L = L->GetNextBlock();
 
         while (L != R && L != nullptr) {
             L = L->GetNextBlock();
-            Size += L->End() - L->Start();
+            Size += L->End - L->Start;
         }
 
         if (L == nullptr) {
             return 0;
         }
 
-        Size += Bound - L->Start();
+        Size += Bound - L->Start;
     }
 
     return Size;

@@ -29,7 +29,7 @@ RuntimeError Buffer::ReadConnection(Connection *C) {
         if (HeadBlock == nullptr) {
             return {ENOMEM, "can not allocate buffer block"};
         } else {
-            Cursor = {this,  HeadBlock->Start(), HeadBlock->Start()};
+            Cursor = {this,  HeadBlock->Start, HeadBlock->Start};
         }
     }
 
@@ -39,7 +39,7 @@ RuntimeError Buffer::ReadConnection(Connection *C) {
 
     while (true) {
 
-        size_t FreeSize = WriteBlock->End() - Cursor.Bound;
+        size_t FreeSize = WriteBlock->End - Cursor.Bound;
 
         if (FreeSize == 0) {
 
@@ -58,9 +58,9 @@ RuntimeError Buffer::ReadConnection(Connection *C) {
             WriteBlock->SetNextBlock(NewBlock);
             WriteBlock = WriteBlock->GetNextBlock();
 
-            Cursor.Bound = WriteBlock->Start();
+            Cursor.Bound = WriteBlock->Start;
 
-            FreeSize = WriteBlock->End() - Cursor.Bound;
+            FreeSize = WriteBlock->End - Cursor.Bound;
         }
 
         int SocketFD = C->GetSocketFD();
@@ -98,7 +98,7 @@ RuntimeError Buffer::ReadBytes(u_char *PointerToData, size_t DataLength) {
         if (HeadBlock == nullptr) {
             return {ENOMEM, "can not allocate buffer block"};
         } else {
-            Cursor = {this, HeadBlock->Start(), HeadBlock->Start()};
+            Cursor = {this, HeadBlock->Start, HeadBlock->Start};
         }
     }
 
@@ -106,7 +106,7 @@ RuntimeError Buffer::ReadBytes(u_char *PointerToData, size_t DataLength) {
 
     for (;;) {
 
-        FreeSize = WriteBlock->End() - Cursor.Bound;
+        FreeSize = WriteBlock->End - Cursor.Bound;
 
         if (DataLength > FreeSize) {
 
@@ -129,7 +129,7 @@ RuntimeError Buffer::ReadBytes(u_char *PointerToData, size_t DataLength) {
             WriteBlock->SetNextBlock(NewBlock);
             WriteBlock = WriteBlock->GetNextBlock();
 
-            Cursor.Bound = WriteBlock->Start();
+            Cursor.Bound = WriteBlock->Start;
         } else {
 
             memcpy(Cursor.Bound, PointerToData, DataLength);

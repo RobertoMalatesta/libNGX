@@ -20,19 +20,9 @@ public:
 
     virtual void GC() { /*Empty Code Block*/ }
 
-    /** Get start address from address of start */
-    inline u_char *Start() const {
-        return (u_char *)((uintptr_t)this & ~(BlockSize - 1)) + sizeof(MemoryBlockAllocator);
-    }
-
-    /** Get start address from address of end */
-    inline u_char *End() const {
-        return (u_char *)((uintptr_t)this | (BlockSize - 1));
-    }
-
     /** Get start address from address of end */
     inline bool IsInBlock(void *Address) const {
-        return Address >= Start() && Address < End();
+        return Address >= Start && Address < End;
     }
 
     /** Get start address from address of end */

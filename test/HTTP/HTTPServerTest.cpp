@@ -15,9 +15,7 @@ int HTTPServerTest() {
             .sin_addr = htonl(INADDR_ANY),
     };
 
-    LOG(INFO) << "Init time module start";
     TimeModuleInit();
-    LOG(INFO) << "Init time module end";
 
     HTTPListening Listen(Address);
 
@@ -25,12 +23,12 @@ int HTTPServerTest() {
 
     HTTPServer Server(BUFFER_MEMORY_BLOCK_SIZE, 1, 1, &Domain);
 
-    LOG(INFO) << "Bind() Listening: " << Listen.Bind().GetError();
-    LOG(INFO) << "Set NON_BLOCK: " << Listen.SetNonBlock(true).GetError();
-    LOG(INFO) << "Set PORT_REUSE: " << Listen.SetPortReuse(true).GetError();
-    LOG(INFO) << "Start listening: " << Listen.Listen().GetError();
+    Listen.Bind().GetError();
+    Listen.SetNonBlock(true).GetError();
+    Listen.SetPortReuse(true).GetError();
+    Listen.Listen().GetError();
 
-    LOG(INFO) << "Attach listening to server: " << Server.AttachListening(Listen).GetError();
+    Server.AttachListening(Listen).GetError();
 
     RuntimeError Error{0};
 
@@ -45,7 +43,7 @@ int HTTPServerTest() {
 
     } while (Error.GetCode() == 0);
 
-    LOG(INFO) << "detach listening: " << Server.DetachListening(Listen).GetError();
+    Server.DetachListening(Listen).GetError();
 
     return 0;
 }
