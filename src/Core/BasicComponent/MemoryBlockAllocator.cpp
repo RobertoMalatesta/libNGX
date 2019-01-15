@@ -14,10 +14,7 @@ void *MemoryBlockAllocator::Allocate(size_t Size) {
 
     if (Pos + Size <= End) {
         IncRef();
-
-        ret = Pos;
-        Pos += Size;
-        FreeSize -= Size;
+        ret = Pos, Pos += Size;
     }
 
     return ret;
@@ -31,7 +28,6 @@ void MemoryBlockAllocator::Free(void *&Pointer) {
 }
 
 void MemoryBlockAllocator::Reset() {
-    FreeSize = End - Start, Pos = Start;
-    Next = nullptr;
+    Pos = Start, Next = nullptr;
     ClearRef();
 }

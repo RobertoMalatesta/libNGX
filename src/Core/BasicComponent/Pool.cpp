@@ -33,6 +33,7 @@ void *Pool::Allocate(size_t Size) {
     if (Size > BlockSize - 2 * sizeof(MemoryBlockAllocator)) {
         return malloc(Size);
     } else {
+
         ret = CurrentBlock->Allocate(Size);
 
         if (ret != nullptr) {

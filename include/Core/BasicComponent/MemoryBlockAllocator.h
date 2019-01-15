@@ -7,7 +7,6 @@ class MemoryBlockAllocator
           public AlignBuild<MemoryBlockAllocator> {
 protected:
     u_char *Pos;
-    size_t FreeSize;
     MemoryBlockAllocator *Next;
 public:
     MemoryBlockAllocator(size_t Size);

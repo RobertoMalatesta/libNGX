@@ -16,13 +16,17 @@ class AlignBuild {
 public:
     static int Build(T *&Item, size_t Size = DEFAULT_BUILD_SIZE) {
 
-        void *TempPointer;
+        void *TempPointer = nullptr;
 
         int Code = posix_memalign(&TempPointer, Size, Size);
         Item = nullptr;
 
         if (Code != 0) {
             return Code;
+        }
+
+        if (TempPointer == nullptr) {
+            return -1;
         }
 
         Item = new(TempPointer) T(Size);
