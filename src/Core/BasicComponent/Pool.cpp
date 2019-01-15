@@ -88,71 +88,50 @@ void Pool::Free(void *&pointer) {
 
 void Pool::GC() {
 
-    int Residual = POOL_RESIDUAL;
-
-    MemoryBlockAllocator *Last = HeadBlock, *Current = nullptr /*, *Next = nullptr */, *TempFreeBlockHead = nullptr, *TempFreeBlockTail = nullptr;
-
+    MemoryBlockAllocator *Current, *Next, *NewCurrent;
 
     if (HeadBlock == nullptr) {
         return;
     }
 
-    Current = Last->GetNextBlock();
+    Current = HeadBlock;
+    HeadBlock = nullptr;
 
-    if (HeadBlock->IsFreeBlock()) {
-        HeadBlock->Reset();
-    }
+    while(Current != nullptr) {
 
-    while (Current != nullptr) {
+        Next = Current->GetNextBlock();
+        Current->SetNextBlock(nullptr);
 
         if (Current->IsFreeBlock()) {
-
-            Last->SetNextBlock(Current->GetNextBlock());
-            Current->SetNextBlock(nullptr);
-
-            if (Residual > 0) {
-                Residual -= 1;
-                Current->Reset();
-                if (nullptr == TempFreeBlockTail) {
-                    TempFreeBlockHead = TempFreeBlockTail = Current;
-                } else {
-                    TempFreeBlockTail->SetNextBlock(Current);
-                    TempFreeBlockTail = TempFreeBlockTail->GetNextBlock();
-                }
-            } else {
-                MemoryBlockAllocator::Destroy(Current);
-            }
+            MemoryBlockAllocator::Destroy(Current);
         } else {
-            Last = Current;
+
+            if (HeadBlock != nullptr) {
+                NewCurrent->SetNextBlock(Current);
+                NewCurrent = NewCurrent->GetNextBlock();
+            } else {
+                HeadBlock = NewCurrent = Current;
+            }
         }
-        Current = Last->GetNextBlock();
+        Current = Next;
     }
-
-    if (nullptr == TempFreeBlockHead) {
-        return;
-    }
-
-    Last->SetNextBlock(TempFreeBlockHead);
-    CurrentBlock = HeadBlock;
 };
 
 void Pool::Reset() {
 
     // free all memory used
 
-    MemoryBlockAllocator *TempMemBlock = HeadBlock, *NextMemBlock;
+    MemoryBlockAllocator *NextBlock;
 
-    AllocateRound = 0;
+    while (HeadBlock != nullptr) {
 
-    while (TempMemBlock != nullptr) {
-
-        NextMemBlock = TempMemBlock->GetNextBlock();
-
-        MemoryBlockAllocator::Destroy(TempMemBlock);
-
-        TempMemBlock = NextMemBlock;
+        NextBlock = HeadBlock->GetNextBlock();
+        HeadBlock->SetNextBlock(nullptr);
+        MemoryBlockAllocator::Destroy(HeadBlock);
+        HeadBlock = NextBlock;
     }
-    HeadBlock = CurrentBlock = nullptr;
+
+    CurrentBlock = nullptr; AllocateRound = 0;
 }
 
 Pool::~Pool() {
