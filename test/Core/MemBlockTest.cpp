@@ -9,7 +9,7 @@ int MemBlockTest() {
     cout << "MemBlock Class Test Start!" << endl;
 
     MemoryBlockAllocator *memBlk;
-    MemoryBlockAllocator::Build(memBlk, 4096);
+    memBlk = MemoryBlockAllocator::Build(4096);
 
     cout << "MemBlockTest AddressToMemBlock Start..." << endl;
 

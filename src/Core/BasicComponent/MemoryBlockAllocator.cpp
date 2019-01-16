@@ -6,6 +6,11 @@ MemoryBlockAllocator::MemoryBlockAllocator(size_t Size) : BasicMemoryBlock(Size)
     Start = (u_char *)((size_t)this & ~(BlockSize - 1)) + sizeof(MemoryBlockAllocator) + 1;
     End  = (u_char *)((size_t)this & ~(BlockSize - 1)) + BlockSize - 1;
     Reset();
+
+    if ((uintptr_t)Start < 120) {
+        printf("stub");
+    }
+
 }
 
 void *MemoryBlockAllocator::Allocate(size_t Size) {

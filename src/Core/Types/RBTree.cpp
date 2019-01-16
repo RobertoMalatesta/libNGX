@@ -319,7 +319,7 @@ void RBTree::Erase(RBNode *Node) {
 
     color:
 
-    if (Color) {
+    if (Color && Child != nullptr) {
         EraseColor(Child, Parent);
     }
 

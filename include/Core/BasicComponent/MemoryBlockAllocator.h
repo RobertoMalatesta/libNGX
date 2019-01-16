@@ -3,8 +3,7 @@ class MemoryBlockAllocator
           public Allocator,
           public CanReset,
           public CanGC,
-          public Reference,
-          public AlignBuild<MemoryBlockAllocator> {
+          public Reference{
 protected:
     u_char *Pos;
     MemoryBlockAllocator *Next;
@@ -34,5 +33,32 @@ public:
     inline bool IsFreeBlock() {
         return RefCount() == 0;
     }
+
+
+    static inline MemoryBlockAllocator *Build(size_t Size) {
+
+        int Code;
+        void *TempPointer = nullptr;
+
+        Code = posix_memalign(&TempPointer, Size, Size);
+
+        if (Code != 0 || TempPointer == nullptr) {
+            return nullptr;
+        }
+
+        return new(TempPointer) MemoryBlockAllocator(Size);
+    };
+
+    static inline int Destroy(MemoryBlockAllocator *&Item) {
+
+        if (nullptr == Item) {
+            return 0;
+        }
+
+        free((void *) Item);
+
+        Item = nullptr;
+        return 0;
+    };
 };
 

@@ -14,8 +14,7 @@
 
 class BufferMemoryBlock
         : public BasicMemoryBlock,
-          public Reusable,
-          public AlignBuild<BufferMemoryBlock, BUFFER_MEMORY_BLOCK_SIZE> {
+          public Reusable {
 protected:
     BufferMemoryBlock *NextBlock = nullptr;
 
@@ -44,4 +43,35 @@ public:
         }
         return (BufferMemoryBlock *) ((uintptr_t) Q - (uintptr_t) (&((BufferMemoryBlock *) 0)->ReuseItem));
     }
+
+    static inline int Build(BufferMemoryBlock *&Item, size_t Size) {
+
+        void *TempPointer = nullptr;
+
+        int Code = posix_memalign(&TempPointer, Size, Size);
+        Item = nullptr;
+
+        if (Code != 0) {
+            return Code;
+        }
+
+        if (TempPointer == nullptr) {
+            return -1;
+        }
+
+        Item = new(TempPointer) BufferMemoryBlock(Size);
+        return 0;
+    };
+
+    static inline int Destroy(BufferMemoryBlock *&Item) {
+
+        if (nullptr == Item) {
+            return 0;
+        }
+
+        free((void *) Item);
+
+        Item = nullptr;
+        return 0;
+    };
 };

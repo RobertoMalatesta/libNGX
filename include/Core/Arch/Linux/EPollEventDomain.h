@@ -16,7 +16,7 @@ using namespace ngx::Core::BasicComponent;
 namespace DefaultConfig {
 
     const int EPOLL_EVENT_BATCH_SIZE = 128;
-    const int EPOLL_EVENT_WAIT_TIME = -1;    // ms
+    const int EPOLL_EVENT_WAIT_TIME = 1;    // ms
     const int EPOLL_EVENT_MAX_CONNECTION = 32768;
 }
 

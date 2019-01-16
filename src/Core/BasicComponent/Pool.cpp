@@ -22,10 +22,14 @@ Pool::Pool(Pool &Copy) {
 void *Pool::Allocate(size_t Size) {
 
     void *ret = nullptr;
-    MemoryBlockAllocator *TempAllocator = nullptr;
 
-    if (HeadBlock == nullptr && MemoryBlockAllocator::Build(HeadBlock, BlockSize) == 0) {
-        CurrentBlock = HeadBlock;
+    if (HeadBlock == nullptr) {
+
+        HeadBlock = MemoryBlockAllocator::Build(BlockSize);
+
+        if (HeadBlock != nullptr) {
+            CurrentBlock = HeadBlock;
+        }
     } else if (HeadBlock == nullptr || Size == 0) {
         return nullptr;
     }
@@ -44,7 +48,9 @@ void *Pool::Allocate(size_t Size) {
 
             MemoryBlockAllocator *NewBlock;
 
-            if (MemoryBlockAllocator::Build(NewBlock, BlockSize) == 0) {
+            NewBlock = MemoryBlockAllocator::Build((this->BlockSize));
+
+            if (NewBlock != nullptr) {
                 CurrentBlock->SetNextBlock(NewBlock);
                 CurrentBlock = CurrentBlock->GetNextBlock();
             } else {
@@ -89,16 +95,15 @@ void Pool::Free(void *&pointer) {
 
 void Pool::GC() {
 
-    MemoryBlockAllocator *Current, *Next, *NewCurrent;
+    MemoryBlockAllocator *Current, *Next, *NewCurrent = nullptr;
 
     if (HeadBlock == nullptr) {
         return;
     }
 
-    Current = HeadBlock;
-    HeadBlock = nullptr;
+    Current = HeadBlock, HeadBlock = nullptr;
 
-    while(Current != nullptr) {
+    while (Current != nullptr) {
 
         Next = Current->GetNextBlock();
         Current->SetNextBlock(nullptr);
@@ -106,16 +111,21 @@ void Pool::GC() {
         if (Current->IsFreeBlock()) {
             MemoryBlockAllocator::Destroy(Current);
         } else {
-
-            if (HeadBlock != nullptr) {
-                NewCurrent->SetNextBlock(Current);
-                NewCurrent = NewCurrent->GetNextBlock();
+            if (HeadBlock == nullptr) {
+                HeadBlock = Current;
             } else {
-                HeadBlock = NewCurrent = Current;
+                NewCurrent->SetNextBlock(Current);
             }
+            NewCurrent = Current;
         }
         Current = Next;
     }
+
+    if (NewCurrent != nullptr) {
+        NewCurrent->SetNextBlock(nullptr);
+    }
+
+    CurrentBlock = HeadBlock;
 };
 
 void Pool::Reset() {
@@ -132,7 +142,8 @@ void Pool::Reset() {
         HeadBlock = NextBlock;
     }
 
-    CurrentBlock = nullptr; AllocateRound = 0;
+    CurrentBlock = nullptr;
+    AllocateRound = 0;
 }
 
 Pool::~Pool() {
