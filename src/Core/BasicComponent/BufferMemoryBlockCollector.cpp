@@ -43,7 +43,7 @@ BufferMemoryBlock *BufferMemoryBlockCollector::Get() {
     LockGuard LockGuard(&Lock);
 
     if (CollectorSentinel.IsEmpty()) {
-        BufferMemoryBlock::Build(Ret, BlockSize);
+        Ret = BufferMemoryBlock::Build(BlockSize);
     } else {
 
         Ret = BufferMemoryBlock::FromCollectorQueue(CollectorSentinel.GetNext());

@@ -21,7 +21,7 @@ RuntimeError Buffer::ReadConnection(Connection *C) {
     if (HeadBlock == nullptr) {
 
         if (Collector == nullptr) {
-            BufferMemoryBlock::Build(HeadBlock, BUFFER_MEMORY_BLOCK_SIZE);
+            HeadBlock = BufferMemoryBlock::Build(BUFFER_MEMORY_BLOCK_SIZE);
         } else {
             HeadBlock = Collector->Get();
         }
@@ -46,7 +46,7 @@ RuntimeError Buffer::ReadConnection(Connection *C) {
             BufferMemoryBlock *NewBlock = nullptr;
 
             if (Collector == nullptr) {
-                BufferMemoryBlock::Build(NewBlock, BUFFER_MEMORY_BLOCK_SIZE);
+                NewBlock = BufferMemoryBlock::Build(BUFFER_MEMORY_BLOCK_SIZE);
             } else {
                 NewBlock = Collector->Get();
             }
@@ -90,7 +90,7 @@ RuntimeError Buffer::ReadBytes(u_char *PointerToData, size_t DataLength) {
     if (HeadBlock == nullptr) {
 
         if (Collector == nullptr) {
-            BufferMemoryBlock::Build(HeadBlock, BUFFER_MEMORY_BLOCK_SIZE);
+            HeadBlock = BufferMemoryBlock::Build(BUFFER_MEMORY_BLOCK_SIZE);
         } else {
             HeadBlock = Collector->Get();
         }
@@ -113,7 +113,7 @@ RuntimeError Buffer::ReadBytes(u_char *PointerToData, size_t DataLength) {
             BufferMemoryBlock *NewBlock = nullptr;
 
             if (Collector == nullptr) {
-                BufferMemoryBlock::Build(NewBlock, BUFFER_MEMORY_BLOCK_SIZE);
+                NewBlock = BufferMemoryBlock::Build(BUFFER_MEMORY_BLOCK_SIZE);
             } else {
                 NewBlock = Collector->Get();
             }

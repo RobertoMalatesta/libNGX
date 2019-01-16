@@ -44,23 +44,17 @@ public:
         return (BufferMemoryBlock *) ((uintptr_t) Q - (uintptr_t) (&((BufferMemoryBlock *) 0)->ReuseItem));
     }
 
-    static inline int Build(BufferMemoryBlock *&Item, size_t Size) {
+    static inline BufferMemoryBlock *Build(size_t Size) {
 
         void *TempPointer = nullptr;
 
         int Code = posix_memalign(&TempPointer, Size, Size);
-        Item = nullptr;
 
-        if (Code != 0) {
-            return Code;
+        if (Code != 0 || TempPointer == nullptr) {
+            return nullptr;
         }
 
-        if (TempPointer == nullptr) {
-            return -1;
-        }
-
-        Item = new(TempPointer) BufferMemoryBlock(Size);
-        return 0;
+        return new(TempPointer) BufferMemoryBlock(Size);
     };
 
     static inline int Destroy(BufferMemoryBlock *&Item) {
