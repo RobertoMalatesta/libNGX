@@ -11,11 +11,11 @@
 //
 //===-------------------------------------------------------------------------===//
 
-class HTTPConnectionBuilder {
+class HTTPConnectionBuilder : public AllocatorBuild<HTTPConnection>, public CanReset {
 protected:
     SpinLock Lock;
     BufferBuilder BB;
-    HTTPConnectionCollector BackendCollector;
+    Pool BackendAllocator;
     uint32_t TCPNoDelay;
     uint32_t TCPNoPush;
     uint32_t ReadBufferSize = 8 * 1024 * 1024;
@@ -24,8 +24,7 @@ protected:
     uint32_t WriteTimeout = 1 * 60;
 
 public:
-    HTTPConnectionBuilder(size_t BufferBlockSize, uint32_t BufferCollectorSize,
-                          uint32_t ConnectionCollectorBinSize);
+    HTTPConnectionBuilder(size_t BufferBlockSize, uint32_t BufferCollectorSize);
 
     ~HTTPConnectionBuilder() = default;
 
@@ -57,4 +56,7 @@ public:
             SocketEventDomain *EventDomain);
 
     int Put(HTTPConnection *&C);
+
+    void Reset();
+
 };

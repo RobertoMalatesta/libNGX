@@ -19,7 +19,6 @@
  * @brief Collector for BufferMemoryBlock
  *
  * */
-
 class BufferMemoryBlockCollector : public Collector, MetaClass::CanReset {
 
 protected:

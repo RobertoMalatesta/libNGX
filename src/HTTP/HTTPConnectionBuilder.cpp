@@ -4,10 +4,9 @@ using namespace ngx::HTTP;
 
 HTTPConnectionBuilder::HTTPConnectionBuilder(
         size_t BufferBlockSize,
-        uint32_t BufferCollectorSize,
-        uint32_t ConnectionCollectorSize) :
-        BB(BufferBlockSize, BufferCollectorSize), TCPNoDelay(1), TCPNoPush(0),
-        BackendCollector(ConnectionCollectorSize) {
+        uint32_t BufferCollectorSize) :
+        BB(BufferBlockSize, BufferCollectorSize), BackendAllocator(),
+        AllocatorBuild(&BackendAllocator), TCPNoDelay(1), TCPNoPush(0) {
 }
 
 int HTTPConnectionBuilder::Get(HTTPConnection *&C, int SocketFD, SocketAddress &Address, HTTPServer *Server,
@@ -15,14 +14,16 @@ int HTTPConnectionBuilder::Get(HTTPConnection *&C, int SocketFD, SocketAddress &
 
     LockGuard LockGuard(&Lock);
 
-    if (SocketFD == -1 || BackendCollector.Get(C, SocketFD, Address) != 0) {
+    if (SocketFD == -1 || Build(C) != 0) {
         return C = nullptr, -1;
     }
+
+    C->SetSocketAddress(SocketFD, Address);
 
     if (C->SetNonBlock(true).GetCode() != 0 ||
         C->SetNoDelay(TCPNoDelay == 1).GetCode() != 0 ||
         EventDomain->BindEventThread(*C).GetCode() != 0) {
-        BackendCollector.Put(C);
+        Destroy(C);
         return C = nullptr, -1;
     }
 
@@ -37,6 +38,12 @@ int HTTPConnectionBuilder::Get(HTTPConnection *&C, int SocketFD, SocketAddress &
 
 int HTTPConnectionBuilder::Put(HTTPConnection *&C) {
     LockGuard LockGuard(&Lock);
+
     C->ParentEventDomain->UnbindEventThread(*C);
-    return BackendCollector.Put(C);
+    return Destroy(C);
+}
+
+void HTTPConnectionBuilder::Reset() {
+    LockGuard LockGuard(&Lock);
+    BackendAllocator.Reset();
 }

@@ -3,7 +3,7 @@ class MemoryBlockAllocator
           public Allocator,
           public CanReset,
           public CanGC,
-          public Reference{
+          public Reference {
 protected:
     u_char *Pos;
     MemoryBlockAllocator *Next;

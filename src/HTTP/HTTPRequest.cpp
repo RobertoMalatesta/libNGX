@@ -6,10 +6,7 @@ const char BadURIErrorString[] = "Bad URI";
 const char BadRequestErrorString[] = "Bad Request";
 const char BadVersionErrorString[] = "Bad HTTP Version";
 const char InvalidMethodErrorString[] = "Invalid Method";
-const char InvalidHeaderErrorString[] = "Invalid Header";
 const char BrokenRequestErrorString[] = "Broken Request in buffer";
-const char BrokenHeaderErrorString[] = "Broken Header in buffer";
-const char NoMoreHeaderErrorString[] = "No more header";
 const char NoMemoryErrorString[] = "No sufficient memory to store header indexer";
 const char BadCoreHeaderInErrorString[] = "Bad core header in";
 
@@ -756,252 +753,6 @@ HTTPError HTTPRequest::ParseRequestLine(Buffer &B, HTTPRequest &R) {
     return {0};
 }
 
-HTTPError HTTPRequest::ParseHeader(Buffer &B, HTTPHeader &Header, bool AllowUnderScore) {
-
-    enum HTTPHeaderParseState {
-        HDR_START = 0,
-        HDR_NAME,
-        HDR_SPACE_BEFORE_VALUE,
-        HDR_VALUE,
-        HDR_SPACE_AFTER_VALUE,
-        HDR_IGNORE_LINE,
-        HDR_ALMOST_DONE,
-        HDR_HEADER_ALMOST_DONE
-    };
-
-    bool NoMoreHeader = false;
-
-    BoundCursor BC;
-    HTTPHeaderParseState State = HDR_START;
-
-    B >> BC;
-
-    for (u_char C, C1; C = *BC, !!BC; BC++) {
-
-        switch (State) {
-            case HDR_START:
-
-                Header.Value < BC, Header.Name < BC;
-                Header.Valid = true;
-
-                switch (C) {
-                    case CR:
-                        Header.Value > BC;
-                        State = HDR_HEADER_ALMOST_DONE;
-                        break;
-                    case LF:
-                        Header.Value > BC;
-                        NoMoreHeader = true;
-                        goto done;
-                        break;
-                    default:
-                        State = HDR_NAME;
-                        C1 = lower_case[C];
-
-                        if (C1) {
-                            break;
-                        }
-
-                        if (C == '_') {
-                            if (AllowUnderScore) {
-                                break;
-                            } else {
-                                Header.Valid = false;
-                            }
-                            break;
-                        }
-
-                        if (C == '\0') {
-                            return {EINVAL, InvalidHeaderErrorString};
-                        }
-
-                        Header.Valid = false;
-                        break;
-                }
-
-                break;
-
-            case HDR_NAME:
-
-                C1 = lower_case[C];
-
-                if (C1) {
-                    break;
-                }
-
-                if (C == '_') {
-
-                    if (AllowUnderScore) {
-                        break;
-                    } else {
-                        Header.Valid = false;
-
-                    }
-                    break;
-
-                }
-
-                if (C == ':') {
-
-                    Header.Name > BC;
-                    State = HDR_SPACE_BEFORE_VALUE;
-
-                    break;
-                }
-
-                if (C == CR) {
-
-                    Header.Name > BC;
-                    Header.Value < BC;
-                    Header.Value > BC;
-                    State = HDR_ALMOST_DONE;
-
-                    break;
-                }
-
-                if (C == LF) {
-
-                    Header.Name > BC;
-                    Header.Value < BC;
-                    Header.Value > BC;
-
-                    goto done;
-                }
-
-                if (C == '/') {
-
-                    if (Header.Name.CmpBytes((u_char *) "HTTP", 4)) {
-                        State = HDR_IGNORE_LINE;
-                        break;
-                    }
-
-                }
-
-                if (C == '\0') {
-                    return {EINVAL, InvalidHeaderErrorString};
-                }
-
-                Header.Valid = false;
-                break;
-
-            case HDR_SPACE_BEFORE_VALUE:
-
-                switch (C) {
-                    case ' ':
-                        break;
-                    case CR:
-                        Header.Value < BC;
-                        Header.Value > BC;
-                        State = HDR_ALMOST_DONE;
-
-                        break;
-                    case LF:
-                        Header.Value < BC;
-                        Header.Value > BC;
-
-                        goto done;
-                    case '\0':
-                        return {EINVAL, InvalidHeaderErrorString};
-                    default:
-                        Header.Value < BC;
-                        State = HDR_VALUE;
-
-                        break;
-                }
-
-                break;
-            case HDR_VALUE:
-
-                switch (C) {
-                    case ' ':
-                        Header.Value > BC;
-                        State = HDR_SPACE_AFTER_VALUE;
-
-                        break;
-                    case CR:
-                        Header.Value > BC;
-                        State = HDR_ALMOST_DONE;
-
-                        break;
-                    case LF:
-                        Header.Value > BC;
-
-                        goto done;
-                    case '\0':
-                        return {EINVAL, InvalidHeaderErrorString};
-                }
-
-                break;
-
-            case HDR_SPACE_AFTER_VALUE:
-
-                switch (C) {
-                    case ' ':
-                        break;
-                    case CR:
-                        State = HDR_ALMOST_DONE;
-
-                        break;
-                    case LF:
-                        goto done;
-                    case '\0':
-                        return {EINVAL, InvalidHeaderErrorString};
-                    default:
-                        State = HDR_VALUE;
-
-                        break;
-                }
-
-                break;
-
-            case HDR_IGNORE_LINE:
-
-                switch (C) {
-                    case LF:
-                        State = HDR_START;
-                        break;
-                    default:
-                        break;
-                }
-
-                break;
-            case HDR_ALMOST_DONE:
-
-                switch (C) {
-                    case LF:
-                        goto done;
-                    case CR:
-                        break;
-                    default:
-                        return {EINVAL, InvalidHeaderErrorString};
-                }
-
-                break;
-            case HDR_HEADER_ALMOST_DONE:
-
-                switch (C) {
-                    case LF:
-                        NoMoreHeader = true;
-                        goto done;
-                    default:
-                        return {EINVAL, InvalidHeaderErrorString};
-                }
-        }
-    }
-
-    return {EAGAIN, BrokenHeaderErrorString};
-
-    done:
-
-    if (!(BC + 1)) {
-        return {EAGAIN, BrokenHeaderErrorString};
-    }
-
-    BC += 1;
-    B << BC;
-
-    return {0, NoMoreHeader ? NoMoreHeaderErrorString : nullptr};
-}
 
 HTTPError HTTPRequest::ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderScore) {
 
@@ -1022,14 +773,14 @@ HTTPError HTTPRequest::ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool Allow
 
     do {
 
-        Error = ParseHeader(B, Header, AllowUnderScore);
+        Error = Header.Read(B, AllowUnderScore);
 
         if (Error.GetCode() != 0) {
-            return Error;
-        }
-
-        if (Error.CodeMessage() == NoMoreHeaderErrorString) {
-            break;
+            if (Error.GetCode() == ENOENT) {
+                break;
+            } else {
+                return Error;
+            }
         }
 
         Hash = 0 ^ Header.Name.Size();
@@ -1277,13 +1028,13 @@ HTTPError HTTPRequest::HeaderInFillVariable(HTTPCoreHeader &C, HTTPRequest &R, H
     return {0};
 }
 
-HTTPError HTTPRequest::ReadRequest(Buffer &B) {
+HTTPError HTTPRequest::Read(Buffer &B) {
 
     HTTPError Error(0);
 
     switch (State) {
 
-        case HTTP_INIT_STATE:
+        case HTTP_INIT:
             State = HTTP_PAESE_METHOD;
         case HTTP_PAESE_METHOD:
 
@@ -1292,7 +1043,7 @@ HTTPError HTTPRequest::ReadRequest(Buffer &B) {
             if (Error.GetCode() == 0) {
                 State = HTTP_PARSE_REQUEST_LINE;
             } else {
-                State = HTTP_BAD_REQUEST_STATE;
+                State = HTTP_BAD_REQUEST;
                 break;
             }
 
@@ -1303,7 +1054,7 @@ HTTPError HTTPRequest::ReadRequest(Buffer &B) {
             if (Error.GetCode() == 0) {
                 State = HTTP_PARSE_HEADER;
             } else {
-                State = HTTP_BAD_REQUEST_STATE;
+                State = HTTP_BAD_REQUEST;
 
                 break;
             }
@@ -1318,7 +1069,7 @@ HTTPError HTTPRequest::ReadRequest(Buffer &B) {
 
                 State = HTTP_HEADER_DONE;
             } else {
-                State = HTTP_BAD_REQUEST_STATE;
+                State = HTTP_BAD_REQUEST;
 
                 break;
             }
@@ -1326,7 +1077,7 @@ HTTPError HTTPRequest::ReadRequest(Buffer &B) {
         case HTTP_HEADER_DONE:
             // to parse done or read chunk
             break;
-        case HTTP_BAD_REQUEST_STATE:
+        case HTTP_BAD_REQUEST:
         default:
             Error = {EINVAL, BadRequestErrorString};
             break;
@@ -1337,5 +1088,6 @@ HTTPError HTTPRequest::ReadRequest(Buffer &B) {
 }
 
 void HTTPRequest::Reset() {
-    State = HTTP_INIT_STATE, Context = nullptr;
+    State = HTTP_INIT, Context = nullptr;
 }
+

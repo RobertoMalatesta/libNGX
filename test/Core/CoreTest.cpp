@@ -27,9 +27,9 @@ extern int EPollEventDomainTest();
 int CoreTest() {
 
 //	ArrayTest();
-	MemBlockTest();
-  PoolTest();
-  BufferTest();
+    MemBlockTest();
+    PoolTest();
+    BufferTest();
 //	TimeTest();
 //	LockTest();
 //	HashTest();

@@ -42,7 +42,7 @@ RuntimeError HTTPListening::HandleEventDomain(uint32_t EventType) {
                 close(NewFD);
             } else {
 //                LOG(INFO) << "attach connection to event domain, fd: " << NewFD << ", error: "
-                          C->ParentEventDomain->AttachSocket(*C, ET_READ | ET_WRITE).GetError();
+                C->ParentEventDomain->AttachSocket(*C, ET_READ | ET_WRITE).GetError();
             }
         }
     }

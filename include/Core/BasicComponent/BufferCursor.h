@@ -80,31 +80,31 @@ struct BoundCursor : public Cursor {
         return *(*this + Offset);
     }
 
-    inline BoundCursor &operator=(BoundCursor const &Right) & {
+    inline BoundCursor &operator=(BoundCursor const &Right) &{
 
         ParentBuffer = Right.ParentBuffer, Position = Right.Position, Bound = Right.Bound;
         return *this;
     }
 
-    inline BoundCursor &operator<(Cursor Cursor) & {
+    inline BoundCursor &operator<(Cursor Cursor) &{
 
         ParentBuffer = Cursor.ParentBuffer, Position = Cursor.Position;
         return *this;
     }
 
-    inline BoundCursor &operator>(Cursor Cursor) & {
+    inline BoundCursor &operator>(Cursor Cursor) &{
 
         ParentBuffer = Cursor.ParentBuffer, this->Bound = Cursor.Position;
         return *this;
     }
 
-    inline BoundCursor &operator<(BoundCursor Cursor) & {
+    inline BoundCursor &operator<(BoundCursor Cursor) &{
         ParentBuffer = Cursor.ParentBuffer;
         Position = Cursor.Position;
         return *this;
     }
 
-    inline BoundCursor &operator>(BoundCursor Cursor) & {
+    inline BoundCursor &operator>(BoundCursor Cursor) &{
         ParentBuffer = Cursor.ParentBuffer;
         this->Bound = Cursor.Position;
         return *this;

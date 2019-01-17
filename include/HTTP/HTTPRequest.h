@@ -66,8 +66,8 @@ class HTTPRequest : public CanReset {
 protected:
 
     enum HTTPRequestState {
-        HTTP_BAD_REQUEST_STATE = -1,
-        HTTP_INIT_STATE,
+        HTTP_BAD_REQUEST = -1,
+        HTTP_INIT,
         HTTP_PAESE_METHOD,
         HTTP_PARSE_REQUEST_LINE,
         HTTP_PARSE_HEADER,
@@ -105,7 +105,7 @@ protected:
     HTTPHeaderIn HeaderIn;
 
     // HTTPRequest Parse State
-    HTTPRequestState State = HTTP_INIT_STATE;
+    HTTPRequestState State = HTTP_INIT;
 
     // HTTP URI Flags
     struct {
@@ -127,9 +127,6 @@ protected:
     /** Parse HTTP Request Line from Buffer into HTTPRequest */
     static HTTPError ParseRequestLine(Buffer &B, HTTPRequest &R);
 
-    /** Parse HTTP Header from Buffer into HTTPHeader */
-    static HTTPError ParseHeader(Buffer &B, HTTPHeader &Header, bool AllowUnderScore = ALLOW_UNDERSCORE);
-
     /** Parse HTTP Header In through ParseHeader, and do some process */
     static HTTPError ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderScore = ALLOW_UNDERSCORE);
 
@@ -148,10 +145,10 @@ public:
     };
 
     /** Read a request from buffer */
-    HTTPError ReadRequest(Buffer &B);
+    HTTPError Read(Buffer &B);
 
     /** Write a request to buffer */
-    HTTPError WriteRequest(Buffer &B);
+    HTTPError Write(Buffer &B);
 
     /** Reset state and release memory */
     virtual void Reset();

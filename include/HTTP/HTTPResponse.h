@@ -12,17 +12,26 @@ class HTTPResponse : public CanReset {
 protected:
 
     enum HTTPResponseState {
-        HTTP_BAD_REQUEST_STATE = -1,
-        HTTP_INIT_STATE,
-        HTTP_PAESE_METHOD,
-        HTTP_PARSE_REQUEST_LINE,
-        HTTP_PARSE_HEADER,
+        HTTP_BAD_RESPONSE = -1,
+        HTTP_INIT,
+        HTTP_PARSE_RESPONSE_LINE,
+        HTTP_PARSE_HEADERS,
         HTTP_HEADER_DONE,
     };
 
     // HTTPResponse Parse State
-    HTTPResponseState State = HTTP_INIT_STATE;
+    HTTPResponseState State = HTTP_INIT;
+
+    int Status;
+    int Version;
+    BoundCursor StatusCode;
+    BoundCursor StatusText;
     HTTPHeaderOut HeaderOut;
+
+    static HTTPCoreHeader HeaderOutProcesses[];
+
+    /** Parse HTTP Response Line from Buffer to HTTPResponse */
+    static HTTPError ParseResponseLine(Buffer &B, HTTPResponse &R);
 
 public:
 
@@ -31,10 +40,10 @@ public:
     };
 
     /** Read a request from buffer */
-    HTTPError ReadResponse(Buffer &B);
+    HTTPError Read(Buffer &B);
 
     /** Write a request to buffer */
-    HTTPError WriteResponse(Buffer &B);
+    HTTPError Write(Buffer &B);
 
     /** Reset state and release memory */
     virtual void Reset();

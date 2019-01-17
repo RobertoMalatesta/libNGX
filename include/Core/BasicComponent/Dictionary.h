@@ -48,7 +48,7 @@ public:
     inline uint32_t GetHash() {
 
         if (Hash == 0) {
-            Hash = HashFn() | 0x01;
+            Hash = HashFn();
         }
 
         return Hash;

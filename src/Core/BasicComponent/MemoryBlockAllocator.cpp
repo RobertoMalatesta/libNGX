@@ -3,8 +3,8 @@
 using namespace ngx::Core::BasicComponent;
 
 MemoryBlockAllocator::MemoryBlockAllocator(size_t Size) : BasicMemoryBlock(Size) {
-    Start = (u_char *)((size_t)this & ~(BlockSize - 1)) + sizeof(MemoryBlockAllocator) + 1;
-    End  = (u_char *)((size_t)this & ~(BlockSize - 1)) + BlockSize - 1;
+    Start = (u_char *) ((size_t) this & ~(BlockSize - 1)) + sizeof(MemoryBlockAllocator) + 1;
+    End = (u_char *) ((size_t) this & ~(BlockSize - 1)) + BlockSize - 1;
     Reset();
 }
 

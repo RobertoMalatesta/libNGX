@@ -33,11 +33,10 @@ set(SOURCE_FILES
         src/HTTP/HTTPListening.cpp
         src/HTTP/HTTPConnection.cpp
         src/HTTP/HTTPServer.cpp
-        src/HTTP/HTTPConnectionCollector.cpp
         src/HTTP/HTTPError.cpp
         src/HTTP/HTTPConnectionBuilder.cpp
         src/Core/BasicComponent/Dictionary.cpp
-        src/HTTP/HTTPHeader.cpp src/HTTP/HTTPRequest.cpp)
+        src/HTTP/HTTPHeader.cpp src/HTTP/HTTPRequest.cpp src/HTTP/HTTPResponse.cpp src/HTTP/HTTPCoreHeader.cpp)
 
 set(TEST_FILES
         test/Test.cpp
@@ -58,7 +57,7 @@ set(TEST_FILES
         test/HTTP/HTTPTest.cpp
         test/HTTP/HTTPServerTest.cpp
         test/HTTP/HTTPConnectionCollector.cpp
-        test/HTTP/HTTPParseTest.cpp)
+        test/HTTP/HTTPParseTest.cpp include/HTTP/HTTPCoreHeader.h)
 
 include_directories(./include)
 

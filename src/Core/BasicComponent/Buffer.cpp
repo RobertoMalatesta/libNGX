@@ -29,7 +29,7 @@ RuntimeError Buffer::ReadConnection(Connection *C) {
         if (HeadBlock == nullptr) {
             return {ENOMEM, "can not allocate buffer block"};
         } else {
-            Cursor = {this,  HeadBlock->Start, HeadBlock->Start};
+            Cursor = {this, HeadBlock->Start, HeadBlock->Start};
         }
     }
 

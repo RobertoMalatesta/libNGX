@@ -19,7 +19,7 @@ int HTTPParseTest() {
 
     HTTPRequest R(&MemoryAllocator);
 
-    R.ReadRequest(buffer);
+    R.Read(buffer);
 
 //    HTTPHeader H;
 //    H.Name = BC;
