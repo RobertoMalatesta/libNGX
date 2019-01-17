@@ -14,8 +14,11 @@
 class HTTPConnectionBuilder : public AllocatorBuild<HTTPConnection>, public CanReset {
 protected:
     SpinLock Lock;
+
     BufferBuilder BB;
     Pool BackendAllocator;
+
+    bool NonBlock;
     uint32_t TCPNoDelay;
     uint32_t TCPNoPush;
     uint32_t ReadBufferSize = 8 * 1024 * 1024;

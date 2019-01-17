@@ -6,7 +6,7 @@ HTTPConnectionBuilder::HTTPConnectionBuilder(
         size_t BufferBlockSize,
         uint32_t BufferCollectorSize) :
         BB(BufferBlockSize, BufferCollectorSize), BackendAllocator(),
-        AllocatorBuild(&BackendAllocator), TCPNoDelay(1), TCPNoPush(0) {
+        AllocatorBuild(&BackendAllocator), NonBlock(true), TCPNoDelay(1), TCPNoPush(0) {
 }
 
 int HTTPConnectionBuilder::Get(HTTPConnection *&C, int SocketFD, SocketAddress &Address, HTTPServer *Server,
@@ -20,7 +20,7 @@ int HTTPConnectionBuilder::Get(HTTPConnection *&C, int SocketFD, SocketAddress &
 
     C->SetSocketAddress(SocketFD, Address);
 
-    if (C->SetNonBlock(true).GetCode() != 0 ||
+    if (C->SetNonBlock(NonBlock).GetCode() != 0 ||
         C->SetNoDelay(TCPNoDelay == 1).GetCode() != 0 ||
         EventDomain->BindEventThread(*C).GetCode() != 0) {
         Destroy(C);

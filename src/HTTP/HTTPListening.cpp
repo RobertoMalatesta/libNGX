@@ -7,7 +7,7 @@ using namespace ngx::HTTP;
 HTTPListening::HTTPListening(SocketAddress &Address) : TCPListening(Address) {
 }
 
-RuntimeError HTTPListening::HandleEventDomain(uint32_t EventType) {
+RuntimeError HTTPListening::HandleDomainEvent(uint32_t EventType) {
 
     int NewFD;
     RuntimeError Error{0};
@@ -38,6 +38,7 @@ RuntimeError HTTPListening::HandleEventDomain(uint32_t EventType) {
 //            LOG(INFO) << "get connection";
 
             if (Error.GetCode() != 0 || C == nullptr) {
+//                can not create connection to handle it
 //                LOG(INFO) << "get connection object failed, will close connection, error: " << Error.GetError();
                 close(NewFD);
             } else {

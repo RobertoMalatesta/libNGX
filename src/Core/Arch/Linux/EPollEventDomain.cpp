@@ -148,7 +148,7 @@ RuntimeError EPollEventDomain::EventLoop() {
             if (Events[i].events & (EPOLLOUT)) {
                 EventType |= ET_WRITE;
             }
-            TempSocket->HandleEventDomain(EventType);
+            TempSocket->HandleDomainEvent(EventType);
         }
     }
 

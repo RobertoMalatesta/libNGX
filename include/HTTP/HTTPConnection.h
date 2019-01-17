@@ -10,7 +10,7 @@ protected:
     Buffer ReadBuffer;
     HTTPRequest Request;
 
-    virtual RuntimeError HandleEventDomain(uint32_t EventType);
+    virtual RuntimeError HandleDomainEvent(uint32_t EventType);
 
     static void OnTimerEvent(void *PointerToConnection);
 

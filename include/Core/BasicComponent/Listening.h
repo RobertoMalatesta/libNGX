@@ -23,7 +23,7 @@ public:
 
     virtual SocketError Bind();
 
-    virtual RuntimeError HandleEventDomain(EventType Type) {
+    virtual RuntimeError HandleDomainEvent(EventType Type) {
         return {0};
     };
 

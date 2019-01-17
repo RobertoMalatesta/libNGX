@@ -71,7 +71,7 @@ public:
         return (Socket *) ((uintptr_t) T - (uintptr_t) (&((Socket *) 0)->TimerNode));
     }
 
-    virtual RuntimeError HandleEventDomain(EventType Type) = 0;
+    virtual RuntimeError HandleDomainEvent(EventType Type) = 0;
 
     virtual SocketError Close();
 };

@@ -9,7 +9,7 @@ HTTPConnection::HTTPConnection() :
     TimerNode = {0, HTTPConnection::OnTimerEvent, this};
 }
 
-RuntimeError HTTPConnection::HandleEventDomain(uint32_t EventType) {
+RuntimeError HTTPConnection::HandleDomainEvent(uint32_t EventType) {
 
     LockGuard Guard(&SocketLock);
 

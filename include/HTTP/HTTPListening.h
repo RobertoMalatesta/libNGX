@@ -7,7 +7,7 @@ protected:
 
     friend class HTTPServer;
 
-    virtual RuntimeError HandleEventDomain(uint32_t EventType);
+    virtual RuntimeError HandleDomainEvent(uint32_t EventType);
 
 public:
 

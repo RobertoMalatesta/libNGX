@@ -73,7 +73,6 @@ void *Thread::ThreadProcess(void *Argument) {
         T->Lock.Lock();
 
         if (!T->Running) {
-
             T->Lock.Unlock();
             break;
         } else {
@@ -83,10 +82,13 @@ void *Thread::ThreadProcess(void *Argument) {
                 Q = T->Sentinel.GetNext();
                 Q->Detach();
 
+                T->Lock.Unlock();
+
                 J = Job::FromQueue(Q);
                 J->doJob();
-
                 T->Destroy(J);
+
+                T->Lock.Lock();
             }
         }
 
