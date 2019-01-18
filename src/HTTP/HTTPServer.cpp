@@ -7,7 +7,7 @@ HTTPServer::HTTPServer(size_t BufferBlockSize,
                        uint32_t BufferCollectorSize,
                        SocketEventDomain *EventDomain) :
         Server(EventDomain),
-        ConnectionBuilder(BufferBlockSize, BufferCollectorSize, ConnectionCollectorSize) {
+        ConnectionBuilder(BufferBlockSize, BufferCollectorSize) {
 }
 
 EventError HTTPServer::AttachListening(HTTPListening &L) {

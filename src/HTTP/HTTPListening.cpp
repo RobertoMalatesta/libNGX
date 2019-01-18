@@ -7,7 +7,7 @@ using namespace ngx::HTTP;
 HTTPListening::HTTPListening(SocketAddress &Address) : TCPListening(Address) {
 }
 
-RuntimeError HTTPListening::HandleDomainEvent(uint32_t EventType) {
+RuntimeError HTTPListening::HandleDomainEvent(EventType Type) {
 
     int NewFD;
     RuntimeError Error{0};
@@ -22,7 +22,7 @@ RuntimeError HTTPListening::HandleDomainEvent(uint32_t EventType) {
         return {EINVAL, "Listening is not attached"};
     }
 
-    if ((EventType & ET_READ) != 0) {
+    if ((Type & ET_READ) != 0) {
 
 
         NewFD = accept4(SocketFD, &Address.sockaddr, &SocketLength, O_NONBLOCK);

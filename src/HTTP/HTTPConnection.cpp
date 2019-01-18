@@ -9,7 +9,7 @@ HTTPConnection::HTTPConnection() :
     TimerNode = {0, HTTPConnection::OnTimerEvent, this};
 }
 
-RuntimeError HTTPConnection::HandleDomainEvent(uint32_t EventType) {
+RuntimeError HTTPConnection::HandleDomainEvent(EventType Type) {
 
     LockGuard Guard(&SocketLock);
 
@@ -20,7 +20,7 @@ RuntimeError HTTPConnection::HandleDomainEvent(uint32_t EventType) {
         return {EINVAL, "connection not attached"};
     }
 
-    Event = EventType;
+    Event = Type;
 
     if (SocketFD == -1) {
 //        LOG(WARNING) << "connection not open, fd: " << SocketFD;

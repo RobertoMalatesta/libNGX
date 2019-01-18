@@ -3,6 +3,7 @@
 using namespace ngx::HTTP;
 
 const char BadURIErrorString[] = "Bad URI";
+const char BadMethodErrorString[] = "Bad Method";
 const char BadRequestErrorString[] = "Bad Request";
 const char BadVersionErrorString[] = "Bad HTTP Version";
 const char InvalidMethodErrorString[] = "Invalid Method";
@@ -79,7 +80,7 @@ HTTPError HTTPRequest::ParseMethod(Buffer &B, HTTPRequest &R) {
         } else if (C[0] == 'P' && C[1] == 'U' && C[2] == 'T') {
             R.Method = PUT;
         } else {
-            return {EINVAL, InvalidHeaderErrorString};
+            return {EINVAL, BadMethodErrorString};
         }
 
         BC += 4;
