@@ -13,9 +13,9 @@
 
     - Task Steal 允许空闲线程协助接管任务。
 
-5.  ~~使用Hash作为Key的红黑树(Dictionary),通过前后查找解决冲突~
-6.  ~~基于红黑树的定时器(TimerHub)~
-7.  ~~数据缓冲(Buffer)~
+5.  ~~使用Hash作为Key的红黑树(Dictionary),通过前后查找解决冲突~~
+6.  ~~基于红黑树的定时器(TimerHub)~~
+7.  ~~数据缓冲(Buffer)~~
 8.  ~~网络通信方面的类(Connection, Listening, EventDomain)~~
 9.  ~~常用的校验、摘要、哈希算法~~
 10. DNS解析器
