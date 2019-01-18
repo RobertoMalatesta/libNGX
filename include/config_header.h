@@ -18,8 +18,8 @@ namespace ngx {
             const uint32_t ARRAY_DEFAULT_ELEMENT_COUNT = 32;
 
             // BasicComponent Configuration
-            const size_t BUFFER_MEMORY_BLOCK_SIZE = 1 * 128 * PAGE_SIZE;    //Byte(s)
-            const size_t POOL_MEMORY_BLOCK_SIZE = 1 * 128 * PAGE_SIZE;      //Byte(s)
+            const size_t BUFFER_MEMORY_BLOCK_SIZE = 128 * PAGE_SIZE;    //Byte(s)
+            const size_t POOL_MEMORY_BLOCK_SIZE = 128 * PAGE_SIZE;      //Byte(s)
             const int POOL_RECYCLE_ROUND = 10000;
             const uint64_t DEFAULT_COLLECTOR_SIZE = 1024;
             const int THREAD_WAIT_TIME = 10 * 1000 * 1000;     // 10(ms)

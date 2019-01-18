@@ -27,7 +27,7 @@ set(SOURCE_FILES
         src/Core/BasicComponent/Time.cpp
         src/Core/BasicComponent/ThreadPool.cpp
         src/Core/BasicComponent/SocketTimerHub.cpp
-        src/Core/BasicComponent/BufferCursor.cpp
+        src/Core/BasicComponent/BoundCursor.cpp
         src/Core/Arch/Linux/EPollEventDomain.cpp
         src/HTTP/Router/Mux.cpp
         src/HTTP/HTTPListening.cpp
@@ -36,7 +36,7 @@ set(SOURCE_FILES
         src/HTTP/HTTPError.cpp
         src/HTTP/HTTPConnectionBuilder.cpp
         src/Core/BasicComponent/Dictionary.cpp
-        src/HTTP/HTTPHeader.cpp src/HTTP/HTTPRequest.cpp src/HTTP/HTTPResponse.cpp src/HTTP/HTTPCoreHeader.cpp)
+        src/HTTP/HTTPHeader.cpp src/HTTP/HTTPRequest.cpp src/HTTP/HTTPResponse.cpp src/HTTP/HTTPCoreHeader.cpp src/Core/BasicComponent/Cursor.cpp src/Core/BasicComponent/TCPConnection.cpp src/Core/BasicComponent/TCPListening.cpp)
 
 set(TEST_FILES
         test/Test.cpp

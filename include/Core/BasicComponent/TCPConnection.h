@@ -1,4 +1,4 @@
-//===--------------- Connection.h - represent a Connection ---------*- C++ -*-===//
+//===------------ TCPConnection.h - represent a TCPConnection ------*- C++ -*-===//
 //
 //                     The NGX Server Infrastructure
 //
@@ -12,18 +12,15 @@
 //===-------------------------------------------------------------------------===//
 
 /**
- *  @name Connection
+ *  @name TCPConnection
  *
- *  @brief Peer connection
- **/
-class Connection : public Socket {
-protected:
+ *  @brief Represent a tcp connection
+ * */
+class TCPConnection : public Connection {
 public:
-    Connection();
+    TCPConnection(SocketAddress &Address);
 
-    Connection(SocketAddress &Address);
+    TCPConnection(int SocketFD, SocketAddress &Address);
 
-    Connection(int SocketFD, SocketAddress &Address);
-
-    virtual SocketError Connect() = 0;
+    virtual SocketError Connect();
 };

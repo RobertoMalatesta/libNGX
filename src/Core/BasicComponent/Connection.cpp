@@ -16,26 +16,3 @@ Connection::Connection(SocketAddress &Address) :
 Connection::Connection(int SocketFD, SocketAddress &Address)
         : Socket(SocketFD, Address) {
 };
-
-TCPConnection::TCPConnection(int SocketFD, SocketAddress &Address) :
-        Connection(SocketFD, Address) {
-}
-
-TCPConnection::TCPConnection(SocketAddress &Address) :
-        Connection(Address) {
-}
-
-SocketError TCPConnection::Connect() {
-
-    if (SocketFD != -1) {
-        return {EALREADY, "Socket is already open!"};
-    }
-
-    SocketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-
-    if (0 != bind(SocketFD, &Address.sockaddr, sizeof(Address))) {
-        close(SocketFD), SocketFD = -1;
-    }
-
-    return {0};
-}

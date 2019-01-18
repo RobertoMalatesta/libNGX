@@ -13,9 +13,9 @@
 //===-------------------------------------------------------------------------===//
 
 /**
- *  @name Basic memory block
+ *  @name BufferBuilder
  *
- *  @brief Basic memory block structure.
+ *  @brief Agent to build buffer, helps to collect and reuse buffer memory block
  * */
 class BufferBuilder {
 

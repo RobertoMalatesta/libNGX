@@ -2,19 +2,6 @@
 
 using namespace ngx::Core::BasicComponent;
 
-Cursor::Cursor(Buffer *ParentBuffer, u_char *Position) : ParentBuffer(ParentBuffer), Position(Position) {
-    this->ParentBuffer = ParentBuffer, this->Position = Position;
-}
-
-BufferMemoryBlock *Cursor::GetParentBlock() {
-
-    if (ParentBuffer == nullptr) {
-        return nullptr;
-    }
-
-    return ParentBuffer->AddressToMemoryBlock(Position);
-}
-
 BoundCursor::BoundCursor(Buffer *ParentBuffer, u_char *Position, u_char *Bound) : Cursor(ParentBuffer, Position),
                                                                                   Bound(Bound) {
 }
@@ -23,7 +10,9 @@ BoundCursor BoundCursor::operator+(size_t Size) const {
 
     BoundCursor R = *this;
 
-    if (ParentBuffer != nullptr) {
+    if (Size < 0) {
+        return {nullptr, nullptr, nullptr};
+    } else if (ParentBuffer != nullptr) {
         BufferMemoryBlock *ThisBlock, *BoundBlock;
 
         ThisBlock = ParentBuffer->AddressToMemoryBlock(Position);

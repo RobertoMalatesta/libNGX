@@ -33,10 +33,10 @@ namespace ngx {
 /** Buffer */
 #include "Core/BasicComponent/BufferMemoryBlock.h"
 #include "Core/BasicComponent/BufferMemoryBlockCollector.h"
-#include "Core/BasicComponent/BufferCursor.h"
+#include "Core/BasicComponent/Cursor.h"
+#include "Core/BasicComponent/BoundCursor.h"
 #include "Core/BasicComponent/Buffer.h"
 #include "Core/BasicComponent/BufferBuilder.h"
-
 
 /** Event */
 #include "Core/BasicComponent/EventEntity.h"
@@ -46,7 +46,9 @@ namespace ngx {
 #include "Core/BasicComponent/Socket.h"
 #include "Core/BasicComponent/SocketEventDomain.h"
 #include "Core/BasicComponent/Connection.h"
+#include "Core/BasicComponent/TCPConnection.h"
 #include "Core/BasicComponent/Listening.h"
+#include "Core/BasicComponent/TCPListening.h"
 
 /** Server */
 #include "Core/BasicComponent/Server.h"

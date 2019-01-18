@@ -1,4 +1,4 @@
-//===- BufferCursor.h - Cursor to index Buffer memory -----------*- C++ -*-===//
+//===- BoundCursor.h - Cursor to index Buffer memory -----------*- C++ -*-===//
 //
 //                     The NGX Server Infrastructure
 //
@@ -7,45 +7,17 @@
 //
 //===----------------------------------------------------------------------===//
 //
-//  This file define Cursor
+//  This file define BoundCursor
 //
 //===----------------------------------------------------------------------===//
 
 class Buffer;
 
-struct Cursor {
-
-    u_char *Position = nullptr;
-    Buffer *ParentBuffer = nullptr;
-
-    Cursor() = default;
-
-    Cursor(Buffer *ParentBuffer, u_char *Position);
-
-    inline u_char operator*() const {
-        return (!*this) ? (u_char) '\0' : *Position;
-    }
-
-    inline bool operator!() const {
-        return Position == nullptr;
-    }
-
-    inline Cursor &operator=(Cursor const &Right) {
-        ParentBuffer = Right.ParentBuffer, Position = Right.Position;
-        return *this;
-    }
-
-    inline bool operator==(Cursor const &Right) const {
-        return Position == Right.Position;
-    }
-
-    inline Buffer *GetParentBuffer() {
-        return ParentBuffer;
-    }
-
-    BufferMemoryBlock *GetParentBlock();
-};
-
+/**
+ *  @name BoundCursor
+ *
+ *  @brief Cursor with right bound to support memory access
+ * */
 struct BoundCursor : public Cursor {
 
     u_char *Bound = nullptr;
@@ -56,16 +28,19 @@ struct BoundCursor : public Cursor {
 
     BoundCursor operator+(size_t Size) const;
 
+    /** Increment the cursor pointer */
     inline BoundCursor operator+=(size_t Size) {
 
         return *this = *this + Size;
     }
 
+    /** Increment the cursor pointer by one */
     inline BoundCursor operator++() {
 
         return *this = *this + 1;
     }
 
+    /** Increment the cursor pointer by one */
     inline const BoundCursor operator++(int) {
 
         BoundCursor Ret = *this;
@@ -73,53 +48,66 @@ struct BoundCursor : public Cursor {
         return Ret;
     }
 
+    /** If this cursor available */
     bool operator!();
 
+    /** Read target memory address by index */
     inline u_char operator[](uint16_t Offset) const {
 
         return *(*this + Offset);
     }
 
+    /** Assign BoundCursor to another */
     inline BoundCursor &operator=(BoundCursor const &Right) &{
 
         ParentBuffer = Right.ParentBuffer, Position = Right.Position, Bound = Right.Bound;
         return *this;
     }
 
+    /** Set left bound to current bound cursor */
     inline BoundCursor &operator<(Cursor Cursor) &{
 
         ParentBuffer = Cursor.ParentBuffer, Position = Cursor.Position;
         return *this;
     }
 
+    /** Set right bound to current bound cursor */
     inline BoundCursor &operator>(Cursor Cursor) &{
 
         ParentBuffer = Cursor.ParentBuffer, this->Bound = Cursor.Position;
         return *this;
     }
 
+    /** Set left bound to current bound cursor */
     inline BoundCursor &operator<(BoundCursor Cursor) &{
         ParentBuffer = Cursor.ParentBuffer;
         Position = Cursor.Position;
         return *this;
     }
 
+    /** Set right bound to current bound cursor */
     inline BoundCursor &operator>(BoundCursor Cursor) &{
         ParentBuffer = Cursor.ParentBuffer;
         this->Bound = Cursor.Position;
         return *this;
     }
 
+    /** Decrement is not allowed */
     BoundCursor operator-(size_t) = delete;
 
+    /** Decrement is not allowed */
     BoundCursor &operator--() = delete;
 
+    /** Decrement is not allowed */
     BoundCursor &operator-=(size_t Size) = delete;
 
+    /** Read data from cursor position */
     size_t ReadBytes(u_char *Pointer, size_t Size);
 
+    /** Compare cursor data with input */
     bool CmpBytes(u_char *Pointer, size_t Size);
 
+    /** Total bytes of cursor range data */
     size_t Size();
 };
 

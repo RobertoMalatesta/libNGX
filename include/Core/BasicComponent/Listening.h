@@ -1,3 +1,21 @@
+//===---------------- Listening.h - represent a Connection ---------*- C++ -*-===//
+//
+//                     The NGX Server Infrastructure
+//
+// This file is distributed under the MIT Open Source License. See LICENSE.TXT
+// for detail.
+//
+//===-------------------------------------------------------------------------===//
+//
+//  This file declare the Listening basic class
+//
+//===-------------------------------------------------------------------------===//
+
+/**
+ *  @name Listening
+ *
+ *  @brief Server Listening
+ * */
 class Listening : public Socket {
 protected:
     int Backlog = 32768;
@@ -14,18 +32,3 @@ public:
 
     virtual SocketError Listen();
 };
-
-class TCPListening : public Listening {
-public:
-    TCPListening(SocketAddress &Address);
-
-    ~TCPListening();
-
-    virtual SocketError Bind();
-
-    virtual RuntimeError HandleDomainEvent(EventType Type) {
-        return {0};
-    };
-
-};
-
