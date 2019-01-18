@@ -4,34 +4,37 @@
 
 ### 基本组件
 
-1.  页对齐块内存分配器(MemoryBlockAllocator和BufferMemoryBlock) [完成]
-2.  内存池(Pool) [完成]
-3.  块内存回收器(Recycle) [完成]
+1.  ~~页对齐块内存分配器(MemoryBlockAllocator和BufferMemoryBlock)~~
+2.  ~~内存池(Pool)~~
+3.  ~~块内存回收器(Recycle)~~
 4.  轻量级纤程池(ThreadPool) [部分完成]
 
     - Thread分组，以实现更高的代码局部性（对线程编码，通过汉明距离来表示处理代价）。
 
     - Task Steal 允许空闲线程协助接管任务。
 
-5.  使用Hash作为Key的红黑树(Dictionary),通过前后查找解决冲突 [完成]
-6.  基于红黑树的定时器(TimerHub) [完成]
-7.  数据缓冲(Buffer) [完成]
-8.  网络通信方面的类(Connection, Listening, EventDomain) [完成]
-9.  常用的校验、摘要、哈希算法 [完成]
-10. DNS 解析器
+5.  ~~使用Hash作为Key的红黑树(Dictionary),通过前后查找解决冲突~
+6.  ~~基于红黑树的定时器(TimerHub)~
+7.  ~~数据缓冲(Buffer)~
+8.  ~~网络通信方面的类(Connection, Listening, EventDomain)~~
+9.  ~~常用的校验、摘要、哈希算法~~
+10. DNS解析器
 11. FileCache
 12. 连接池，用来实现Upstream功能(ConnectionPool)
 
 ### HTTP模块
 
-1.  实现了基本的HTTP协议处理框架，正在完善Header的解析后处理。
-2.  HTTP服务框架，正在设计可热插拔，易于集群管理的服务框架。
-3.  HTTP限流，性能监控 [未实现]
-4.  HTTP流量转发，镜像 [未实现]
-5.  HTTP 静态资源缓存 [未实现]
+1.  实现了~~HTTPRequest, HTTPResponse, HTTP Header~~, HTTP Chunk的解析。
+2.  HTTP转发框架的设计和实现，剥离转发和具体的服务功能。
+3.  支持转发模块的热更新，服务的动态配置。
+4.  服务：HTTP静态资源分发、流量转发、镜像、代理、限流、分流、熔断、性能监控[未实现]
 
 ## 存在问题
 
 1.  多线程模型和多进程模型的选择和组合。
 2.  多进程文件缓存的实现。
 
+## 构想
+
+1.  借助 FPGA 和 CUDA实现并行的 HTTP 报文解析。
+2.  实现HTTP2.0和grpc等高效通信支持。
