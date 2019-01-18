@@ -7,12 +7,7 @@
 1.  ~~页对齐块内存分配器(MemoryBlockAllocator和BufferMemoryBlock)~~
 2.  ~~内存池(Pool)~~
 3.  ~~块内存回收器(Recycle)~~
-4.  轻量级纤程池(ThreadPool) [部分完成]
-
-    - Thread分组，以实现更高的代码局部性（对线程编码，通过汉明距离来表示处理代价）。
-
-    - Task Steal 允许空闲线程协助接管任务。
-
+4.  ~~轻量级纤程池(ThreadPool) [部分完成]~~
 5.  ~~使用Hash作为Key的红黑树(Dictionary),通过前后查找解决冲突~~
 6.  ~~基于红黑树的定时器(TimerHub)~~
 7.  ~~数据缓冲(Buffer)~~
