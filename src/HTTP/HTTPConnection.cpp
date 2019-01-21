@@ -4,7 +4,7 @@ using namespace ngx::HTTP;
 
 HTTPConnection::HTTPConnection() :
         TCPConnection(Address),
-        Request(nullptr),
+        Request(&MemPool),
         EventJob(HTTPConnection::OnConnectionEvent, this) {
     TimerNode = {0, HTTPConnection::OnTimerEvent, this};
 }
@@ -17,13 +17,15 @@ RuntimeError HTTPConnection::HandleDomainEvent(EventType Type) {
 
     if (ParentServer == nullptr || ParentEventDomain == nullptr) {
 //        LOG(WARNING) << "connection not attached, fd: " << SocketFD;
+        Close();
         return {EINVAL, "connection not attached"};
     }
 
-    Event = Type;
+    Event |= Type;
 
     if (SocketFD == -1) {
 //        LOG(WARNING) << "connection not open, fd: " << SocketFD;
+        Close();
         return {EFAULT, "connection not open"};
     };
 
@@ -45,32 +47,53 @@ void HTTPConnection::OnTimerEvent(void *PointerToConnection) {
 
 void HTTPConnection::OnConnectionEvent(void *PointerToConnection) {
 
-    EventType Type;
-
     HTTPConnection *C;
+    RuntimeError Error{0};
 
     C = static_cast<HTTPConnection *>(PointerToConnection);
 
 //    LOG(INFO) << "in connection event, fd: " << C->SocketFD;
 
-    Type = C->Event;
-
     if (C->SocketFD != -1) {
 
         // Sequence
         //
-        // 1.   Read Buffer
-        // 2.   Process Request
-        // 3.   Handle Write Buffer
-        // 4.   Handle Timer
+        // 0.   Process Timer
+        //
+        // 1.   Judge request stage
+        // 1.1      Parse request header
+        // 1.2      Filter request(body size, request type, etc)
+        // 1.3      Route request
+        // 1.4      Accept content and deliver it to router(route can reroute the content)
+        // 2.   Filter response and judge if we need to write it to buffer
+        // 3.   Write output buffer and drain the response buffer
+
+        // Stages:
+        //
+        //  HTTP_IDLE
+        //  HTTP_REQUEST_PARSING (fetch header)
+        //  HTTP_REQUEST_PARSED (parse request header)
+        //  HTTP_REQUEST_ROUTED (filter and route)
+        //  HTTP_REQUEST_PROCESS_CONTENT (handle content, input chunk and frames)
+        //  HTTP_REQUEST_POST_FILTER (if we should output it?)
+        //  HTTP_REQUEST_DONE (close connection?)
 
 //        LOG(INFO) << "handle connection event, fd: " << C->SocketFD << ", event type: " << Type;
 
-        if ((Type & ET_READ) != 0) {
-            C->ReadBuffer.ReadConnection(C);
+        if ((C->Event & ET_READ) != 0) {
+
+            Error = C->ReadBuffer.ReadConnection(C);
+
+            if (Error.GetCode() == 0) {
+                C->Event &= ~ET_READ;
+            }
         }
 
-        if ((Type & ET_WRITE) != 0) {
+        if ((C->Event & ET_WRITE) != 0) {
+
+//            if (Error.GetCode() == 0) {
+//                C->Event &= ~ET_WRITE;
+//            }
             // Mark the socket as writable and write all data to it!
         }
 
@@ -91,7 +114,7 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection) {
 
 //        LOG(INFO) << "connection already closed, skip it`s event" << C->SocketFD;
 
-        if (Type & ET_TIMER) {
+        if (C->Event & ET_TIMER) {
 //            LOG(INFO) << "recycle connection, fd: " << C->SocketFD;
             C->ParentServer->PutConnection(C);
         }

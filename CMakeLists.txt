@@ -28,6 +28,10 @@ set(SOURCE_FILES
         src/Core/BasicComponent/ThreadPool.cpp
         src/Core/BasicComponent/SocketTimerHub.cpp
         src/Core/BasicComponent/BoundCursor.cpp
+        src/Core/BasicComponent/Dictionary.cpp
+        src/Core/BasicComponent/Cursor.cpp
+        src/Core/BasicComponent/TCPConnection.cpp
+        src/Core/BasicComponent/TCPListening.cpp
         src/Core/Arch/Linux/EPollEventDomain.cpp
         src/HTTP/Router/Mux.cpp
         src/HTTP/HTTPListening.cpp
@@ -35,8 +39,11 @@ set(SOURCE_FILES
         src/HTTP/HTTPServer.cpp
         src/HTTP/HTTPError.cpp
         src/HTTP/HTTPConnectionBuilder.cpp
-        src/Core/BasicComponent/Dictionary.cpp
-        src/HTTP/HTTPHeader.cpp src/HTTP/HTTPRequest.cpp src/HTTP/HTTPResponse.cpp src/HTTP/HTTPCoreHeader.cpp src/Core/BasicComponent/Cursor.cpp src/Core/BasicComponent/TCPConnection.cpp src/Core/BasicComponent/TCPListening.cpp)
+        src/HTTP/HTTPHeader.cpp
+        src/HTTP/HTTPRequest.cpp
+        src/HTTP/HTTPResponse.cpp
+        src/HTTP/HTTPCoreHeader.cpp
+        )
 
 set(TEST_FILES
         test/Test.cpp
