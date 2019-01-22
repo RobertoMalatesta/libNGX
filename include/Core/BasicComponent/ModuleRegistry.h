@@ -61,3 +61,15 @@ public:
 	/**Remove a module type from this registry**/
 	RuntimeError UnregistModule(char *ModuleName);
 }
+// TODO 1
+// HTTP Module Instance Map
+// HTTP PreponeFilter: firewall, request mirror
+// HTTP Mux: request route, add header, request limit, dynamic routing
+// HTTP Service: static file cache, upstream, grpc and so on
+// HTTP PostponeFilter: reslove mime, calculate content size, deny response
+
+// TODO 2
+// Move Timer from Socket to EvnetEntity
+
+// TODO 3
+// HTTP Server Control Connection
