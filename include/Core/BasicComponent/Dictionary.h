@@ -20,19 +20,18 @@
 class DictionaryItem : public RBNode, public Achor {
 
 protected:
-
+    
+    /// Dictionary key
     const char *Key;
     uint32_t Hash = 0;
 
-    // DictionaryItem compare
+    /// Dictionary item compare function
     virtual int32_t operator-(DictionaryItem &R);
 
-    // Hash compare
+    /// Dictionary hash compare function
     virtual int32_t operator-(uint32_t RHash);
 
-    /** HashFn
-     *  define how to calc Hash
-     */
+    /// HashFn defined how to calcuate hash
     virtual uint32_t HashFn() const;
 
 public:
@@ -41,8 +40,7 @@ public:
 
     /** GetHash
      *
-     *  get hash of current item
-     *
+     *  @breif get hash of current item
      *  @return Hash value
      */
     inline uint32_t GetHash() {
@@ -54,7 +52,7 @@ public:
         return Hash;
     }
 
-    // implement RBNode operator - to compare
+    /// implement RBNode operator - to compare
     virtual int operator-(RBNode &R);
 };
 
@@ -62,7 +60,6 @@ public:
  *  @brief Dictionary
  *
  *  Dictionary is designed to store and index key-value data within log(N) time
- *
  */
 class Dictionary : public RBTree {
 

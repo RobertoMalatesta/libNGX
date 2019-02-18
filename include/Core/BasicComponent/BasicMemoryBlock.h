@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file define the basic structure of a Memory Block, and handle Start
+// This file defines the basic structure of a Memory Block, and handle Start
 // Magic and End position assignment.
 //
 //===----------------------------------------------------------------------===//

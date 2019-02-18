@@ -1,3 +1,16 @@
+//===------------------ Hash.h - Implement hash functions ---------*- C++ -*-===//
+//
+//                     The NGX Server Infrastructure
+//
+// This file is distributed under the MIT Open Source License. See LICENSE.TXT
+// for detail.
+//
+//===-------------------------------------------------------------------------===//
+//
+//  define and implement hash function
+//
+//===-------------------------------------------------------------------------===//
+
 extern "C" {
 inline void murmur_hash2(u_char *data, size_t len, uint32_t &h) {
 
@@ -38,4 +51,5 @@ inline void murmur_hash2(u_char *data, size_t len, uint32_t &h) {
 inline void SimpleHash(uint32_t &Hash, u_char C) {
     Hash = Hash * 31 + C;
 }
+
 }

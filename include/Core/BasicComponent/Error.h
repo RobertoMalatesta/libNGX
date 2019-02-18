@@ -12,10 +12,14 @@
 //===-------------------------------------------------------------------------===//
 
 class Error {
+
 protected:
+
     int ErrorCode;
     const char *Message;
+
 public:
+
     Error(int ErrorCode, const char *Message = nullptr) {
         this->ErrorCode = ErrorCode;
         this->Message = Message;
@@ -29,10 +33,13 @@ public:
 };
 
 class RuntimeError : public Error {
+
 private:
+
     static const char *ErrorCodeToError(int ErrorCode);
 
 public:
+
     RuntimeError(int ErrorCode, const char *Message = nullptr) : Error(ErrorCode, Message) {};
 
     const char *GetError() {
@@ -46,10 +53,13 @@ public:
 };
 
 class SocketError : public Error {
+
 private:
+
     static const char *ErrorCodeToError(int ErrorCode);
 
 public:
+
     SocketError(int ErrorCode, const char *Message = nullptr) : Error(ErrorCode, Message) {};
 
     const char *GetError() { return ErrorCodeToError(ErrorCode); }
@@ -61,10 +71,13 @@ public:
 };
 
 class EventError : public Error {
+
 private:
+
     static const char *ErrorCodeToError(int ErrorCode);
 
 public:
+
     EventError(int ErrorCode, const char *Message = nullptr) : Error(ErrorCode, Message) {};
 
     const char *GetError() { return ErrorCodeToError(ErrorCode); }
@@ -74,4 +87,3 @@ public:
                Message == nullptr ? "null" : Message);
     }
 };
-

@@ -1,4 +1,4 @@
-//===------------------ EventType.h - represent a Connection ------*- C++ -*-===//
+//===------------------ EventType.h - represent a Event ------------*- C++ -*-===//
 //
 //                     The NGX Server Infrastructure
 //
