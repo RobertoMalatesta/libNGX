@@ -5,9 +5,10 @@ project(libNGX)
 set(CMAKE_CXX_STANDARD 11)
 
 set(SOURCE_FILES
-        src/Core/Arch/X86.cpp
         src/Core/Types/Queue.cpp
         src/Core/Types/RBTree.cpp
+        src/Core/Arch/X86.cpp
+        src/Core/Arch/Linux/EPollEventDomain.cpp
         src/Core/BasicComponent/Buffer.cpp
         src/Core/BasicComponent/BasicMemoryBlock.cpp
         src/Core/BasicComponent/BufferMemoryBlock.cpp
@@ -32,7 +33,6 @@ set(SOURCE_FILES
         src/Core/BasicComponent/Cursor.cpp
         src/Core/BasicComponent/TCPConnection.cpp
         src/Core/BasicComponent/TCPListening.cpp
-        src/Core/Arch/Linux/EPollEventDomain.cpp
         src/HTTP/Router/Mux.cpp
         src/HTTP/HTTPListening.cpp
         src/HTTP/HTTPConnection.cpp
@@ -64,7 +64,7 @@ set(TEST_FILES
         test/HTTP/HTTPTest.cpp
         test/HTTP/HTTPServerTest.cpp
         test/HTTP/HTTPConnectionCollector.cpp
-        test/HTTP/HTTPParseTest.cpp include/HTTP/HTTPCoreHeader.h)
+        test/HTTP/HTTPParseTest.cpp)
 
 include_directories(./include)
 

@@ -167,3 +167,36 @@ void Buffer::GC() {
         HeadBlock = NextBlock;
     }
 }
+
+MemoryBuffer::MemoryBuffer(Byte *BufferStart, Byte *BufferEnd): BufferStart(BufferStart), BufferEnd(BufferEnd) {}
+
+WritableMemoryBuffer::WritableMemoryBuffer(Byte *BufferStart, Byte *BufferEnd): MemoryBuffer(BufferStart, BufferEnd){}
+
+std::unique_ptr<WritableMemoryBuffer> WritableMemoryBuffer::NewBuffer(size_t Size, bool Aligned) {
+
+    if (Size <= 0) {
+        return std::unique_ptr<WritableMemoryBuffer>(nullptr);
+    }
+
+    Byte *BufferStart, *BufferEnd;
+
+    if (Aligned) {
+        BufferStart = nullptr;
+        posix_memalign((void **)&BufferStart, 4, Size);
+    } else {
+        BufferStart = (Byte *)malloc(Size);
+    }
+
+    if (BufferStart == nullptr) {
+        return std::unique_ptr<WritableMemoryBuffer>(nullptr);
+    }
+
+    BufferEnd = BufferStart + Size;
+
+    WritableMemoryBuffer *Ret = new WritableMemoryBuffer(BufferStart, BufferEnd);
+
+    Ret->Aligned = Aligned;
+
+    return std::unique_ptr<WritableMemoryBuffer>(Ret);
+}
+
