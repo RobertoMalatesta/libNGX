@@ -10,7 +10,7 @@ extern int ArrayTest();
 
 extern int TimeTest();
 
-extern int BufferTest();
+extern int BufferTests();
 
 extern int HashTest();
 
@@ -27,9 +27,9 @@ extern int EPollEventDomainTest();
 int CoreTest() {
 
 //	ArrayTest();
-    MemBlockTest();
-    PoolTest();
-    BufferTest();
+//    MemBlockTest();
+//    PoolTest();
+    BufferTests();
 //	TimeTest();
 //	LockTest();
 //	HashTest();

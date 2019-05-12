@@ -5,7 +5,15 @@
 
 using namespace ngx::Core;
 
-int BufferTest() {
+int BufferTest1();
+int BufferTest2();
+
+int BufferTests() {
+    BufferTest2();
+    return 0;
+}
+
+int BufferTest1() {
 
     u_char c;
     Buffer buffer;
@@ -24,5 +32,19 @@ int BufferTest() {
     }
     printf("\n");
 
+    return 0;
+}
+
+int BufferTest2() {
+
+    std::unique_ptr<WritableMemoryBuffer> pBuf = WritableMemoryBuffer::NewBuffer(1000,true);
+
+    BufferWriter Writer(*pBuf);
+
+    const char HelloWorld []= "HelloWorld";
+
+    Writer.writeString(HelloWorld, sizeof(HelloWorld)-1);
+    Writer.writeByte(' ');
+    Writer.writeString(HelloWorld, sizeof(HelloWorld)-1);
     return 0;
 }

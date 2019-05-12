@@ -57,3 +57,4 @@ namespace ngx {
 }
 
 #include "Core/BasicComponent/Buffer.h"
+#include "Core/BasicComponent/MemoryBuffer.h"
