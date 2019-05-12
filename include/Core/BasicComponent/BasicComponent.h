@@ -35,7 +35,6 @@ namespace ngx {
 #include "Core/BasicComponent/BufferMemoryBlockCollector.h"
 #include "Core/BasicComponent/Cursor.h"
 #include "Core/BasicComponent/BoundCursor.h"
-#include "Core/BasicComponent/Buffer.h"
 #include "Core/BasicComponent/BufferBuilder.h"
 
 /** Event */
@@ -56,3 +55,5 @@ namespace ngx {
         }
     }
 }
+
+#include "Core/BasicComponent/Buffer.h"
