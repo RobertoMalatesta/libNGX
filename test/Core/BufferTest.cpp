@@ -43,8 +43,8 @@ int BufferTest2() {
 
     const char HelloWorld []= "HelloWorld";
 
-    Writer.writeString(HelloWorld, sizeof(HelloWorld)-1);
-    Writer.writeByte(' ');
-    Writer.writeString(HelloWorld, sizeof(HelloWorld)-1);
+    Writer.fromString(HelloWorld, sizeof(HelloWorld)-1);
+    Writer.fromByte(' ');
+    Writer.fromString(HelloWorld, sizeof(HelloWorld)-1);
     return 0;
 }

@@ -52,9 +52,11 @@ namespace ngx {
 /** Server */
 #include "Core/BasicComponent/Server.h"
 
+            using Byte = unsigned char;
         }
     }
 }
 
 #include "Core/BasicComponent/Buffer.h"
+#include "Core/BasicComponent/MemoryPool.h"
 #include "Core/BasicComponent/MemoryBuffer.h"

@@ -15,4 +15,6 @@
 #include <mutex>
 #include <netinet/in.h>
 #include <fcntl.h>
+
+#include <list>
 #include <memory>

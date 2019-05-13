@@ -43,7 +43,7 @@ set(SOURCE_FILES
         src/HTTP/HTTPRequest.cpp
         src/HTTP/HTTPResponse.cpp
         src/HTTP/HTTPCoreHeader.cpp
-        src/Core/BasicComponent/MemoryBuffer.cpp)
+        src/Core/BasicComponent/MemoryBuffer.cpp src/Core/BasicComponent/MemoryPool.cpp)
 
 set(TEST_FILES
         test/Test.cpp

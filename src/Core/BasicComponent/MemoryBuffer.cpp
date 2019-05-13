@@ -123,12 +123,12 @@ size_t BufferWriter::CheckBufferSize(size_t WriteSize) {
     return Buffer.getBufferSize();
 }
 
-int BufferWriter::writeByte(const Byte B) {
+int BufferWriter::fromByte(const Byte B) {
     char Character = static_cast<char>(B);
-    return writeString(&Character, 1);
+    return fromString(&Character, 1);
 }
 
-int BufferWriter::writeString(const char *Str, size_t Size) {
+int BufferWriter::fromString(const char *Str, size_t Size) {
 
     Byte *pByte;
     char *pChar;

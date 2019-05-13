@@ -5,7 +5,6 @@ namespace ngx {
     namespace Core {
         namespace BasicComponent {
 
-            using Byte = unsigned char;
 
             class StringRef {
             private:
@@ -126,13 +125,17 @@ namespace ngx {
                     return OldSize;
                 }
 
-                int writeByte(Byte B);
+                int fromByte(Byte B);
 
-                int writeString(const char *Str, size_t Size);
+                int fromString(const char *Str, size_t Size);
 
-                int writeFile(int FD, int64_t Offset = 0, size_t Size = -1);
+                int fromFile(int FD, int64_t Offset = 0, size_t Size = -1);
 
-                int writeSocket(int FD, uint64_t MaximumSize);
+                int fromSocket(int FD, uint64_t MaximumSize);
+
+                int toFile(int FD, int64_t Offset = 0, size_t Size = -1);
+
+                int toSocket(int FD, int64_t Offset = 0, size_t Size = -1);
             };
         }   //BasicComponent
     }   // Core
