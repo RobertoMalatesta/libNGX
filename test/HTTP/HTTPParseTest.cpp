@@ -7,7 +7,7 @@ int HTTPParseTest() {
     Pool MemoryAllocator;
     Buffer buffer;
     BufferBuilder Builder(BUFFER_MEMORY_BLOCK_SIZE, 1000);
-    HTTPRequest Request(&MemoryAllocator);
+    HTTPRequest Request;
     BoundCursor BC;
 
     u_char Text[] = "GET / HTTP/1.1\r\n ";
@@ -17,7 +17,7 @@ int HTTPParseTest() {
 
     buffer >> BC;
 
-    HTTPRequest R(&MemoryAllocator);
+    HTTPRequest R;
 
     R.Read(buffer);
 

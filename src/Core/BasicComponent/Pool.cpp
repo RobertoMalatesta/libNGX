@@ -2,30 +2,54 @@
 
 using namespace ngx::Core::BasicComponent;
 
-Pool::Pool(size_t BlockSize) {
+Pool::PoolMemoryBlock * Pool::PoolMemoryBlock::newBlock(size_t Size) {
 
-    if (BlockSize < PAGE_SIZE) {
-        BlockSize = PAGE_SIZE;
-        //[WARNING] Block Size should big than page size
+    void *pMem = nullptr;
+    u_char *pDataStart = nullptr, *pDataEnd;
+    size_t AllocateSize = Size + sizeof(PoolMemoryBlock);
+
+    if (posix_memalign(&pMem, 8, AllocateSize) != 0 || pMem == nullptr) {
+        return nullptr;
     }
 
-    this->BlockSize = BlockSize;
+    auto newBlock = new(pMem) PoolMemoryBlock();
+
+    pDataStart = reinterpret_cast<u_char *>(pMem) + sizeof(PoolMemoryBlock);
+    pDataEnd = reinterpret_cast<u_char *>(pMem) + AllocateSize;
+
+    newBlock->Start=newBlock->Pos=pDataStart;
+    newBlock->End=pDataEnd;
+
+    return newBlock;
+};
+
+Byte *Pool::PoolMemoryBlock::allocate(size_t Size) {
+
+    void *Ret = nullptr;
+
+    if (Pos + Size < End) {
+        RefCount++, Ret = Pos, Pos += Size;
+    }
+    return reinterpret_cast<Byte *>(Ret);
+}
+
+void Pool::PoolMemoryBlock::free(Byte *&Pointer) {
+    if (nullptr != Pointer && IsInBlock(Pointer)) {
+        Pointer = nullptr, RefCount--;
+    }
+}
+
+Pool::Pool() {
     CurrentBlock = HeadBlock = nullptr;
 }
 
-Pool::Pool(Pool &Copy) {
-    BlockSize = Copy.BlockSize;
-    HeadBlock = Copy.HeadBlock;
-    CurrentBlock = Copy.CurrentBlock;
-}
-
-void *Pool::Allocate(size_t Size) {
+void *Pool::allocate(size_t Size) {
 
     void *ret = nullptr;
 
     if (HeadBlock == nullptr) {
 
-        HeadBlock = MemoryBlockAllocator::Build(BlockSize);
+        HeadBlock = PoolMemoryBlock::newBlock(BLOCK_SIZE);
 
         if (HeadBlock != nullptr) {
             CurrentBlock = HeadBlock;
@@ -34,25 +58,25 @@ void *Pool::Allocate(size_t Size) {
         return nullptr;
     }
 
-    if (Size > BlockSize - 2 * sizeof(MemoryBlockAllocator)) {
+    if (Size > BLOCK_SIZE - 2 * sizeof(PoolMemoryBlock)) {
         return malloc(Size);
     } else {
 
-        ret = CurrentBlock->Allocate(Size);
+        ret = CurrentBlock->allocate(Size);
 
         if (ret != nullptr) {
             return ret;
-        } else if (CurrentBlock->GetNextBlock() != nullptr) {
-            CurrentBlock = CurrentBlock->GetNextBlock();
+        } else if (CurrentBlock->getNextBlock() != nullptr) {
+            CurrentBlock = CurrentBlock->getNextBlock();
         } else {
 
-            MemoryBlockAllocator *NewBlock;
+            PoolMemoryBlock *NewBlock;
 
-            NewBlock = MemoryBlockAllocator::Build((this->BlockSize));
+            NewBlock = PoolMemoryBlock::newBlock(BLOCK_SIZE);
 
             if (NewBlock != nullptr) {
-                CurrentBlock->SetNextBlock(NewBlock);
-                CurrentBlock = CurrentBlock->GetNextBlock();
+                CurrentBlock->setNextBlock(NewBlock);
+                CurrentBlock = CurrentBlock->getNextBlock();
             } else {
                 return nullptr;
             }
@@ -62,25 +86,25 @@ void *Pool::Allocate(size_t Size) {
             GC();
         }
 
-        return CurrentBlock->Allocate(Size);
+        return CurrentBlock->allocate(Size);
     }
 }
 
-void Pool::Free(void *&pointer) {
+void Pool::free(void *&pointer) {
 
     bool FoundInBlock = false;
 
-    MemoryBlockAllocator *TempBlock = HeadBlock;
+    PoolMemoryBlock *TempBlock = HeadBlock;
 
     if (nullptr != pointer) {
 
         while (nullptr != TempBlock) {
             if (TempBlock->IsInBlock(pointer)) {
-                TempBlock->Free(pointer);
+                TempBlock->free(reinterpret_cast<Byte *&>(pointer));
                 FoundInBlock = true;
                 break;
             }
-            TempBlock = TempBlock->GetNextBlock();
+            TempBlock = TempBlock->getNextBlock();
         }
 
         if (!FoundInBlock) {
@@ -95,7 +119,7 @@ void Pool::Free(void *&pointer) {
 
 void Pool::GC() {
 
-    MemoryBlockAllocator *Current, *Next, *NewCurrent = nullptr;
+    PoolMemoryBlock *Current, *Next, *NewCurrent = nullptr;
 
     if (HeadBlock == nullptr) {
         return;
@@ -105,16 +129,16 @@ void Pool::GC() {
 
     while (Current != nullptr) {
 
-        Next = Current->GetNextBlock();
-        Current->SetNextBlock(nullptr);
+        Next = Current->getNextBlock();
+        Current->setNextBlock(nullptr);
 
         if (Current->IsFreeBlock()) {
-            MemoryBlockAllocator::Destroy(Current);
+            delete Current;
         } else {
             if (HeadBlock == nullptr) {
                 HeadBlock = Current;
             } else {
-                NewCurrent->SetNextBlock(Current);
+                NewCurrent->setNextBlock(Current);
             }
             NewCurrent = Current;
         }
@@ -122,7 +146,7 @@ void Pool::GC() {
     }
 
     if (NewCurrent != nullptr) {
-        NewCurrent->SetNextBlock(nullptr);
+        NewCurrent->setNextBlock(nullptr);
     }
 
     CurrentBlock = HeadBlock;
@@ -130,16 +154,13 @@ void Pool::GC() {
 
 void Pool::Reset() {
 
-    // free all memory used
-
-    MemoryBlockAllocator *NextBlock;
+    PoolMemoryBlock *NextBlock;
 
     while (HeadBlock != nullptr) {
 
-        NextBlock = HeadBlock->GetNextBlock();
-        HeadBlock->SetNextBlock(nullptr);
-        MemoryBlockAllocator::Destroy(HeadBlock);
-        HeadBlock = NextBlock;
+        NextBlock = HeadBlock->getNextBlock();
+        HeadBlock->setNextBlock(nullptr);
+        delete HeadBlock, HeadBlock=NextBlock;
     }
 
     CurrentBlock = nullptr;

@@ -20,7 +20,7 @@ namespace ngx {
             // BasicComponent Configuration
             const size_t BUFFER_MEMORY_BLOCK_SIZE = 128 * PAGE_SIZE;    //Byte(s)
             const size_t POOL_MEMORY_BLOCK_SIZE = 128 * PAGE_SIZE;      //Byte(s)
-            const int POOL_RECYCLE_ROUND = 10000;
+            const int POOL_RECYCLE_ROUND = 1000;
             const uint64_t DEFAULT_COLLECTOR_SIZE = 1024;
             const int THREAD_WAIT_TIME = 1 * 1000 * 1000;     // 1(ms)
             const uint32_t THREAD_GC_ROUND = 10000;

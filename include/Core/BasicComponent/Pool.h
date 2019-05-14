@@ -11,30 +11,63 @@
 //
 //===-------------------------------------------------------------------------===//
 
-class Pool : public Allocator, public CanReset, public CanGC {
+class Pool : public CanReset {
 
 private:
-
     uint32_t AllocateRound = 0;
 
 protected:
+    const size_t BLOCK_SIZE = POOL_MEMORY_BLOCK_SIZE;
 
-    size_t BlockSize;
-    MemoryBlockAllocator *HeadBlock, *CurrentBlock;
+    class PoolMemoryBlock {
+    protected:
+        int32_t RefCount;
+        u_char *Start, *End, *Pos;
+        PoolMemoryBlock *Next;
+        PoolMemoryBlock():RefCount(0), Start(nullptr), End(nullptr), Pos(nullptr), Next(nullptr){};
+
+    public:
+        ~PoolMemoryBlock() = default;
+
+        Byte *allocate(size_t Size);
+
+        void free(Byte *&Pointer);
+
+        /** Get start address from address of end */
+        inline bool IsInBlock(void *Address) const {
+            return Address >= Start && Address < End;
+        }
+
+        inline PoolMemoryBlock *setNextBlock(PoolMemoryBlock *N) {
+            PoolMemoryBlock *OldN = this->Next;
+            this->Next = N;
+            return OldN;
+        }
+
+        inline PoolMemoryBlock *getNextBlock() { return Next; }
+
+        inline bool IsFreeBlock() {
+            return RefCount == 0;
+        }
+
+        static PoolMemoryBlock *newBlock(size_t Size);
+    };
+
+    PoolMemoryBlock *HeadBlock, *CurrentBlock;
 
 public:
-
-    Pool(size_t BlockSize = POOL_MEMORY_BLOCK_SIZE);
-
-    Pool(Pool &Copy);
+    Pool();
+    Pool(Pool &Copy) = delete;
+    Pool operator=(Pool &) = delete;
 
     ~Pool();
 
-    virtual void *Allocate(size_t Size);
+    void *allocate(size_t Size);
 
-    virtual void Free(void *&pointer);
+    void free(void *&pointer);
 
     virtual void GC();
 
     virtual void Reset();
 };
+

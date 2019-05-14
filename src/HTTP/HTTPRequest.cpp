@@ -810,13 +810,13 @@ HTTPError HTTPRequest::ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool Allow
 
         } else {
 
-            HTTPHeader *H = R.HeaderIn.Headers.Push();
+//            HTTPHeader *H = R.HeaderIn.Headers.Push();
 
-            if (H == nullptr) {
-                return {ENOMEM, NoMemoryErrorString};
-            }
+//            if (H == nullptr) {
+//                return {ENOMEM, NoMemoryErrorString};
+//            }
 
-            *H = Header;
+//            *H = Header;
         }
 
     } while (true);

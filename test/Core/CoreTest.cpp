@@ -1,6 +1,6 @@
 extern int MemBlockTest();
 
-extern int PoolTest();
+extern int PoolTests();
 
 extern int LockTest();
 
@@ -28,8 +28,8 @@ int CoreTest() {
 
 //	ArrayTest();
 //    MemBlockTest();
-//    PoolTest();
-    BufferTests();
+    PoolTests();
+//    BufferTests();
 //	TimeTest();
 //	LockTest();
 //	HashTest();

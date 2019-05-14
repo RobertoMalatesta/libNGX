@@ -4,6 +4,7 @@ namespace ngx {
             using namespace ngx::Core::DefaultConfig;
             using namespace ngx::Core::MetaClass;
             using namespace ngx::Core::Types;
+            using Byte = unsigned char;
 
 /** Abstract components */
 
@@ -51,12 +52,9 @@ namespace ngx {
 
 /** Server */
 #include "Core/BasicComponent/Server.h"
-
-            using Byte = unsigned char;
         }
     }
 }
 
 #include "Core/BasicComponent/Buffer.h"
-#include "Core/BasicComponent/MemoryPool.h"
 #include "Core/BasicComponent/MemoryBuffer.h"

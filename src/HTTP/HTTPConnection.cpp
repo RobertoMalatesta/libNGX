@@ -4,7 +4,7 @@ using namespace ngx::HTTP;
 
 HTTPConnection::HTTPConnection() :
         TCPConnection(Address),
-        Request(&MemPool),
+        Request(),
         EventJob(HTTPConnection::OnConnectionEvent, this) {
     TimerNode = {0, HTTPConnection::OnTimerEvent, this};
 }

@@ -6,7 +6,7 @@ HTTPConnectionBuilder::HTTPConnectionBuilder(
         size_t BufferBlockSize,
         uint32_t BufferCollectorSize) :
         BB(BufferBlockSize, BufferCollectorSize), BackendAllocator(),
-        AllocatorBuild(&BackendAllocator), NonBlock(true), TCPNoDelay(1), TCPNoPush(0) {
+        AllocatorBuild(), NonBlock(true), TCPNoDelay(1), TCPNoPush(0) {
 }
 
 int HTTPConnectionBuilder::Get(HTTPConnection *&C, int SocketFD, SocketAddress &Address, HTTPServer *Server,
