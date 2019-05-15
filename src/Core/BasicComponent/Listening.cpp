@@ -4,10 +4,10 @@ using namespace ngx::Core::BasicComponent;
 
 Listening::Listening() : Socket() {}
 
-Listening::Listening(SocketAddress &Address) :
+Listening::Listening(Address_t &Address) :
         Socket(Address) {}
 
-Listening::Listening(int SocketFD, SocketAddress &Address) :
+Listening::Listening(int SocketFD, Address_t &Address) :
         Socket(SocketFD, Address) {
 }
 

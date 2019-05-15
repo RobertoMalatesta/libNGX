@@ -54,7 +54,7 @@ public:
 
     int Get(HTTPConnection *&C,
             int SocketFD,
-            SocketAddress &Address,
+            Address_t &Address,
             HTTPServer *Server,
             SocketEventDomain *EventDomain);
 

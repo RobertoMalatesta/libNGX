@@ -18,7 +18,7 @@
  * */
 class TCPListening : public Listening {
 public:
-    TCPListening(SocketAddress &Address);
+    TCPListening(Address_t &Address);
 
     ~TCPListening();
 

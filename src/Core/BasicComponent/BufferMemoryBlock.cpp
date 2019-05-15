@@ -4,7 +4,7 @@ using namespace ngx::Core::BasicComponent;
 
 BufferMemoryBlock::BufferMemoryBlock(size_t Size) : BasicMemoryBlock(Size), Reusable() {
     /** reset Next position */
-    Start = (u_char *) ((size_t) this & ~(BlockSize - 1)) + sizeof(MemoryBlockAllocator) + 1;
+    Start = (u_char *) ((size_t) this & ~(BlockSize - 1)) + sizeof(BufferMemoryBlock) + 1;
     End = (u_char *) ((size_t) this & ~(BlockSize - 1)) + BlockSize - 1;
     Reset();
 }

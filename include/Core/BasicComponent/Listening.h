@@ -22,9 +22,9 @@ protected:
 public:
     Listening();
 
-    Listening(SocketAddress &Address);
+    Listening(Address_t &Address);
 
-    Listening(int SocketFD, SocketAddress &Address);
+    Listening(int SocketFD, Address_t &Address);
 
     SocketError SetPortReuse(bool On);
 

@@ -2,7 +2,7 @@
 
 using namespace ngx::Core::BasicComponent;
 
-TCPListening::TCPListening(SocketAddress &Address)
+TCPListening::TCPListening(Address_t &Address)
         : Listening(Address) {
 }
 
@@ -16,7 +16,7 @@ SocketError TCPListening::Bind() {
 
     if (SocketFD == -1) {
 
-        socklen_t SocketLength = sizeof(SocketAddress);
+        socklen_t SocketLength = sizeof(Address_t);
 
         SocketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
@@ -24,7 +24,7 @@ SocketError TCPListening::Bind() {
             return {errno, "failed to create socket"};
         }
 
-        Code = bind(SocketFD, &Address.sockaddr, SocketLength);
+        Code = bind(SocketFD, &Address.Addr4, SocketLength);
 
         if (Code == -1) {
 

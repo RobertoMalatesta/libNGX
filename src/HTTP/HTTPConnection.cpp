@@ -130,7 +130,7 @@ void HTTPConnection::Reset() {
     ReadBuffer.Reset();
 
     // Reset memory pool
-    MemPool.Reset();
+    MemPool.reset();
 
     // Reset timer node
     TimerNode.Reset();

@@ -6,11 +6,11 @@
 
 using namespace ngx::Core::BasicComponent;
 
-TCPConnection::TCPConnection(int SocketFD, SocketAddress &Address) :
+TCPConnection::TCPConnection(int SocketFD, Address_t &Address) :
         Connection(SocketFD, Address) {
 }
 
-TCPConnection::TCPConnection(SocketAddress &Address) :
+TCPConnection::TCPConnection(Address_t &Address) :
         Connection(Address) {
 }
 
@@ -22,7 +22,7 @@ SocketError TCPConnection::Connect() {
 
     SocketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
-    if (0 != bind(SocketFD, &Address.sockaddr, sizeof(Address))) {
+    if (0 != bind(SocketFD, &Address.Addr4, sizeof(Address))) {
         close(SocketFD), SocketFD = -1;
     }
 

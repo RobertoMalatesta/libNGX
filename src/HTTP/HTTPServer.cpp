@@ -74,7 +74,7 @@ RuntimeError HTTPServer::ServerEventLoop() {
 }
 
 
-RuntimeError HTTPServer::GetConnection(HTTPConnection *&C, int SocketFD, SocketAddress &Address) {
+RuntimeError HTTPServer::GetConnection(HTTPConnection *&C, int SocketFD, Address_t &Address) {
 
     C = nullptr;
 

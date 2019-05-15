@@ -21,7 +21,6 @@ namespace ngx {
 
 /** Pool */
 #include "Core/BasicComponent/BasicMemoryBlock.h"
-#include "Core/BasicComponent/MemoryBlockAllocator.h"
 #include "Core/BasicComponent/Pool.h"
 #include "Core/BasicComponent/PoolMemoryBlockCollector.h"
 
@@ -41,9 +40,17 @@ namespace ngx {
 /** Event */
 #include "Core/BasicComponent/EventEntity.h"
 #include "Core/BasicComponent/EventDomain.h"
-
 /** Socket */
+        }   // BasicComponent
+    }   // Core
+}   // ngx
+
 #include "Core/BasicComponent/Socket.h"
+
+namespace ngx {
+    namespace Core {
+        namespace BasicComponent {
+
 #include "Core/BasicComponent/SocketEventDomain.h"
 #include "Core/BasicComponent/Connection.h"
 #include "Core/BasicComponent/TCPConnection.h"
@@ -52,9 +59,9 @@ namespace ngx {
 
 /** Server */
 #include "Core/BasicComponent/Server.h"
-        }
-    }
-}
+        }   // BasicComponent
+    }   // Core
+}   // ngx
 
 #include "Core/BasicComponent/Buffer.h"
 #include "Core/BasicComponent/MemoryBuffer.h"

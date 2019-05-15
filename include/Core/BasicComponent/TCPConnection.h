@@ -18,9 +18,9 @@
  * */
 class TCPConnection : public Connection {
 public:
-    TCPConnection(SocketAddress &Address);
+    TCPConnection(Address_t &Address);
 
-    TCPConnection(int SocketFD, SocketAddress &Address);
+    TCPConnection(int SocketFD, Address_t &Address);
 
     virtual SocketError Connect();
 };

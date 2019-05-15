@@ -2,19 +2,18 @@
 #include <cstring>
 #include <cstddef>
 
-#include <iostream>
+#include <fcntl.h>
+#include <unistd.h>
+#include <signal.h>
+
+#include <netdb.h>
+#include <sys/socket.h>
+
+#include <list>
 #include <vector>
+#include <iostream>
 
 #include <atomic>
 #include <thread>
-
-#include <signal.h>
-#include <unistd.h>
-
-#include <pthread.h>
 #include <mutex>
-#include <netinet/in.h>
-#include <fcntl.h>
-
-#include <list>
 #include <memory>

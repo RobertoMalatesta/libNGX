@@ -11,7 +11,7 @@
 //
 //===-------------------------------------------------------------------------===//
 
-class Pool : public CanReset {
+class Pool {
 
 private:
     uint32_t AllocateRound = 0;
@@ -66,8 +66,8 @@ public:
 
     void free(void *&pointer);
 
-    virtual void GC();
+    void collect();
 
-    virtual void Reset();
+    virtual void reset();
 };
 

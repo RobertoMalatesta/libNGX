@@ -11,7 +11,7 @@ protected:
 
 public:
 
-    HTTPListening(SocketAddress &Address);
+    HTTPListening(Address_t &Address);
 
     ~HTTPListening() = default;
 };

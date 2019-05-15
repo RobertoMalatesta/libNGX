@@ -61,7 +61,7 @@ public:
     virtual EventError DetachListening(HTTPListening &L);
 
     // Get a new Connection from ConnectionBuilder
-    virtual RuntimeError GetConnection(HTTPConnection *&C, int SocketFD, SocketAddress &Address);
+    virtual RuntimeError GetConnection(HTTPConnection *&C, int SocketFD, Address_t &Address);
 
     // Put a connection back into ConnectionBuilder
     virtual RuntimeError PutConnection(HTTPConnection *&C);

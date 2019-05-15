@@ -1,5 +1,5 @@
-#ifndef MEMORYBUFFER_H
-#define MEMORYBUFFER_H
+#ifndef MEMORY_BUFFER_H
+#define MEMORY_BUFFER_H
 
 namespace ngx {
     namespace Core {
@@ -141,4 +141,4 @@ namespace ngx {
     }   // Core
 }   // ngx
 
-#endif //MEMORYBUFFER_H
+#endif //MEMORY_BUFFER_H

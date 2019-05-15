@@ -3,30 +3,40 @@
 
 using namespace ngx::Core::BasicComponent;
 
-Job::Job(ThreadFn *Fn, void *Argument) : Callback(Fn), PointerToArg(Argument) {
+Job::Job(ThreadFn *Fn, void *pArg) : Callback(Fn), pArg(pArg) {
 }
 
-Job::Job(Job &J) : Callback(J.Callback), PointerToArg(J.PointerToArg) {
+Job::Job(Job &J) : Callback(J.Callback), pArg(J.pArg) {
 }
 
 void Job::doJob() {
-
     if (Callback != nullptr) {
-        Callback(PointerToArg);
+        Callback(pArg);
     }
 }
 
-Thread::Thread() : Sentinel(), Allocator() {
+Thread::Thread() :  Sentinel(),
+                    PostCount(0),
+                    Running(true),
+                    PressureScore(0),
+                    Worker(nullptr),ThreadLocalPool(){}
 
-    int ret;
+void Thread::newJob(Job *&J) {
+    void *pMem;
 
-    this->Running = true;
-    this->Lock.Lock();
+    pMem=ThreadLocalPool.allocate(sizeof(Job));
 
-    ret = pthread_create(&WorkerThread, nullptr, Thread::ThreadProcess, (void *) this);
+    if(pMem!=nullptr) {
+        J = new(pMem) Job();
+    } else {
+        J = nullptr;
+    }
+}
 
-    if (ret != 0) {
-        this->Running = false;
+void Thread::deleteJob(Job *&J) {
+    if(J != nullptr) {
+        ThreadLocalPool.free(reinterpret_cast<void *&>(J));
+        J= nullptr;
     }
 }
 
@@ -40,62 +50,62 @@ RuntimeError Thread::PostJob(Job &J) {
         return {EFAULT, "thread is not running"};
     }
 
-    if (Build(J1) != 0 || J1 == nullptr) {
+    newJob(J1);
+
+    if (J1 == nullptr) {
         return {ENOMEM, "insufficent memory"};
     }
 
     *J1 = J;
 
-    Sentinel.Append(&J1->Q);
+    J1->AppendJob(Sentinel);
+    PressureScore++;
 
-    if (PostCount++ % THREAD_GC_ROUND == 0) {
-        Allocator.GC();
-    }
+    if (PostCount++ % THREAD_COLLECT_ROUND == 0) { ThreadLocalPool.collect(); }
 
     return {0};
 }
 
-void *Thread::ThreadProcess(void *Argument) {
+void *Thread::ThreadProcess(void *Arg) {
 
-    Queue *Q;
     Job *J;
+    Queue *Q;
+    Thread *thisThread;
 
-    auto *T = static_cast<Thread *>(Argument);
-
-    T->Lock.Unlock();
-
-    ForceSleep(NANO_SECOND_SIZE);
+    thisThread = static_cast<Thread *>(Arg);
 
     while (true) {
 
         ForceSleep(THREAD_WAIT_TIME);
+        thisThread->Lock.Lock();
 
-        T->Lock.Lock();
-
-        if (!T->Running) {
-            T->Lock.Unlock();
-            break;
-        } else {
-
-            while (!T->Sentinel.IsEmpty()) {
-
-                Q = T->Sentinel.GetNext();
+        if (thisThread->Running) {
+            while (!thisThread->Sentinel.IsEmpty()) {
+                // fetch one job from job list
+                Q = thisThread->Sentinel.GetNext();
                 Q->Detach();
-
-                T->Lock.Unlock();
-
+                thisThread->Lock.Unlock();
+                // release thread lock and execute job
                 J = Job::FromQueue(Q);
                 J->doJob();
-                T->Destroy(J);
-
-                T->Lock.Lock();
+                thisThread->Lock.Lock();
+                // lock thread and free job object from ThreadLocalPool
+                thisThread->deleteJob(J);
+                thisThread->PressureScore--;
             }
+            thisThread->Lock.Unlock();
+        } else {
+            break;
         }
-
-        T->Lock.Unlock();
     }
-
+    thisThread->Lock.Unlock();
     return nullptr;
+}
+
+void Thread::Start() {
+    Running = true, PostCount = 0;
+    ThreadLocalPool.collect();
+    Worker = new std::thread(Thread::ThreadProcess, static_cast<void *>(this));
 }
 
 void Thread::Stop() {
@@ -103,28 +113,36 @@ void Thread::Stop() {
         LockGuard LockGuard(&Lock);
         Running = false;
     }
-    pthread_join(WorkerThread, nullptr);
-    Allocator.GC();
+    Worker->join();
 }
 
 ThreadPool::ThreadPool(int NumThread) : NumThread(NumThread) {
-
     while (NumThread-- > 0) {
         Threads.push_back(new Thread());
+    }
+
+    for (Thread *Temp: Threads) {
+        Temp->Start();
     }
 }
 
 ThreadPool::~ThreadPool() {
-
     for (Thread *Temp: Threads) {
-
         Temp->Stop(), delete Temp;
     }
-
     Threads.clear();
 }
 
-Thread *ThreadPool::GetOneThread() {
-    return Threads[DeliverIndex++ % NumThread];
+Thread *ThreadPool::fetchOneThread() {
+    Thread *Ret= nullptr;
+    uint32_t PressureScore = UINT32_MAX;
+
+    for(Thread * T: Threads) {
+        if(T->PresureScore() < PressureScore) {
+            Ret = T, PressureScore = T->PresureScore();
+        }
+    }
+
+    return Ret;
 }
 

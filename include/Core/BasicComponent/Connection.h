@@ -21,9 +21,10 @@ protected:
 public:
     Connection();
 
-    Connection(SocketAddress &Address);
+    Connection(Address_t &Address);
 
-    Connection(int SocketFD, SocketAddress &Address);
+    Connection(int SocketFD, Address_t &Address);
 
     virtual SocketError Connect() = 0;
 };
+

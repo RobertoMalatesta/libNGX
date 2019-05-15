@@ -82,9 +82,7 @@ void *Pool::allocate(size_t Size) {
             }
         }
 
-        if ((++AllocateRound) % POOL_RECYCLE_ROUND == 0) {
-            GC();
-        }
+        if ((++AllocateRound) % POOL_COLLECT_ROUND == 0) { collect(); }
 
         return CurrentBlock->allocate(Size);
     }
@@ -111,13 +109,11 @@ void Pool::free(void *&pointer) {
             free(pointer);
         }
 
-        if ((AllocateRound++) % POOL_RECYCLE_ROUND == 0) {
-            GC();
-        }
+        pointer=nullptr;
     }
 }
 
-void Pool::GC() {
+void Pool::collect() {
 
     PoolMemoryBlock *Current, *Next, *NewCurrent = nullptr;
 
@@ -152,7 +148,7 @@ void Pool::GC() {
     CurrentBlock = HeadBlock;
 };
 
-void Pool::Reset() {
+void Pool::reset() {
 
     PoolMemoryBlock *NextBlock;
 
@@ -168,5 +164,5 @@ void Pool::Reset() {
 }
 
 Pool::~Pool() {
-    Reset();
+    reset();
 }

@@ -27,9 +27,9 @@ static void HTTPEventProcessJob(void *Args, ThreadPool *TPool) {
 
 int EPollEventDomainTest() {
 
-    SocketAddress Address;
+    Address_t Address;
 
-    Address.sockaddr_in = {
+    Address.Addr4In = {
             .sin_family = AF_INET,
             .sin_port = htons(8080),
             .sin_addr = htonl(INADDR_ANY),

@@ -11,7 +11,7 @@ RuntimeError EventDomain::EventLoop() {
 
 RuntimeError EventDomain::BindEventThread(EventEntity &Entity) {
 
-    Thread *T = TPool.GetOneThread();
+    Thread *T = TPool.fetchOneThread();
 
     if (T == nullptr) {
         return {ENOENT, "can not get a thread"};

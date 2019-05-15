@@ -20,7 +20,6 @@ set(SOURCE_FILES
         src/Core/BasicComponent/EventDomain.cpp
         src/Core/BasicComponent/SpinLock.cpp
         src/Core/BasicComponent/Listening.cpp
-        src/Core/BasicComponent/MemoryBlockAllocator.cpp
         src/Core/BasicComponent/Pool.cpp
         src/Core/BasicComponent/Reference.cpp
         src/Core/BasicComponent/Socket.cpp
@@ -47,7 +46,6 @@ set(SOURCE_FILES
 
 set(TEST_FILES
         test/Test.cpp
-        test/Core/MemBlockTest.cpp
         test/Core/PoolTest.cpp
         test/Core/ArrayTest.cpp
         test/Core/TimeTest.cpp

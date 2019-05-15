@@ -9,7 +9,7 @@ HTTPConnectionBuilder::HTTPConnectionBuilder(
         AllocatorBuild(), NonBlock(true), TCPNoDelay(1), TCPNoPush(0) {
 }
 
-int HTTPConnectionBuilder::Get(HTTPConnection *&C, int SocketFD, SocketAddress &Address, HTTPServer *Server,
+int HTTPConnectionBuilder::Get(HTTPConnection *&C, int SocketFD, Address_t &Address, HTTPServer *Server,
                                SocketEventDomain *EventDomain) {
 
     LockGuard LockGuard(&Lock);
@@ -45,5 +45,5 @@ int HTTPConnectionBuilder::Put(HTTPConnection *&C) {
 
 void HTTPConnectionBuilder::Reset() {
     LockGuard LockGuard(&Lock);
-    BackendAllocator.Reset();
+    BackendAllocator.reset();
 }

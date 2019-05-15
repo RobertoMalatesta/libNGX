@@ -9,10 +9,10 @@ using namespace ngx::Core::BasicComponent;
 Connection::Connection() : Socket() {
 }
 
-Connection::Connection(SocketAddress &Address) :
+Connection::Connection(Address_t &Address) :
         Socket(Address) {
 }
 
-Connection::Connection(int SocketFD, SocketAddress &Address)
+Connection::Connection(int SocketFD, Address_t &Address)
         : Socket(SocketFD, Address) {
 };

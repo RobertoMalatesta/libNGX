@@ -4,14 +4,14 @@ using namespace std;
 using namespace ngx;
 using namespace ngx::Core;
 
-const int sizeRound = 1000;
+const int sizeRound = 10000;
 
 int NoPool() {
 
     vector<void *> PointerList;
 
     for (int i = 0; i < sizeRound; i++) { // Allocate 500 objects and free half of them
-        void *pData = malloc((size_t) 200);
+        void *pData = malloc((size_t) 500);
 
         if (i % 2 == 0) {
             ::free(pData);
@@ -34,7 +34,7 @@ int PoolTest1() {
     vector<void *> PointerList;
 
     for (int i = 0; i < sizeRound; i++) { // Allocate 500 objects and free half of them
-        void *pData = pool.allocate((size_t) 200);
+        void *pData = pool.allocate((size_t) 500);
 
         if (i % 2 == 0) {
             pool.free(pData);
@@ -43,17 +43,17 @@ int PoolTest1() {
         }
     }
 
-    pool.GC();  // Call GC to destroy free blocks
+    pool.collect();  // Call GC to destroy free blocks
 
     for (auto &it : PointerList) { // Free all the rest objects
         pool.free(it);
     }
 
-    pool.GC();  // Call GC to destroy free blocks, now the Pool returns to the origin state
+    pool.collect();  // Call GC to destroy free blocks, now the Pool returns to the origin state
     PointerList.clear();
 
-    pool.Reset();
-    pool.GC();  // GC all free blocks
+    pool.reset();
+    pool.collect();  // GC all free blocks
 
     return 0;
 }

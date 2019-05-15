@@ -3,18 +3,15 @@
 
 using namespace ngx::Core::BasicComponent;
 
-Socket::Socket() : SocketFD(-1), Address() {
-}
-
-Socket::Socket(SocketAddress &Address) :
+Socket::Socket(Address_t &Address) :
         SocketFD(-1), Address(Address) {
 }
 
-Socket::Socket(int SocketFD, SocketAddress &Address) :
+Socket::Socket(int SocketFD, Address_t &Address) :
         SocketFD(SocketFD), Address(Address) {
 }
 
-SocketError Socket::SetSocketAddress(int SocketFD, SocketAddress &Address) {
+SocketError Socket::SetSocketAddress(int SocketFD, Address_t &Address) {
 
     LockGuard Guard(&SocketLock);
 

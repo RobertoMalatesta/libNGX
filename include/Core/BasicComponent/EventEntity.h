@@ -20,6 +20,16 @@ const EventType ET_READ = 0x0004;
 const EventType ET_WRITE = 0x0008;
 const EventType ET_CLOSED = 0x0010;
 
+typedef enum Event{
+    READ,
+    WRITE,
+    READ_WRITE,
+    TIMER,
+    CLOSED,
+    USER1,
+    USER2,
+} Event_t;
+
 class EventEntity {
 protected:
     EventType Event = ET_NONE;
@@ -29,5 +39,17 @@ protected:
     friend class EventDomain;
 
 public:
+    RuntimeError PostJob(Job &J);
+};
+
+class EventDomain;
+
+class EventSubscriber {
+protected:
+    Thread *Worker;
+public:
+    void Bind(EventDomain *D);
+    void UnBindBind(EventDomain *D);
+
     RuntimeError PostJob(Job &J);
 };
