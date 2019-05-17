@@ -12,18 +12,13 @@
 //===-------------------------------------------------------------------------===//
 
 #include "ngx.h"
-#include "Core/MetaClass/MetaClass.h"
-#include "Core/Types/Types.h"
-#include "Core/BasicComponent/BasicComponent.h"
-#include "Core/Arch/Arch.h"
+#include "Core/ADT/ADT.h"
+#include "Core/Support/Support.h"
+
+#include "Core/Target/Target.h"
 
 namespace ngx {
     namespace Core {
-
-        using namespace MetaClass;
-        using namespace DefaultConfig;
-        using namespace Types;
-        using namespace BasicComponent;
-        using namespace Arch::X86;
+        using namespace Config;
     }
 }

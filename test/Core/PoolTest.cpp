@@ -1,8 +1,7 @@
 #include "Core/Core.h"
 
 using namespace std;
-using namespace ngx;
-using namespace ngx::Core;
+using namespace ngx::Core::Support;
 
 const int sizeRound = 10000;
 

@@ -1,6 +1,6 @@
 namespace ngx {
     namespace Core {
-        namespace DefaultConfig {
+        namespace Config {
 
             // Architecture Configuration
             const char CPUModule[] = "I386";
@@ -14,10 +14,10 @@ namespace ngx {
             const uint64_t TIME_RESOLUTION = 1000;  // us
             const uint32_t NUM_TIME_SLOT = 128;
 
-            // Types Configuration
+            // ADT Configuration
             const uint32_t ARRAY_DEFAULT_ELEMENT_COUNT = 32;
 
-            // BasicComponent Configuration
+            // Support Configuration
             const size_t BUFFER_MEMORY_BLOCK_SIZE = 128 * PAGE_SIZE;    //Byte(s)
             const size_t POOL_MEMORY_BLOCK_SIZE = 128 * PAGE_SIZE;      //Byte(s)
             const int POOL_COLLECT_ROUND = 1000;

@@ -5,7 +5,7 @@
 
 class Mux {
 protected:
-    SpinLock Lock;
+    spin_lock Lock;
     // Router
     // ServiceDictionary
 public:

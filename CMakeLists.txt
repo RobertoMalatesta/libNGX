@@ -5,33 +5,32 @@ project(libNGX)
 set(CMAKE_CXX_STANDARD 11)
 
 set(SOURCE_FILES
-        src/Core/Types/Queue.cpp
-        src/Core/Types/RBTree.cpp
-        src/Core/Arch/X86.cpp
-        src/Core/Arch/Linux/EPollEventDomain.cpp
-        src/Core/BasicComponent/Buffer.cpp
-        src/Core/BasicComponent/BasicMemoryBlock.cpp
-        src/Core/BasicComponent/BufferMemoryBlock.cpp
-        src/Core/BasicComponent/BufferMemoryBlockCollector.cpp
-        src/Core/BasicComponent/BufferBuilder.cpp
-        src/Core/BasicComponent/Checksum.cpp
-        src/Core/BasicComponent/Connection.cpp
-        src/Core/BasicComponent/Error.cpp
-        src/Core/BasicComponent/EventDomain.cpp
-        src/Core/BasicComponent/SpinLock.cpp
-        src/Core/BasicComponent/Listening.cpp
-        src/Core/BasicComponent/Pool.cpp
-        src/Core/BasicComponent/Reference.cpp
-        src/Core/BasicComponent/Socket.cpp
-        src/Core/BasicComponent/SocketEventDomain.cpp
-        src/Core/BasicComponent/Time.cpp
-        src/Core/BasicComponent/ThreadPool.cpp
-        src/Core/BasicComponent/SocketTimerHub.cpp
-        src/Core/BasicComponent/BoundCursor.cpp
-        src/Core/BasicComponent/Dictionary.cpp
-        src/Core/BasicComponent/Cursor.cpp
-        src/Core/BasicComponent/TCPConnection.cpp
-        src/Core/BasicComponent/TCPListening.cpp
+        src/Core/ADT/Queue.cpp
+        src/Core/ADT/RBTree.cpp
+        src/Core/Target/X86.cpp
+        src/Core/Target/Linux/EPollEventDomain.cpp
+        src/Core/Support/Buffer.cpp
+        src/Core/Support/BasicMemoryBlock.cpp
+        src/Core/Support/BufferMemoryBlock.cpp
+        src/Core/Support/BufferMemoryBlockCollector.cpp
+        src/Core/Support/BufferBuilder.cpp
+        src/Core/Support/Checksum.cpp
+        src/Core/Support/Connection.cpp
+        src/Core/Support/Error.cpp
+        src/Core/Support/EventDomain.cpp
+        src/Core/Support/spin_lock.cpp
+        src/Core/Support/Listening.cpp
+        src/Core/Support/Pool.cpp
+        src/Core/Support/Reference.cpp
+        src/Core/Support/SocketEventDomain.cpp
+        src/Core/Support/Time.cpp
+        src/Core/Support/ThreadPool.cpp
+        src/Core/Support/TimerTree.cpp
+        src/Core/Support/BoundCursor.cpp
+        src/Core/Support/Dictionary.cpp
+        src/Core/Support/Cursor.cpp
+        src/Core/Support/TCPConnection.cpp
+        src/Core/Support/TCPListening.cpp
         src/HTTP/Router/Mux.cpp
         src/HTTP/HTTPListening.cpp
         src/HTTP/HTTPConnection.cpp
@@ -42,7 +41,7 @@ set(SOURCE_FILES
         src/HTTP/HTTPRequest.cpp
         src/HTTP/HTTPResponse.cpp
         src/HTTP/HTTPCoreHeader.cpp
-        src/Core/BasicComponent/MemoryBuffer.cpp)
+        src/Core/Support/MemoryBuffer.cpp)
 
 set(TEST_FILES
         test/Test.cpp

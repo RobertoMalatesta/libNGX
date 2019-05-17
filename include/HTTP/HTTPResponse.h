@@ -8,7 +8,7 @@ struct HTTPHeaderOut {
     HTTPHeaderOut(Allocator *BackendAllocator) : Headers(BackendAllocator), Trailers(BackendAllocator) {};
 };
 
-class HTTPResponse : public CanReset {
+class HTTPResponse {
 protected:
 
     enum HTTPResponseState {

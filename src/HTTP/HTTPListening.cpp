@@ -16,7 +16,7 @@ RuntimeError HTTPListening::HandleDomainEvent(EventType Type) {
     Address_t Address;
     socklen_t SocketLength = sizeof(Address);
 
-    LockGuard Lock(&SocketLock);
+    std::lock_guard<spin_lock> g(SocketLock);
 
     if (ParentServer == nullptr || ParentEventDomain == nullptr) {
         return {EINVAL, "Listening is not attached"};

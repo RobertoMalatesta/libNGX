@@ -6,13 +6,13 @@ HTTPConnectionBuilder::HTTPConnectionBuilder(
         size_t BufferBlockSize,
         uint32_t BufferCollectorSize) :
         BB(BufferBlockSize, BufferCollectorSize), BackendAllocator(),
-        AllocatorBuild(), NonBlock(true), TCPNoDelay(1), TCPNoPush(0) {
+        NonBlock(true), TCPNoDelay(1), TCPNoPush(0) {
 }
 
 int HTTPConnectionBuilder::Get(HTTPConnection *&C, int SocketFD, Address_t &Address, HTTPServer *Server,
                                SocketEventDomain *EventDomain) {
 
-    LockGuard LockGuard(&Lock);
+    std::lock_guard<spin_lock> g(Lock);
 
     if (SocketFD == -1 || Build(C) != 0) {
         return C = nullptr, -1;
@@ -37,13 +37,13 @@ int HTTPConnectionBuilder::Get(HTTPConnection *&C, int SocketFD, Address_t &Addr
 }
 
 int HTTPConnectionBuilder::Put(HTTPConnection *&C) {
-    LockGuard LockGuard(&Lock);
+    std::lock_guard<spin_lock> g(Lock);
 
     C->ParentEventDomain->UnbindEventThread(*C);
     return Destroy(C);
 }
 
 void HTTPConnectionBuilder::Reset() {
-    LockGuard LockGuard(&Lock);
+    std::lock_guard<spin_lock> g(Lock);
     BackendAllocator.reset();
 }

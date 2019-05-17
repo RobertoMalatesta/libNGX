@@ -61,7 +61,7 @@ struct HTTPHeaderIn {
     HTTPHeaderIn() {};
 };
 
-class HTTPRequest : public CanReset {
+class HTTPRequest {
 protected:
 
     enum HTTPRequestState {

@@ -1,7 +1,7 @@
 #include "Core/Core.h"
 
 using namespace std;
-using namespace ngx::Core;
+using namespace ngx::Core::Support;
 
 int CRCTest() {
 

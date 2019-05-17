@@ -11,9 +11,9 @@
 //
 //===-------------------------------------------------------------------------===//
 
-class HTTPConnectionBuilder : public AllocatorBuild<HTTPConnection>, public CanReset {
+class HTTPConnectionBuilder {
 protected:
-    SpinLock Lock;
+    spin_lock Lock;
 
     BufferBuilder BB;
     Pool BackendAllocator;
@@ -33,21 +33,21 @@ public:
 
     inline HTTPError SetTCPNoDelay(bool On) {
 
-        LockGuard LockGuard(&Lock);
+        std::lock_guard<spin_lock> g(Lock);
         TCPNoDelay = (On) ? 1 : 0;
         return {0};
     }
 
     inline HTTPError SetTCPNoPush(bool On) {
 
-        LockGuard LockGuard(&Lock);
+        std::lock_guard<spin_lock> g(Lock);
         TCPNoPush = (On) ? 1 : 0;
         return {0};
     };
 
     inline HTTPError SetReadBufferSize(uint32_t Size) {
 
-        LockGuard LockGuard(&Lock);
+        std::lock_guard<spin_lock> g(Lock);
         ReadBufferSize = Size;
         return {0};
     };
@@ -62,4 +62,7 @@ public:
 
     void Reset();
 
+    int Build(HTTPConnection *&C) {return 0;};
+
+    int Destroy(HTTPConnection *&C) {return 0;};
 };

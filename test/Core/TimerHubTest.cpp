@@ -4,8 +4,7 @@
 
 using namespace std;
 
-using namespace ngx::Core;
-
+using namespace ngx::Core::Support;
 
 static void func(void *, ThreadPool *) {
 

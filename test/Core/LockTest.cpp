@@ -1,11 +1,11 @@
 #include "Core/Core.h"
 
-using namespace ngx::Core;
+using namespace ngx::Core::Support;
 
 int LockTest() {
-    SpinLock Lock;
+    spin_lock Lock;
 
-    Lock.Lock();
+    Lock.lock();
     Lock.Unlock();
 
     return 0;

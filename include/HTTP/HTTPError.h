@@ -1,16 +1,22 @@
-class HTTPError : public Error {
-private:
-    static const char *ErrorCodeToError(int ErrorCode);
+namespace ngx {
+    namespace HTTP {
+        using namespace ngx::Core::Support;
 
-public:
-    HTTPError(int ErrorCode, const char *Message = nullptr) : Error(ErrorCode, Message) {};
+        class HTTPError : public Error {
+        private:
+            static const char *ErrorCodeToError(int ErrorCode);
 
-    const char *GetError() {
-        return ErrorCodeToError(ErrorCode);
-    }
+        public:
+            HTTPError(int ErrorCode, const char *Message = nullptr) : Error(ErrorCode, Message) {};
 
-    virtual void PrintError() {
-        printf("HTTPError: %s, Message: %s\n", ErrorCodeToError(ErrorCode),
-               Message == nullptr ? "null" : Message);
-    }
-};
+            const char *GetError() {
+                return ErrorCodeToError(ErrorCode);
+            }
+
+            virtual void PrintError() {
+                printf("HTTPError: %s, Message: %s\n", ErrorCodeToError(ErrorCode),
+                       Message == nullptr ? "null" : Message);
+            }
+        };
+    } // HTTP
+} // ngx

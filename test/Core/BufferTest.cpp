@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 
-using namespace ngx::Core;
+using namespace ngx::Core::Support;
 
 int BufferTest1();
 int BufferTest2();

@@ -1,6 +1,6 @@
 #include "Core/Core.h"
 
-using namespace ngx::Core::BasicComponent;
+using namespace ngx::Core::Support;
 
 class DictItem : public DictionaryItem {
 public:

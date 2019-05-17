@@ -11,7 +11,7 @@ HTTPConnection::HTTPConnection() :
 
 RuntimeError HTTPConnection::HandleDomainEvent(EventType Type) {
 
-    LockGuard Guard(&SocketLock);
+    std::lock_guard<spin_lock> g(SocketLock);
 
 //    LOG(INFO) << "handle HTTPConnection event, fd: " << SocketFD << ", type: " << EventType;
 

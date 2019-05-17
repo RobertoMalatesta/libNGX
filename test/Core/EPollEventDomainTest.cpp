@@ -1,7 +1,7 @@
 #include "Core/Core.h"
 
 using namespace ngx::Core;
-using namespace ngx::Core::Arch::Linux;
+using namespace ngx::Core::Target::Linux;
 
 static void HTTPEventProcessJob(void *Args, ThreadPool *TPool) {
 
@@ -27,13 +27,15 @@ static void HTTPEventProcessJob(void *Args, ThreadPool *TPool) {
 
 int EPollEventDomainTest() {
 
-    Address_t Address;
-
-    Address.Addr4In = {
+    struct sockaddr_in addr = {
             .sin_family = AF_INET,
             .sin_port = htons(8080),
-            .sin_addr = htonl(INADDR_ANY),
+            .sin_addr = {
+                    .s_addr = INADDR_ANY
+            }
     };
+
+    Address_t Address(addr);
 
     TCPListening Listen(Address);
     EPollEventDomain Domain(4, 31723);

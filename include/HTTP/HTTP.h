@@ -5,7 +5,7 @@ namespace ngx {
     namespace HTTP {
 
         using namespace ngx::Core;
-        using namespace ngx::HTTP::DefaultConfig;
+        using namespace ngx::HTTP::Config;
 
         const u_char LF = '\n';
         const u_char CR = '\r';
@@ -68,9 +68,14 @@ namespace ngx {
         class HTTPCoreHeader;
 
         struct HTTPPMU;
+    }
+}
 
 #include "HTTP/HTTPError.h"
 #include "HTTP/HTTPHeader.h"
+
+namespace ngx {
+    namespace HTTP {
 #include "HTTP/HTTPCoreHeader.h"
 #include "HTTP/HTTPRequest.h"
 #include "HTTP/HTTPResponse.h"
@@ -79,6 +84,5 @@ namespace ngx {
 #include "HTTP/HTTPConnectionBuilder.h"
 #include "HTTP/HTTPServer.h"
 #include "HTTP/Mux/Mux.h"
-
     }
 }

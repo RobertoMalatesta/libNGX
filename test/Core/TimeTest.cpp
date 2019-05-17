@@ -3,7 +3,7 @@
 #include <unistd.h>
 
 using namespace std;
-using namespace ngx::Core;
+using namespace ngx::Core::Support;
 
 int TimeTest() {
 
