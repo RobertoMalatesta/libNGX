@@ -3,15 +3,15 @@
 
 using namespace ngx::Core::Support;
 
-Job::Job(ThreadFn *Fn, void *pArg) : Callback(Fn), pArg(pArg) {
+Job::Job(ThreadFn *Fn, void *pObj, void *pArg) : Callback(Fn), pObj(pObj), pArg(pArg) {
 }
 
-Job::Job(Job &J) : Callback(J.Callback), pArg(J.pArg) {
+Job::Job(Job &J) : Callback(J.Callback), pObj(J.pObj), pArg(J.pArg) {
 }
 
 void Job::doJob() {
-    if (Callback != nullptr) {
-        Callback(pArg);
+    if (Callback != nullptr && pObj != nullptr) {
+        Callback(pObj, pArg);
     }
 }
 
@@ -40,7 +40,7 @@ void Thread::deleteJob(Job *&J) {
     }
 }
 
-RuntimeError Thread::PostJob(Job &J) {
+RuntimeError Thread::postJob(Job &J) {
 
     Job *J1 = nullptr;
     std::lock_guard<spin_lock> g(Lock);
@@ -57,7 +57,7 @@ RuntimeError Thread::PostJob(Job &J) {
 
     *J1 = J;
 
-    J1->AppendJob(Sentinel);
+    J1->appendJob(Sentinel);
     PressureScore++;
 
     if (PostCount++ % THREAD_COLLECT_ROUND == 0) { ThreadLocalPool.collect(); }
@@ -65,7 +65,7 @@ RuntimeError Thread::PostJob(Job &J) {
     return {0};
 }
 
-void *Thread::ThreadProcess(void *Arg) {
+void *Thread::threadProcess(void *Arg) {
 
     Job *J;
     Queue *Q;
@@ -85,7 +85,7 @@ void *Thread::ThreadProcess(void *Arg) {
                 Q->Detach();
                 thisThread->Lock.Unlock();
                 // release thread lock and execute job
-                J = Job::FromQueue(Q);
+                J = Job::fromQueue(Q);
                 J->doJob();
                 thisThread->Lock.lock();
                 // lock thread and free job object from ThreadLocalPool
@@ -101,13 +101,13 @@ void *Thread::ThreadProcess(void *Arg) {
     return nullptr;
 }
 
-void Thread::Start() {
+void Thread::start() {
     Running = true, PostCount = 0;
     ThreadLocalPool.collect();
-    Worker = new std::thread(Thread::ThreadProcess, static_cast<void *>(this));
+    Worker = new std::thread(Thread::threadProcess, static_cast<void *>(this));
 }
 
-void Thread::Stop() {
+void Thread::stop() {
     {
         std::lock_guard<spin_lock> g(Lock);
         Running = false;
@@ -121,13 +121,13 @@ ThreadPool::ThreadPool(int NumThread) : NumThread(NumThread) {
     }
 
     for (Thread *Temp: Threads) {
-        Temp->Start();
+        Temp->start();
     }
 }
 
 ThreadPool::~ThreadPool() {
     for (Thread *Temp: Threads) {
-        Temp->Stop(), delete Temp;
+        Temp->stop(), delete Temp;
     }
     Threads.clear();
 }
@@ -137,11 +137,10 @@ Thread *ThreadPool::fetchOneThread() {
     uint32_t PressureScore = UINT32_MAX;
 
     for(Thread * T: Threads) {
-        if(T->PresureScore() < PressureScore) {
-            Ret = T, PressureScore = T->PresureScore();
+        if(T->presureScore() < PressureScore) {
+            Ret = T, PressureScore = T->presureScore();
         }
     }
-
     return Ret;
 }
 

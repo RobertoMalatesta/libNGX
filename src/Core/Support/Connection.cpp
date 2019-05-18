@@ -48,8 +48,11 @@ SocketError Connection::setNoDelay(unsigned On) {
         return {Code, "failed to setNoDelay(), failed to set no-delay in setsockopt()"};
     }
 
-    return {Code};
-
     return {Code, Code == 0 ? "" : "setsockopt() failed"};
 }
 
+RuntimeError Connection::postEvent(Event_t E) {
+
+    Job J(static_cast<ThreadFn *>(this->OnEvent), this, E);
+
+}

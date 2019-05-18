@@ -21,7 +21,7 @@ protected:
     int FD;
     Timer TimerNode;
     Address_t Address;
-    virtual RuntimeError OnEvent(Event_t E) { return {0}; };
+    virtual void OnEvent(Event_t E) { };
 
 public:
     spin_lock Lock;
@@ -32,11 +32,13 @@ public:
 
     inline int getFD() const { return FD; };
 
+    SocketError close();
+
     SocketError setNoBlock(unsigned On);
 
     SocketError setNoDelay(unsigned On);
 
-    SocketError close();
+    RuntimeError postEvent(Event_t);
 
     virtual SocketError connect(Address_t &Addr) = 0;
 

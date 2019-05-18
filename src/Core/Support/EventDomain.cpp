@@ -51,7 +51,7 @@ void EventDomain::EmitExpiredTimer() {
 
         C=Connection::timerToConnection(it);
         if (C->Lock.TryLock()) {
-            Tree.detachTimer(*it);
+            Tree.detach(*it);
 
             C->PostJob(it->TimerJob);
 

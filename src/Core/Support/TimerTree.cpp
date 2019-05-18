@@ -3,51 +3,62 @@
 using namespace ngx::Core::Support;
 
 TimerTree::~TimerTree() {
-    for (RBNode *it = this->begin(); it; it = next(it)) {
+    for (Timer *it = this->begin(); it; it = next(it)) {
         remove(it);
     }
 };
 
-RuntimeError TimerTree::attachTimer(Timer &T) {
+RuntimeError TimerTree::attach(Timer &T) {
+    if (T.Interval == 0 || T.Mode == TM_CLOSED)
+        return {EBADF, "timer not set or bad interval"};
 
-    TimerHubLock.lock();
-
-    if (T.Interval > 0) {
-        T.Timestamp = GetHighResolutionTimestamp() + T.Interval;
-        insert(T);
-    }
-
-    TimerHubLock.Unlock();
-
+    T.Timestamp = GetHighResolutionTimestamp() + T.Interval;
+    insert(T);
     return {0};
 }
 
-RuntimeError TimerTree::detachTimer(Timer &T) {
-
-    TimerHubLock.lock();
-
-    if (T.IsTimerAttached()) {
+RuntimeError TimerTree::detach(Timer &T) {
+    if (T.isAttached()) {
         remove(&T);
         T.Mode = TM_CLOSED;
     }
-
-    TimerHubLock.Unlock();
-
     return {0};
 }
 
+RuntimeError TimerTree::setOnce(Timer &T, uint64_t Peroid, Job &J) {
+    Timer Target{0, TM_ONCE, Peroid, J};
+
+    if (T.isAttached())
+        return {EALREADY, "timer already attached"};
+
+    return attach(T=Target);
+}
+
+RuntimeError TimerTree::setInterval(Timer &T, uint64_t Interval, Job &J) {
+    Timer Target{0, TM_INTERVAL, Interval, J};
+
+    if (T.isAttached())
+        return {EALREADY, "timer already attached"};
+
+    return attach(T=Target);
+}
+
 RuntimeError TimerTree::preemptTimer(Timer &T) {
-    TimerHubLock.lock();
+    if (!T.isAttached())
+        return {EALREADY, "timer is not attached"};
 
-    if (T.IsTimerAttached()) {
-        remove(&T);
-        T.Timestamp = 0;
-        insert(T);
-    }
-
-    TimerHubLock.Unlock();
-
+    remove(&T);
+    T.Timestamp = GetHighResolutionTimestamp();
+    insert(T);
     return {0};
+}
+
+RuntimeError TimerTree::resetTimer(Timer &T) {
+    if (T.isAttached()) {
+        remove(&T);
+        return {0};
+    }
+    return {EALREADY, "timer is not attached"};
 }
 
 Timer* TimerTree::begin() const{
@@ -57,9 +68,5 @@ Timer* TimerTree::begin() const{
 Timer* TimerTree::next(Timer *T) const {
     if (T== nullptr) return nullptr;
     return static_cast<Timer *>(RBTree::next(T));
-}
-
-RuntimeError TimerTree::nextExpiredTimer(uint64_t Timestamp, Timer *&T) {
-
 }
 

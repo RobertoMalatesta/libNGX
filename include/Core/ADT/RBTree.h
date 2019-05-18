@@ -9,9 +9,9 @@ protected:
     bool Color;
     RBNode *Left, *Right, *Parent;
 
-    inline bool getColor() { return Color; }
-    inline bool isRed() { return !Color; }
-    inline bool isBlack() { return Color; }
+    inline bool getColor() const { return Color; }
+    inline bool isRed() const { return !Color; }
+    inline bool isBlack() const { return Color; }
     inline void setRed() { Color = RB_RED; }
     inline void setBlack() { Color = RB_BLACK; }
 
@@ -20,9 +20,9 @@ protected:
 public:
     RBNode() : Color(RB_RED), Left(nullptr), Right(nullptr), Parent(this) {};
 
-    inline RBNode *getLeft() { return Left; }
-    inline RBNode *getRight() { return Right; }
-    inline RBNode *getParent() { return Parent; }
+    inline RBNode *getLeft() const { return Left; }
+    inline RBNode *getRight() const { return Right; }
+    inline RBNode *getParent() const { return Parent; }
     virtual int operator-(RBNode &R) = 0;
 };
 

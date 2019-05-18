@@ -3,30 +3,28 @@ using namespace ADT;
 class Job;
 class ThreadPool;
 
-typedef void (ThreadFn)(void *pArg);
+typedef void (ThreadFn)(void *pObj, void *pArg);
 
 class Job {
 private:
     Queue Q;
 
 protected:
-    void *pArg = nullptr;
-    ThreadFn *Callback = nullptr;
+    void *pObj;
+    void *pArg;
+    ThreadFn *Callback;
 
 public:
-
-    Job() = default;
-
-    Job(ThreadFn *Fn, void *pArg);
-
+    Job() : Callback(nullptr), pObj(nullptr), pArg(nullptr) {};
     Job(Job &J);
+    Job(ThreadFn *Fn, void *pObj, void *pArg);
 
-    static inline Job *FromQueue(Queue *Q) {
+    inline void appendJob(Queue &queue) { queue.Append(&Q); };
+    void doJob();
+
+    static inline Job *fromQueue(Queue *Q) {
         return (Job *) ((uintptr_t) Q - (uintptr_t) &(((Job *) 0)->Q));
     }
-
-    inline void AppendJob(Queue &queue) { queue.Append(&Q); };
-    void doJob();
 };
 
 class ThreadPool {
@@ -46,17 +44,17 @@ public:
         void newJob(Job *&J);
         void deleteJob(Job *&J);
         // thread backend routine, process jobs
-        static void *ThreadProcess(void *Arg);
+        static void *threadProcess(void *Arg);
 
     public:
         Thread();
         ~Thread() = default;
         // control thread running state
-        void Start();
-        void Stop();
+        void start();
+        void stop();
         // post a new job to the job queue
-        RuntimeError PostJob(Job &J);
-        uint32_t PresureScore() const {return PressureScore; };
+        RuntimeError postJob(Job &J);
+        uint32_t presureScore() const {return PressureScore; };
     };
 
     ThreadPool(int NumThread = 8);

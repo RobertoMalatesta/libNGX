@@ -44,9 +44,15 @@ class EventDomain;
 class EventSubscriber {
 protected:
     Thread *Worker;
+    static void Callback(void *pObj, void *pArg) {
+        EventSubscriber *Sub=static_cast<EventSubscriber *>(pObj);
+        Event_t E= reinterpret_cast<Event_t>(pArg);
+        Sub->PostEvent()
+
+    }
+    ThreadFn *Fn = Callback;
 public:
     virtual void Bind(EventDomain *D);
     virtual void UnBindBind(EventDomain *D);
-
-    RuntimeError PostJob(Job &J);
+    RuntimeError PostEvent(Event_t E);
 };
