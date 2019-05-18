@@ -41,7 +41,7 @@ public:
         if (Q == nullptr) {
             return nullptr;
         }
-        return (BufferMemoryBlock *) ((uintptr_t) Q - (uintptr_t) (&((BufferMemoryBlock *) 0)->ReuseItem));
+        return (BufferMemoryBlock *) ((uintptr_t) Q - (uintptr_t)(&((BufferMemoryBlock *) 0)->ReuseItem));
     }
 
     static inline BufferMemoryBlock *Build(size_t Size) {

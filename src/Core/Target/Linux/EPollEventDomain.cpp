@@ -7,21 +7,19 @@ using namespace ngx::Core::Target::Linux::Config;
 static bool SignalSetInited = false;
 static sigset_t epoll_sig_mask = {0};
 
-EPollEventDomain::EPollEventDomain(int ThreadCount, int EPollSize) :
-        SocketEventDomain(ThreadCount), EPollLock() {
+EPollEventDomain::EPollEventDomain(int numThreads, int ePollSize) : EventDomain(numThreads) {
 
     if (!SignalSetInited) {
         sigemptyset(&epoll_sig_mask);
         sigaddset(&epoll_sig_mask, SIGALRM);
         SignalSetInited = true;
     }
-
-    EPollFD = epoll_create(EPollSize);
+    EPollFD = epoll_create(ePollSize);
 }
 
 EPollEventDomain::~EPollEventDomain() {
     if (EPollFD != -1) {
-        close(EPollFD);
+        ::close(EPollFD), EPollFD = -1;
     }
 }
 
@@ -154,3 +152,23 @@ RuntimeError EPollEventDomain::EventLoop() {
 
     return {0};
 }
+
+RuntimeError EPollEventDomain::attachFD(int FD, uint32_t Event, void *pData) {
+
+    epoll_event Event = {
+            .data = {
+                    .ptr = pData;
+            },
+            .events = Event,
+    };
+
+    if (EPollFD == -1) {
+        return {EBADF, "EPollEventDomain attachFD() failed, bad EPollFD"};
+    } else if (FD == -1) {
+        return {EBADF, "EPollEventDomain attachFD() failed, bad FD"};
+    } else if (-1 == epoll_ctl(EPollFD, EPOLL_CTL_ADD, FD, &Event)) {
+        return {EBADF, "EPollEventDomain attachFD() failed in epoll_ctl()"};
+    }
+    return {0};
+}
+

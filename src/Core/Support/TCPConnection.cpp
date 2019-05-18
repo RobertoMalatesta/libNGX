@@ -6,25 +6,20 @@
 
 using namespace ngx::Core::Support;
 
-TCPConnection::TCPConnection() :Address(){
+TCPConnection::TCPConnection() : Connection() {
     FD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 }
 
-TCPConnection::TCPConnection(int FD, Address_t &Address) : Connection(FD, Address) {
-}
-
-
-SocketError TCPConnection::connect(Address_t &Address) {
-
-    if (FD != -1) {
-        return {EALREADY, "TCPConnection is already open!"};
-    } else if (Address.Addr4.sa_family==AF_UNSPEC){
-        return {EBADF, "connect() failed, bad socket address"};
+SocketError TCPConnection::connect(Address_t &Addr) {
+    if (Address.Addr4.sa_family != AF_UNSPEC) {
+        return {EALREADY, "TCPConnection is already connected"};
+    } else if (Addr.Addr4.sa_family == AF_UNSPEC) {
+        return {EBADF, "TCPConnection connect() got bad input address"};
+    } else if (FD == -1) {
+        return {EFAULT, "TCPConnection can not create a socket"};
+    } else if (::connect(FD, &Address.Addr4, sizeof(Address)) != 0) {
+        return {errno, "TCPConnection connect() failed, ::connect() failure"};
     }
-
-    if(::connect(FD, &Address.Addr4, sizeof(Address))!=0) {
-        return {errno, "connect() failed, ::connect() failure"};
-    }
-
+    Address = Addr;
     return {0};
 }

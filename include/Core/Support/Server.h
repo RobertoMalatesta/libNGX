@@ -1,6 +1,4 @@
-
 class Server {
-
 protected:
     spin_lock Lock;
     SocketEventDomain *EventDomain;

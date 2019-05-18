@@ -24,7 +24,8 @@ protected:
         int32_t RefCount;
         u_char *Start, *End, *Pos;
         PoolMemoryBlock *Next;
-        PoolMemoryBlock():RefCount(0), Start(nullptr), End(nullptr), Pos(nullptr), Next(nullptr){};
+
+        PoolMemoryBlock() : RefCount(0), Start(nullptr), End(nullptr), Pos(nullptr), Next(nullptr) {};
 
     public:
         ~PoolMemoryBlock() = default;
@@ -57,7 +58,9 @@ protected:
 
 public:
     Pool();
+
     Pool(Pool &Copy) = delete;
+
     Pool operator=(Pool &) = delete;
 
     ~Pool();

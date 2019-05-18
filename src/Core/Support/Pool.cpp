@@ -2,7 +2,7 @@
 
 using namespace ngx::Core::Support;
 
-Pool::PoolMemoryBlock * Pool::PoolMemoryBlock::newBlock(size_t Size) {
+Pool::PoolMemoryBlock *Pool::PoolMemoryBlock::newBlock(size_t Size) {
 
     void *pMem = nullptr;
     u_char *pDataStart = nullptr, *pDataEnd;
@@ -17,8 +17,8 @@ Pool::PoolMemoryBlock * Pool::PoolMemoryBlock::newBlock(size_t Size) {
     pDataStart = reinterpret_cast<u_char *>(pMem) + sizeof(PoolMemoryBlock);
     pDataEnd = reinterpret_cast<u_char *>(pMem) + AllocateSize;
 
-    newBlock->Start=newBlock->Pos=pDataStart;
-    newBlock->End=pDataEnd;
+    newBlock->Start = newBlock->Pos = pDataStart;
+    newBlock->End = pDataEnd;
 
     return newBlock;
 };
@@ -109,7 +109,7 @@ void Pool::free(void *&pointer) {
             free(pointer);
         }
 
-        pointer=nullptr;
+        pointer = nullptr;
     }
 }
 
@@ -156,7 +156,7 @@ void Pool::reset() {
 
         NextBlock = HeadBlock->getNextBlock();
         HeadBlock->setNextBlock(nullptr);
-        delete HeadBlock, HeadBlock=NextBlock;
+        delete HeadBlock, HeadBlock = NextBlock;
     }
 
     CurrentBlock = nullptr;

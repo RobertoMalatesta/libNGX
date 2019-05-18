@@ -16,15 +16,11 @@
  *
  *  @brief Server tcp listening
  * */
-class TCPListening : public Listening {
+class TCPListening : public Listen {
 public:
-    TCPListening(Address_t &Address);
+    TCPListening();
 
-    ~TCPListening();
+    TCPListening(int FD, Address_t &Addr) : Listen(FD, Addr) {};
 
-    virtual SocketError Bind();
-
-    virtual RuntimeError HandleDomainEvent(EventType Type) {
-        return {0};
-    };
+    virtual SocketError bind(const Address_t &Addr) override;
 };

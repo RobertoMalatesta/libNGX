@@ -2,67 +2,35 @@
 
 using namespace ngx::Core::Support;
 
-EventDomain::EventDomain(int NumThreads)
-        : Lock(), Pool(NumThreads), Tree() {
+EventDomain::EventDomain(int numThreads)
+        : Lock(), Pool(numThreads), Tree() {
 }
 
-RuntimeError EventDomain::EventLoop() {
+RuntimeError EventDomain::eventLoop() {
+    emitExpiredTimer();
     return {0};
 }
 
-RuntimeError EventDomain::BindEventThread(EventEntity &Entity) {
+void EventDomain::emitExpiredTimer() {
 
-    Thread *T = Pool.fetchOneThread();
+    uint64_t Timestamp = GetHighResolutionTimestamp();
 
-    if (T == nullptr) {
-        return {ENOENT, "can not get a thread"};
-    }
-
-    Entity.BackendWorker = T;
-
-    return {0};
-}
-
-RuntimeError EventDomain::UnbindEventThread(EventEntity &Entity) {
-    Entity.BackendWorker = nullptr;
-    return {0};
-}
-
-RuntimeError EventEntity::PostJob(Job &J) {
-
-    if (BackendWorker == nullptr) {
-        return {EFAULT, "no backend worker"};
-    }
-
-    return BackendWorker->PostJob(J);
-}
-
-void EventDomain::EmitExpiredTimer() {
-
-    Connection *C;
-    uint64_t Timestamp=GetHighResolutionTimestamp();
-
-    for(Timer *next,*it=Tree.begin(); it; ) {
-        if (it->Timestamp > Timestamp) {
+    for (Timer *next, *it = Tree.begin(); it;) {
+        if (it->getTimestamp() > Timestamp) {
             break;
         }
 
-        next=Tree.next(it);
+        next = Tree.next(it);
+        auto *Sub = static_cast<EventSubscriber *>(it->getData());
 
-        C=Connection::timerToConnection(it);
-        if (C->Lock.TryLock()) {
-            Tree.detach(*it);
-
-            C->PostJob(it->TimerJob);
-
-            if (it->Mode == TM_INTERVAL && it->Interval > 0) {
-                it->Timestamp = Timestamp + it->Interval;
-                Tree.attachTimer(*it);
-            } else {
-                it->Mode = TM_CLOSED;
+        if (Sub->Lock.TryLock()) {
+            Tree.stop(*it);
+            Sub->postEvent(Event::TIMER);
+            if (it->isInterval()) {
+                Tree.respawnInterval(*it);
             }
-            C->Lock.Unlock();
+            Sub->Lock.Unlock();
         }
-        it=next;
+        it = next;
     }
 }

@@ -15,8 +15,8 @@
 #define BUFFER_H
 
 namespace ngx {
-    namespace Core{
-        namespace Support{
+    namespace Core {
+        namespace Support {
             class Cursor;
 
             class BoundCursor;

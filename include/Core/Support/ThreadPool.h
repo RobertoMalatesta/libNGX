@@ -1,6 +1,7 @@
 using namespace ADT;
 
 class Job;
+
 class ThreadPool;
 
 typedef void (ThreadFn)(void *pObj, void *pArg);
@@ -16,14 +17,17 @@ protected:
 
 public:
     Job() : Callback(nullptr), pObj(nullptr), pArg(nullptr) {};
+
     Job(Job &J);
+
     Job(ThreadFn *Fn, void *pObj, void *pArg);
 
     inline void appendJob(Queue &queue) { queue.Append(&Q); };
+
     void doJob();
 
     static inline Job *fromQueue(Queue *Q) {
-        return (Job *) ((uintptr_t) Q - (uintptr_t) &(((Job *) 0)->Q));
+        return (Job *) ((uintptr_t) Q - (uintptr_t) & (((Job *) 0)->Q));
     }
 };
 
@@ -42,30 +46,39 @@ public:
 
         // create and destory job from ThreadLocalPool
         void newJob(Job *&J);
+
         void deleteJob(Job *&J);
+
         // thread backend routine, process jobs
         static void *threadProcess(void *Arg);
 
     public:
         Thread();
+
         ~Thread() = default;
+
         // control thread running state
         void start();
+
         void stop();
+
         // post a new job to the job queue
-        RuntimeError postJob(Job &J);
-        uint32_t presureScore() const {return PressureScore; };
+        RuntimeError postJob(const Job &J);
+
+        uint32_t presureScore() const { return PressureScore; };
     };
 
     ThreadPool(int NumThread = 8);
+
     ~ThreadPool();
+
     // fetch one thread from thread pool
     Thread *fetchOneThread();
 
-    private:
-        int NumThread;
-        int DeliverIndex = 0;
-        std::vector<Thread *> Threads;
+private:
+    int NumThread;
+    int DeliverIndex = 0;
+    std::vector<Thread *> Threads;
 };
 
 using Thread=ThreadPool::Thread;

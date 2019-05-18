@@ -20,7 +20,7 @@
 class DictionaryItem : public ADT::RBNode {
 
 protected:
-    
+
     /// Dictionary key
     const char *Key;
     uint32_t Hash = 0;

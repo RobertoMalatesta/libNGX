@@ -278,7 +278,7 @@ RBNode *RBTree::begin() const {
 
     RBNode *N;
 
-    if ((N=Root) == nullptr) return nullptr;
+    if ((N = Root) == nullptr) return nullptr;
 
     while (N->Left) {
         N = N->Left;
@@ -291,7 +291,7 @@ RBNode *RBTree::end() const {
 
     RBNode *N;
 
-    if (!(N=Root)) return nullptr;
+    if (!(N = Root)) return nullptr;
 
     while (N->Right) {
         N = N->Right;

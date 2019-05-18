@@ -62,7 +62,7 @@ public:
 
     void Reset();
 
-    int Build(HTTPConnection *&C) {return 0;};
+    int Build(HTTPConnection *&C) { return 0; };
 
-    int Destroy(HTTPConnection *&C) {return 0;};
+    int Destroy(HTTPConnection *&C) { return 0; };
 };

@@ -1,6 +1,7 @@
 namespace ngx {
     namespace HTTP {
         using namespace ngx::Core::Support;
+
         typedef HTTPError (HTTPHeaderProcess)(HTTPCoreHeader &, HTTPRequest &, HTTPHeader &H);
 
         struct HTTPHeader {

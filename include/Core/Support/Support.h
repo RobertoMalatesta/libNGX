@@ -34,28 +34,24 @@ namespace ngx {
 #include "Core/Support/BoundCursor.h"
 #include "Core/Support/BufferBuilder.h"
 
-/** Event */
-#include "Core/Support/EventEntity.h"
-#include "Core/Support/EventDomain.h"
-/** Socket */
         }   // Support
     }   // Core
 }   // ngx
 
+#include "Core/Support/EventDomain.h"
 #include "Core/Support/Socket.h"
+#include "Core/Support/Connection.h"
+#include "Core/Support/Listen.h"
 
 namespace ngx {
     namespace Core {
         namespace Support {
 
-#include "Core/Support/SocketEventDomain.h"
-#include "Core/Support/Connection.h"
 #include "Core/Support/TCPConnection.h"
-#include "Core/Support/Listening.h"
 #include "Core/Support/TCPListening.h"
-
 /** Server */
 #include "Core/Support/Server.h"
+
         }   // Support
     }   // Core
 }   // ngx

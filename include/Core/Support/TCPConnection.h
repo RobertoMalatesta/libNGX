@@ -20,7 +20,7 @@ class TCPConnection : public Connection {
 public:
     TCPConnection();
 
-    TCPConnection(int SocketFD, Address_t &Address);
+    TCPConnection(int FD, Address_t &Addr) : Connection(FD, Addr) {}
 
     virtual SocketError connect(Address_t &Address);
 };

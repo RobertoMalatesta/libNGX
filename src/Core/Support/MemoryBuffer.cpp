@@ -20,7 +20,7 @@ WritableMemoryBuffer::WritableMemoryBuffer(Byte *BufferStart, Byte *BufferEnd, b
         Aligned(Aligned) {
 }
 
-static auto defaultAllocate = [](size_t Size, bool Aligned, Byte *& BufferStart, Byte *&BufferEnd) {
+static auto defaultAllocate = [](size_t Size, bool Aligned, Byte *&BufferStart, Byte *&BufferEnd) {
 
     if (Aligned) {
         BufferStart = nullptr;
@@ -59,7 +59,7 @@ size_t WritableMemoryBuffer::resize(size_t NewSize) {
             CopySize = NewSize;
         }
 
-        memccpy(NewStart, BufferStart,CopySize, sizeof(Byte));
+        memccpy(NewStart, BufferStart, CopySize, sizeof(Byte));
         free(BufferStart);
     }
 
@@ -88,13 +88,13 @@ std::unique_ptr<WritableMemoryBuffer> WritableMemoryBuffer::NewBuffer(size_t Siz
 BufferWriter::BufferWriter(WritableMemoryBuffer &Target) :
         Buffer(Target),
         MaximumBufferSize(-1),
-        Cursor(0){
+        Cursor(0) {
 }
 
-BufferWriter::BufferWriter(WritableMemoryBuffer &Target,size_t MaximumBufferSize,size_t Offset):
+BufferWriter::BufferWriter(WritableMemoryBuffer &Target, size_t MaximumBufferSize, size_t Offset) :
         Buffer(Target),
         MaximumBufferSize(MaximumBufferSize),
-        Cursor(Offset){
+        Cursor(Offset) {
 }
 
 size_t BufferWriter::CheckBufferSize(size_t WriteSize) {

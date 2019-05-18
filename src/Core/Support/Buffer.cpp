@@ -1,6 +1,7 @@
 #include "Core/Core.h"
 
 using namespace ngx::Core::Support;
+
 Buffer::~Buffer() {
     Reset();
 }

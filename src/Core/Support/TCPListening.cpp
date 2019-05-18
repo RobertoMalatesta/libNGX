@@ -2,37 +2,21 @@
 
 using namespace ngx::Core::Support;
 
-TCPListening::TCPListening(Address_t &Address)
-        : Listening(Address) {
-}
+TCPListening::TCPListening() : Listen() {
+    FD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+};
 
-TCPListening::~TCPListening() {
-    Close();
-}
 
-SocketError TCPListening::Bind() {
-
-    int Code = 0;
-
-    if (SocketFD == -1) {
-
-        socklen_t SocketLength = sizeof(Address_t);
-
-        SocketFD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-
-        if (SocketFD == -1) {
-            return {errno, "failed to create socket"};
-        }
-
-        Code = bind(SocketFD, &Address.Addr4, SocketLength);
-
-        if (Code == -1) {
-
-            close(SocketFD), SocketFD = -1;
-
-            return {errno, "failed to bind socket"};
-        }
+SocketError TCPListening::bind(const Address_t &Addr) {
+    if (Address.Addr4.sa_family != AF_UNSPEC) {
+        return {EALREADY, "TCPListen is already bind"};
+    } else if (Addr.Addr4.sa_family == AF_UNSPEC) {
+        return {EBADF, "TCPListen bind() got bad input address"};
+    } else if (FD == -1) {
+        return {EFAULT, "TCPListen can not create a socket"};
+    } else if (-1 == ::bind(FD, &Address.Addr4, sizeof(Address_t))) {
+        return {errno, "TCPListen failed when bind() socket"};
     }
-
+    Address = Addr;
     return {0};
 }

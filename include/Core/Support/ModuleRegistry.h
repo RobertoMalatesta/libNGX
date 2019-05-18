@@ -6,12 +6,12 @@
 class Instance {
 
 protected:
-	/**Module name**/
-	const char *ModuleName;
-	/**Magic to identify module**/
-	uint32_t MajorMagic;
-	/**Magic to identify module detail**/
-	uint32_t MinorMagic;
+    /**Module name**/
+    const char *ModuleName;
+    /**Magic to identify module**/
+    uint32_t MajorMagic;
+    /**Magic to identify module detail**/
+    uint32_t MinorMagic;
 }
 
 /**
@@ -22,24 +22,27 @@ protected:
 class Moudle : DictionatyItem {
 
 protected:
-	/**Module name**/
-	const char *Name;
-	/**Module version**/
-	uint32_t Version;
-	/**Module author**/
-	const char *Author;
-	/**Module config manual**/
-	const char *Manual;
+    /**Module name**/
+    const char *Name;
+    /**Module version**/
+    uint32_t Version;
+    /**Module author**/
+    const char *Author;
+    /**Module config manual**/
+    const char *Manual;
 
 public:
-	/**Create a instance of this module**/
-	RuntimeError Create(Instance &I) = 0;
-	/**Config a instance of this module**/
-	RuntimeError Config(Instance &I, Dictionaty &C) = 0;
-	/**Destory a instance of this module**/
-	RuntimeError Destroy(Instance &I) = 0;
+    /**Create a instance of this module**/
+    RuntimeError Create(Instance &I) = 0;
+
+    /**Config a instance of this module**/
+    RuntimeError Config(Instance &I, Dictionaty &C) = 0;
+
+    /**Destory a instance of this module**/
+    RuntimeError Destroy(Instance &I) = 0;
+
     /**If this instance create from this module**/
-	bool IsModuleInstance(Instance &I) = 0;
+    bool IsModuleInstance(Instance &I) = 0;
 }
 
 /**
@@ -50,16 +53,18 @@ public:
 class MoudleRegistry : Dictionaty {
 
 protected:
-	/**Working directory to load dynamic load library**/
-	char *WorkingDirectory = nullptr;
+    /**Working directory to load dynamic load library**/
+    char *WorkingDirectory = nullptr;
 
-public:	
-	/**Register a known module type to this registry**/
-	RuntimeError RegistModule(Module &M);
-	/** Register a new dynamic load module to this registry**/
-	RuntimeError RegistDynamicModule(char *ModuleName);
-	/**Remove a module type from this registry**/
-	RuntimeError UnregistModule(char *ModuleName);
+public:
+    /**Register a known module type to this registry**/
+    RuntimeError RegistModule(Module &M);
+
+    /** Register a new dynamic load module to this registry**/
+    RuntimeError RegistDynamicModule(char *ModuleName);
+
+    /**Remove a module type from this registry**/
+    RuntimeError UnregistModule(char *ModuleName);
 }
 // TODO 1
 // HTTP Module Instance Map

@@ -15,18 +15,18 @@ void Job::doJob() {
     }
 }
 
-Thread::Thread() :  Sentinel(),
-                    PostCount(0),
-                    Running(true),
-                    PressureScore(0),
-                    Worker(nullptr),ThreadLocalPool(){}
+Thread::Thread() : Sentinel(),
+                   PostCount(0),
+                   Running(true),
+                   PressureScore(0),
+                   Worker(nullptr), ThreadLocalPool() {}
 
 void Thread::newJob(Job *&J) {
     void *pMem;
 
-    pMem=ThreadLocalPool.allocate(sizeof(Job));
+    pMem = ThreadLocalPool.allocate(sizeof(Job));
 
-    if(pMem!=nullptr) {
+    if (pMem != nullptr) {
         J = new(pMem) Job();
     } else {
         J = nullptr;
@@ -34,13 +34,13 @@ void Thread::newJob(Job *&J) {
 }
 
 void Thread::deleteJob(Job *&J) {
-    if(J != nullptr) {
+    if (J != nullptr) {
         ThreadLocalPool.free(reinterpret_cast<void *&>(J));
-        J= nullptr;
+        J = nullptr;
     }
 }
 
-RuntimeError Thread::postJob(Job &J) {
+RuntimeError Thread::postJob(const Job &J) {
 
     Job *J1 = nullptr;
     std::lock_guard<spin_lock> g(Lock);
@@ -52,7 +52,7 @@ RuntimeError Thread::postJob(Job &J) {
     newJob(J1);
 
     if (J1 == nullptr) {
-        return {ENOMEM, "insufficent memory"};
+        return {ENOMEM, "insuffcient memory"};
     }
 
     *J1 = J;
@@ -133,11 +133,11 @@ ThreadPool::~ThreadPool() {
 }
 
 Thread *ThreadPool::fetchOneThread() {
-    Thread *Ret= nullptr;
+    Thread *Ret = nullptr;
     uint32_t PressureScore = UINT32_MAX;
 
-    for(Thread * T: Threads) {
-        if(T->presureScore() < PressureScore) {
+    for (Thread *T: Threads) {
+        if (T->presureScore() < PressureScore) {
             Ret = T, PressureScore = T->presureScore();
         }
     }

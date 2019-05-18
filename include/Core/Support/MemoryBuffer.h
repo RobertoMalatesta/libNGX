@@ -20,7 +20,7 @@ namespace ngx {
                 StringRef(std::nullptr_t) = delete;
 
                 __attribute__ ((always_inline))
-                StringRef(Byte *Data, size_t Length): Data(Data), Length(Length) {};
+                StringRef(Byte *Data, size_t Length) : Data(Data), Length(Length) {};
 
                 __attribute__ ((always_inline))
                 iterator begin() const { return Data; }
@@ -29,13 +29,13 @@ namespace ngx {
                 iterator end() const { return Data + Length; }
 
                 __attribute__ ((always_inline))
-                const char * char_begin() const { return reinterpret_cast<const char *>(begin()); }
+                const char *char_begin() const { return reinterpret_cast<const char *>(begin()); }
 
                 __attribute__ ((always_inline))
-                const char * char_end() const { return reinterpret_cast<const char *>(end()); }
+                const char *char_end() const { return reinterpret_cast<const char *>(end()); }
 
                 __attribute__ ((always_inline))
-                const Byte * data() const { return Data; }
+                const Byte *data() const { return Data; }
 
                 __attribute__ ((always_inline))
                 const size_t size() const { return Length; }
@@ -44,6 +44,7 @@ namespace ngx {
             class MemoryBuffer {
             protected:
                 Byte *BufferStart, *BufferEnd;
+
                 MemoryBuffer(Byte *BufferStart, Byte *BufferEnd);
 
             public:
@@ -108,7 +109,7 @@ namespace ngx {
                 size_t CheckBufferSize(size_t WriteSize);
 
             public:
-                explicit BufferWriter(WritableMemoryBuffer &Target) ;
+                explicit BufferWriter(WritableMemoryBuffer &Target);
 
                 BufferWriter(WritableMemoryBuffer &Target, size_t MaximumBufferSize, size_t Offset);
 
