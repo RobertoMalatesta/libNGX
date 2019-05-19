@@ -2,11 +2,53 @@
 
 using namespace ngx::HTTP;
 
-HTTPConnection::HTTPConnection() :
-        TCPConnection(Address),
-        Request(),
-        EventJob(HTTPConnection::OnConnectionEvent, this) {
-    TimerNode = {0, HTTPConnection::OnTimerEvent, this};
+void HTTPConnection::reset() {
+    close();
+    ReadBuffer.Reset();
+    MemPool.reset();
+}
+
+SocketError HTTPConnection::close() {
+    unbindDomain();
+    TCPConnection::close();
+    return {0};
+}
+
+RuntimeError HTTPConnection::bindDomain(EventDomain &D) {
+
+    EventError Error{0};
+
+    if (Domain != nullptr)
+        return {EALREADY, "HTTPConnection, bindDomain() connection is already bind"};
+
+    Error = D.attachConnection(static_cast<Connection &>(*this));
+
+    if (Error.GetCode()) {
+        return {Error.GetCode(), "HTTPConnection, bindDomain() failed to attachConnection()"};
+    }
+
+    Domain = &D;
+    return {0};
+}
+
+RuntimeError HTTPConnection::unbindDomain() {
+
+    EventError E{0};
+
+    if (Domain != nullptr) {
+        E = Domain->detachConnection(static_cast<Connection &>(*this));
+
+        if (E.GetCode()) {
+            return {E.GetCode(), "HTTPConnection, unbindDomain() failed to detachConnection()"};
+        }
+
+        Domain->stopTimer(TNode);
+        Domain = nullptr;
+    }
+    return {0};
+}
+
+void HTTPConnection::HttpConnectionHandle(void *pListen, void *pArg) {
 }
 
 RuntimeError HTTPConnection::HandleDomainEvent(EventType Type) {
@@ -30,19 +72,6 @@ RuntimeError HTTPConnection::HandleDomainEvent(EventType Type) {
     };
 
     return PostJob(EventJob);
-}
-
-void HTTPConnection::OnTimerEvent(void *PointerToConnection) {
-
-    HTTPConnection *C;
-
-    C = static_cast<HTTPConnection *>(PointerToConnection);
-
-    C->Event |= ET_TIMER;
-
-//    LOG(INFO) << "in timer func, fd: " << C->SocketFD;
-
-    HTTPConnection::OnConnectionEvent(PointerToConnection);
 }
 
 void HTTPConnection::OnConnectionEvent(void *PointerToConnection) {
@@ -121,33 +150,3 @@ void HTTPConnection::OnConnectionEvent(void *PointerToConnection) {
     }
 }
 
-void HTTPConnection::Reset() {
-
-    // Clear all attached events
-    AttachedEvent = Event = 0;
-
-    // Reset read buffer
-    ReadBuffer.Reset();
-
-    // Reset memory pool
-    MemPool.reset();
-
-    // Reset timer node
-    TimerNode.Reset();
-}
-
-SocketError HTTPConnection::Close() {
-
-    // Reset Request, Response, BufferIn and BufferOut
-
-    // Detach read write event
-    ParentEventDomain->DetachSocket(*this, ET_READ | ET_WRITE);
-
-    // Close TCP Connection
-    TCPConnection::Close();
-
-    // Set a timer to put Connection to collector
-    ParentEventDomain->SetTimer(*this, CONNECTION_RECYCLE_WAIT_TIME, TM_ONCE);
-
-    return {0};
-}

@@ -23,144 +23,11 @@ EPollEventDomain::~EPollEventDomain() {
     }
 }
 
-EventError EPollEventDomain::AttachSocket(Socket &S, EventType Type) {
+EventError EPollEventDomain::attachFD(int FD, uint32_t E, void *pData) {
 
-    std::lock_guard<spin_lock> g(TPoolLock);
-
-    int SocketFD = S.GetSocketFD();
-
-    if (EPollFD == -1 || SocketFD == -1) {
-        return {-1, "Bad Socket Descriptor!"};
-    }
-
-    struct epoll_event Event = {0};
-    uint32_t Attached = GetAttachedEvent(S);
-
-    unsigned int EPollCommand = (Attached == 0 ? EPOLL_CTL_ADD : EPOLL_CTL_MOD);
-
-    Attached |= Type;
-    Event.data.ptr = static_cast<void *> (&S);
-
-    if ((Attached & ET_ACCEPT) == 0) {
-        Event.events |= EPOLLET;
-    }
-
-    if (Attached & ET_READ) {
-        Event.events |= EPOLLIN | EPOLLRDHUP;
-    }
-
-    if (Attached & ET_WRITE) {
-        Event.events |= EPOLLOUT;
-    }
-
-    if (-1 == epoll_ctl(EPollFD, EPollCommand, SocketFD, &Event)) {
-        return {errno, "Failed to attach connection to epoll!"};
-    }
-
-    SetAttachedEvent(S, Attached, true);
-    return {0};
-}
-
-EventError EPollEventDomain::DetachSocket(Socket &S, EventType Type) {
-
-    std::lock_guard<spin_lock> g(EPollLock);
-
-    int SocketFD = S.GetSocketFD();
-
-    uint32_t Attached = GetAttachedEvent(S);
-    Attached &= ~Type;
-
-    epoll_event Event{0};
-
-    unsigned int EPollCommand = (Attached == 0 ? EPOLL_CTL_DEL : EPOLL_CTL_MOD);
-
-    if (EPollFD == -1 || SocketFD == -1) {
-        return {-1, "Bad Socket Descriptor!"};
-    }
-
-    Event.data.ptr = static_cast<void *>(&S);
-
-    if ((Attached & ET_ACCEPT) == 0) {
-        Event.events |= EPOLLET;
-    }
-
-    if (Attached & ET_READ) {
-        Event.events |= EPOLLIN | EPOLLRDHUP;
-    }
-
-    if (Attached & ET_WRITE) {
-        Event.events |= EPOLLOUT;
-    }
-
-    if (-1 == epoll_ctl(EPollFD, EPollCommand, SocketFD, &Event)) {
-        return {errno, "Failed to attach connection to epoll!"};
-    }
-
-    SetAttachedEvent(S, Attached, false);
-    return {0};
-}
-
-RuntimeError EPollEventDomain::EventLoop() {
-
-    int EventCount;
-    epoll_event Events[EPOLL_EVENT_BATCH_SIZE];
-
-    RuntimeError Error{0}, PostError{0};
-
-    Error = SocketEventDomain::EventLoop();
-
-    if (Error.GetCode() != 0) {
-        return Error;
-    }
-
-    EPollLock.lock();
-    if (-1 == EPollFD) {
-        EPollLock.Unlock();
-        return {ENOENT, "EPollEventDomain initial failed!"};
-    }
-
-    EventCount = epoll_pwait(EPollFD, Events, EPOLL_EVENT_BATCH_SIZE, EPOLL_EVENT_WAIT_TIME, &epoll_sig_mask);
-
-    EPollLock.Unlock();
-
-    if (-1 == EventCount && errno == EINTR) {
-        return {0, "Interrupted by signal"};
-    } else if (EventCount <= -1) {
-        return {errno, "epoll_wait() failed!"};
-    } else if (EventCount > 0) {
-
-        for (int i = 0; i < EventCount; i++) {
-
-            if (Events[i].data.ptr == nullptr) {
-                continue;
-            }
-
-            auto *TempSocket = static_cast<Socket *>(Events[i].data.ptr);
-
-            uint32_t EventType = 0;
-
-            if (Events[i].events & EPOLLIN || Events[i].events & EPOLLRDHUP) {
-                EventType |= ET_READ;
-            }
-
-            if (Events[i].events & (EPOLLOUT)) {
-                EventType |= ET_WRITE;
-            }
-            TempSocket->HandleDomainEvent(EventType);
-        }
-    }
-
-    return {0};
-}
-
-RuntimeError EPollEventDomain::attachFD(int FD, uint32_t Event, void *pData) {
-
-    epoll_event Event = {
-            .data = {
-                    .ptr = pData;
-            },
-            .events = Event,
-    };
+    epoll_event Event={0};
+    Event.events = E;
+    Event.data.ptr = pData;
 
     if (EPollFD == -1) {
         return {EBADF, "EPollEventDomain attachFD() failed, bad EPollFD"};
@@ -170,5 +37,76 @@ RuntimeError EPollEventDomain::attachFD(int FD, uint32_t Event, void *pData) {
         return {EBADF, "EPollEventDomain attachFD() failed in epoll_ctl()"};
     }
     return {0};
+}
+
+EventError EPollEventDomain::detachFD(int FD) {
+
+    epoll_event Event={0};
+    Event.events = 0;
+    Event.data.ptr = nullptr;
+
+    if (EPollFD == -1) {
+        return {EBADF, "EPollEventDomain attachFD() failed, bad EPollFD"};
+    } else if (FD == -1) {
+        return {EBADF, "EPollEventDomain attachFD() failed, bad FD"};
+    } else if (-1 == epoll_ctl(EPollFD, EPOLL_CTL_DEL, FD, &Event)) {
+        return {EBADF, "EPollEventDomain attachFD() failed in epoll_ctl()"};
+    }
+    return {0};
+}
+
+EventError EPollEventDomain::attachListen(Listen &L) {
+    return attachFD(L.getFD(), EPOLLIN|EPOLLOUT|EPOLLRDHUP, static_cast<EventSubscriber *>(&L));
+}
+EventError EPollEventDomain::detachListen(Listen &L) {
+    return detachFD(L.getFD());
+}
+
+EventError EPollEventDomain::attachConnection(Connection &C) {
+    return attachFD(C.getFD(), EPOLLET|EPOLLIN|EPOLLOUT|EPOLLRDHUP, static_cast<EventSubscriber *>(&C));
+}
+EventError EPollEventDomain::detachConnection(Connection &C) {
+    return detachFD(C.getFD());
+}
+
+RuntimeError EPollEventDomain::eventLoop() {
+
+    int Count;
+    RuntimeError Error{0};
+    epoll_event Events[EPOLL_EVENT_BATCH_SIZE];
+
+    {
+        std::lock_guard<spin_lock> g(Lock);
+
+        if (EPollFD==-1)
+            return {ENOENT, "EPollEventDomain, bad epoll fd"};
+
+        Count = epoll_pwait(EPollFD, Events, EPOLL_EVENT_BATCH_SIZE, EPOLL_EVENT_WAIT_TIME, &epoll_sig_mask);
+    }
+
+    if (-1 == Count && errno == EINTR)
+        return {0, "EPollEventDomain, interrupted by signal"};
+    else if (Count <= -1)
+        return {errno, "EPollEventDomain epoll_pwait() failed!"};
+    else if (Count > 0) {
+        for (int i = 0; i < Count; i++) {
+            if (Events[i].data.ptr == nullptr)
+                continue;
+
+            Event_t E=0;
+            auto *Sub= static_cast<EventSubscriber *>(Events[i].data.ptr);
+
+            if (Events[i].events & EPOLLIN)
+                E |= Event::READ;
+            if (Events[i].events & EPOLLRDHUP)
+                E |= Event::CLOSED;
+            if (Events[i].events & EPOLLOUT)
+                E |= Event::WRITE;
+
+            Sub->postEvent(E);
+        }
+    }
+
+    return (Error=EventDomain::eventLoop()).GetCode()!=0? Error:0;
 }
 

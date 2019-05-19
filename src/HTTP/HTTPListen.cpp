@@ -1,13 +1,51 @@
 #include "HTTP/HTTP.h"
-#include <fcntl.h>
 
 using namespace ngx::Core;
 using namespace ngx::HTTP;
 
-HTTPListening::HTTPListening(Address_t &Address) : TCPListening(Address) {
+RuntimeError HTTPListen::bindDomain(EventDomain &D) {
+    EventError E{0};
+
+    if(Domain!= nullptr)
+        return {EALREADY, "HTTPListen, bindDomain() already bind"};
+
+    E = D.attachListen(static_cast<Listen &>(*this));
+
+    if (E.GetCode()) {
+        return {E.GetCode(), "HTTPListen, bindDomain() failed to detachConnection()"};
+    }
+
+    Domain = &D;
+    return {0};
 }
 
-RuntimeError HTTPListening::HandleDomainEvent(EventType Type) {
+RuntimeError HTTPListen::unbindDomain() {
+    EventError E{0};
+
+    if (Domain != nullptr) {
+        E = Domain->detachListen(static_cast<Listen &>(*this));
+
+        if (E.GetCode()) {
+            return {E.GetCode(), "HTTPListen, unbindDomain() failed to detachListen()"};
+        }
+
+        Domain->stopTimer(TNode);
+        Domain = nullptr;
+    }
+    return {0};
+}
+
+void HTTPListen::HttpListenHandle(void *pListen, void *Event) {
+
+    Event_t E;
+    HTTPListen *Listen;
+
+    E = static_cast<Event_t >((long)Event);
+    Listen = static_cast<HTTPListen *>(pListen);
+
+}
+
+RuntimeError HTTPListen::HandleDomainEvent(EventType Type) {
 
     int NewFD;
     RuntimeError Error{0};
@@ -40,7 +78,7 @@ RuntimeError HTTPListening::HandleDomainEvent(EventType Type) {
             if (Error.GetCode() != 0 || C == nullptr) {
 //                can not create connection to handle it
 //                LOG(INFO) << "get connection object failed, will close connection, error: " << Error.GetError();
-                close(NewFD);
+                ::close(NewFD);
             } else {
 //                LOG(INFO) << "attach connection to event domain, fd: " << NewFD << ", error: "
                 C->ParentEventDomain->AttachSocket(*C, ET_READ | ET_WRITE).GetError();
@@ -50,4 +88,3 @@ RuntimeError HTTPListening::HandleDomainEvent(EventType Type) {
 
     return {0};
 }
-

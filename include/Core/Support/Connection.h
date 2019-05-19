@@ -21,7 +21,6 @@ namespace ngx {
             class Connection : public EventSubscriber {
             protected:
                 int FD;
-                Timer TimerNode;
                 Address_t Address;
 
             public:
@@ -39,12 +38,6 @@ namespace ngx {
                 SocketError close();
 
                 virtual SocketError connect(Address_t &Addr) = 0;
-//        static inline Connection *timerToConnection(Timer *T) {
-//        if (T == nullptr) {
-//            return nullptr;
-//        }
-//        return reinterpret_cast<Connection *>(((uintptr_t)T - (uintptr_t)(&((Connection *) 0)->TimerNode)));
-//    }
             };
         } // Support
     } // Core

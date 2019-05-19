@@ -40,18 +40,16 @@ int DictionaryItem::operator-(RBNode &R) {
 }
 
 Dictionary::~Dictionary() {
-
-    for (RBNode *It = this->Begin(); It; It = Next(It)) {
-        Erase(It);
+    for (RBNode *It = this->begin(); It; It = next(It)) {
+        remove(It);
     }
 }
 
 int Dictionary::Insert(DictionaryItem &I) {
 
     if (Find(I) == nullptr) {
-        return RBTree::Insert(&I), 1;
+        return RBTree::insert(I), 1;
     }
-
     return 0;
 }
 
@@ -62,8 +60,7 @@ int Dictionary::Remove(DictionaryItem &I) {
     if (Item == nullptr) {
         return 0;
     }
-
-    return RBTree::Erase(Item), 1;
+    return RBTree::remove(Item), 1;
 }
 
 DictionaryItem *Dictionary::Find(uint32_t Hash) {
@@ -71,13 +68,12 @@ DictionaryItem *Dictionary::Find(uint32_t Hash) {
     RBNode *Place = Root;
 
     while (Place) {
-
         int Result = Hash - ((DictionaryItem *) Place)->GetHash();
 
         if (Result < 0) {
-            Place = Place->GetLeft();
+            Place = Place->getLeft();
         } else if (Result > 0) {
-            Place = Place->GetRight();
+            Place = Place->getRight();
         } else {
             return (DictionaryItem *) Place;
         }
@@ -91,17 +87,14 @@ DictionaryItem *Dictionary::Find(DictionaryItem Item) {
     RBNode *Place = Root;
 
     while (Place) {
-
         int Result = Item - *(Place);
-
         if (Result < 0) {
-            Place = Place->GetLeft();
+            Place = Place->getLeft();
         } else if (Result > 0) {
-            Place = Place->GetRight();
+            Place = Place->getRight();
         } else {
             return (DictionaryItem *) Place;
         }
     }
-
     return nullptr;
 }

@@ -27,23 +27,28 @@ RuntimeError TimerTree::detach(Timer &T) {
     return {0};
 }
 
-RuntimeError TimerTree::setOnce(Timer &T, uint64_t Peroid, Job &J) {
-    Timer Target{0, TM_ONCE, Peroid, J};
-    T.Interval = Peroid, T.Mode = TM_ONCE;
+RuntimeError TimerTree::setOnce(Timer &T, uint64_t Peroid, void *pData) {
+
+    T.pData = pData;
+    T.Mode = TM_ONCE;
+    T.Interval = Peroid;
 
     if (T.isAttached())
         return {EALREADY, "timer already attached"};
 
-    return attach(T = Target);
+    return attach(T);
 }
 
-RuntimeError TimerTree::setInterval(Timer &T, uint64_t Interval, Job &J) {
-    Timer Target{0, TM_INTERVAL, Interval, J};
+RuntimeError TimerTree::setInterval(Timer &T, uint64_t Interval, void *pData) {
+
+    T.pData = pData;
+    T.Mode = TM_INTERVAL;
+    T.Interval = Interval;
 
     if (T.isAttached())
         return {EALREADY, "timer already attached"};
 
-    return attach(T = Target);
+    return attach(T);
 }
 
 RuntimeError TimerTree::respawnInterval(Timer &T) {

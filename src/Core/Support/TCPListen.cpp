@@ -2,12 +2,7 @@
 
 using namespace ngx::Core::Support;
 
-TCPListening::TCPListening() : Listen() {
-    FD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-};
-
-
-SocketError TCPListening::bind(const Address_t &Addr) {
+SocketError TCPListen::bind(const Address_t &Addr) {
     if (Address.Addr4.sa_family != AF_UNSPEC) {
         return {EALREADY, "TCPListen is already bind"};
     } else if (Addr.Addr4.sa_family == AF_UNSPEC) {

@@ -23,26 +23,22 @@ class EPollEventDomain : public EventDomain {
 protected:
     int EPollFD = -1;
 
-    RuntimeError attachFD(int FD, uint32_t Event, void *pData);
+    EventError attachFD(int FD, uint32_t E, void *pData);
 
-    RuntimeError detachFD(int FD);
+    EventError detachFD(int FD);
 
 public:
     EPollEventDomain(int numThreads, int epollSize);
 
     ~EPollEventDomain();
 
-    virtual EventError attachListen(Listen &L);
+    virtual EventError attachListen(Listen &L) override;
 
-    virtual EventError detachListen(Listen &L);
+    virtual EventError detachListen(Listen &L) override;
 
-    virtual EventError attachConnection(Connection &C);
+    virtual EventError attachConnection(Connection &C) override;
 
-    virtual EventError detachConnection(Connection &C);
+    virtual EventError detachConnection(Connection &C) override;
 
-    virtual EventError AttachSocket(Socket &S, EventType Type);
-
-    virtual EventError DetachSocket(Socket &S, EventType Type);
-
-    virtual RuntimeError EventLoop();
+    virtual RuntimeError eventLoop() override ;
 };

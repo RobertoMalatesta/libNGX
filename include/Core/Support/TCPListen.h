@@ -16,11 +16,13 @@
  *
  *  @brief Server tcp listening
  * */
-class TCPListening : public Listen {
+class TCPListen : public Listen {
 public:
-    TCPListening();
+    TCPListen() : Listen() {
+        FD = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    };
 
-    TCPListening(int FD, Address_t &Addr) : Listen(FD, Addr) {};
+    TCPListen(int FD, Address_t &Addr) : Listen(FD, Addr) {};
 
     virtual SocketError bind(const Address_t &Addr) override;
 };

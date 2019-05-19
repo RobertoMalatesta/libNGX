@@ -52,9 +52,9 @@ public:
 
     ~TimerTree();
 
-    RuntimeError setOnce(Timer &T, uint64_t Peroid, Job &J);
+    RuntimeError setOnce(Timer &T, uint64_t Peroid, void *pData);
 
-    RuntimeError setInterval(Timer &T, uint64_t Interval, Job &J);
+    RuntimeError setInterval(Timer &T, uint64_t Interval, void *pData);
 
     RuntimeError respawnInterval(Timer &T);
 

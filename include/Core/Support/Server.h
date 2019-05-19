@@ -1,24 +1,10 @@
 class Server {
 protected:
     spin_lock Lock;
-    SocketEventDomain *EventDomain;
-
-    virtual RuntimeError OnLoopFinished() = 0;
+    EventDomain *Domain;
 
 public:
-    Server(SocketEventDomain *BackendEventDomain) : EventDomain(BackendEventDomain), Lock() {};
-
+    Server():Domain(nullptr), Lock() {};
     // Server Main EventLoop
     virtual RuntimeError ServerEventLoop() = 0;
-
-    // Set Server EventDomain if not
-    RuntimeError SetEventDomain(SocketEventDomain *BackendEventDomain) {
-
-        if (EventDomain != nullptr) {
-            return {EALREADY, "EventDomain already set"};
-        }
-
-        EventDomain = BackendEventDomain;
-        return {0};
-    }
 };

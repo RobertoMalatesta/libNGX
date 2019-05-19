@@ -29,6 +29,8 @@ namespace ngx {
 
                 ~Listen();
 
+                inline int getFD() const { return FD; };
+
                 SocketError setPortReuse(unsigned On);
 
                 virtual SocketError bind(const Address_t &Addr) = 0;

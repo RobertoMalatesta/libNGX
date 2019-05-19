@@ -7,6 +7,7 @@ EventDomain::EventDomain(int numThreads)
 }
 
 RuntimeError EventDomain::eventLoop() {
+    std::lock_guard<spin_lock> g(Lock);
     emitExpiredTimer();
     return {0};
 }

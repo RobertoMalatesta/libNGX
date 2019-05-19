@@ -11,7 +11,6 @@
 //
 //===-------------------------------------------------------------------------===//
 
-
 namespace ngx {
     namespace Core {
         namespace Support {
@@ -39,10 +38,6 @@ namespace ngx {
             public:
                 spin_lock Lock;
 
-                virtual RuntimeError Bind(EventDomain &D) { return {0}; };
-
-                virtual RuntimeError UnBindBind(EventDomain &D) { return {0}; };
-
                 RuntimeError postEvent(Event_t E) {
                     if (Fn == nullptr)
                         return {EINVAL, "event process routine is not set"};
@@ -53,6 +48,10 @@ namespace ngx {
 
                     return Worker->postJob(J);
                 }
+
+                virtual RuntimeError bindDomain(EventDomain &D) = 0;
+
+                virtual RuntimeError unbindDomain() = 0;
             };
 
             class EventDomain {
@@ -80,6 +79,21 @@ namespace ngx {
                 virtual EventError attachConnection(Connection &C) = 0;
 
                 virtual EventError detachConnection(Connection &C) = 0;
+
+                inline RuntimeError setTimerOnce(Timer &T, uint64_t Interval, void *pData) {
+                    std::lock_guard<spin_lock> g(Lock);
+                    return Tree.setOnce(T, Interval, pData);
+                }
+
+                inline RuntimeError setTimeInterval(Timer &T, uint64_t Interval, void *pData) {
+                    std::lock_guard<spin_lock> g(Lock);
+                    return Tree.setInterval(T, Interval, pData);
+                }
+
+                inline RuntimeError stopTimer(Timer &T) {
+                    std::lock_guard<spin_lock> g(Lock);
+                    return Tree.stop(T);
+                }
             };
         } // Support
     } // Core
