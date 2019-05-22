@@ -10,6 +10,7 @@
 #include <netdb.h>
 #include <sys/socket.h>
 
+#include <map>
 #include <list>
 #include <vector>
 #include <iostream>

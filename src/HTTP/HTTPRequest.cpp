@@ -761,7 +761,7 @@ HTTPError HTTPRequest::ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool Allow
     HTTPHeader Header;
 
     // init header process if not
-    if (HeaderInDictionary.Begin() == nullptr) {
+    if (HeaderInDictionary.begin() == nullptr) {
 
         int i = 0;
 
@@ -794,8 +794,8 @@ HTTPError HTTPRequest::ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool Allow
 
         if (DI != nullptr) {
 
-            TempPrev = (DictionaryItem *) HeaderInDictionary.Prev(DI);
-            TempNext = (DictionaryItem *) HeaderInDictionary.Next(DI);
+            TempPrev = (DictionaryItem *) HeaderInDictionary.prev(DI);
+            TempNext = (DictionaryItem *) HeaderInDictionary.next(DI);
 
             if ((TempPrev != nullptr && TempPrev->GetHash() == DI->GetHash()) ||
                 (TempNext != nullptr && TempNext->GetHash() == DI->GetHash())) {

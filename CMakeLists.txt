@@ -30,17 +30,16 @@ set(SOURCE_FILES
         src/Core/Support/Cursor.cpp
         src/Core/Support/TCPConnection.cpp
         src/Core/Support/TCPListen.cpp
-        src/HTTP/Router/Mux.cpp
+        src/Core/Support/MemoryBuffer.cpp
+        src/HTTP/Mux.cpp
         src/HTTP/HTTPListen.cpp
         src/HTTP/HTTPConnection.cpp
-        src/HTTP/HTTPServer.cpp
+        src/HTTP/HTTPContext.cpp
         src/HTTP/HTTPError.cpp
-        src/HTTP/HTTPConnectionBuilder.cpp
         src/HTTP/HTTPHeader.cpp
         src/HTTP/HTTPRequest.cpp
         src/HTTP/HTTPResponse.cpp
-        src/HTTP/HTTPCoreHeader.cpp
-        src/Core/Support/MemoryBuffer.cpp)
+        src/HTTP/HTTPCoreHeader.cpp)
 
 set(TEST_FILES
         test/Test.cpp
@@ -58,7 +57,6 @@ set(TEST_FILES
         test/Core/CoreTest.cpp
         test/Core/DictionaryTest.cpp
         test/HTTP/HTTPTest.cpp
-        test/HTTP/HTTPServerTest.cpp
         test/HTTP/HTTPConnectionCollector.cpp
         test/HTTP/HTTPParseTest.cpp)
 

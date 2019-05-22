@@ -1,5 +1,4 @@
 struct HTTPHeaderOut {
-
     // HTTP Core Headers
     // HTTP Custom Headers
     Array <HTTPHeader> Headers;

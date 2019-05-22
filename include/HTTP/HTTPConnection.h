@@ -1,16 +1,14 @@
 class HTTPConnection : public TCPConnection {
 protected:
     Timer TNode;
-    Pool MemPool;
     EventDomain *Domain;
-    std::unique_ptr<WritableMemoryBuffer> HeaderPart, ContentPart;
-
-    Buffer ReadBuffer;
-    HTTPRequest Request;
+    Pool connectionPool;
+    std::unique_ptr<WritableMemoryBuffer> headerBuffer, bodyBuffer;
+    std::unique_ptr<WritableMemoryBuffer> responseBuffer;
 
     static void HttpConnectionHandle(void *pListen, void *pArg);
 
-    friend class HTTPConnectionBuilder;
+    static HTTPConnection *buildHTTPConnection(HTTPContext &Context);
 
 public:
     HTTPConnection() : TCPConnection() {

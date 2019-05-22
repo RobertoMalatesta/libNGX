@@ -37,11 +37,11 @@ int EPollEventDomainTest() {
 
     Address_t Address(addr);
 
-    TCPListening Listen(Address);
+//    TCPListening Listen(Address);
     EPollEventDomain Domain(4, 31723);
 
-    Listen.SetPortReuse(true).PrintError();
-    Listen.Listen().PrintError();
+//    Listen.SetPortReuse(true).PrintError();
+//    Listen.Listen().PrintError();
 
 //    Domain.EPollEnqueueListening(&Listen).PrintError();
 
