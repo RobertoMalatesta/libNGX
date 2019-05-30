@@ -1,5 +1,15 @@
+#ifndef NGX_HTTP_REQUEST
+#define NGX_HTTP_REQUEST
+
+#include "Core/Core.h"
+#include "HTTP/HTTPError.h"
+#include "HTTP/HTTPHeader.h"
+#include "HTTP/HTTPCoreHeader.h"
+
 namespace ngx {
     namespace HTTP {
+        using namespace ngx::Core::Support;
+
         struct HTTPHeaderIn {
             // HTTP Core HeadersIn
             BoundCursor Host;
@@ -151,3 +161,4 @@ namespace ngx {
 
     }
 }
+#endif

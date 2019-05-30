@@ -1,4 +1,7 @@
-#include "HTTP/HTTP.h"
+#include "HTTP/HTTPError.h"
+#include "HTTP/HTTPHeader.h"
+#include "HTTP/HTTPCoreHeader.h"
+#include "HTTP/HTTPResponse.h"
 
 using namespace ngx::HTTP;
 

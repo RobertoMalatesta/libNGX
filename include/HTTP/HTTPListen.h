@@ -1,25 +1,38 @@
+#ifndef NGX_HTTP_LISTEN
+#define NGX_HTTP_LISTEN
 
-class HTTPListen : public TCPListen {
-protected:
-    Timer TNode;
-    EventDomain *Domain;
+#include "Core/Core.h"
 
-    friend class HTTPServer;
+namespace ngx {
+    namespace HTTP {
 
-    static void HttpListenHandle(void *pListen, void *Event);
+        using namespace Core;
+        using namespace Support;
 
-public:
-    HTTPListen() : TCPListen(), Domain(nullptr) {
-        Fn = &HttpListenHandle;
-    };
+        class HTTPListen : public TCPListen {
+        protected:
+            Timer TNode;
+            EventDomain *Domain;
 
-    HTTPListen(int FD, Address_t &Addr) : TCPListen(FD, Addr), Domain(nullptr) {
-        Fn = &HttpListenHandle;
-    };
+            friend class HTTPServer;
 
-    ~HTTPListen() = default;
+            static void HttpListenHandle(void *pListen, void *Event);
 
-    virtual RuntimeError bindDomain(EventDomain &D);
+        public:
+            HTTPListen() : TCPListen(), Domain(nullptr) {
+                Fn = &HttpListenHandle;
+            };
 
-    virtual RuntimeError unbindDomain();
-};
+            HTTPListen(int FD, Address_t &Addr) : TCPListen(FD, Addr), Domain(nullptr) {
+                Fn = &HttpListenHandle;
+            };
+
+            ~HTTPListen() = default;
+
+            virtual RuntimeError bindDomain(EventDomain &D);
+
+            virtual RuntimeError unbindDomain();
+        };
+    }
+}
+#endif

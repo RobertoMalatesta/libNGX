@@ -1,5 +1,14 @@
+#ifndef NGX_HTTP_CORE_HEADER
+#define NGX_HTTP_CORE_HEADER
+
+#include "Core/Core.h"
+#include "HTTP/common_header.h"
+#include "HTTP/HTTPHeader.h"
+
 namespace ngx {
     namespace HTTP {
+        using namespace ngx::Core::Support;
+
         struct HTTPCoreHeader : public DictionaryItem {
             HTTPCoreHeaderIn Type;
             HTTPHeaderProcess *Setter = nullptr;
@@ -11,4 +20,4 @@ namespace ngx {
         };
     } // HTTP
 } // ngx
-
+#endif

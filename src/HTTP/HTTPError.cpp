@@ -1,4 +1,4 @@
-#include "HTTP/HTTP.h"
+#include "HTTP/HTTPError.h"
 
 using namespace ngx::HTTP;
 

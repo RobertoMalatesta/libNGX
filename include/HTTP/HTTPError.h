@@ -1,3 +1,8 @@
+#ifndef NGX_HTTP_ERROR
+#define NGX_HTTP_ERROR
+
+#include "Core/Core.h"
+
 namespace ngx {
     namespace HTTP {
         using namespace ngx::Core::Support;
@@ -20,3 +25,4 @@ namespace ngx {
         };
     } // HTTP
 } // ngx
+#endif

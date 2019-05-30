@@ -1,5 +1,11 @@
+#ifndef LIBNGX_HTTP_CONTEXT
+#define LIBNGX_HTTP_CONTEXT
+
+#include "HTTP/common_header.h"
+
 namespace ngx {
     namespace HTTP {
+        using namespace ngx::Core;
         class HTTPContext {
 //          HTTP server context
 //          client header size
@@ -50,5 +56,4 @@ namespace ngx {
         };
     }
 }
-
-
+#endif

@@ -1,3 +1,6 @@
+#ifndef NGX_CONFIG_HEADER
+#define NGX_CONFIG_HEADER
+
 namespace ngx {
     namespace Core {
 
@@ -39,3 +42,4 @@ namespace ngx {
         }
     }
 }
+#endif

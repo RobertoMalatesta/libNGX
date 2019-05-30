@@ -1,7 +1,8 @@
-#include "HTTP/HTTP.h"
+#include "HTTP/HTTPListen.h"
 
-using namespace ngx::Core;
-using namespace ngx::HTTP;
+using namespace ngx;
+using namespace Core::Support;
+using namespace HTTP;
 
 RuntimeError HTTPListen::bindDomain(EventDomain &D) {
     EventError E{0};

@@ -1,5 +1,8 @@
+#include "Core/Core.h"
 #include "HTTP/HTTP.h"
-
+#include "HTTP/HTTPError.h"
+#include "HTTP/HTTPRequest.h"
+using namespace ngx::Core::Support;
 using namespace ngx::HTTP;
 
 int HTTPParseTest() {

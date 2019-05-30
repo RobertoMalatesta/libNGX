@@ -4,6 +4,8 @@ project(NGXTest)
 project(libNGX)
 set(CMAKE_CXX_STANDARD 11)
 
+link_libraries(gtest)
+
 set(SOURCE_FILES
         src/Core/ADT/Queue.cpp
         src/Core/ADT/RBTree.cpp
@@ -61,8 +63,8 @@ set(TEST_FILES
         test/HTTP/HTTPParseTest.cpp)
 
 include_directories(./include)
-
-LINK_LIBRARIES(-lpthread)
+link_libraries(pthread dl)
 
 add_executable(NGXTest ${SOURCE_FILES} ${TEST_FILES})
 add_library(libNGX STATIC ${SOURCE_FILES})
+add_library(testMux SHARED src/HTTP/testMux.cpp)

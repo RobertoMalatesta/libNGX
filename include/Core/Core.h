@@ -11,14 +11,12 @@
 //
 //===-------------------------------------------------------------------------===//
 
+#ifndef NGX_CORE
+#define NGX_CORE
+
 #include "ngx.h"
 #include "Core/ADT/ADT.h"
 #include "Core/Support/Support.h"
-
 #include "Core/Target/Target.h"
 
-namespace ngx {
-    namespace Core {
-        using namespace Config;
-    }
-}
+#endif
