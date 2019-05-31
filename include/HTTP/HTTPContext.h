@@ -30,7 +30,7 @@ namespace ngx {
 //          backend components
             std::map<int, Component> components;
 //          current request mux
-            std::unique_ptr<Mux> mux;
+            std::unique_ptr<Component> mux;
 
 //          Performance Mointor
 //          eventLoop() process count

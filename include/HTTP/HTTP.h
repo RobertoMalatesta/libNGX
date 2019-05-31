@@ -10,6 +10,6 @@
 #include "HTTP/HTTPRequest.h"
 #include "HTTP/HTTPResponse.h"
 #include "HTTP/HTTPContext.h"
-#include "HTTP/Mux.h"
+#include "HTTP/HTTPComponent.h"
 
 #endif

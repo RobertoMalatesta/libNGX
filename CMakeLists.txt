@@ -1,16 +1,11 @@
 cmake_minimum_required(VERSION 3.7)
 
-project(NGXTest)
 project(libNGX)
 set(CMAKE_CXX_STANDARD 11)
-
-link_libraries(gtest)
 
 set(SOURCE_FILES
         src/Core/ADT/Queue.cpp
         src/Core/ADT/RBTree.cpp
-        src/Core/Target/X86.cpp
-        src/Core/Target/Linux/EPollEventDomain.cpp
         src/Core/Support/Buffer.cpp
         src/Core/Support/BasicMemoryBlock.cpp
         src/Core/Support/BufferMemoryBlock.cpp
@@ -33,16 +28,18 @@ set(SOURCE_FILES
         src/Core/Support/TCPConnection.cpp
         src/Core/Support/TCPListen.cpp
         src/Core/Support/MemoryBuffer.cpp
-        src/HTTP/Mux.cpp
+        src/Core/Target/X86.cpp
+        src/Core/Target/Linux/EPollEventDomain.cpp
+        src/HTTP/HTTPError.cpp
+        src/HTTP/HTTPHeader.cpp
+        src/HTTP/HTTPCoreHeader.cpp
+        src/HTTP/HTTPRequest.cpp
+        src/HTTP/HTTPResponse.cpp
         src/HTTP/HTTPListen.cpp
         src/HTTP/HTTPConnection.cpp
         src/HTTP/HTTPContext.cpp
-        src/HTTP/HTTPError.cpp
-        src/HTTP/HTTPHeader.cpp
-        src/HTTP/HTTPRequest.cpp
-        src/HTTP/HTTPResponse.cpp
-        src/HTTP/HTTPCoreHeader.cpp)
-
+        src/HTTP/HTTPComponent.cpp
+        )
 set(TEST_FILES
         test/Test.cpp
         test/Core/PoolTest.cpp
@@ -61,10 +58,10 @@ set(TEST_FILES
         test/HTTP/HTTPTest.cpp
         test/HTTP/HTTPConnectionCollector.cpp
         test/HTTP/HTTPParseTest.cpp)
-
 include_directories(./include)
-link_libraries(pthread dl)
-
+link_libraries(pthread dl gtest)
 add_executable(NGXTest ${SOURCE_FILES} ${TEST_FILES})
-add_library(libNGX STATIC ${SOURCE_FILES})
-add_library(testMux SHARED src/HTTP/testMux.cpp)
+add_library(NGX STATIC ${SOURCE_FILES})
+add_library(testMux SHARED
+        src/HTTP/HTTPComponent.cpp
+        test/testMux.cpp)
