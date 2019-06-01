@@ -1,5 +1,5 @@
 #include "Core/Core.h"
-
+#include <gtest/gtest.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -47,4 +47,17 @@ int BufferTest2() {
     Writer.fromByte(' ');
     Writer.fromString(HelloWorld, sizeof(HelloWorld)-1);
     return 0;
+}
+
+TEST(MemoryBuffer, defaultConstructTets) {
+    const char HelloWorld []= "HelloWorld\n";
+    const char Comment []= "this is a simple test to make sure nullptr BufferStart can be processed properly\n";
+
+    WritableMemoryBuffer Buffer;
+    BufferWriter Writer(Buffer);
+
+    Writer.fromString(HelloWorld, sizeof(HelloWorld)-1);
+    Writer.fromByte('-');
+    Writer.fromString(Comment, sizeof(Comment)-1);
+    Writer.toFile(1);
 }

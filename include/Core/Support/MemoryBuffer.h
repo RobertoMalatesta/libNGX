@@ -48,27 +48,28 @@ namespace ngx {
                 MemoryBuffer(Byte *BufferStart, Byte *BufferEnd);
 
             public:
+
+                MemoryBuffer();
                 MemoryBuffer(const MemoryBuffer &) = delete;
+                virtual ~MemoryBuffer();
 
                 MemoryBuffer operator=(const MemoryBuffer &) = delete;
 
-                virtual ~MemoryBuffer();
-
                 /** return const start pointer */
                 __attribute__ ((always_inline))
-                const Byte *getBufferStart() const { return BufferStart; }
+                const Byte *getStart() const { return BufferStart; }
 
                 /** return const end pointer */
                 __attribute__ ((always_inline))
-                const Byte *getBufferEnd() const { return BufferEnd; }
+                const Byte *getEnd() const { return BufferEnd; }
 
                 __attribute__ ((always_inline))
                 StringRef getBuffer() const {
-                    return {BufferStart, getBufferSize()};
+                    return {BufferStart, getSize()};
                 }
 
                 __attribute__ ((always_inline))
-                size_t getBufferSize() const { return BufferEnd - BufferStart; }
+                size_t getSize() const { return BufferEnd - BufferStart; }
             };
 
             class WritableMemoryBuffer : public MemoryBuffer {
@@ -78,22 +79,23 @@ namespace ngx {
                 WritableMemoryBuffer(Byte *BufferStart, Byte *BufferEnd, bool Aligned = false);
 
             public:
-                using MemoryBuffer::getBufferStart;
-                using MemoryBuffer::getBufferEnd;
-                using MemoryBuffer::getBufferSize;
+                using MemoryBuffer::getStart;
+                using MemoryBuffer::getEnd;
+                using MemoryBuffer::getSize;
 
+                WritableMemoryBuffer(bool Aligned = false);
                 virtual ~WritableMemoryBuffer() = default;
 
                 /** return writable start pointer */
                 __attribute__ ((always_inline))
-                Byte *getBufferStart() const {
-                    return const_cast<Byte *>(MemoryBuffer::getBufferStart());
+                Byte *getStart() const {
+                    return const_cast<Byte *>(MemoryBuffer::getStart());
                 }
 
                 /** return writable end pointer */
                 __attribute__ ((always_inline))
-                Byte *getBufferEnd() const {
-                    return const_cast<Byte *>(MemoryBuffer::getBufferEnd());
+                Byte *getEnd() const {
+                    return const_cast<Byte *>(MemoryBuffer::getEnd());
                 }
 
                 /** resize the buffer to NewSize, will drop data when NewSize is smaller*/
