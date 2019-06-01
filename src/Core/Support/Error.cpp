@@ -1,5 +1,7 @@
-#include "Core/Core.h"
+#include <cerrno>
+#include "Core/Support/Error.h"
 
+using namespace std;
 using namespace ngx::Core::Support;
 
 const char *RuntimeError::ErrorCodeToError(int ErrorCode) {

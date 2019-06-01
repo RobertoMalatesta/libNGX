@@ -1,8 +1,9 @@
 #include "Core/Core.h"
+#include <cstdio>
+#include <cstring>
 #include <gtest/gtest.h>
-#include <string.h>
-#include <stdio.h>
 
+using namespace std;
 using namespace ngx::Core::Support;
 
 int BufferTest1();

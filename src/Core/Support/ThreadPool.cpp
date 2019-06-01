@@ -1,13 +1,11 @@
-#include "Core/Core.h"
+#include "Core/Support/ThreadPool.h"
 #include <unistd.h>
 
 using namespace ngx::Core::Support;
 
-Job::Job(ThreadFn *Fn, void *pObj, void *pArg) : Callback(Fn), pObj(pObj), pArg(pArg) {
-}
+Job::Job(ThreadFn *Fn, void *pObj, void *pArg) : Callback(Fn), pObj(pObj), pArg(pArg) {}
 
-Job::Job(Job &J) : Callback(J.Callback), pObj(J.pObj), pArg(J.pArg) {
-}
+Job::Job(Job &J) : Callback(J.Callback), pObj(J.pObj), pArg(J.pArg) {}
 
 void Job::doJob() {
     if (Callback != nullptr && pObj != nullptr) {
@@ -68,7 +66,7 @@ RuntimeError Thread::postJob(const Job &J) {
 void *Thread::threadProcess(void *Arg) {
 
     Job *J;
-    Queue *Q;
+    qnode *Q;
     Thread *thisThread;
 
     thisThread = static_cast<Thread *>(Arg);
@@ -79,13 +77,13 @@ void *Thread::threadProcess(void *Arg) {
         thisThread->Lock.lock();
 
         if (thisThread->Running) {
-            while (!thisThread->Sentinel.IsEmpty()) {
+            while (!thisThread->Sentinel.isEmpty()) {
                 // fetch one job from job list
-                Q = thisThread->Sentinel.GetNext();
-                Q->Detach();
+                Q = thisThread->Sentinel.next();
+                Q->detach();
                 thisThread->Lock.Unlock();
                 // release thread lock and execute job
-                J = Job::fromQueue(Q);
+                J = Job::from_qnode(Q);
                 J->doJob();
                 thisThread->Lock.lock();
                 // lock thread and free job object from ThreadLocalPool

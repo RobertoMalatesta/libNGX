@@ -41,12 +41,12 @@ BufferMemoryBlock *BufferMemoryBlockCollector::Get() {
 
     std::lock_guard<spin_lock> g(Lock);
 
-    if (CollectorSentinel.IsEmpty()) {
+    if (CollectorSentinel.isEmpty()) {
         Ret = BufferMemoryBlock::Build(BlockSize);
     } else {
 
-        Ret = BufferMemoryBlock::FromCollectorQueue(CollectorSentinel.GetNext());
-        Ret->ReuseItem.Detach();
+        Ret = BufferMemoryBlock::FromCollectorqnode(CollectorSentinel.next());
+        Ret->ReuseItem.detach();
 
         CollectorSize += 1;
     }
@@ -65,7 +65,7 @@ void BufferMemoryBlockCollector::Put(BufferMemoryBlock *Item) {
         CollectorSize -= 1;
 
         Item->Reset();
-        CollectorSentinel.Append(&Item->ReuseItem);
+        CollectorSentinel.append(&Item->ReuseItem);
     }
 }
 
@@ -73,10 +73,10 @@ void BufferMemoryBlockCollector::Reset() {
 
     BufferMemoryBlock *TempBlock;
 
-    while (!CollectorSentinel.IsEmpty()) {
+    while (!CollectorSentinel.isEmpty()) {
 
-        TempBlock = BufferMemoryBlock::FromCollectorQueue(CollectorSentinel.GetNext());
-        TempBlock->ReuseItem.Detach();
+        TempBlock = BufferMemoryBlock::FromCollectorqnode(CollectorSentinel.next());
+        TempBlock->ReuseItem.detach();
 
         BufferMemoryBlock::Destroy(TempBlock);
 

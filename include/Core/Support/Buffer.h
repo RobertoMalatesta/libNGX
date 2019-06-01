@@ -74,7 +74,7 @@ namespace ngx {
                 RuntimeError WriteBytes(u_char *PointerToData, size_t DataLength);
 
                 /** If the Buffer is empty */
-                inline bool IsEmpty() const {
+                inline bool isEmpty() const {
                     return !(Cursor + 1);
                 }
 

@@ -30,7 +30,7 @@ int TimerTreeTest() {
     int i = 0;
 
     while (i++ < 20) {
-//        Tree.QueueExpiredTimer(&T);
+//        Tree.qnodeExpiredTimer(&T);
         ForceSleep(NANO_SECOND_SIZE);
     }
     return 0;

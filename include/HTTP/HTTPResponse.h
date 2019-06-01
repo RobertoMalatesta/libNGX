@@ -11,10 +11,10 @@ namespace ngx {
         struct HTTPHeaderOut {
             // HTTP Core Headers
             // HTTP Custom Headers
-            Array <HTTPHeader> Headers;
-            Array <HTTPHeader> Trailers;
+//            Array <HTTPHeader> Headers;
+//            Array <HTTPHeader> Trailers;
 
-            HTTPHeaderOut(Allocator *BackendAllocator) : Headers(BackendAllocator), Trailers(BackendAllocator) {};
+            HTTPHeaderOut(Allocator *BackendAllocator) {};
         };
 
         class HTTPResponse {

@@ -36,7 +36,7 @@ public:
 
     static BufferMemoryBlock *AddressToMemoryBlock(void *Address, size_t Size);
 
-    static inline BufferMemoryBlock *FromCollectorQueue(Queue *Q) {
+    static inline BufferMemoryBlock *FromCollectorqnode(qnode *Q) {
 
         if (Q == nullptr) {
             return nullptr;

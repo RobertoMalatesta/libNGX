@@ -1,10 +1,12 @@
-#include "Core/Core.h"
+#include "Core/Support/Time.h"
 #include <csignal>
 #include <unistd.h>
 #include <sys/time.h>
+#import <cstring>
 
 using namespace std;
 using namespace ngx::Core;
+using namespace ngx::Core::Config;
 using namespace ngx::Core::Target::X86;
 using namespace ngx::Core::Support;
 

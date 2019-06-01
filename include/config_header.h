@@ -1,9 +1,11 @@
+#import <cstdint>
+#import <ctime>
 #ifndef NGX_CONFIG_HEADER
 #define NGX_CONFIG_HEADER
 
 namespace ngx {
     namespace Core {
-
+using namespace std;
         const size_t B = 1;
         const size_t KB = 1024 * B;
         const size_t MB = 1024 * KB;

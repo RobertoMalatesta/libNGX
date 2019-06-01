@@ -10,35 +10,35 @@
 //  This file declare the Connection basic class
 //
 //===-------------------------------------------------------------------------===//
+#ifndef LIBNGX_CORE_SUPPORT_CONNECTION
+#define LIBNGX_CORE_SUPPORT_CONNECTION
+
 namespace ngx {
-    namespace Core {
-        namespace Support {
+namespace Core {
+namespace Support {
+
 /**
  *  @name Connection
  *
  *  @brief Peer connection
  **/
-            class Connection : public EventSubscriber {
-            protected:
-                int FD;
-                Address_t Address;
+class Connection : public EventSubscriber {
+protected:
+    int FD;
+    Address_t Address;
 
-            public:
+public:
+    Connection() : FD(-1), Address() {}
+    Connection(int FD, Address_t &Addr) : FD(FD), Address(Addr) {};
+    inline int getFD() const { return FD; };
+    SocketError setNoBlock(unsigned On);
+    SocketError setNoDelay(unsigned On);
+    SocketError close();
+    virtual SocketError connect(Address_t &Addr) = 0;
+};
 
-                Connection() : FD(-1), Address() {}
-
-                Connection(int FD, Address_t &Addr) : FD(FD), Address(Addr) {};
-
-                inline int getFD() const { return FD; };
-
-                SocketError setNoBlock(unsigned On);
-
-                SocketError setNoDelay(unsigned On);
-
-                SocketError close();
-
-                virtual SocketError connect(Address_t &Addr) = 0;
-            };
-        } // Support
-    } // Core
+} // Support
+} // Core
 } // ngx
+
+#endif

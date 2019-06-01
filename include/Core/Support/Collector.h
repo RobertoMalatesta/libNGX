@@ -23,7 +23,7 @@ using namespace ADT;
 class Collector {
 
 protected:
-    Queue CollectorSentinel;
+    qnode CollectorSentinel;
     uint32_t CollectorSize;
 
 public:

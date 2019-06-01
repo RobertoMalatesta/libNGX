@@ -1,6 +1,11 @@
-#include "Core/Core.h"
+#include "Core/Target/Linux/EPollEventDomain.h"
+
+#include <cerrno>
+#include <signal.h>
+#include <unistd.h>
 #include <sys/epoll.h>
 
+using namespace std;
 using namespace ngx::Core::Target::Linux;
 using namespace ngx::Core::Target::Linux::Config;
 

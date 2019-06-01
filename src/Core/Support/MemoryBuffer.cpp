@@ -1,5 +1,9 @@
-#include "Core/Core.h"
+#include "Core/Support/MemoryBuffer.h"
+#include <cstring>
+#include <unistd.h>
+#include <sys/socket.h>
 
+using namespace std;
 using namespace ngx::Core::Support;
 
 MemoryBuffer::MemoryBuffer() : BufferStart(nullptr), BufferEnd(nullptr){}
@@ -146,7 +150,7 @@ int BufferWriter::fromString(const char *Str, size_t Size) {
         return 0;
     }
 
-    pByte = Buffer.getStart();
+    pByte = Buffer.begin();
     pByte += Cursor;
 
     pChar = reinterpret_cast<char *>(pByte);
@@ -174,7 +178,7 @@ int BufferWriter::fromSocket(int FD, uint64_t MaximumSize) {
         ReadSize = Buffer.getSize() - Cursor;
     }
 
-    pByte = Buffer.getStart();
+    pByte = Buffer.begin();
     pByte += Cursor;
 
     pChar = reinterpret_cast<char *>(pByte);
@@ -194,7 +198,7 @@ int BufferWriter::toFile(int FD, int64_t Offset, size_t Size) {
     Byte *pByte;
     char *pChar;
 
-    pByte = Buffer.getStart();
+    pByte = Buffer.begin();
     pChar = reinterpret_cast<char *>(pByte);
 
     write(FD, pChar, Cursor);

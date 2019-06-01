@@ -1,6 +1,6 @@
 class Reusable {
 public:
-    ADT::Queue ReuseItem;
+    ADT::qnode ReuseItem;
 
     Reusable() : ReuseItem() {};
 

@@ -1,39 +1,29 @@
+#include "Core/Support/Time.h"
+#include "Core/Support/Error.h"
+#include "Core/Support/spin_lock.h"
+#include "Core/Support/Pool.h"
+#include "Core/Support/ThreadPool.h"
+#include "Core/Support/TimerTree.h"
+
 namespace ngx {
     namespace Core {
         namespace Support {
             using Byte = unsigned char;
-
-/** Abstract components */
-
-#include "Core/Support/Error.h"
 #include "Core/Support/Reusable.h"
 #include "Core/Support/Collector.h"
 #include "Core/Support/Reference.h"
-#include "Core/Support/spin_lock.h"
 #include "Core/Support/Checksum.h"
 #include "Core/Support/Hash.h"
 #include "Core/Support/Digest.h"
-#include "Core/Support/Time.h"
 #include "Core/Support/Dictionary.h"
-
-/** Pool */
 #include "Core/Support/BasicMemoryBlock.h"
-#include "Core/Support/Pool.h"
 #include "Core/Support/PoolMemoryBlockCollector.h"
-
-/** ThreadPool */
-#include "Core/Support/ThreadPool.h"
-
-/** SocketTimerHub */
-#include "Core/Support/TimerTree.h"
-
 /** Buffer */
 #include "Core/Support/BufferMemoryBlock.h"
 #include "Core/Support/BufferMemoryBlockCollector.h"
 #include "Core/Support/Cursor.h"
 #include "Core/Support/BoundCursor.h"
 #include "Core/Support/BufferBuilder.h"
-
         }   // Support
     }   // Core
 }   // ngx

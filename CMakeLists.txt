@@ -4,7 +4,7 @@ project(libNGX)
 set(CMAKE_CXX_STANDARD 11)
 
 set(SOURCE_FILES
-        src/Core/ADT/Queue.cpp
+        src/Core/ADT/qnode.cpp
         src/Core/ADT/RBTree.cpp
         src/Core/Support/Buffer.cpp
         src/Core/Support/BasicMemoryBlock.cpp

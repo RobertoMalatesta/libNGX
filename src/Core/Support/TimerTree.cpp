@@ -1,5 +1,9 @@
-#include "Core/Core.h"
+#include "Core/Support/Time.h"
+#include "Core/Support/Error.h"
+#include "Core/Support/TimerTree.h"
+#include <cerrno>
 
+using namespace std;
 using namespace ngx::Core::Support;
 
 TimerTree::~TimerTree() {

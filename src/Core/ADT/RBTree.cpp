@@ -1,8 +1,8 @@
-#include "Core/Core.h"
+#include "Core/ADT/RBTree.h"
 
 using namespace ngx::Core::ADT;
 
-void RBTree::RotateLeft(RBNode *Node) {
+void RBTree::rotateLeft(RBNode *Node) {
 
     RBNode *Right = Node->Right, *Parent = Node->Parent;
 
@@ -25,7 +25,7 @@ void RBTree::RotateLeft(RBNode *Node) {
 }
 
 
-void RBTree::RotateRight(RBNode *Node) {
+void RBTree::rotateRight(RBNode *Node) {
 
     RBNode *Left = Node->Left, *Parent = Node->Parent;
 
@@ -46,7 +46,7 @@ void RBTree::RotateRight(RBNode *Node) {
     Node->Parent = Left;
 }
 
-void RBTree::InsertColor(RBNode *Node) {
+void RBTree::insertColor(RBNode *Node) {
 
     RBNode *Parent, *GParent;
 
@@ -65,14 +65,14 @@ void RBTree::InsertColor(RBNode *Node) {
             }
             if (Parent->Right == Node) {
                 RBNode *Temp;
-                RotateLeft(Parent);
+                rotateLeft(Parent);
                 Temp = Parent;
                 Parent = Node;
                 Node = Temp;
             }
             Parent->setBlack();
             GParent->setRed();
-            RotateRight(GParent);
+            rotateRight(GParent);
         } else {
             {
                 RBNode *Uncle = GParent->Left;
@@ -88,21 +88,21 @@ void RBTree::InsertColor(RBNode *Node) {
 
             if (Parent->Left == Node) {
                 RBNode *Temp;
-                RotateRight(Parent);
+                rotateRight(Parent);
                 Temp = Parent;
                 Parent = Node;
                 Node = Temp;
             }
             Parent->setBlack();
             GParent->setRed();
-            RotateLeft(GParent);
+            rotateLeft(GParent);
         }
     }
 
     Root->setBlack();
 }
 
-void RBTree::EraseColor(RBNode *Node, RBNode *Parent) {
+void RBTree::eraseColor(RBNode *Node, RBNode *Parent) {
 
     RBNode *Other;
 
@@ -112,7 +112,7 @@ void RBTree::EraseColor(RBNode *Node, RBNode *Parent) {
             if (Other->isRed()) {
                 Other->setBlack();
                 Parent->setRed();
-                RotateLeft(Parent);
+                rotateLeft(Parent);
                 Other = Parent->Right;
             }
             if ((!Other->Left || Other->Left->isBlack()) &&
@@ -124,13 +124,13 @@ void RBTree::EraseColor(RBNode *Node, RBNode *Parent) {
                 if (!Other->Right || Other->Right->isBlack()) {
                     Other->Left->setBlack();
                     Other->setRed();
-                    RotateRight(Other);
+                    rotateRight(Other);
                     Other = Parent->Right;
                 }
                 Parent->getColor() ? Other->setBlack() : Other->setRed();
                 Parent->setBlack();
                 Other->Right->setBlack();
-                RotateLeft(Parent);
+                rotateLeft(Parent);
                 Node = Root;
                 break;
             }
@@ -139,7 +139,7 @@ void RBTree::EraseColor(RBNode *Node, RBNode *Parent) {
             if (Other->isRed()) {
                 Other->setBlack();
                 Parent->setRed();
-                RotateRight(Parent);
+                rotateRight(Parent);
                 Other = Parent->Left;
             }
             if ((!Other->Left || Other->Left->isBlack()) &&
@@ -151,13 +151,13 @@ void RBTree::EraseColor(RBNode *Node, RBNode *Parent) {
                 if (!Other->Left || Other->Left->isBlack()) {
                     Other->Right->setBlack();
                     Other->setRed();
-                    RotateLeft(Other);
+                    rotateLeft(Other);
                     Other = Parent->Left;
                 }
                 Parent->getColor() ? Other->setBlack() : Other->setRed();
                 Parent->setBlack();
                 Other->Left->setBlack();
-                RotateRight(Parent);
+                rotateRight(Parent);
                 Node = Root;
                 break;
             }
@@ -191,7 +191,7 @@ int RBTree::insert(RBNode &Node) {
     Node.Parent = Parent;
     Node.Left = Node.Right = nullptr;
     Place = &Node;
-    InsertColor(&Node);
+    insertColor(&Node);
 
     return 1;
 }
@@ -267,7 +267,7 @@ void RBTree::remove(RBNode *Node) {
     color:
 
     if (Color && Child != nullptr) {
-        EraseColor(Child, Parent);
+        eraseColor(Child, Parent);
     }
 
     Node->Parent = Node;
