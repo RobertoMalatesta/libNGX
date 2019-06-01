@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <vector>
 #include <thread>
 #include "Core/ADT/qnode.h"
@@ -13,16 +14,16 @@ namespace ngx {
 namespace Core {
 namespace Support {
 
+using namespace std;
 using namespace ADT;
+
 class Job;
 class ThreadPool;
 typedef void (ThreadFn)(void *pObj, void *pArg);
 
 class Job {
-private:
-    qnode Q;
-
 protected:
+    qnode Q;
     void *pObj;
     void *pArg;
     ThreadFn *Callback;
@@ -33,7 +34,7 @@ public:
     Job(ThreadFn *Fn, void *pObj, void *pArg);
     inline void appendJob(qnode &queue) { queue.append(&Q); };
     void doJob();
-    static inline Job *from_qnode(qnode *Q) { return (Job *) ((uintptr_t) Q - (uintptr_t) & (((Job *) 0)->Q)); }
+    static inline Job *from_qnode(qnode *Q) { return reinterpret_cast<Job *>((uintptr_t)Q - offsetof(Job, Q)); }
 };
 
 class ThreadPool {
