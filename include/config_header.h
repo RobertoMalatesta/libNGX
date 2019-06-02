@@ -1,7 +1,10 @@
-#import <cstdint>
-#import <ctime>
+#include <cstdint>
+#include <ctime>
 #ifndef LIBNGX_CONFIG_HEADER
 #define LIBNGX_CONFIG_HEADER
+
+#define likely(x) __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)
 
 namespace ngx {
     namespace Core {

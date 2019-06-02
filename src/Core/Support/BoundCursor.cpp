@@ -1,10 +1,10 @@
-#include "Core/Core.h"
+#include "Core/Support/Buffer.h"
+#include "Core/Support/BoundCursor.h"
 
 using namespace ngx::Core::Support;
 
 BoundCursor::BoundCursor(Buffer *ParentBuffer, u_char *Position, u_char *Bound) : Cursor(ParentBuffer, Position),
-                                                                                  Bound(Bound) {
-}
+                                                                                  Bound(Bound) {}
 
 BoundCursor BoundCursor::operator+(size_t Size) const {
 

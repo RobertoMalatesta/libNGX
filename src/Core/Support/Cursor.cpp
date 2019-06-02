@@ -1,4 +1,5 @@
-#include "Core/Core.h"
+#include "Core/Support/Buffer.h"
+#include "Core/Support/Cursor.h"
 
 using namespace ngx::Core::Support;
 

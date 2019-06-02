@@ -32,7 +32,7 @@ namespace ngx{
             static const std::string type;
 
         public:
-            ~Mux() override ;
+            ~Mux() = default;
             const std::string getType() final { return type; };
             virtual int operator() (HTTPConnection &C, HTTPRequest &R) = 0;
             static Mux *loadDynamicMux(std::string &file);
@@ -44,7 +44,7 @@ namespace ngx{
             static const std::string name;
 
         public:
-            ~Service() override ;
+            ~Service() = default;
             const std::string getType() override { return type; };
             virtual int operator() (HTTPConnection &C, HTTPRequest &Req, HTTPResponse &Res) = 0;
             static Service *loadDynamicService(std::string &file);
