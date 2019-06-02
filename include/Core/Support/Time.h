@@ -2,9 +2,9 @@
 #include "Core/Target/X86.h"
 #include "Core/Support/spin_lock.h"
 #include <cstdint>
+
 #ifndef LIBNGX_CORE_SUPPORT_TIME
 #define LIBNGX_CORE_SUPPORT_TIME
-
 namespace ngx {
 namespace Core {
 namespace Support {
@@ -35,6 +35,4 @@ int WriteSysLogTime(char *Buf, size_t Size);
 } // Support
 } // Core
 } // ngx
-
-
 #endif

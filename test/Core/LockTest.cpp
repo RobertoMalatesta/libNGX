@@ -1,4 +1,4 @@
-#include "Core/Core.h"
+#include "Core/Support/spin_lock.h"
 
 using namespace ngx::Core::Support;
 
@@ -6,7 +6,7 @@ int LockTest() {
     spin_lock Lock;
 
     Lock.lock();
-    Lock.Unlock();
+    Lock.unlock();
 
     return 0;
 }

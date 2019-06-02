@@ -10,6 +10,12 @@
 //  This file declare the Connection basic class
 //
 //===-------------------------------------------------------------------------===//
+#ifndef LIBNGX_CORE_SUPPORT_TCPCONN
+#define LIBNGX_CORE_SUPPORT_TCPCONN
+
+namespace ngx {
+namespace Core {
+namespace Support {
 
 /**
  *  @name TCPConnection
@@ -24,3 +30,9 @@ public:
 
     virtual SocketError connect(Address_t &Address);
 };
+
+} // Support
+} // Core
+} // ngx
+
+#endif

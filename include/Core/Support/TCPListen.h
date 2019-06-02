@@ -11,6 +11,13 @@
 //
 //===-------------------------------------------------------------------------===//
 
+#ifndef LIBNGX_CORE_SUPPORT_TCPLISTEN
+#define LIBNGX_CORE_SUPPORT_TCPLISTEN
+
+namespace ngx {
+namespace Core {
+namespace Support {
+
 /**
  *  @name TCPListening
  *
@@ -26,3 +33,8 @@ public:
 
     virtual SocketError bind(const Address_t &Addr) override;
 };
+
+} // Support
+} // Core
+} // ngx
+#endif

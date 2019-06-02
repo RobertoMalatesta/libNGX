@@ -1,28 +1,29 @@
+#include "Core/Support/Error.h"
+
 #ifndef NGX_HTTP_ERROR
 #define NGX_HTTP_ERROR
 
-#include "Core/Core.h"
-
 namespace ngx {
-    namespace HTTP {
-        using namespace ngx::Core::Support;
+namespace HTTP {
 
-        class HTTPError : public Error {
-        private:
-            static const char *ErrorCodeToError(int ErrorCode);
+using namespace ngx::Core::Support;
 
-        public:
-            HTTPError(int ErrorCode, const char *Message = nullptr) : Error(ErrorCode, Message) {};
+class HTTPError : public Error {
+private:
+    static const char *ErrorCodeToError(int ErrorCode);
 
-            const char *GetError() {
-                return ErrorCodeToError(ErrorCode);
-            }
+public:
+    HTTPError(int ErrorCode, const char *Message = nullptr) : Error(ErrorCode, Message) {};
 
-            virtual void PrintError() {
-                printf("HTTPError: %s, Message: %s\n", ErrorCodeToError(ErrorCode),
-                       Message == nullptr ? "null" : Message);
-            }
-        };
-    } // HTTP
+    const char *GetError() {
+        return ErrorCodeToError(ErrorCode);
+    }
+
+    virtual void PrintError() {
+        printf("HTTPError: %s, Message: %s\n", ErrorCodeToError(ErrorCode),
+               Message == nullptr ? "null" : Message);
+    }
+};
+} // HTTP
 } // ngx
 #endif

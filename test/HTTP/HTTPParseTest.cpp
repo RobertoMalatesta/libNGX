@@ -1,5 +1,4 @@
-#include "Core/Core.h"
-#include "HTTP/HTTP.h"
+#include "Core/Support/Support.h"
 #include "HTTP/HTTPError.h"
 #include "HTTP/HTTPRequest.h"
 using namespace ngx::Core::Support;

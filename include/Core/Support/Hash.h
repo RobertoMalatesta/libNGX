@@ -10,12 +10,21 @@
 //  define and implement hash function
 //
 //===-------------------------------------------------------------------------===//
+#include <cstdint>
+#include <cstdlib>
+
+#ifndef LIBNGX_CORE_SUPPORT_HASH
+#define LIBNGX_CORE_SUPPORT_HASH
+
+namespace ngx {
+namespace Core {
+namespace Support {
+
+using namespace std;
 
 extern "C" {
 inline void murmur_hash2(u_char *data, size_t len, uint32_t &h) {
-
     uint32_t k;
-
     while (len >= 4) {
         k = data[0];
         k |= data[1] << 8;
@@ -32,7 +41,6 @@ inline void murmur_hash2(u_char *data, size_t len, uint32_t &h) {
         data += 4;
         len -= 4;
     }
-
     switch (len) {
         case 3:
             h ^= data[2] << 16;/* fall through */
@@ -42,7 +50,6 @@ inline void murmur_hash2(u_char *data, size_t len, uint32_t &h) {
             h ^= data[0];
             h *= 0x5bd1e995;
     }
-
     h ^= h >> 13;
     h *= 0x5bd1e995;
     h ^= h >> 15;
@@ -53,3 +60,7 @@ inline void SimpleHash(uint32_t &Hash, u_char C) {
 }
 
 }
+} // Support
+} // Core
+} // ngx
+#endif

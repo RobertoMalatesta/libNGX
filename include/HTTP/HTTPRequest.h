@@ -1,7 +1,6 @@
 #ifndef NGX_HTTP_REQUEST
 #define NGX_HTTP_REQUEST
 
-#include "Core/Core.h"
 #include "HTTP/HTTPError.h"
 #include "HTTP/HTTPHeader.h"
 #include "HTTP/HTTPCoreHeader.h"

@@ -28,23 +28,16 @@ protected:
 
 public:
 
-    Collector(uint32_t CollectorSize) : CollectorSentinel(), CollectorSize(CollectorSize) {
-    }
-
+    Collector(uint32_t CollectorSize) : CollectorSentinel(), CollectorSize(CollectorSize) {}
     /** Set collector size */
     virtual RuntimeError SetCollectorSize(uint32_t Size) {
         CollectorSize = Size;
         return {0};
     }
-
     /** Get collector size */
-    uint32_t GetCollectorSize() const {
-        return CollectorSize;
-    };
-
+    uint32_t GetCollectorSize() const { return CollectorSize; };
     /** Get a item from collector */
     virtual Reusable *Get() { return nullptr; };
-
     /** Put a item to collector */
     virtual void Put(Reusable *Item) {};
 };

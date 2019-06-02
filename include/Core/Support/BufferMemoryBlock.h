@@ -11,6 +11,20 @@
 //  construct buffers.
 //
 //===-------------------------------------------------------------------------===//
+#include <new>
+
+#include "Core/ADT/qnode.h"
+#include "Core/Support/Reusable.h"
+#include "Core/Support/BasicMemoryBlock.h"
+
+#ifndef LIBNGX_CORE_SUPPORT_BUFFERMMB
+#define LIBNGX_CORE_SUPPORT_BUFFERMMB
+
+namespace ngx {
+namespace Core {
+namespace Support {
+
+using namespace ngx::Core::ADT;
 
 class BufferMemoryBlock
         : public BasicMemoryBlock,
@@ -69,3 +83,9 @@ public:
         return 0;
     };
 };
+
+} // Support
+} // Core
+} // ngx
+
+#endif

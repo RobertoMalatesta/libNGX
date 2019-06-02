@@ -81,7 +81,7 @@ void *Thread::threadProcess(void *Arg) {
                 // fetch one job from job list
                 Q = thisThread->Sentinel.next();
                 Q->detach();
-                thisThread->Lock.Unlock();
+                thisThread->Lock.unlock();
                 // release thread lock and execute job
                 J = Job::from_qnode(Q);
                 J->doJob();
@@ -90,12 +90,12 @@ void *Thread::threadProcess(void *Arg) {
                 thisThread->deleteJob(J);
                 thisThread->PressureScore--;
             }
-            thisThread->Lock.Unlock();
+            thisThread->Lock.unlock();
         } else {
             break;
         }
     }
-    thisThread->Lock.Unlock();
+    thisThread->Lock.unlock();
     return nullptr;
 }
 

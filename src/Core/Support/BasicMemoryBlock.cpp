@@ -1,4 +1,4 @@
-#include "Core/Core.h"
+#include "Core/Support/BasicMemoryBlock.h"
 
 using namespace ngx::Core::Support;
 

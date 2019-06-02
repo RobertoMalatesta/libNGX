@@ -1,5 +1,5 @@
 #include <mutex>
-
+#include <pthread.h>
 #ifndef LIBNGX_CORE_SUPPORT_SPINLOCK
 #define LIBNGX_CORE_SUPPORT_SPINLOCK
 namespace ngx {
@@ -11,28 +11,14 @@ protected:
     pthread_spinlock_t l;
 
 public:
-    spin_lock();
-    ~spin_lock();
-    virtual void Lock();
-    virtual void Unlock();
-    virtual void lock() { Lock(); };
-    virtual void unlock() { Unlock(); };
-    virtual volatile bool TryLock();
-};
-
-class Mutex {
-private:
-    std::mutex BackendMutex;
-
-public:
-    Mutex();
-    virtual void Lock();
-    virtual void Unlock();
-    virtual volatile bool TryLock();
+    spin_lock() { pthread_spin_init(&l, 0); }
+    ~spin_lock() { pthread_spin_destroy(&l); };
+    virtual void lock() { pthread_spin_lock(&l); };
+    virtual void unlock() { pthread_spin_unlock(&l); };
+    virtual volatile bool tryLock() { return pthread_spin_trylock(&l) == 0; };
 };
 
 } // Support
 } // Core
 } // ngx
-
 #endif

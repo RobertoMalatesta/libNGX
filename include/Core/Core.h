@@ -11,8 +11,8 @@
 //
 //===-------------------------------------------------------------------------===//
 
-#ifndef NGX_CORE
-#define NGX_CORE
+#ifndef LIBNGX_CORE
+#define LIBNGX_CORE
 #include "ngx.h"
 #include "Core/ADT/ADT.h"
 #include "Core/Support/Support.h"

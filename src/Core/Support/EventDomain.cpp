@@ -24,13 +24,13 @@ void EventDomain::emitExpiredTimer() {
         next = Tree.next(it);
         auto *Sub = static_cast<EventSubscriber *>(it->getData());
 
-        if (Sub->Lock.TryLock()) {
+        if (Sub->Lock.tryLock()) {
             Tree.stop(*it);
             Sub->postEvent(Event::TIMER);
             if (it->isInterval()) {
                 Tree.respawnInterval(*it);
             }
-            Sub->Lock.Unlock();
+            Sub->Lock.unlock();
         }
         it = next;
     }

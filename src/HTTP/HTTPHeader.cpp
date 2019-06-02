@@ -1,6 +1,8 @@
+#include <cerrno>
 #include "HTTP/HTTPError.h"
 #include "HTTP/HTTPHeader.h"
 
+using namespace std;
 using namespace ngx::HTTP;
 
 const char BrokenHeaderErrorString[] = "Broken Header in buffer";

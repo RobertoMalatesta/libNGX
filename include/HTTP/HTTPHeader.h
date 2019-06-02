@@ -1,7 +1,8 @@
 #ifndef NGX_HTTP_HEADER
 #define NGX_HTTP_HEADER
 
-#include "Core/Core.h"
+#include "Core/Support/BoundCursor.h"
+#include "Core/Support/Buffer.h"
 #include "HTTP/common_header.h"
 
 namespace ngx {

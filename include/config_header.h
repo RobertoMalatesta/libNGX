@@ -1,7 +1,7 @@
 #import <cstdint>
 #import <ctime>
-#ifndef NGX_CONFIG_HEADER
-#define NGX_CONFIG_HEADER
+#ifndef LIBNGX_CONFIG_HEADER
+#define LIBNGX_CONFIG_HEADER
 
 namespace ngx {
     namespace Core {

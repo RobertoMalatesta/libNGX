@@ -5,7 +5,7 @@
 #include "HTTP/config_header.h"
 namespace ngx {
     namespace HTTP {
-        using namespace ngx::HTTP::Config;
+        using namespace Config;
 
         const u_char LF = '\n';
         const u_char CR = '\r';

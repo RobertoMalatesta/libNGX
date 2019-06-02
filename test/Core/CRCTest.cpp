@@ -1,4 +1,5 @@
-#include "Core/Core.h"
+#include "Core/Support/Checksum.h"
+#include <cstdio>
 
 using namespace std;
 using namespace ngx::Core::Support;
