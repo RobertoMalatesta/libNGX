@@ -2,7 +2,7 @@
 #include <csignal>
 #include <unistd.h>
 #include <sys/time.h>
-#import <cstring>
+#include <cstring>
 
 using namespace std;
 using namespace ngx::Core;

@@ -35,8 +35,6 @@ Component *Component::loadDynamicComponent(std::string &file, std::string &sym) 
     return component;
 }
 
-Mux::~Mux() { Component::~Component(); }
-
 Mux *Mux::loadDynamicMux(std::string &file) {
     Component *component;
 
@@ -50,8 +48,6 @@ Mux *Mux::loadDynamicMux(std::string &file) {
     }
     return dynamic_cast<Mux *>(component);
 }
-
-Service::~Service() { Component::~Component(); }
 
 Service *Service::loadDynamicService(std::string &file) {
     Component *component;

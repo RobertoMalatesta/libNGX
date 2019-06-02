@@ -15,8 +15,24 @@ int HTTPTest() {
     return 0;
 }
 
+class toyMux : public Mux{
+public:
+    int reload() final { return 0; };
+    bool validateConfig() final { return true; }
+    int config(std::string key, std::string value) final { return 0; };
+    int operator() (HTTPConnection &C, HTTPRequest &R) final {
+        return 1234;
+    }
+};
 
 TEST(HTTPTest, MuxTest) {
+
+    toyMux mux;
+
+}
+
+
+TEST(HTTPTest, dynamicMuxTest) {
 
     std::string file = "./libtestMux.so";
     HTTPConnection c;

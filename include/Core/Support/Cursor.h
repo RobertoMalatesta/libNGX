@@ -13,6 +13,8 @@
 #include <cstdlib>
 #include <cstdint>
 
+//#include "Core/Support/Buffer.h"
+
 #include "Core/Support/BufferMemoryBlock.h"
 
 #ifndef LIBNGX_CORE_SUPPORT_CURSOR
