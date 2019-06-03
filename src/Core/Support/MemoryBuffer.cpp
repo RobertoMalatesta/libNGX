@@ -52,20 +52,20 @@ size_t WritableMemoryBuffer::resize(size_t NewSize) {
 
     Byte *NewStart, *NewEnd;
 
-    if (NewSize <= 0 || NewSize == getSize()) {
-        return getSize();
+    if (NewSize <= 0 || NewSize == size()) {
+        return size();
     }
 
     defaultAllocate(NewSize, Aligned, NewStart, NewEnd);
 
     if (NewStart == nullptr) {
-        return getSize();
+        return size();
     }
 
     if (BufferStart != nullptr) {
         size_t CopySize;
 
-        CopySize = getSize();
+        CopySize = size();
 
         if (CopySize > NewSize) {
             CopySize = NewSize;
@@ -115,9 +115,9 @@ size_t BufferWriter::CheckBufferSize(size_t WriteSize) {
 
     size_t NewSize;
 
-    if (Cursor + WriteSize >= Buffer.getSize()) {
+    if (Cursor + WriteSize >= Buffer.size()) {
         // memory buffer full, create an bigger one
-        NewSize = Buffer.getSize();
+        NewSize = Buffer.size();
 
         // figure out new memory buffer size
         if(NewSize == 0) {
@@ -134,7 +134,7 @@ size_t BufferWriter::CheckBufferSize(size_t WriteSize) {
         Buffer.resize(NewSize);
     }
     // return new buffer size
-    return Buffer.getSize();
+    return Buffer.size();
 }
 
 int BufferWriter::fromByte(const Byte B) {
@@ -175,7 +175,7 @@ int BufferWriter::fromSocket(int FD, uint64_t MaximumSize) {
 
     ReadSize = MaximumSize;
     if (Cursor + MaximumSize > CheckBufferSize(MaximumSize)) {
-        ReadSize = Buffer.getSize() - Cursor;
+        ReadSize = Buffer.size() - Cursor;
     }
 
     pByte = Buffer.begin();

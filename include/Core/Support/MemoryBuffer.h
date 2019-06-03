@@ -52,9 +52,9 @@ public:
     __attribute__ ((always_inline))
     const Byte *end() const { return BufferEnd; }
     __attribute__ ((always_inline))
-    StringRef getBuffer() const { return {BufferStart, getSize()}; }
+    StringRef getBuffer() const { return {BufferStart, size()}; }
     __attribute__ ((always_inline))
-    size_t getSize() const { return BufferEnd - BufferStart; }
+    size_t size() const { return BufferEnd - BufferStart; }
 };
 
 class WritableMemoryBuffer : public MemoryBuffer {
@@ -67,7 +67,7 @@ protected:
 public:
     using MemoryBuffer::begin;
     using MemoryBuffer::end;
-    using MemoryBuffer::getSize;
+    using MemoryBuffer::size;
 
     WritableMemoryBuffer(bool Aligned = false);
     virtual ~WritableMemoryBuffer() = default;

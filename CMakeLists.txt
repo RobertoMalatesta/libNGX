@@ -4,7 +4,6 @@ project(libNGX)
 set(CMAKE_CXX_STANDARD 11)
 
 set(SOURCE_FILES
-        src/Core/ADT/qnode.cpp
         src/Core/ADT/RBTree.cpp
         src/Core/Support/Buffer.cpp
         src/Core/Support/BasicMemoryBlock.cpp
@@ -40,6 +39,7 @@ set(SOURCE_FILES
         )
 set(TEST_FILES
         test/Test.cpp
+        test/Core/SmallVectorTest.cpp
         test/Core/PoolTest.cpp
         test/Core/ArrayTest.cpp
         test/Core/TimeTest.cpp

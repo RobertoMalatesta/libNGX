@@ -1,18 +1,24 @@
+#include "config_header.h"
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
+#include <iterator>
+#include <memory>
 #ifndef LIBNGX_SMALLVECTOR_H
 #define LIBNGX_SMALLVECTOR_H
 
 namespace ngx {
 namespace Core {
-namespace Support {
+namespace ADT {
 
 template <typename T, int InplaceSize=32>
 class SmallVector {
 protected:
-    static const unsigned alignmet = ((sizeof(T) + 7)<<3)>>3;
+    static const unsigned alignmet = 8;
     void *BeginX;
     unsigned Size, Capacity;
     alignas(alignmet) T Eles [InplaceSize];
-    inline T *getFirstEl() { return &Eles[0]; }
+    void *getFirstEl() { return &Eles[0]; }
     void grow_pod(void *FirstEl, size_t MinCapacity, size_t TSize) {
         if (MinCapacity > UINT32_MAX) return;
         size_t NewCapacity = 2 * capacity() + 1;
@@ -22,7 +28,7 @@ protected:
             NewEles = malloc(NewCapacity * TSize);
             if (!NewEles) return;
             // Copy the elements over.  No need to run dtors on PODs.
-            memcpy(NewEles, BeginX, size() * TSize);
+            ::memcpy(NewEles, BeginX, size() * TSize);
         } else {
             NewEles = realloc(BeginX, NewCapacity *TSize);
             if(!NewEles) return;
@@ -60,10 +66,10 @@ public:
               this -> operatpr = (::std::move(RHS));
     }
     inline size_t size() const { return Size; }
-    inline void set_size(size_type Size) const { this->Size = Size; }
+    inline void set_size(size_type Size) { this->Size = Size; }
     inline size_t capacity() const { return Capacity; }
     [[nodiscard]] bool empty() const { return !Size; }
-    inline bool is_small() const {return BeginX == getFirstEl(); }
+    inline bool is_small() {return BeginX == this->getFirstEl(); }
     void reset_to_small() {
         BeginX=getFirstEl();
         Size = 0, Capacity = InplaceSize;

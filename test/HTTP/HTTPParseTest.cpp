@@ -1,38 +1,22 @@
 #include "Core/Support/Support.h"
 #include "HTTP/HTTPError.h"
 #include "HTTP/HTTPRequest.h"
+#include <gtest/gtest.h>
+#include <iostream>
 using namespace ngx::Core::Support;
 using namespace ngx::HTTP;
+using namespace std;
 
-int HTTPParseTest() {
+TEST(HTTP, parseRequest) {
+    WritableMemoryBuffer buf;
+    BufferWriter writer(buf);
+    HTTPRequest request;
 
-    Pool MemoryAllocator;
-    Buffer buffer;
-    BufferBuilder Builder(BUFFER_MEMORY_BLOCK_SIZE, 1000);
-    HTTPRequest Request;
-    BoundCursor BC;
+    char Text[] = "GET /?argument=1 HTTP/1.1\r\n ";
+    writer.fromString(Text, sizeof(Text));
+    HTTPRequest::ParseMethod(buf, request);
+    HTTPRequest::ParseRequestLine(buf, request);
 
-    u_char Text[] = "GET / HTTP/1.1\r\n ";
+    std::cout<< request.HTTPProtocol.size() << std::endl;
 
-    Builder.BuildBuffer(buffer);
-    buffer.ReadBytes(Text, sizeof(Text) - 1);
-
-    buffer >> BC;
-
-    HTTPRequest R;
-
-    R.Read(buffer);
-
-//    HTTPHeader H;
-//    H.Name = BC;
-//
-//    HTTPParser::ParseRequestHeaders(buffer, R);
-
-//    HTTPError Error = HTTPParser::ParseHTTPRequest(buffer, Request);
-//
-//    if (Error.GetCode() != 0) {
-//        printf("parse failed, error: %s\n", Error.CodeMessage());
-//    }
-
-    return 0;
 }
