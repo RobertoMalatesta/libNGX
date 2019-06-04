@@ -3,5 +3,10 @@
 using namespace ngx::HTTP;
 
 const char *HTTPError::ErrorCodeToError(int ErrorCode) {
-    return "Unspecified error!";
+    switch (ErrorCode) {
+        case 0:
+            return "Succeed";
+        default:
+            return "Unspecified error!";
+    }
 }

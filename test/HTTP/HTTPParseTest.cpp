@@ -11,12 +11,24 @@ TEST(HTTP, parseRequest) {
     WritableMemoryBuffer buf;
     BufferWriter writer(buf);
     HTTPRequest request;
-
-    char Text[] = "GET /?argument=1 HTTP/1.1\r\n ";
+    char Text[] = "GET http://baidu.com:8080/request_url/some_argument%20?argument=1 HTTP/1.1\r\n ";
     writer.fromString(Text, sizeof(Text));
-    HTTPRequest::ParseMethod(buf, request);
-    HTTPRequest::ParseRequestLine(buf, request);
+    request.parseMethod(buf).PrintError();
+    request.parseRequestLine(buf).PrintError();
 
-    std::cout<< request.HTTPProtocol.size() << std::endl;
+    for(auto &i : request.MethodStr) {
+        cout<<i;
+    }
+    cout<<endl;
+
+    for(auto &i : request.URI) {
+        cout<<i;
+    }
+    cout<<endl;
+
+    for(auto &i : request.Protocol) {
+        cout<<i;
+    }
+    cout<<endl;
 
 }

@@ -12,7 +12,7 @@
 //===-------------------------------------------------------------------------===//
 #include <cstdint>
 #include <cstdlib>
-
+#include "Core/Support/MemoryBuffer.h"
 #ifndef LIBNGX_CORE_SUPPORT_HASH
 #define LIBNGX_CORE_SUPPORT_HASH
 
@@ -23,40 +23,49 @@ namespace Support {
 using namespace std;
 
 extern "C" {
-inline void murmur_hash2(u_char *data, size_t len, uint32_t &h) {
-    uint32_t k;
-    while (len >= 4) {
-        k = data[0];
-        k |= data[1] << 8;
-        k |= data[2] << 16;
-        k |= data[3] << 24;
+const u_char lower_case[] =
+        "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+        "\0\0\0\0\0\0\0\0\0\0\0\0\0-\0\0" "0123456789\0\0\0\0\0\0"
+        "\0abcdefghijklmnopqrstuvwxyz\0\0\0\0\0"
+        "\0abcdefghijklmnopqrstuvwxyz\0\0\0\0\0"
+        "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+        "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+        "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+        "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 
+inline void SimpleHash(uint32_t &Hash, u_char C) {
+    Hash = Hash * 31 + C;
+}
+inline uint32_t murmurhash2(StringRef Str, bool lower=false) {
+#define or_lower(x) ((lower&&lower_case[x]) ? lower_case[x] : x)
+    uint32_t  h, k;
+    auto it=Str.begin();
+    h = 0^Str.size();
+    for(; it<Str.end(); it+=4) {
+        k  = or_lower(it[0]);
+        k |= or_lower(it[1]) << 8;
+        k |= or_lower(it[2]) << 16;
+        k |= or_lower(it[3]) << 24;
         k *= 0x5bd1e995;
         k ^= k >> 24;
         k *= 0x5bd1e995;
-
         h *= 0x5bd1e995;
         h ^= k;
-
-        data += 4;
-        len -= 4;
     }
-    switch (len) {
+    switch (Str.end()-it) {
         case 3:
-            h ^= data[2] << 16;/* fall through */
+            h ^= or_lower(it[2]) << 16;
         case 2:
-            h ^= data[1] << 8;/* fall through */
+            h ^= or_lower(it[1]) << 8;
         case 1:
-            h ^= data[0];
+            h ^= or_lower(it[0]);
             h *= 0x5bd1e995;
     }
     h ^= h >> 13;
     h *= 0x5bd1e995;
     h ^= h >> 15;
-}
-
-inline void SimpleHash(uint32_t &Hash, u_char C) {
-    Hash = Hash * 31 + C;
+    return h;
+#undef or_lower
 }
 
 }

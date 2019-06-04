@@ -14,43 +14,43 @@ const char BrokenRequestErrorString[] = "Broken Request in buffer";
 const char NoMemoryErrorString[] = "No sufficient memory to store header indexer";
 const char BadCoreHeaderInErrorString[] = "Bad core header in";
 
-HTTPCoreHeader HTTPRequest::HeaderInProcesses[] = {
-        {"Host",                HI_HOST,              nullptr},
-        {"Connection",          HI_CONNECTION,        nullptr},
-        {"If-Modified-Since",   HI_IF_MODIFY_SINCE,   nullptr},
-        {"If-Unmodified-Since", HI_IF_UNMODIFY_SINCE, nullptr},
-        {"If-Match",            HI_IF_MATCH,          nullptr},
-        {"If-None-Match",       HI_IF_NON_MATCH,      nullptr},
-        {"UserAgent",           HI_USERAGENT,         nullptr},
-        {"Referer",             HI_REFERENCE,         nullptr},
-        {"Content-Length",      HI_CONTENT_LENGTH,    nullptr},
-        {"Content-Range",       HI_CONTENT_RANGE,     nullptr},
-        {"Content-Type",        HI_CONTENT_TYPE,      nullptr},
-        {"Range",               HI_RANGE,             nullptr},
-        {"If-Range",            HI_IF_RANGE,          nullptr},
-        {"Transfer-Encoding",   HI_TRANSFER_ENCODING, nullptr},
-        {"TE",                  HI_TE,                nullptr},
-        {"Expect",              HI_EXPECT,            nullptr},
-        {"Upgrade",             HI_UPGRADE,           nullptr},
-        {"Accept-Encoding",     HI_ACCEPT_ENCODING,   nullptr},
-        {"Via",                 HI_VIA,               nullptr},
-        {"Authorization",       HI_AUTHORIZATION,     nullptr},
-        {"Keep-Alive",          HI_KEEPALIVE,         nullptr},
-        {"X-Forward-For",       HI_X_FORWARD_FOR,     nullptr},
-        {"X-Real-IP",           HI_X_REAL_IP,         nullptr},
-        {"Accept",              HI_ACCEPT,            nullptr},
-        {"Accept-Language",     HI_ACCEPT_LANGUAGE,   nullptr},
-        {"Depth",               HI_DEPTH,             nullptr},
-        {"Destination",         HI_DESTINATION,       nullptr},
-        {"Overwrite",           HI_OVERWRITE,         nullptr},
-        {"Date",                HI_DATE,              nullptr},
-        {"Cookie",              HI_COOKIE,            nullptr},
-        {nullptr,               HI_COMMON,            nullptr},
-};
+//HTTPCoreHeader HTTPRequest::HeaderInProcesses[] = {
+//        {"Host",                HI_HOST,              nullptr},
+//        {"Connection",          HI_CONNECTION,        nullptr},
+//        {"If-Modified-Since",   HI_IF_MODIFY_SINCE,   nullptr},
+//        {"If-Unmodified-Since", HI_IF_UNMODIFY_SINCE, nullptr},
+//        {"If-Match",            HI_IF_MATCH,          nullptr},
+//        {"If-None-Match",       HI_IF_NON_MATCH,      nullptr},
+//        {"UserAgent",           HI_USERAGENT,         nullptr},
+//        {"Referer",             HI_REFERENCE,         nullptr},
+//        {"Content-Length",      HI_CONTENT_LENGTH,    nullptr},
+//        {"Content-Range",       HI_CONTENT_RANGE,     nullptr},
+//        {"Content-Type",        HI_CONTENT_TYPE,      nullptr},
+//        {"Range",               HI_RANGE,             nullptr},
+//        {"If-Range",            HI_IF_RANGE,          nullptr},
+//        {"Transfer-Encoding",   HI_TRANSFER_ENCODING, nullptr},
+//        {"TE",                  HI_TE,                nullptr},
+//        {"Expect",              HI_EXPECT,            nullptr},
+//        {"Upgrade",             HI_UPGRADE,           nullptr},
+//        {"Accept-Encoding",     HI_ACCEPT_ENCODING,   nullptr},
+//        {"Via",                 HI_VIA,               nullptr},
+//        {"Authorization",       HI_AUTHORIZATION,     nullptr},
+//        {"Keep-Alive",          HI_KEEPALIVE,         nullptr},
+//        {"X-Forward-For",       HI_X_FORWARD_FOR,     nullptr},
+//        {"X-Real-IP",           HI_X_REAL_IP,         nullptr},
+//        {"Accept",              HI_ACCEPT,            nullptr},
+//        {"Accept-Language",     HI_ACCEPT_LANGUAGE,   nullptr},
+//        {"Depth",               HI_DEPTH,             nullptr},
+//        {"Destination",         HI_DESTINATION,       nullptr},
+//        {"Overwrite",           HI_OVERWRITE,         nullptr},
+//        {"Date",                HI_DATE,              nullptr},
+//        {"Cookie",              HI_COOKIE,            nullptr},
+//        {nullptr,               HI_COMMON,            nullptr},
+//};
 
 static Dictionary HeaderInDictionary;
 
-HTTPError HTTPRequest::ParseMethod(WritableMemoryBuffer &B, HTTPRequest &R) {
+HTTPError HTTPRequest::parseMethod(WritableMemoryBuffer &B) {
     for(auto C : B) {
         if(C==CR || C == LF) continue;
         if ((C<'A'||C>'Z') && C!='_' && C!='-')
@@ -61,39 +61,39 @@ HTTPError HTTPRequest::ParseMethod(WritableMemoryBuffer &B, HTTPRequest &R) {
     if (B.size() < 5)
         return {EAGAIN, BrokenRequestErrorString};
     else if (it[3]==' ') {
-        if (it[0] == 'G' && it[1] == 'E' && it[2] == 'T') R.Method=GET;
-        else if (it[0] == 'P' && it[1] == 'U' && it[2] == 'T') R.Method=PUT;
+        if (it[0] == 'G' && it[1] == 'E' && it[2] == 'T') Method=GET;
+        else if (it[0] == 'P' && it[1] == 'U' && it[2] == 'T') Method=PUT;
         else return {EINVAL, BadMethodErrorString};
-        R.MethodStr={it, 3};
+        MethodStr={it, 3};
     } else if (B.size()>5 && it[4]==' ') {
         if (it[1] == 'O') {
-            if (it[0]=='P' && it[2]=='S' && it[3]=='T') R.Method=POST;
-            else if (it[0]=='C' && it[2]=='P' && it[3]=='Y') R.Method=COPY;
-            else if (it[0]=='M' && it[2]=='V' && it[3]=='E') R.Method=MOVE;
-            else if (it[0]=='L' && it[2]=='C' && it[3] == 'K') R.Method=LOCK;
+            if (it[0]=='P' && it[2]=='S' && it[3]=='T') Method=POST;
+            else if (it[0]=='C' && it[2]=='P' && it[3]=='Y') Method=COPY;
+            else if (it[0]=='M' && it[2]=='V' && it[3]=='E') Method=MOVE;
+            else if (it[0]=='L' && it[2]=='C' && it[3] == 'K') Method=LOCK;
         }
-        else if (it[0]=='H' && it[1]=='E' && it[2]=='A' && it[3]=='D') R.Method=HEAD;
+        else if (it[0]=='H' && it[1]=='E' && it[2]=='A' && it[3]=='D') Method=HEAD;
         else return {EFAULT, InvalidMethodErrorString};
-        R.MethodStr={it, 4};
+        MethodStr={it, 4};
     } else if (B.size()>6 && it[5]==' ') {
-        if (it[0]=='M' && it[1]=='K' && it[2]=='C' && it[3]=='O' && it[4]=='L') R.Method=MKCOL;
-        else if (it[0]=='P' && it[1]=='A' && it[2]=='T' && it[3]=='C' && it[4]=='H') R.Method=PATCH;
-        else if (it[0]=='T' && it[1]=='R' && it[2]=='A' && it[3]=='C' && it[4]=='E') R.Method=TRACE;
+        if (it[0]=='M' && it[1]=='K' && it[2]=='C' && it[3]=='O' && it[4]=='L') Method=MKCOL;
+        else if (it[0]=='P' && it[1]=='A' && it[2]=='T' && it[3]=='C' && it[4]=='H') Method=PATCH;
+        else if (it[0]=='T' && it[1]=='R' && it[2]=='A' && it[3]=='C' && it[4]=='E') Method=TRACE;
         else return {EFAULT, InvalidMethodErrorString};
-        R.MethodStr={it, 5};
+        MethodStr={it, 5};
     } else if (B.size()>7 && it[6]==' ') {
-        if (it[0]=='D' && it[1]=='E' && it[2]=='L' && it[3]=='E' && it[4]=='T' && it[5]=='E') R.Method=DELETE;
-        else if (it[0]=='U' && it[1]=='N' && it[2]=='L' && it[3]=='O' && it[4]=='C' && it[5]=='K') R.Method=UNLOCK;
+        if (it[0]=='D' && it[1]=='E' && it[2]=='L' && it[3]=='E' && it[4]=='T' && it[5]=='E') Method=DELETE;
+        else if (it[0]=='U' && it[1]=='N' && it[2]=='L' && it[3]=='O' && it[4]=='C' && it[5]=='K') Method=UNLOCK;
         else return {EFAULT, InvalidMethodErrorString};
-        R.MethodStr={it, 6};
-    } else if (B.size()>8 && it[7]==' ' && strncmp(reinterpret_cast<char *>(it), "OPTIONS", 7) == 0) R.Method=OPTIONS, R.MethodStr={it, 7};
-    else if (B.size()>9 && it[8]==' ' && strncmp(reinterpret_cast<char *>(it), "PROPFIND", 8) == 0) R.Method=PROPFIND, R.MethodStr={it, 8};
-    else if (B.size()>10 && it[9]==' ' && strncmp(reinterpret_cast<char *>(it), "PROPPATCH", 9) == 0) R.Method=PROPFIND, R.MethodStr={it, 9};
+        MethodStr={it, 6};
+    } else if (B.size()>8 && it[7]==' ' && strncmp(reinterpret_cast<char *>(it), "OPTIONS", 7) == 0) Method=OPTIONS, MethodStr={it, 7};
+    else if (B.size()>9 && it[8]==' ' && strncmp(reinterpret_cast<char *>(it), "PROPFIND", 8) == 0) Method=PROPFIND, MethodStr={it, 8};
+    else if (B.size()>10 && it[9]==' ' && strncmp(reinterpret_cast<char *>(it), "PROPPATCH", 9) == 0) Method=PROPFIND, MethodStr={it, 9};
     else return {EFAULT, InvalidMethodErrorString};
     return {0};
 }
 
-HTTPError HTTPRequest::ParseRequestLine(WritableMemoryBuffer &B, HTTPRequest &R) {
+HTTPError HTTPRequest::parseRequestLine(WritableMemoryBuffer &B) {
     enum HTTPRequestLineParseState {
         RL_SPACEBEFOREURI = 0,
         RL_SCHEMA,
@@ -121,10 +121,10 @@ HTTPError HTTPRequest::ParseRequestLine(WritableMemoryBuffer &B, HTTPRequest &R)
         RL_SPACEAFTERDIGIT,
         RL_ALMOSTDONE
     } RequestLineState = RL_SPACEBEFOREURI;
-    if (R.MethodStr.size()<3) return {EINVAL, InvalidMethodErrorString};
+    if (MethodStr.size()<3) return {EINVAL, InvalidMethodErrorString};
     u_char C1;
     u_short HTTPMajor = 0, HTTPMinor = 0;
-    auto it=B.begin()+R.MethodStr.size();
+    auto it=B.begin()+MethodStr.size();
     auto ArgumentStart=it;
     auto RequestLineStart=B.begin(), RequestLineEnd=it;
     auto SchemeStart=it, SchemeEnd=it;
@@ -200,6 +200,7 @@ HTTPError HTTPRequest::ParseRequestLine(WritableMemoryBuffer &B, HTTPRequest &R)
                 HostEnd=it;
                 switch (*it) {
                     case ':':
+                        PortStart=it+1;
                         RequestLineState = RL_PORT;
                         break;
                     case '/':
@@ -248,11 +249,11 @@ HTTPError HTTPRequest::ParseRequestLine(WritableMemoryBuffer &B, HTTPRequest &R)
                 if (*it>='0' && *it<='9') break;
                 switch (*it) {
                     case '/':
-                        PortStart=URIStart=it;
+                        PortEnd=URIStart=it;
                         RequestLineState = RL_AFTERSLASHINURI;
                         break;
                     case ' ':
-                        R.Port={PortStart, (size_t)(it-PortStart)};
+                        PortEnd=it;
                         URIStart=it+1, URIEnd=it+2;
                         RequestLineState = RL_HOSTHTTP09;
                         break;
@@ -291,25 +292,25 @@ HTTPError HTTPRequest::ParseRequestLine(WritableMemoryBuffer &B, HTTPRequest &R)
                         RequestLineState = RL_CHECKURIHTTP09;
                         break;
                     case CR:
-                        URIEnd=it;
+                        URIEnd=it-1;
                         HTTPMinor = 9;
                         RequestLineState = RL_ALMOSTDONE;
                         break;
                     case LF:
-                        URIEnd=it;
+                        URIEnd=it-2;
                         HTTPMinor = 9;
                         RequestLineEnd=it;
                         goto done;
                     case '.':
-                        R.ComplexURI = 1;
+                        ComplexURI = 1;
                         RequestLineState = RL_URI;
                         break;
                     case '%':
-                        R.QuotedURI = 1;
+                        QuotedURI = 1;
                         RequestLineState = RL_URI;
                         break;
                     case '/':
-                        R.ComplexURI = 1;
+                        ComplexURI = 1;
                         RequestLineState = RL_URI;
                         break;
                     case '\\':
@@ -325,17 +326,66 @@ HTTPError HTTPRequest::ParseRequestLine(WritableMemoryBuffer &B, HTTPRequest &R)
                         RequestLineState = RL_URI;
                         break;
                     case '#':
-                        R.ComplexURI = 1;
+                        ComplexURI = 1;
                         RequestLineState = RL_URI;
                         break;
                     case '+':
-                        R.PlusInURI = 1;
+                        PlusInURI = 1;
                         break;
                     case '\0':
                         return {EFAULT, BadRequestErrorString};
                     default:
                         RequestLineState = RL_CHECKURI;
                         break;
+                }
+                break;
+            case RL_CHECKURI:
+                if (usual[*it>>5]&(1U<<(*it&0x1F))) break;
+                switch (*it) {
+                    case '/':
+                        RequestLineState = RL_AFTERSLASHINURI;
+                        break;
+                    case '.':
+                        break;
+                    case ' ':
+                        URIEnd = it;
+                        RequestLineState = RL_CHECKURIHTTP09;
+                        break;
+                    case CR:
+                        URIEnd = it;
+                        HTTPMinor = 9;
+                        RequestLineState = RL_ALMOSTDONE;
+                        break;
+                    case LF:
+                        URIEnd = it;
+                        HTTPMinor = 9;
+                        goto done;
+                    case '\\':
+#if 0
+                        if (false) {
+                            ComplexURI = 1;
+                            RequestLineState = RL_AfterSlashInURI;
+                        }
+#endif
+                        break;
+                    case '%':
+                        QuotedURI = 1;
+                        RequestLineState = RL_URI;
+                        break;
+                    case '?':
+                        ArgumentStart = it+1;
+                        RequestLineState = RL_URI;
+                        break;
+                    case '#':
+                        ComplexURI = 1;
+                        RequestLineState = RL_URI;
+                        break;
+                    case '+':
+                        PlusInURI = 1;
+                        break;
+                    case '\0':
+                    default:
+                        return {EFAULT, BadRequestErrorString};
                 }
                 break;
             case RL_CHECKURIHTTP09:
@@ -355,7 +405,7 @@ HTTPError HTTPRequest::ParseRequestLine(WritableMemoryBuffer &B, HTTPRequest &R)
                         RequestLineState = RL_HTTP_H;
                         break;
                     default:
-                        R.SpaceInURI = 1;
+                        SpaceInURI = 1;
                         RequestLineState = RL_CHECKURI;
                         it-=1;
                         break;
@@ -378,7 +428,10 @@ HTTPError HTTPRequest::ParseRequestLine(WritableMemoryBuffer &B, HTTPRequest &R)
                         RequestLineEnd=it;
                         goto done;
                     case '#':
-                        R.ComplexURI = 1;
+                        ComplexURI = 1;
+                        break;
+                    case '?':
+                        ArgumentStart=it+1;
                         break;
                     case '\0':
                         return {EFAULT, BadRequestErrorString};
@@ -401,7 +454,7 @@ HTTPError HTTPRequest::ParseRequestLine(WritableMemoryBuffer &B, HTTPRequest &R)
                         RequestLineState = RL_HTTP_H;
                         break;
                     default:
-                        R.SpaceInURI = 1;
+                        SpaceInURI = 1;
                         RequestLineState = RL_URI;
                         it--;
                         break;
@@ -468,14 +521,15 @@ HTTPError HTTPRequest::ParseRequestLine(WritableMemoryBuffer &B, HTTPRequest &R)
                     return {EFAULT, BadRequestErrorString};
                 HTTPMinor = *it-'0';
                 RequestLineState = RL_MINORDIGIT;
-                HTTPEnd=it+1;
                 break;
             case RL_MINORDIGIT:
                 if (*it==CR) {
+                    HTTPEnd=it;
                     RequestLineState = RL_ALMOSTDONE;
                     break;
                 }
                 if (*it==LF) {
+                    HTTPEnd=it-1;
                     RequestLineEnd=it;
                     goto done;
                 }
@@ -512,7 +566,6 @@ HTTPError HTTPRequest::ParseRequestLine(WritableMemoryBuffer &B, HTTPRequest &R)
                     default:
                         return {EFAULT, BadRequestErrorString};
                 }
-                break;
         }
     }
     return {EAGAIN, BrokenRequestErrorString};
@@ -521,21 +574,21 @@ done:
         return {EAGAIN, BrokenRequestErrorString};
     if(RequestLineEnd<RequestLineStart)
         return {EFAULT, BadRequestErrorString};
-    R.RequestLine={RequestLineStart, (size_t)(RequestLineEnd-RequestLineStart)};
+    RequestLine={RequestLineStart, (size_t)(RequestLineEnd-RequestLineStart)};
     if(SchemeEnd>=SchemeStart)
-        R.Schema={SchemeStart, (size_t)(SchemeEnd-SchemeStart)};
+        Scheme={SchemeStart, (size_t)(SchemeEnd-SchemeStart)};
     if (HostEnd>=HostStart)
-        R.Host={HostStart, (size_t)(HostEnd-HostStart)};
+        Host={HostStart, (size_t)(HostEnd-HostStart)};
     if (PortEnd>=PortStart)
-        R.Port={PortStart, (size_t)(PortEnd-PortStart)};
+        Port={PortStart, (size_t)(PortEnd-PortStart)};
     if (HTTPEnd>=HTTPStart)
-        R.HTTPProtocol={HTTPStart, (size_t)(HTTPEnd-HTTPStart)};
+        Protocol={HTTPStart, (size_t)(HTTPEnd-HTTPStart)};
     if (URIEnd>=URIStart)
-        R.URI={URIStart, (size_t)(URIEnd-URIStart)};
+        URI={URIStart, (size_t)(URIEnd-URIStart)};
     if (URIEnd>=ArgumentStart && ArgumentStart>URIStart)
-        R.Argument={ArgumentStart, (size_t)(URIEnd-ArgumentStart)};
-    R.Version = HTTPMajor * 1000 + HTTPMinor;
-    if (R.Version == 9 && R.Method != GET)
+        Argument={ArgumentStart, (size_t)(URIEnd-ArgumentStart)};
+    Version = HTTPMajor * 1000 + HTTPMinor;
+    if (Version == 9 && Method != GET)
         return {EFAULT, BadVersionErrorString};
     return {0};
 }
@@ -587,130 +640,127 @@ done:
 //    return Error;
 //}
 //
-//HTTPError HTTPRequest::ParseRequestURI(Buffer *B, HTTPRequest &R) {
-//    enum URIParseState {
-//        URI_START = 0,
-//        URI_AFTER_SLASH_IN_URI,
-//        URI_CHECK_URI,
-//        URI_URI
-//    };
-//    BoundCursor BC = R.URI;
-//    URIParseState State = URI_START;
-//    for (u_char C, C1; C = *BC, !!BC; BC++) {
-//        switch (State) {
-//            case URI_START:
-//                if (C != '/') {
-//                    return {EINVAL, BadURIErrorString};
-//                }
-//                State = URI_AFTER_SLASH_IN_URI;
-//                break;
-//            case URI_AFTER_SLASH_IN_URI:
-//                if (usual[C >> 5] & (1U << (C & 0x1F))) {
-//                    State = URI_CHECK_URI;
-//                    break;
-//                }
-//                switch (C) {
-//                    case ' ':
-//                        R.SpaceInURI = 1;
-//                        State = URI_CHECK_URI;
-//                        break;
-//                    case '.':
-//                        R.ComplexURI = 1;
-//                        State = URI_URI;
-//                        break;
-//                    case '%':
-//                        R.QuotedURI = 1;
-//                        State = URI_URI;
-//                        break;
-//                    case '/':
-//                        R.ComplexURI = 1;
-//                        State = URI_URI;
-//                        break;
-//#if 0
-//                    case '\\':
-//                        R.ComplexURI = 1;
-//                        State = URI_URI;
-//                        break;
-//#endif
-//                    case '?':
-//                        R.Argument = BC + 1;
-//                        State = URI_URI;
-//                        break;
-//                    case '#':
-//                        R.ComplexURI = 1;
-//                        State = URI_URI;
-//                        break;
-//                    case '+':
-//                        R.PlusInURI = 1;
-//                        break;
-//                    default:
-//                        State = URI_CHECK_URI;
-//                        break;
-//                }
-//                break;
-//            case URI_CHECK_URI:
-//                if (usual[C >> 5] & (1U << (C & 0x1F))) {
-//                    break;
-//                }
-//                switch (C) {
-//                    case '/':
-//#if 0
-//                        if ( R.URIExt == BC) {
-//                            R.ComplexURI = 1;
-//                            State = URI_URI;
-//                            break;
-//                        }
-//#endif
-//                        R.URIExt.Position = nullptr;
-//                        State = URI_AFTER_SLASH_IN_URI;
-//                        break;
-//                    case '.':
-//                        R.URIExt = BC + 1;
-//                        break;
-//                    case ' ':
-//                        R.SpaceInURI = 1;
-//                        break;
-//#if 0
-//                    case '\\':
-//                        R.ComplexURI = 1;
-//                        State = URI_AFTER_SLASH_IN_URI;
-//                        break;
-//#endif
-//                    case '%':
-//                        R.QuotedURI = 1;
-//                        State = URI_URI;
-//                        break;
-//                    case '?':
-//                        R.Argument = BC + 1;
-//                        State = URI_URI;
-//                        break;
-//                    case '#':
-//                        R.ComplexURI = 1;
-//                        State = URI_URI;
-//                        break;
-//                    case '+':
-//                        R.PlusInURI = 1;
-//                        break;
-//                }
-//                break;
-//            case URI_URI:
-//                if (usual[C >> 5] & (1U << (C << 0x1F))) {
-//                    break;
-//                }
-//                switch (C) {
-//                    case ' ':
-//                        R.SpaceInURI = 1;
-//                        break;
-//                    case '#':
-//                        R.ComplexURI = 1;
-//                        break;
-//                }
-//                break;
-//        }
-//    }
-//    return {0};
-//}
-//
+HTTPError HTTPRequest::parseRequestURI(StringRef &S) {
+    enum URIParseState {
+        URI_START = 0,
+        URI_AFTER_SLASH_IN_URI,
+        URI_CHECK_URI,
+        URI_URI
+    };
+    auto I = S.begin();
+    auto URIStart=I, ArgumentStart=I;
+    URIParseState State = URI_START;
+    for (; I!=S.end(); I++) {
+        switch (State) {
+            case URI_START:
+                if (*I != '/') return {EINVAL, BadURIErrorString};
+                State = URI_AFTER_SLASH_IN_URI;
+                break;
+            case URI_AFTER_SLASH_IN_URI:
+                if (usual[*I>>5] & (1U << (*I&0x1F))) {
+                    State = URI_CHECK_URI;
+                    break;
+                }
+                switch (*I) {
+                    case ' ':
+                        SpaceInURI = 1;
+                        State = URI_CHECK_URI;
+                        break;
+                    case '.':
+                        ComplexURI = 1;
+                        State = URI_URI;
+                        break;
+                    case '%':
+                        QuotedURI = 1;
+                        State = URI_URI;
+                        break;
+                    case '/':
+                        ComplexURI = 1;
+                        State = URI_URI;
+                        break;
+#if 0
+                    case '\\':
+                        R.ComplexURI = 1;
+                        State = URI_URI;
+                        break;
+#endif
+                    case '?':
+                        ArgumentStart=(I)+1;
+                        State = URI_URI;
+                        break;
+                    case '#':
+                        ComplexURI = 1;
+                        State = URI_URI;
+                        break;
+                    case '+':
+                        PlusInURI = 1;
+                        break;
+                    default:
+                        State = URI_CHECK_URI;
+                        break;
+                }
+                break;
+            case URI_CHECK_URI:
+                if (usual[*I>>5] & (1U<<(*I&0x1F))) break;
+                switch (*I) {
+                    case '/':
+#if 0
+                        if ( R.URIExt == BC) {
+                            R.ComplexURI=1;
+                            State=URI_URI;
+                            break;
+                        }
+#endif
+                        State = URI_AFTER_SLASH_IN_URI;
+                        break;
+                    case '.':
+                        break;
+                    case ' ':
+                        SpaceInURI = 1;
+                        break;
+#if 0
+                    case '\\':
+                        R.ComplexURI = 1;
+                        State = URI_AFTER_SLASH_IN_URI;
+                        break;
+#endif
+                    case '%':
+                        QuotedURI = 1;
+                        State = URI_URI;
+                        break;
+                    case '?':
+                        ArgumentStart=I+1;
+                        State = URI_URI;
+                        break;
+                    case '#':
+                        ComplexURI = 1;
+                        State = URI_URI;
+                        break;
+                    case '+':
+                        PlusInURI = 1;
+                        break;
+                }
+                break;
+            case URI_URI:
+                if (usual[*I>>5] & (1U<<(*I<<0x1F))) break;
+                switch (*I) {
+                    case ' ':
+                        SpaceInURI=1;
+                        break;
+                    case '#':
+                        ComplexURI=1;
+                        break;
+                }
+                break;
+        }
+    }
+    if (URIStart>S.begin())
+        URI={const_cast<Byte *>(URIStart), (size_t)(I-URIStart)};
+    if (ArgumentStart>S.begin())
+        URI={const_cast<Byte *>(ArgumentStart), (size_t)(I-ArgumentStart)};
+    return {0};
+}
+
 //HTTPError HTTPRequest::HeaderInFillVariable(HTTPCoreHeader &C, HTTPRequest &R, HTTPHeader &H) {
 //    switch (C.GetType()) {
 //        case HI_HOST:

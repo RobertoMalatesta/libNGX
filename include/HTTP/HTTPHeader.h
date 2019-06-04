@@ -4,24 +4,23 @@
 #include "Core/Support/BoundCursor.h"
 #include "Core/Support/Buffer.h"
 #include "HTTP/common_header.h"
+#include "HTTP/HTTPCoreHeader.h"
 
 namespace ngx {
-    namespace HTTP {
-        using namespace ngx::Core::Support;
+namespace HTTP {
+using namespace ngx::Core::Support;
+typedef HTTPError (HTTPHeaderProcess)(HTTPCoreHeader &, HTTPRequest &, HTTPHeader &H);
+struct HTTPHeader {
+    BoundCursor Name;
+    BoundCursor Value;
+    bool Valid;
 
-        typedef HTTPError (HTTPHeaderProcess)(HTTPCoreHeader &, HTTPRequest &, HTTPHeader &H);
+    HTTPHeader() : Name(), Value(), Valid(true) {}
 
-        struct HTTPHeader {
-            BoundCursor Name;
-            BoundCursor Value;
-            bool Valid;
+    HTTPError Read(Buffer &B, bool AllowUnderscore);
 
-            HTTPHeader() : Name(), Value(), Valid(true) {}
-
-            HTTPError Read(Buffer &B, bool AllowUnderscore);
-
-            HTTPError Write(Buffer &B);
-        };
-    } //    HTTP
+    HTTPError Write(Buffer &B);
+};
+} //    HTTP
 }   // ngx
 #endif

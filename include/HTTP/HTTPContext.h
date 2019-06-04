@@ -2,6 +2,7 @@
 #define LIBNGX_HTTP_CONTEXT
 
 #include "HTTP/common_header.h"
+#include "HTTP/HTTPComponent.h"
 
 namespace ngx {
     namespace HTTP {

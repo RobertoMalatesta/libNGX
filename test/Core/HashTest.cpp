@@ -1,18 +1,11 @@
-#include "Core/Core.h"
-
+#include "Core/Support/Hash.h"
+#include <iostream>
+#include <gtest/gtest.h>
 using namespace std;
 using namespace ngx::Core::Support;
 
-int HashTest() {
-
+TEST(Support, HashTest) {
     u_char test_case[] = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-    uint32_t hash;
-
-    for (int i = 2; i < sizeof(test_case); i++) {
-        hash = 0 ^ (i - 1);
-        murmur_hash2(test_case, (size_t) i - 1, hash);
-        printf("%08X\n", hash);
-    }
-    return 0;
+    StringRef s(test_case, sizeof(test_case)-1);
+    cout<< murmurhash2(s, false) << endl;
 }

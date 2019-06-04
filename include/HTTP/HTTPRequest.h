@@ -53,14 +53,12 @@ public:
     StringRef RequestLine;
     // URI http URI index
     StringRef URI;
-    // Postfix of HTTP URI Entity
-    StringRef URIExt;
     // HTTP Protocol Version eg: HTTP/1.1
-    StringRef HTTPProtocol;
+    StringRef Protocol;
     // Pointer to request line argument
     StringRef Argument;
     // Schema Proxy Schema?
-    StringRef Schema;
+    StringRef Scheme;
     // Proxy Host
     StringRef Host;
     // Proxy IP
@@ -72,7 +70,7 @@ public:
     // HTTPRequest Parse State
     HTTPRequestState State = HTTP_INIT;
     // HTTP Version
-    unsigned short Version{};
+    unsigned short Version;
     // HTTP URI Flags
     struct {
         unsigned ComplexURI:1;
@@ -127,13 +125,13 @@ public:
     // Cookies extracted from Cookie Header
     SmallVector<StringRef, 16> Cookies;
     /** Parse HTTP Method from Buffer into HTTPRequest */
-    static HTTPError ParseMethod(WritableMemoryBuffer &B, HTTPRequest &R);
+    HTTPError parseMethod(WritableMemoryBuffer &B);
     /** Parse HTTP Request Line from Buffer into HTTPRequest */
-    static HTTPError ParseRequestLine(WritableMemoryBuffer &B, HTTPRequest &R);
+    HTTPError parseRequestLine(WritableMemoryBuffer &B);
     /** Parse HTTP Header In through ParseHeader, and do some process */
-    static HTTPError ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderScore = ALLOW_UNDERSCORE);
+    HTTPError parseRequestHeaders(WritableMemoryBuffer &B, bool AllowUnderScore = ALLOW_UNDERSCORE);
     /** Identify Request URI and set related flags */
-    static HTTPError ParseRequestURI(Buffer *B, HTTPRequest &R);
+    HTTPError parseRequestURI(StringRef &S);
     /** Fill HTTP Core Header into HTTP Request */
     static HTTPError HeaderInFillVariable(HTTPCoreHeader &C, HTTPRequest &R, HTTPHeader &H);
     static HTTPCoreHeader HeaderInProcesses[];
