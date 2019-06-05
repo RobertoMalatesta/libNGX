@@ -8,9 +8,9 @@ using namespace ngx::HTTP;
 const char BadResponseLineErrorString[] = "bad response line error";
 const char BrokenResponseLineErrorString[] = "broken response line error";
 
-HTTPCoreHeader HTTPResponse::HeaderOutProcesses[] = {
-        {nullptr, HI_COMMON, nullptr},
-};
+//HTTPCoreHeader HTTPResponse::HeaderOutProcesses[] = {
+//        {nullptr, HI_COMMON, nullptr},
+//};
 
 HTTPError HTTPResponse::ParseResponseLine(Buffer &B, HTTPResponse &R) {
 

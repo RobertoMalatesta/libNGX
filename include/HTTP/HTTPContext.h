@@ -1,9 +1,8 @@
+#include "HTTP/common_header.h"
+#include "HTTP/HTTPConnection.h"
+#include "HTTP/HTTPComponent.h"
 #ifndef LIBNGX_HTTP_CONTEXT
 #define LIBNGX_HTTP_CONTEXT
-
-#include "HTTP/common_header.h"
-#include "HTTP/HTTPComponent.h"
-
 namespace ngx {
     namespace HTTP {
         using namespace ngx::Core;
@@ -29,9 +28,9 @@ namespace ngx {
 //          environment variables
             std::map<std::string, std::string> env;
 //          backend components
-            std::map<int, Component> components;
+//            std::map<int, Component> components;
 //          current request mux
-            std::unique_ptr<Component> mux;
+//            std::unique_ptr<Component> mux;
 
 //          Performance Mointor
 //          eventLoop() process count

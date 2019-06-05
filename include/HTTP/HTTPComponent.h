@@ -4,7 +4,7 @@
 #include <string>
 #include "HTTP/HTTPConnection.h"
 #include "HTTP/HTTPRequest.h"
-
+#include "HTTP/HTTPResponse.h"
 namespace ngx{
     namespace HTTP {
         typedef void *(*loadComponentFn)();

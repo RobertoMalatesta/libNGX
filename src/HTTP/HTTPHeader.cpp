@@ -4,13 +4,10 @@
 
 using namespace std;
 using namespace ngx::HTTP;
-
 const char BrokenHeaderErrorString[] = "Broken Header in buffer";
 const char NoMoreHeaderErrorString[] = "No more header";
 const char InvalidHeaderErrorString[] = "Invalid Header";
-
-HTTPError HTTPHeader::Read(Buffer &B, bool AllowUnderscore) {
-
+HTTPError HTTPHeader::parse(ngx::Core::Support::MemoryBuffer &B, size_t &Off, bool Underscore) {
     enum HTTPHeaderParseState {
         HDR_START = 0,
         HDR_NAME,
@@ -20,180 +17,106 @@ HTTPError HTTPHeader::Read(Buffer &B, bool AllowUnderscore) {
         HDR_IGNORE_LINE,
         HDR_ALMOST_DONE,
         HDR_HEADER_ALMOST_DONE
-    };
-
-    bool NoMoreHeader = false;
-
-    BoundCursor BC;
-    HTTPHeaderParseState State = HDR_START;
-
-    B >> BC;
-
-    for (u_char C, C1; C = *BC, !!BC; BC++) {
-
+    } State = HDR_START;
+    char C1;
+    auto it=B.begin()+Off;
+    auto HeaderStart=it, HeaderEnd=it;
+    auto ValueStart=it, ValueEnd=it;
+    for(; it!=B.end(); it++) {
         switch (State) {
             case HDR_START:
-
-                Value < BC, Name < BC;
-                Valid = true;
-
-                switch (C) {
+                HeaderStart=ValueStart=it;
+                switch (*it) {
                     case CR:
-                        Value > BC;
+                        ValueEnd=it;
                         State = HDR_HEADER_ALMOST_DONE;
+                        return {ENOENT, NoMoreHeaderErrorString};
                         break;
                     case LF:
-                        Value > BC;
-                        NoMoreHeader = true;
+                        ValueEnd=it;
                         goto done;
-                        break;
                     default:
                         State = HDR_NAME;
-                        C1 = lower_case[C];
-
-                        if (C1) {
-                            break;
+                        C1 = lower_case[*it];
+                        if (C1) break;
+                        if (*it=='_') {
+                            if (Underscore) break;
                         }
-
-                        if (C == '_') {
-                            if (AllowUnderscore) {
-                                break;
-                            } else {
-                                Valid = false;
-                            }
-                            break;
-                        }
-
-                        if (C == '\0') {
-                            return {EINVAL, InvalidHeaderErrorString};
-                        }
-
-                        Valid = false;
-                        break;
+                        return {EINVAL, InvalidHeaderErrorString};
                 }
-
                 break;
-
             case HDR_NAME:
-
-                C1 = lower_case[C];
-
+                C1 = lower_case[*it];
                 if (C1) {
                     break;
                 }
-
-                if (C == '_') {
-
-                    if (AllowUnderscore) {
+                if (*it=='_') {
+                    if (Underscore) {
                         break;
-                    } else {
-                        Valid = false;
-
                     }
-                    break;
-
+                    return {EINVAL, InvalidHeaderErrorString};
                 }
-
-                if (C == ':') {
-
-                    Name > BC;
+                if (*it==':') {
+                    HeaderEnd = it;
                     State = HDR_SPACE_BEFORE_VALUE;
-
                     break;
                 }
-
-                if (C == CR) {
-
-                    Name > BC;
-                    Value < BC;
-                    Value > BC;
+                if (*it==CR) {
+                    HeaderEnd = ValueStart = ValueEnd = it;
                     State = HDR_ALMOST_DONE;
-
                     break;
                 }
-
-                if (C == LF) {
-
-                    Name > BC;
-                    Value < BC;
-                    Value > BC;
-
+                if (*it==LF) {
+                    HeaderEnd = ValueStart = ValueEnd = it;
                     goto done;
                 }
-
-                if (C == '/') {
-
-                    if (Name.CmpBytes((u_char *) "HTTP", 4)) {
+                if (*it=='/') {
+                    if (strncmp(reinterpret_cast<const char*>(HeaderStart), "HTTP", 4)) {
                         State = HDR_IGNORE_LINE;
                         break;
                     }
-
                 }
-
-                if (C == '\0') {
-                    return {EINVAL, InvalidHeaderErrorString};
-                }
-
-                Valid = false;
-                break;
-
+                return {EINVAL, InvalidHeaderErrorString};
             case HDR_SPACE_BEFORE_VALUE:
-
-                switch (C) {
-                    case ' ':
-                        break;
+                switch (*it) {
+                    case ' ': break;
                     case CR:
-                        Value < BC;
-                        Value > BC;
+                        ValueStart = ValueEnd = it;
                         State = HDR_ALMOST_DONE;
-
                         break;
                     case LF:
-                        Value < BC;
-                        Value > BC;
-
+                        ValueStart = ValueEnd = it;
                         goto done;
                     case '\0':
                         return {EINVAL, InvalidHeaderErrorString};
                     default:
-                        Value < BC;
+                        ValueStart=it;
                         State = HDR_VALUE;
-
                         break;
                 }
-
                 break;
             case HDR_VALUE:
-
-                switch (C) {
+                switch (*it) {
                     case ' ':
-                        Value > BC;
+                        ValueEnd=it;
                         State = HDR_SPACE_AFTER_VALUE;
-
                         break;
                     case CR:
-                        Value > BC;
+                        ValueEnd=it;
                         State = HDR_ALMOST_DONE;
-
                         break;
                     case LF:
-                        Value > BC;
-
+                        ValueEnd=it;
                         goto done;
                     case '\0':
                         return {EINVAL, InvalidHeaderErrorString};
                 }
-
                 break;
-
             case HDR_SPACE_AFTER_VALUE:
-
-                switch (C) {
-                    case ' ':
-                        break;
+                switch (*it) {
+                    case ' ': break;
                     case CR:
                         State = HDR_ALMOST_DONE;
-
                         break;
                     case LF:
                         goto done;
@@ -201,26 +124,20 @@ HTTPError HTTPHeader::Read(Buffer &B, bool AllowUnderscore) {
                         return {EINVAL, InvalidHeaderErrorString};
                     default:
                         State = HDR_VALUE;
-
                         break;
                 }
-
                 break;
-
             case HDR_IGNORE_LINE:
-
-                switch (C) {
+                switch (*it) {
                     case LF:
                         State = HDR_START;
                         break;
                     default:
                         break;
                 }
-
                 break;
             case HDR_ALMOST_DONE:
-
-                switch (C) {
+                switch (*it) {
                     case LF:
                         goto done;
                     case CR:
@@ -228,30 +145,27 @@ HTTPError HTTPHeader::Read(Buffer &B, bool AllowUnderscore) {
                     default:
                         return {EINVAL, InvalidHeaderErrorString};
                 }
-
                 break;
             case HDR_HEADER_ALMOST_DONE:
-
-                switch (C) {
+                switch (*it) {
                     case LF:
-                        NoMoreHeader = true;
-                        goto done;
+                        return {ENOENT, NoMoreHeaderErrorString};
                     default:
                         return {EINVAL, InvalidHeaderErrorString};
                 }
         }
     }
-
     return {EAGAIN, BrokenHeaderErrorString};
-
     done:
-
-    if (!(BC + 1)) {
-        return {EAGAIN, BrokenHeaderErrorString};
-    }
-
-    BC += 1;
-    B << BC;
-
-    return {NoMoreHeader ? ENOENT : 0, nullptr};
+    if (HeaderEnd <= HeaderStart)
+        return {EINVAL, InvalidHeaderErrorString};
+    Header={const_cast<Byte *>(HeaderStart), (size_t)(HeaderEnd-HeaderStart)};
+    if (ValueEnd <= ValueStart)
+        return {EINVAL, InvalidHeaderErrorString};
+    Header={const_cast<Byte *>(ValueStart), (size_t)(ValueEnd-ValueStart)};
+    Off = (size_t)(it-B.begin());
+    return {0};
 }
+
+
+

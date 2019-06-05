@@ -1,11 +1,9 @@
+#include "Core/Core.h"
 #ifndef NGX_HTTP_CONNECTION
 #define NGX_HTTP_CONNECTION
-
-#include "Core/Core.h"
-#include "HTTP/HTTPContext.h"
 namespace ngx {
     namespace HTTP {
-
+        class HTTPContext;
         using namespace ngx::Core::Support;
 
         class HTTPConnection : public TCPConnection {
