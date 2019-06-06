@@ -7,6 +7,8 @@ namespace ngx {
     namespace HTTP {
         using namespace ngx::Core;
         class HTTPContext {
+            rw_lock lock;
+            SmallVector<HTTPListen> listen;
 //          HTTP server context
 //          client header size
             size_t clientHeaderSize = 2 * KB;
@@ -24,13 +26,12 @@ namespace ngx {
             time_t keepaliveRequests = -1;
 //          event moudle
             std::string eventMoudle = "epoll";
-
 //          environment variables
             std::map<std::string, std::string> env;
 //          backend components
-//            std::map<int, Component> components;
+            std::map<int, Component> components;
 //          current request mux
-//            std::unique_ptr<Component> mux;
+            std::unique_ptr<Component> mux;
 
 //          Performance Mointor
 //          eventLoop() process count

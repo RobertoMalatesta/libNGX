@@ -1,4 +1,4 @@
-#include "Core/Core.h"
+#include "Core/Support/Support.h"
 #ifndef NGX_HTTP_CONNECTION
 #define NGX_HTTP_CONNECTION
 namespace ngx {

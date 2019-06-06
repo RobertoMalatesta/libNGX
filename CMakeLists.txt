@@ -29,7 +29,6 @@ set(SOURCE_FILES
         src/Core/Target/Linux/EPollEventDomain.cpp
         src/HTTP/HTTPError.cpp
         src/HTTP/HTTPHeader.cpp
-        src/HTTP/HTTPCoreHeader.cpp
         src/HTTP/HTTPRequest.cpp
         src/HTTP/HTTPResponse.cpp
         src/HTTP/HTTPListen.cpp

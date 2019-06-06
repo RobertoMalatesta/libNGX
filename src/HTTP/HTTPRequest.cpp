@@ -2,54 +2,15 @@
 #include "HTTP/HTTPHeader.h"
 #include "HTTP/HTTPRequest.h"
 #include "HTTP/HTTPCoreHeader.h"
-
 using namespace ngx::HTTP;
-
-const char BadURIErrorString[] = "Bad URI";
-const char BadMethodErrorString[] = "Bad Method";
-const char BadRequestErrorString[] = "Bad Request";
-const char BadVersionErrorString[] = "Bad HTTP Version";
-const char InvalidMethodErrorString[] = "Invalid Method";
-const char BrokenRequestErrorString[] = "Broken Request in buffer";
-const char NoMemoryErrorString[] = "No sufficient memory to store header indexer";
-const char BadCoreHeaderInErrorString[] = "Bad core header in";
-
-//HTTPCoreHeader HTTPRequest::HeaderInProcesses[] = {
-//        {"Host",                HI_HOST,              nullptr},
-//        {"Connection",          HI_CONNECTION,        nullptr},
-//        {"If-Modified-Since",   HI_IF_MODIFY_SINCE,   nullptr},
-//        {"If-Unmodified-Since", HI_IF_UNMODIFY_SINCE, nullptr},
-//        {"If-Match",            HI_IF_MATCH,          nullptr},
-//        {"If-None-Match",       HI_IF_NON_MATCH,      nullptr},
-//        {"UserAgent",           HI_USERAGENT,         nullptr},
-//        {"Referer",             HI_REFERENCE,         nullptr},
-//        {"Content-Length",      HI_CONTENT_LENGTH,    nullptr},
-//        {"Content-Range",       HI_CONTENT_RANGE,     nullptr},
-//        {"Content-Type",        HI_CONTENT_TYPE,      nullptr},
-//        {"Range",               HI_RANGE,             nullptr},
-//        {"If-Range",            HI_IF_RANGE,          nullptr},
-//        {"Transfer-Encoding",   HI_TRANSFER_ENCODING, nullptr},
-//        {"TE",                  HI_TE,                nullptr},
-//        {"Expect",              HI_EXPECT,            nullptr},
-//        {"Upgrade",             HI_UPGRADE,           nullptr},
-//        {"Accept-Encoding",     HI_ACCEPT_ENCODING,   nullptr},
-//        {"Via",                 HI_VIA,               nullptr},
-//        {"Authorization",       HI_AUTHORIZATION,     nullptr},
-//        {"Keep-Alive",          HI_KEEPALIVE,         nullptr},
-//        {"X-Forward-For",       HI_X_FORWARD_FOR,     nullptr},
-//        {"X-Real-IP",           HI_X_REAL_IP,         nullptr},
-//        {"Accept",              HI_ACCEPT,            nullptr},
-//        {"Accept-Language",     HI_ACCEPT_LANGUAGE,   nullptr},
-//        {"Depth",               HI_DEPTH,             nullptr},
-//        {"Destination",         HI_DESTINATION,       nullptr},
-//        {"Overwrite",           HI_OVERWRITE,         nullptr},
-//        {"Date",                HI_DATE,              nullptr},
-//        {"Cookie",              HI_COOKIE,            nullptr},
-//        {nullptr,               HI_COMMON,            nullptr},
-//};
-
-static Dictionary HeaderInDictionary;
-
+const char BadURIErrorString[] = "bad URI";
+const char BadMethodErrorString[] = "bad method";
+const char BadRequestErrorString[] = "bad request";
+const char BadVersionErrorString[] = "bad HTTP version";
+const char InvalidMethodErrorString[] = "invalid method";
+const char BrokenRequestErrorString[] = "broken request in buffer";
+const char NoMemoryErrorString[] = "no sufficient memory to store header indexer";
+const char BadHeaderErrorString[] = "bad header error";
 HTTPError HTTPRequest::parseMethod(WritableMemoryBuffer &B) {
     for(auto C : B) {
         if(C==CR || C == LF) continue;
@@ -88,7 +49,7 @@ HTTPError HTTPRequest::parseMethod(WritableMemoryBuffer &B) {
         MethodStr={it, 6};
     } else if (B.size()>8 && it[7]==' ' && strncmp(reinterpret_cast<char *>(it), "OPTIONS", 7) == 0) Method=OPTIONS, MethodStr={it, 7};
     else if (B.size()>9 && it[8]==' ' && strncmp(reinterpret_cast<char *>(it), "PROPFIND", 8) == 0) Method=PROPFIND, MethodStr={it, 8};
-    else if (B.size()>10 && it[9]==' ' && strncmp(reinterpret_cast<char *>(it), "PROPPATCH", 9) == 0) Method=PROPFIND, MethodStr={it, 9};
+    else if (B.size()>10 && it[9]==' ' && strncmp(reinterpret_cast<char *>(it), "PROPPATCH", 9) == 0) Method=PROPPATCH, MethodStr={it, 9};
     else return {EFAULT, InvalidMethodErrorString};
     return {0};
 }
@@ -132,7 +93,7 @@ HTTPError HTTPRequest::parseRequestLine(WritableMemoryBuffer &B) {
     auto PortStart=it, PortEnd=it;
     auto HTTPStart=it, HTTPEnd=it;
     auto URIStart=it, URIEnd=it;
-    for(; it!=B.end(); it++) {
+    for(; it!=B.end() && *it; it++) {
         switch (RequestLineState) {
             case RL_SPACEBEFOREURI:
                 if (*it=='/') {
@@ -194,7 +155,7 @@ HTTPError HTTPRequest::parseRequestLine(WritableMemoryBuffer &B) {
             case RL_HOST:
                 C1=reinterpret_cast<u_char >(*it)|0x20;
                 if (C1 >= 'a' && C1 <= 'z') break;
-                if ((C1 >= '0' && C1 <= '0') || C1 == '.' || C1 == '-') break;
+                if ((C1 >= '0' && C1 <= '9') || C1 == '.' || C1 == '-') break;
             case RL_HOSTEND:
                 if (it<HostStart) return {EFAULT, BadRequestErrorString};
                 HostEnd=it;
@@ -219,11 +180,12 @@ HTTPError HTTPRequest::parseRequestLine(WritableMemoryBuffer &B) {
                 if (*it>='0' && *it <= '9') break;
                 C1=reinterpret_cast<u_char >(*it)|0x20;
                 if (C1>='a' && C1<='z') break;
-                switch (C1) {
-                    case ':':
+                switch (*it) {
                     case ']':
+                        HostEnd=it+1;
                         RequestLineState = RL_HOSTEND;
                         break;
+                    case ':':
                     case '-':
                     case '.':
                     case '_':
@@ -240,7 +202,6 @@ HTTPError HTTPRequest::parseRequestLine(WritableMemoryBuffer &B) {
                     case ',':
                     case ';':
                     case '=':
-                        break;
                     default:
                         return {EFAULT, BadRequestErrorString};
                 }
@@ -271,7 +232,7 @@ HTTPError HTTPRequest::parseRequestLine(WritableMemoryBuffer &B) {
                         break;
                     case LF:
                         HTTPMinor = 9;
-                        RequestLineEnd=it;
+                        RequestLineEnd=it+1;
                         goto done;
                     case 'H':
                         HTTPStart=it;
@@ -299,7 +260,7 @@ HTTPError HTTPRequest::parseRequestLine(WritableMemoryBuffer &B) {
                     case LF:
                         URIEnd=it-2;
                         HTTPMinor = 9;
-                        RequestLineEnd=it;
+                        RequestLineEnd=it+1;
                         goto done;
                     case '.':
                         ComplexURI = 1;
@@ -398,7 +359,7 @@ HTTPError HTTPRequest::parseRequestLine(WritableMemoryBuffer &B) {
                         break;
                     case LF:
                         HTTPMinor = 9;
-                        RequestLineEnd=it;
+                        RequestLineEnd=it+1;
                         goto done;
                     case 'H':
                         HTTPStart=it;
@@ -425,7 +386,7 @@ HTTPError HTTPRequest::parseRequestLine(WritableMemoryBuffer &B) {
                         break;
                     case LF:
                         URIEnd=it;
-                        RequestLineEnd=it;
+                        RequestLineEnd=it+1;
                         goto done;
                     case '#':
                         ComplexURI = 1;
@@ -447,7 +408,7 @@ HTTPError HTTPRequest::parseRequestLine(WritableMemoryBuffer &B) {
                         break;
                     case LF:
                         HTTPMinor = 9;
-                        RequestLineEnd=it;
+                        RequestLineEnd=it+1;
                         goto done;
                     case 'H':
                         HTTPStart=it;
@@ -530,7 +491,7 @@ HTTPError HTTPRequest::parseRequestLine(WritableMemoryBuffer &B) {
                 }
                 if (*it==LF) {
                     HTTPEnd=it-1;
-                    RequestLineEnd=it;
+                    RequestLineEnd=it+1;
                     goto done;
                 }
                 if (*it==' ') {
@@ -552,7 +513,7 @@ HTTPError HTTPRequest::parseRequestLine(WritableMemoryBuffer &B) {
                         RequestLineState=RL_ALMOSTDONE;
                         break;
                     case LF:
-                        RequestLineEnd=it;
+                        RequestLineEnd=it+1;
                         goto done;
                     default:
                         return {EFAULT, BadRequestErrorString};
@@ -561,7 +522,7 @@ HTTPError HTTPRequest::parseRequestLine(WritableMemoryBuffer &B) {
             case RL_ALMOSTDONE:
                 switch (*it) {
                     case LF:
-                        RequestLineEnd=it;
+                        RequestLineEnd=it+1;
                         goto done;
                     default:
                         return {EFAULT, BadRequestErrorString};
@@ -570,7 +531,7 @@ HTTPError HTTPRequest::parseRequestLine(WritableMemoryBuffer &B) {
     }
     return {EAGAIN, BrokenRequestErrorString};
 done:
-    if(RequestLineEnd==B.end())
+    if(RequestLineEnd>=B.end())
         return {EAGAIN, BrokenRequestErrorString};
     if(RequestLineEnd<RequestLineStart)
         return {EFAULT, BadRequestErrorString};
@@ -640,6 +601,34 @@ done:
 //    return Error;
 //}
 //
+HTTPError HTTPRequest::parse(WritableMemoryBuffer &TopHalf, size_t THSize,
+                             WritableMemoryBuffer &BottomHalf, size_t BHSize) {
+    HTTPError err(0);
+    switch (State) {
+        case HTTPRequestState::HTTP_INIT:
+            State=HTTPRequestState::HTTP_PAESE_METHOD;
+        case HTTPRequestState::HTTP_PAESE_METHOD:
+            err=parseMethod(TopHalf);
+            if (err.GetCode()!=0)
+                return err;
+            State=HTTPRequestState::HTTP_PARSE_REQUEST_LINE;
+        case HTTPRequestState::HTTP_PARSE_REQUEST_LINE:
+            err=parseRequestLine(TopHalf);
+            if (err.GetCode()!=0)
+                return err;
+            State=HTTPRequestState::HTTP_PARSE_HEADER;
+        case HTTPRequestState::HTTP_PARSE_HEADER:
+            err=parseHeaders(TopHalf);
+            if (err.GetCode()!=0)
+                return err;
+            State=HTTPRequestState::HTTP_HEADER_DONE;
+        case HTTPRequestState::HTTP_HEADER_DONE:
+            // Read TopHalf body and BottomHalf data;
+            return {0};
+    }
+    return {EBADF, BadRequestErrorString};
+}
+
 HTTPError HTTPRequest::parseRequestURI(StringRef &S) {
     enum URIParseState {
         URI_START = 0,
@@ -761,121 +750,62 @@ HTTPError HTTPRequest::parseRequestURI(StringRef &S) {
     return {0};
 }
 
-//HTTPError HTTPRequest::HeaderInFillVariable(HTTPCoreHeader &C, HTTPRequest &R, HTTPHeader &H) {
-//    switch (C.GetType()) {
-//        case HI_HOST:
-//            R.HeaderIn.Host = H.Value;
-//            break;
-//        case HI_CONNECTION:
-//            R.HeaderIn.Connection = H.Value;
-//            break;
-//        case HI_IF_MODIFY_SINCE:
-//            R.HeaderIn.IfModufiedSince = H.Value;
-//            break;
-//        case HI_IF_UNMODIFY_SINCE:
-//            R.HeaderIn.IfUnModifiedSince = H.Value;
-//            break;
-//        case HI_IF_MATCH:
-//            R.HeaderIn.IfMatch = H.Value;
-//            break;
-//        case HI_IF_NON_MATCH:
-//            R.HeaderIn.IfNonMatch = H.Value;
-//            break;
-//        case HI_USERAGENT:
-//            R.HeaderIn.UserAgent = H.Value;
-//            // [TODO]support browser detection
-//            break;
-//        case HI_ACCEPT_ENCODING:
-//            R.HeaderIn.AcceptEncoding = H.Value;
-//            break;
-//        case HI_REFERENCE:
-//            R.HeaderIn.Referer = H.Value;
-//            break;
-//        case HI_CONTENT_LENGTH:
-//            R.HeaderIn.ContentLength = H.Value;
-//            // [TODO] parse content size
-//            break;
-//        case HI_CONTENT_RANGE:
-//            R.HeaderIn.ContentRange = H.Value;
-//            break;
-//        case HI_CONTENT_TYPE:
-//            R.HeaderIn.ContentType = H.Value;
-//            break;
-//        case HI_RANGE:
-//            R.HeaderIn.Range = H.Value;
-//            break;
-//        case HI_IF_RANGE:
-//            R.HeaderIn.IfRange = H.Value;
-//            break;
-//        case HI_TRANSFER_ENCODING:
-//            R.HeaderIn.TransferEncoding = H.Value;
-//            break;
-//        case HI_TE:
-//            R.HeaderIn.TE = H.Value;
-//            break;
-//        default:
-//            return {EINVAL, BadCoreHeaderInErrorString};
-//    }
-//    return {0};
-//}
-//
-//HTTPError HTTPRequest::Read(Buffer &B) {
-//    HTTPError Error(0);
-//    switch (State) {
-//        case HTTP_INIT:
-//            State = HTTP_PAESE_METHOD;
-//        case HTTP_PAESE_METHOD:
-//
-//            Error = ParseMethod(B, *this);
-//
-//            if (Error.GetCode() == 0) {
-//                State = HTTP_PARSE_REQUEST_LINE;
-//            } else {
-//                State = HTTP_BAD_REQUEST;
-//                break;
-//            }
-//
-//        case HTTP_PARSE_REQUEST_LINE:
-//
-//            Error = ParseRequestLine(B, *this);
-//
-//            if (Error.GetCode() == 0) {
-//                State = HTTP_PARSE_HEADER;
-//            } else {
-//                State = HTTP_BAD_REQUEST;
-//
-//                break;
-//            }
-//
-//        case HTTP_PARSE_HEADER:
-//
-//            do {
-//                Error = ParseRequestHeaders(B, *this);
-//            } while (Error.GetCode() == 0 && Error.CodeMessage() == nullptr);
-//
-//            if (Error.GetCode() == 0) {
-//
-//                State = HTTP_HEADER_DONE;
-//            } else {
-//                State = HTTP_BAD_REQUEST;
-//
-//                break;
-//            }
-//
-//        case HTTP_HEADER_DONE:
-//            // to parse done or read chunk
-//            break;
-//        case HTTP_BAD_REQUEST:
-//        default:
-//            Error = {EINVAL, BadRequestErrorString};
-//            break;
-//    }
-//
-//    return Error;
-//
-//}
-//
-//void HTTPRequest::Reset() {
-//    State = HTTP_INIT, Context = nullptr;
-//}
+HTTPError HTTPRequest::parseHeaders(WritableMemoryBuffer &B) {
+    HTTPHeader h;
+    HTTPError e(0);
+    size_t Off = RequestLine.size();
+    if (Off==0) return {EBADE, BadHeaderErrorString };
+    while ((e=h.parse(B, Off, ALLOW_UNDERSCORE)).GetCode()==0) {
+        bool found=false;
+        uint32_t hash=murmurhash2(h.getHeader(), true);
+        for (auto &h1 : HeaderMap)
+            if (h1.first==hash) {
+                found=true, h1.second=h;
+                processCoreHeader(h, hash);
+                break;
+            }
+        if (!found) {
+            HeaderMap.push_back(std::pair<uint32_t, HTTPHeader>(hash, h));
+            processCoreHeader(h, hash);
+        }
+    }
+    if (e.GetCode()==ENOENT) return {0};
+    return e;
+}
+void HTTPRequest::processCoreHeader(HTTPHeader &H, uint32_t hash) {
+}
+//HTTPCoreHeader HTTPRequest::HeaderInProcesses[] = {
+//        {"Host",                HI_HOST,              nullptr},
+//        {"Connection",          HI_CONNECTION,        nullptr},
+//        {"If-Modified-Since",   HI_IF_MODIFY_SINCE,   nullptr},
+//        {"If-Unmodified-Since", HI_IF_UNMODIFY_SINCE, nullptr},
+//        {"If-Match",            HI_IF_MATCH,          nullptr},
+//        {"If-None-Match",       HI_IF_NON_MATCH,      nullptr},
+//        {"UserAgent",           HI_USERAGENT,         nullptr},
+//        {"Referer",             HI_REFERENCE,         nullptr},
+//        {"Content-Length",      HI_CONTENT_LENGTH,    nullptr},
+//        {"Content-Range",       HI_CONTENT_RANGE,     nullptr},
+//        {"Content-Type",        HI_CONTENT_TYPE,      nullptr},
+//        {"Range",               HI_RANGE,             nullptr},
+//        {"If-Range",            HI_IF_RANGE,          nullptr},
+//        {"Transfer-Encoding",   HI_TRANSFER_ENCODING, nullptr},
+//        {"TE",                  HI_TE,                nullptr},
+//        {"Expect",              HI_EXPECT,            nullptr},
+//        {"Upgrade",             HI_UPGRADE,           nullptr},
+//        {"Accept-Encoding",     HI_ACCEPT_ENCODING,   nullptr},
+//        {"Via",                 HI_VIA,               nullptr},
+//        {"Authorization",       HI_AUTHORIZATION,     nullptr},
+//        {"Keep-Alive",          HI_KEEPALIVE,         nullptr},
+//        {"X-Forward-For",       HI_X_FORWARD_FOR,     nullptr},
+//        {"X-Real-IP",           HI_X_REAL_IP,         nullptr},
+//        {"Accept",              HI_ACCEPT,            nullptr},
+//        {"Accept-Language",     HI_ACCEPT_LANGUAGE,   nullptr},
+//        {"Depth",               HI_DEPTH,             nullptr},
+//        {"Destination",         HI_DESTINATION,       nullptr},
+//        {"Overwrite",           HI_OVERWRITE,         nullptr},
+//        {"Date",                HI_DATE,              nullptr},
+//        {"Cookie",              HI_COOKIE,            nullptr},
+//        {nullptr,               HI_COMMON,            nullptr},
+//};
+
 

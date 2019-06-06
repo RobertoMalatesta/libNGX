@@ -36,9 +36,6 @@ namespace ngx {
             BoundCursor StatusCode;
             BoundCursor StatusText;
             HTTPHeaderOut HeaderOut;
-
-            static HTTPCoreHeader HeaderOutProcesses[];
-
             /** Parse HTTP Response Line from Buffer to HTTPResponse */
             static HTTPError ParseResponseLine(Buffer &B, HTTPResponse &R);
 

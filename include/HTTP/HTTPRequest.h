@@ -8,20 +8,7 @@
 namespace ngx {
 namespace HTTP {
 using namespace ngx::Core::Support;
-
-struct HTTPHeaderIn {
-    // HTTP Core HeadersIn
-    struct {
-        uint32_t ContentLengthSize;
-        uint32_t KeepAliveTime;
-        unsigned ConnectionType:2;
-        unsigned Chunked:1;
-    };
-    HTTPHeaderIn() {};
-};
-
-class HTTPRequest {
-public:
+struct HTTPRequest {
     enum Method {
         GET,
         PUT,
@@ -39,6 +26,7 @@ public:
         PROPFIND,
         PROPPATCH,
     };
+    // HTTPRequest Parse State
     enum HTTPRequestState {
         HTTP_BAD_REQUEST = -1,
         HTTP_INIT,
@@ -46,7 +34,7 @@ public:
         HTTP_PARSE_REQUEST_LINE,
         HTTP_PARSE_HEADER,
         HTTP_HEADER_DONE,
-    };
+    } State=HTTP_INIT;
     // HTTP Method GET, POST, PUT, DELETE, ...
     Method Method;
     StringRef MethodStr;
@@ -65,29 +53,8 @@ public:
     StringRef IP;
     // Proxy Port
     StringRef Port;
-    // HTTPRequest Headers
-    HTTPHeaderIn HeaderIn;
-    // HTTPRequest Parse State
-    HTTPRequestState State = HTTP_INIT;
     // HTTP Version
     unsigned short Version;
-    // HTTP URI Flags
-    struct {
-        unsigned ComplexURI:1;
-        unsigned QuotedURI:1;
-        unsigned PlusInURI:1;
-        unsigned SpaceInURI:1;
-    };
-    // Browser info extracted from UserAgent
-    struct {
-        unsigned MSIE:1;
-        unsigned MSIE6:1;
-        unsigned Opera:1;
-        unsigned Gecko:1;
-        unsigned Chrome:1;
-        unsigned Safari:1;
-        unsigned Konqueror:1;
-    };
     struct {
         StringRef Host;
         StringRef Connection;
@@ -118,33 +85,48 @@ public:
         StringRef Cookie;
         StringRef Server;
     } CoreHeader;
+    // HTTP URI Flags
+    struct {
+        unsigned ComplexURI:1;
+        unsigned QuotedURI:1;
+        unsigned PlusInURI:1;
+        unsigned SpaceInURI:1;
+    };
+    // Core header variable
+    struct {
+        uint32_t ContentLengthSize;
+        uint32_t KeepAliveTime;
+        unsigned ConnectionType:2;
+        unsigned Chunked:1;
+    } CoreHeaderVariable;
+    // Browser info extracted from UserAgent
+    struct {
+        unsigned MSIE:1;
+        unsigned MSIE6:1;
+        unsigned Opera:1;
+        unsigned Gecko:1;
+        unsigned Chrome:1;
+        unsigned Safari:1;
+        unsigned Konqueror:1;
+    };
     // HTTP Custom Headers
-    SmallVector<HTTPHeader, 16> Headers;
+    SmallVector<std::pair<uint32_t , HTTPHeader>, 16> HeaderMap;
     // HTTP Forward Headers
-    SmallVector<StringRef, 16> XForwardFor;
+    SmallVector<StringRef, 8> XForwardFor;
     // Cookies extracted from Cookie Header
-    SmallVector<StringRef, 16> Cookies;
+    SmallVector<StringRef, 8> Cookies;
+    void processCoreHeader(HTTPHeader &H, uint32_t hash);
     /** Parse HTTP Method from Buffer into HTTPRequest */
     HTTPError parseMethod(WritableMemoryBuffer &B);
     /** Parse HTTP Request Line from Buffer into HTTPRequest */
     HTTPError parseRequestLine(WritableMemoryBuffer &B);
     /** Parse HTTP Header In through ParseHeader, and do some process */
-    HTTPError parseRequestHeaders(WritableMemoryBuffer &B, bool AllowUnderScore = ALLOW_UNDERSCORE);
-    /** Identify Request URI and set related flags */
-    HTTPError parseRequestURI(StringRef &S);
-    /** Fill HTTP Core Header into HTTP Request */
-    static HTTPError HeaderInFillVariable(HTTPCoreHeader &C, HTTPRequest &R, HTTPHeader &H);
-    static HTTPCoreHeader HeaderInProcesses[];
-public:
+    HTTPError parseHeaders(WritableMemoryBuffer &B);
     HTTPRequest()= default;
-    /** Read a request from buffer */
-//    HTTPError Read(Buffer &B);
-    /** Write a request to buffer */
-//    HTTPError Write(Buffer &B);
-    /** Reset state and release memory */
-//    virtual void Reset();
+    HTTPError parse(WritableMemoryBuffer &TopHalf, size_t THSize,
+                    WritableMemoryBuffer &BottomHalf, size_t BHSize);
+    HTTPError parseRequestURI(StringRef &S);
 };
-
 } // HTTP
 } // ngx
 #endif

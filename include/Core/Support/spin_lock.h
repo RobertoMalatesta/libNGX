@@ -5,7 +5,6 @@
 namespace ngx {
 namespace Core {
 namespace Support {
-
 class spin_lock {
 protected:
     pthread_spinlock_t l;
@@ -13,9 +12,22 @@ protected:
 public:
     spin_lock() { pthread_spin_init(&l, 0); }
     ~spin_lock() { pthread_spin_destroy(&l); };
-    virtual void lock() { pthread_spin_lock(&l); };
-    virtual void unlock() { pthread_spin_unlock(&l); };
-    virtual volatile bool tryLock() { return pthread_spin_trylock(&l) == 0; };
+    void lock() { pthread_spin_lock(&l); };
+    void unlock() { pthread_spin_unlock(&l); };
+    volatile bool tryLock() { return pthread_spin_trylock(&l) == 0; };
+};
+class rw_lock {
+protected:
+    pthread_rwlock_t l;
+
+public:
+    rw_lock() { pthread_rwlock_init(&l, 0); }
+    ~rw_lock() { pthread_rwlock_destroy(&l); };
+    void rlock() { pthread_rwlock_rdlock(&l); };
+    void wlock() { pthread_rwlock_wrlock(&l); };
+    bool try_rlock() { return 0==pthread_rwlock_tryrdlock(&l); };
+    bool try_wlock() { return 0==pthread_rwlock_trywrlock(&l); };
+    void unlock() { pthread_rwlock_unlock(&l); };
 };
 
 } // Support

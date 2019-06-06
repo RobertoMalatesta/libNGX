@@ -39,9 +39,10 @@ inline void SimpleHash(uint32_t &Hash, u_char C) {
 inline uint32_t murmurhash2(StringRef Str, bool lower=false) {
 #define or_lower(x) ((lower&&lower_case[x]) ? lower_case[x] : x)
     uint32_t  h, k;
+    size_t c=Str.size();
     auto it=Str.begin();
-    h = 0^Str.size();
-    for(; it<Str.end(); it+=4) {
+    h = 0^c;
+    while(c>=4) {
         k  = or_lower(it[0]);
         k |= or_lower(it[1]) << 8;
         k |= or_lower(it[2]) << 16;
@@ -51,6 +52,7 @@ inline uint32_t murmurhash2(StringRef Str, bool lower=false) {
         k *= 0x5bd1e995;
         h *= 0x5bd1e995;
         h ^= k;
+        it+=4, c-=4;
     }
     switch (Str.end()-it) {
         case 3:
@@ -67,9 +69,9 @@ inline uint32_t murmurhash2(StringRef Str, bool lower=false) {
     return h;
 #undef or_lower
 }
-
 }
-} // Support
-} // Core
-} // ngx
+
+} // namespace Support
+} // namespace Core
+} // namespace ngx
 #endif

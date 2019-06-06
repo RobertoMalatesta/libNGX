@@ -4,9 +4,7 @@
 namespace ngx {
 namespace Core {
 namespace Support {
-
 typedef u_char Byte;
-
 class StringRef {
 private:
     Byte *Data = nullptr;
@@ -98,6 +96,7 @@ public:
         MaximumBufferSize = NewSize;
         return OldSize;
     }
+    size_t size() { return Cursor; }
     int fromByte(Byte B);
     int fromString(const char *Str, size_t Size);
     int fromFile(int FD, int64_t Offset = 0, size_t Size = -1);
