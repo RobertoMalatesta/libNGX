@@ -18,7 +18,7 @@ public:
     StringRef() = default;
     StringRef(std::nullptr_t) = delete;
     __attribute__ ((always_inline))
-    StringRef(Byte *Data, size_t Length) : Data(Data), Length(Length) {};
+    StringRef(const Byte *Data, size_t Length) : Data(const_cast<Byte *>(Data)), Length(Length) {};
     __attribute__ ((always_inline))
     iterator begin() const { return Data; }
     __attribute__ ((always_inline))
@@ -60,14 +60,12 @@ private:
     bool Aligned;
 
 protected:
-    WritableMemoryBuffer(Byte *BufferStart, Byte *BufferEnd, bool Aligned = false);
-
+    WritableMemoryBuffer(bool Aligned = false);
 public:
     using MemoryBuffer::begin;
     using MemoryBuffer::end;
     using MemoryBuffer::size;
-
-    WritableMemoryBuffer(bool Aligned = false);
+    WritableMemoryBuffer(Byte *BufferStart, Byte *BufferEnd, bool Aligned = false);
     virtual ~WritableMemoryBuffer() = default;
     /** return writable start pointer */
     __attribute__ ((always_inline))
@@ -96,7 +94,8 @@ public:
         MaximumBufferSize = NewSize;
         return OldSize;
     }
-    size_t size() { return Cursor; }
+    StringRef getData() const{ return {Buffer.begin(), Cursor}; };
+    inline size_t size() const { return Cursor; }
     int fromByte(Byte B);
     int fromString(const char *Str, size_t Size);
     int fromFile(int FD, int64_t Offset = 0, size_t Size = -1);

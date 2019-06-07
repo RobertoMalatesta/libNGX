@@ -1,10 +1,8 @@
-#ifndef NGX_HTTP_REQUEST
-#define NGX_HTTP_REQUEST
-
 #include "HTTP/HTTPError.h"
 #include "HTTP/HTTPHeader.h"
 #include "HTTP/HTTPCoreHeader.h"
-
+#ifndef NGX_HTTP_REQUEST
+#define NGX_HTTP_REQUEST
 namespace ngx {
 namespace HTTP {
 using namespace ngx::Core::Support;
@@ -94,8 +92,8 @@ struct HTTPRequest {
     };
     // Core header variable
     struct {
-        uint32_t ContentLengthSize;
-        uint32_t KeepAliveTime;
+        uint32_t ContentLength;
+        uint32_t Keepalive;
         unsigned ConnectionType:2;
         unsigned Chunked:1;
     } CoreHeaderVariable;
@@ -117,16 +115,15 @@ struct HTTPRequest {
     SmallVector<StringRef, 8> Cookies;
     void processCoreHeader(HTTPHeader &H, uint32_t hash);
     /** Parse HTTP Method from Buffer into HTTPRequest */
-    HTTPError parseMethod(WritableMemoryBuffer &B, size_t Size);
+    HTTPError parseMethod(const StringRef &TopHalf);
     /** Parse HTTP Request Line from Buffer into HTTPRequest */
-    HTTPError parseRequestline(WritableMemoryBuffer &B, size_t Size);
+    HTTPError parseRequestline(const StringRef &TopHalf);
     /** Parse HTTP Header In through ParseHeader, and do some process */
-    HTTPError parseHeaders(WritableMemoryBuffer &B, size_t Size);
+    HTTPError parseHeaders(const StringRef &TopHalf);
     HTTPRequest()= default;
-    HTTPError parseRequestURI(StringRef &S);
-    HTTPError parse(WritableMemoryBuffer &TopHalf, size_t THSize,
-                    WritableMemoryBuffer &BottomHalf, size_t BHSize);
-    HTTPError write(WritableMemoryBuffer &TopHalf, BufferWriter &W);
+    HTTPError parseRequestURI(const StringRef &S);
+    HTTPError parse(const StringRef &TopHalf, const StringRef &BottomHalf);
+    HTTPError write(BufferWriter &W);
 };
 } // HTTP
 } // ngx

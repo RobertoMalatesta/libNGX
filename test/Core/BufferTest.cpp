@@ -54,8 +54,8 @@ TEST(MemoryBuffer, defaultConstructTets) {
     const char HelloWorld []= "HelloWorld\n";
     const char Comment []= "this is a simple test to make sure nullptr BufferStart can be processed properly\n";
 
-    WritableMemoryBuffer Buffer;
-    BufferWriter Writer(Buffer);
+    unique_ptr<WritableMemoryBuffer> Buffer=WritableMemoryBuffer::NewBuffer(1000, true);
+    BufferWriter Writer(*Buffer);
 
     Writer.fromString(HelloWorld, sizeof(HelloWorld)-1);
     Writer.fromByte('-');

@@ -5,7 +5,7 @@
 using namespace ngx::HTTP;
 const char BadResponseLineErrorString[] = "bad response line error";
 const char BrokenResponseLineErrorString[] = "broken response line error";
-HTTPError HTTPResponse::parseResponseline(WritableMemoryBuffer &B, size_t Size) {
+HTTPError HTTPResponse::parseResponseline(const StringRef &TopHalf) {
     enum HTTPResponseLineParseStates {
         RL_START = 0,
         RL_H,
@@ -21,13 +21,11 @@ HTTPError HTTPResponse::parseResponseline(WritableMemoryBuffer &B, size_t Size) 
         RL_STATUS_TEXT,
         RL_ALMOST_DONE,
     } ResponseLineState = RL_START;
-    u_char C1;
     u_short HTTPMajor = 0, HTTPMinor = 0;
-    BoundCursor BC, LastBC;
-    auto it=B.begin(), itEnd=std::min(B.end(), B.begin()+Size);
+    auto it=TopHalf.char_begin();
     auto StatusCodeStart=it, StatusCodeEnd=it;
     auto StatusTextStart=it, StatusTextEnd=it;
-    for(;it!=itEnd && !*it; it++) {
+    for(;it!=TopHalf.char_end() && !*it; it++) {
         switch (ResponseLineState) {
             case RL_START:
                 switch (*it) {
@@ -158,19 +156,18 @@ HTTPError HTTPResponse::parseResponseline(WritableMemoryBuffer &B, size_t Size) 
     }
     return {EINVAL, BrokenResponseLineErrorString};
     done:
-    if (it+1>=itEnd)
+    if (it+1>=TopHalf.char_end())
         return {EAGAIN, BrokenResponseLineErrorString};
     Version=HTTPMajor*1000+HTTPMinor;
     if (StatusCodeEnd>StatusCodeStart)
-        StatueCodeStr={StatusCodeStart, (size_t)(StatusCodeEnd-StatusCodeStart)};
+        StatueCodeStr={reinterpret_cast<const Byte*>(StatusCodeStart), (size_t)(StatusCodeEnd-StatusCodeStart)};
     if (StatusTextEnd>StatusTextStart)
-        StatusText={StatusTextStart, (size_t)(StatusTextEnd-StatusTextStart)};
+        StatusText={reinterpret_cast<const Byte*>(StatusTextStart), (size_t)(StatusTextEnd-StatusTextStart)};
     return {0};
 }
-HTTPError HTTPResponse::parse(WritableMemoryBuffer &TopHalf, size_t THSize,
-                              WritableMemoryBuffer &BottomHalf, size_t BHSize) {
+HTTPError HTTPResponse::parse(const StringRef &TopHalf, const StringRef &BottomHalf) {
     return {0};
 }
-HTTPError HTTPResponse::write(WritableMemoryBuffer &B, BufferWriter &W) {
+HTTPError HTTPResponse::write(BufferWriter &W) {
     return {0};
 }

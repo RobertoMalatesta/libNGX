@@ -53,7 +53,7 @@ StringRef& HTTPHeader::replaceCoreHeader(StringRef &origin) {
         if(it.first==hash) return it.second;
     return origin;
 }
-HTTPError HTTPHeader::parse(MemoryBuffer &B, size_t Size, size_t &Off, bool Underscore) {
+HTTPError HTTPHeader::parse(const StringRef &TopHalf, size_t &Off, bool Underscore) {
     enum HTTPHeaderParseState {
         HDR_START = 0,
         HDR_NAME,
@@ -65,10 +65,10 @@ HTTPError HTTPHeader::parse(MemoryBuffer &B, size_t Size, size_t &Off, bool Unde
         HDR_HEADER_ALMOST_DONE
     } State = HDR_START;
     char C1;
-    auto it=B.begin()+Off, itEnd=std::min(B.end(), B.begin()+Size);
+    auto it=TopHalf.char_begin()+Off;
     auto HeaderStart=it, HeaderEnd=it;
     auto ValueStart=it, ValueEnd=it;
-    for(; it!=itEnd && *it; it++) {
+    for(; it!=TopHalf.char_end() && *it; it++) {
         switch (State) {
             case HDR_START:
                 HeaderStart=ValueStart=it;
@@ -200,12 +200,12 @@ HTTPError HTTPHeader::parse(MemoryBuffer &B, size_t Size, size_t &Off, bool Unde
     done:
     if (HeaderEnd <= HeaderStart)
         return {EINVAL, InvalidHeaderErrorString};
-    Header={const_cast<Byte *>(HeaderStart), (size_t)(HeaderEnd-HeaderStart)};
+    Header={reinterpret_cast<const Byte *>(HeaderStart), (size_t)(HeaderEnd-HeaderStart)};
     if (ValueEnd <= ValueStart)
         return {EINVAL, InvalidHeaderErrorString};
     Header=replaceCoreHeader(Header);
-    Value={const_cast<Byte *>(ValueStart), (size_t)(ValueEnd-ValueStart)};
-    Off = (size_t)(it+1-B.begin());
+    Value={reinterpret_cast<const Byte *>(ValueStart), (size_t)(ValueEnd-ValueStart)};
+    Off = (size_t)(it+1-TopHalf.char_begin());
     return {0};
 }
 size_t HTTPHeader::write(BufferWriter &W) {

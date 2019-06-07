@@ -71,11 +71,14 @@ public:
     [[nodiscard]] bool empty() const { return !Size; }
     inline bool is_small() {return BeginX == this->getFirstEl(); }
     void reset_to_small() {
+        destroy_range(begin(), end());
+        if (!is_small())
+            free(BeginX);
         BeginX=getFirstEl();
         Size = 0, Capacity = InplaceSize;
     }
     void grow(size_t MinSize=0) { grow_pod(getFirstEl(), MinSize, sizeof(T)); }
-    const SmallVector &operator=(SmallVector &RHS) {
+    SmallVector &operator=(const SmallVector &RHS) {
         if (this == &RHS) return *this;
         size_t RHSSize = RHS.size();
         size_t CurSize = size();
@@ -101,7 +104,7 @@ public:
         set_size(RHSSize);
         return *this;
     }
-    const SmallVector &operator=(SmallVector &&RHS) {
+    SmallVector &operator=(const SmallVector &&RHS) {
         if (this == &RHS) return *this;
         if (!RHS.is_small()) {
             destroy_range(begin(), end());

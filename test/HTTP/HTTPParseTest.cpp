@@ -8,8 +8,8 @@ using namespace ngx::HTTP;
 using namespace std;
 
 TEST(HTTP, parseRequest) {
-    WritableMemoryBuffer buf;
-    BufferWriter writer(buf);
+    unique_ptr<WritableMemoryBuffer> buf(WritableMemoryBuffer::NewBuffer(1024, true));
+    BufferWriter writer(*buf);
     HTTPRequest request;
     HTTPHeader header;
     char Text[] = "GET http://baidu.com:8080/request_url/some_argument%20?argument=1 HTTP/1.1\r\n"
@@ -21,7 +21,7 @@ TEST(HTTP, parseRequest) {
                   "content-range: xxxx\r\n"
                   "\r\n";
     writer.fromString(Text, sizeof(Text)-1);
-    request.parse(buf, writer.size(), buf, writer.size() );
+    request.parse(writer.getData(), {});
     cout << request.HeaderMap.size() <<endl;
     for(auto &i : request.MethodStr) cout<<i;
     cout<<endl;

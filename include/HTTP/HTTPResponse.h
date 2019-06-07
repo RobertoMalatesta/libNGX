@@ -21,13 +21,12 @@ protected:
     SmallVector<std::pair<uint32_t, HTTPHeader>> HeaderMap;
     SmallVector<std::pair<uint32_t, HTTPHeader>> Trailers;
     /** Parse HTTP Response Line from Buffer to HTTPResponse */
-    HTTPError parseResponseline(WritableMemoryBuffer &B, size_t Size);
+    HTTPError parseResponseline(const StringRef &TopHalf);
 
 public:
     HTTPResponse() = default;
-    HTTPError parse(WritableMemoryBuffer &TopHalf, size_t THSize,
-                    WritableMemoryBuffer &BottomHalf, size_t BHSize);
-    HTTPError write(WritableMemoryBuffer &B, BufferWriter &W);
+    HTTPError parse(const StringRef &TopHalf, const StringRef &BottomHalf);
+    HTTPError write(BufferWriter &W);
 };
 }
 };

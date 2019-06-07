@@ -51,7 +51,7 @@ public:
     HTTPHeader() : Header(), Value() {}
     const StringRef &getHeader() const { return Header; }
     const StringRef &getValue() const { return Value; }
-    HTTPError parse(MemoryBuffer &B, size_t Size, size_t &Off, bool Underscore);
+    HTTPError parse(const StringRef &TopHalf, size_t &Off, bool Underscore);
     size_t write(BufferWriter &W);
 };
 } // HTTP
