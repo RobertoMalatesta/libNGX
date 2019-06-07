@@ -11,15 +11,17 @@ const char InvalidMethodErrorString[] = "invalid method";
 const char BrokenRequestErrorString[] = "broken request in buffer";
 const char NoMemoryErrorString[] = "no sufficient memory to store header indexer";
 const char BadHeaderErrorString[] = "bad header error";
-HTTPError HTTPRequest::parseMethod(WritableMemoryBuffer &B) {
-    for(auto C : B) {
-        if(C==CR || C == LF) continue;
-        if ((C<'A'||C>'Z') && C!='_' && C!='-')
+void HTTPRequest::processCoreHeader(HTTPHeader &H, uint32_t hash) {
+}
+HTTPError HTTPRequest::parseMethod(WritableMemoryBuffer &B, size_t Size) {
+    auto it=B.begin(), itEnd=std::min(B.end(), B.begin()+Size);
+    for(;it!=itEnd && (*it); it++) {
+        if(*it==CR || *it == LF) continue;
+        if ((*it<'A'|| *it>'Z') && *it!='_' && *it!='-')
             return {EFAULT, InvalidMethodErrorString};
         break;
     }
-    auto it = B.begin();
-    if (B.size() < 5)
+    if ((itEnd-it) < 5)
         return {EAGAIN, BrokenRequestErrorString};
     else if (it[3]==' ') {
         if (it[0] == 'G' && it[1] == 'E' && it[2] == 'T') Method=GET;
@@ -53,8 +55,7 @@ HTTPError HTTPRequest::parseMethod(WritableMemoryBuffer &B) {
     else return {EFAULT, InvalidMethodErrorString};
     return {0};
 }
-
-HTTPError HTTPRequest::parseRequestLine(WritableMemoryBuffer &B) {
+HTTPError HTTPRequest::parseRequestline(WritableMemoryBuffer &B, size_t Size) {
     enum HTTPRequestLineParseState {
         RL_SPACEBEFOREURI = 0,
         RL_SCHEMA,
@@ -85,7 +86,7 @@ HTTPError HTTPRequest::parseRequestLine(WritableMemoryBuffer &B) {
     if (MethodStr.size()<3) return {EINVAL, InvalidMethodErrorString};
     u_char C1;
     u_short HTTPMajor = 0, HTTPMinor = 0;
-    auto it=B.begin()+MethodStr.size();
+    auto it=B.begin()+MethodStr.size(), itEnd=std::min(B.end(), B.begin()+Size);
     auto ArgumentStart=it;
     auto RequestLineStart=B.begin(), RequestLineEnd=it;
     auto SchemeStart=it, SchemeEnd=it;
@@ -93,7 +94,7 @@ HTTPError HTTPRequest::parseRequestLine(WritableMemoryBuffer &B) {
     auto PortStart=it, PortEnd=it;
     auto HTTPStart=it, HTTPEnd=it;
     auto URIStart=it, URIEnd=it;
-    for(; it!=B.end() && *it; it++) {
+    for(; it!=itEnd && *it; it++) {
         switch (RequestLineState) {
             case RL_SPACEBEFOREURI:
                 if (*it=='/') {
@@ -553,82 +554,6 @@ done:
         return {EFAULT, BadVersionErrorString};
     return {0};
 }
-
-//HTTPError HTTPRequest::ParseRequestHeaders(Buffer &B, HTTPRequest &R, bool AllowUnderScore) {
-//    HTTPError Error{0};
-//    HTTPHeader Header;
-//    // init header process if not
-//    if (HeaderInDictionary.begin() == nullptr) {
-//        int i = 0;
-//        while (HeaderInProcesses[i].GetKey() != nullptr) {
-//            HeaderInDictionary.Insert(HeaderInProcesses[i]), i++;
-//        }
-//    }
-//    uint32_t Hash;
-//    do {
-//        Error = Header.Read(B, AllowUnderScore);
-//        if (Error.GetCode() != 0) {
-//            if (Error.GetCode() == ENOENT) {
-//                break;
-//            } else {
-//                return Error;
-//            }
-//        }
-//        Hash = 0 ^ Header.Name.Size();
-//        for (BoundCursor BC = Header.Name; *BC != '\0'; BC++) {
-//            SimpleHash(Hash, lower_case[*BC]);
-//        }
-//        DictionaryItem *TempPrev, *TempNext, *DI = HeaderInDictionary.Find(Hash);
-//        if (DI != nullptr) {
-//            TempPrev = (DictionaryItem *) HeaderInDictionary.prev(DI);
-//            TempNext = (DictionaryItem *) HeaderInDictionary.next(DI);
-//            if ((TempPrev != nullptr && TempPrev->GetHash() == DI->GetHash()) ||
-//                (TempNext != nullptr && TempNext->GetHash() == DI->GetHash())) {
-//                // [TODO] Collision found, should add warning here
-//            }
-//            Error = ((HTTPCoreHeader *) DI)->Process(R, Header);
-//            if (Error.GetCode() != 0) {
-//                return Error;
-//            }
-//        } else {
-////            HTTPHeader *H = R.HeaderIn.Headers.Push();
-////            if (H == nullptr) {
-////                return {ENOMEM, NoMemoryErrorString};
-////            }
-////            *H = Header;
-//        }
-//    } while (true);
-//    return Error;
-//}
-//
-HTTPError HTTPRequest::parse(WritableMemoryBuffer &TopHalf, size_t THSize,
-                             WritableMemoryBuffer &BottomHalf, size_t BHSize) {
-    HTTPError err(0);
-    switch (State) {
-        case HTTPRequestState::HTTP_INIT:
-            State=HTTPRequestState::HTTP_PAESE_METHOD;
-        case HTTPRequestState::HTTP_PAESE_METHOD:
-            err=parseMethod(TopHalf);
-            if (err.GetCode()!=0)
-                return err;
-            State=HTTPRequestState::HTTP_PARSE_REQUEST_LINE;
-        case HTTPRequestState::HTTP_PARSE_REQUEST_LINE:
-            err=parseRequestLine(TopHalf);
-            if (err.GetCode()!=0)
-                return err;
-            State=HTTPRequestState::HTTP_PARSE_HEADER;
-        case HTTPRequestState::HTTP_PARSE_HEADER:
-            err=parseHeaders(TopHalf);
-            if (err.GetCode()!=0)
-                return err;
-            State=HTTPRequestState::HTTP_HEADER_DONE;
-        case HTTPRequestState::HTTP_HEADER_DONE:
-            // Read TopHalf body and BottomHalf data;
-            return {0};
-    }
-    return {EBADF, BadRequestErrorString};
-}
-
 HTTPError HTTPRequest::parseRequestURI(StringRef &S) {
     enum URIParseState {
         URI_START = 0,
@@ -749,13 +674,12 @@ HTTPError HTTPRequest::parseRequestURI(StringRef &S) {
         URI={const_cast<Byte *>(ArgumentStart), (size_t)(I-ArgumentStart)};
     return {0};
 }
-
-HTTPError HTTPRequest::parseHeaders(WritableMemoryBuffer &B) {
+HTTPError HTTPRequest::parseHeaders(WritableMemoryBuffer &B, size_t Size) {
     HTTPHeader h;
     HTTPError e(0);
     size_t Off = RequestLine.size();
     if (Off==0) return {EBADE, BadHeaderErrorString };
-    while ((e=h.parse(B, Off, ALLOW_UNDERSCORE)).GetCode()==0) {
+    while ((e=h.parse(B, Size, Off, ALLOW_UNDERSCORE)).GetCode()==0) {
         bool found=false;
         uint32_t hash=murmurhash2(h.getHeader(), true);
         for (auto &h1 : HeaderMap)
@@ -772,7 +696,35 @@ HTTPError HTTPRequest::parseHeaders(WritableMemoryBuffer &B) {
     if (e.GetCode()==ENOENT) return {0};
     return e;
 }
-void HTTPRequest::processCoreHeader(HTTPHeader &H, uint32_t hash) {
+HTTPError HTTPRequest::parse(WritableMemoryBuffer &TopHalf, size_t THSize,
+                             WritableMemoryBuffer &BottomHalf, size_t BHSize) {
+    HTTPError err(0);
+    switch (State) {
+        case HTTPRequestState::HTTP_INIT:
+            State=HTTPRequestState::HTTP_PAESE_METHOD;
+        case HTTPRequestState::HTTP_PAESE_METHOD:
+            err=parseMethod(TopHalf, THSize);
+            if (err.GetCode()!=0)
+                return err;
+            State=HTTPRequestState::HTTP_PARSE_REQUEST_LINE;
+        case HTTPRequestState::HTTP_PARSE_REQUEST_LINE:
+            err=parseRequestline(TopHalf, THSize);
+            if (err.GetCode()!=0)
+                return err;
+            State=HTTPRequestState::HTTP_PARSE_HEADER;
+        case HTTPRequestState::HTTP_PARSE_HEADER:
+            err=parseHeaders(TopHalf, THSize);
+            if (err.GetCode()!=0)
+                return err;
+            State=HTTPRequestState::HTTP_HEADER_DONE;
+        case HTTPRequestState::HTTP_HEADER_DONE:
+            // Read TopHalf body and BottomHalf data;
+            return {0};
+    }
+    return {EBADF, BadRequestErrorString};
+}
+HTTPError HTTPRequest::write(WritableMemoryBuffer &TopHalf, BufferWriter &W) {
+    return {0};
 }
 //HTTPCoreHeader HTTPRequest::HeaderInProcesses[] = {
 //        {"Host",                HI_HOST,              nullptr},

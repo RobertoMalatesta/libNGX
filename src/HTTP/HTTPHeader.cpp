@@ -53,7 +53,7 @@ StringRef& HTTPHeader::replaceCoreHeader(StringRef &origin) {
         if(it.first==hash) return it.second;
     return origin;
 }
-HTTPError HTTPHeader::parse(MemoryBuffer &B, size_t &Off, bool Underscore) {
+HTTPError HTTPHeader::parse(MemoryBuffer &B, size_t Size, size_t &Off, bool Underscore) {
     enum HTTPHeaderParseState {
         HDR_START = 0,
         HDR_NAME,
@@ -65,10 +65,10 @@ HTTPError HTTPHeader::parse(MemoryBuffer &B, size_t &Off, bool Underscore) {
         HDR_HEADER_ALMOST_DONE
     } State = HDR_START;
     char C1;
-    auto it=B.begin()+Off;
+    auto it=B.begin()+Off, itEnd=std::min(B.end(), B.begin()+Size);
     auto HeaderStart=it, HeaderEnd=it;
     auto ValueStart=it, ValueEnd=it;
-    for(; it!=B.end() && *it; it++) {
+    for(; it!=itEnd && *it; it++) {
         switch (State) {
             case HDR_START:
                 HeaderStart=ValueStart=it;

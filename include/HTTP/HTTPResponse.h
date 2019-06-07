@@ -1,59 +1,34 @@
+#include "Core/ADT/SmallVector.h"
+#include "Core/Support/Support.h"
 #ifndef NGX_HTTP_RESPONSE
 #define NGX_HTTP_RESPONSE
-
-#include "Core/Core.h"
-
 namespace ngx {
-    namespace HTTP {
+namespace HTTP {
+using namespace ngx::Core::Support;
+class HTTPResponse {
+protected:
+    enum HTTPResponseState {
+        HTTP_BAD_RESPONSE = -1,
+        HTTP_INIT,
+        HTTP_PARSE_RESPONSE_LINE,
+        HTTP_PARSE_HEADERS,
+        HTTP_HEADER_DONE,
+    } State = HTTP_INIT;
+    int Version;
+    int StatusCode;
+    StringRef StatueCodeStr;
+    StringRef StatusText;
+    SmallVector<std::pair<uint32_t, HTTPHeader>> HeaderMap;
+    SmallVector<std::pair<uint32_t, HTTPHeader>> Trailers;
+    /** Parse HTTP Response Line from Buffer to HTTPResponse */
+    HTTPError parseResponseline(WritableMemoryBuffer &B, size_t Size);
 
-        using namespace ngx::Core::Support;
-
-        struct HTTPHeaderOut {
-            // HTTP Core Headers
-            // HTTP Custom Headers
-//            Array <HTTPHeader> Headers;
-//            Array <HTTPHeader> Trailers;
-
-            HTTPHeaderOut(Allocator *BackendAllocator) {};
-        };
-
-        class HTTPResponse {
-        protected:
-
-            enum HTTPResponseState {
-                HTTP_BAD_RESPONSE = -1,
-                HTTP_INIT,
-                HTTP_PARSE_RESPONSE_LINE,
-                HTTP_PARSE_HEADERS,
-                HTTP_HEADER_DONE,
-            };
-
-            // HTTPResponse Parse State
-            HTTPResponseState State = HTTP_INIT;
-
-            int Status;
-            int Version;
-            BoundCursor StatusCode;
-            BoundCursor StatusText;
-            HTTPHeaderOut HeaderOut;
-            /** Parse HTTP Response Line from Buffer to HTTPResponse */
-            static HTTPError ParseResponseLine(Buffer &B, HTTPResponse &R);
-
-        public:
-
-            HTTPResponse(Allocator *Allocator) : HeaderOut(Allocator) {
-                Reset();
-            };
-
-            /** Read a request from buffer */
-            HTTPError Read(Buffer &B);
-
-            /** Write a request to buffer */
-            HTTPError Write(Buffer &B);
-
-            /** Reset state and release memory */
-            virtual void Reset();
-        };
-    }
+public:
+    HTTPResponse() = default;
+    HTTPError parse(WritableMemoryBuffer &TopHalf, size_t THSize,
+                    WritableMemoryBuffer &BottomHalf, size_t BHSize);
+    HTTPError write(WritableMemoryBuffer &B, BufferWriter &W);
+};
+}
 };
 #endif

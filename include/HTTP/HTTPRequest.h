@@ -117,15 +117,16 @@ struct HTTPRequest {
     SmallVector<StringRef, 8> Cookies;
     void processCoreHeader(HTTPHeader &H, uint32_t hash);
     /** Parse HTTP Method from Buffer into HTTPRequest */
-    HTTPError parseMethod(WritableMemoryBuffer &B);
+    HTTPError parseMethod(WritableMemoryBuffer &B, size_t Size);
     /** Parse HTTP Request Line from Buffer into HTTPRequest */
-    HTTPError parseRequestLine(WritableMemoryBuffer &B);
+    HTTPError parseRequestline(WritableMemoryBuffer &B, size_t Size);
     /** Parse HTTP Header In through ParseHeader, and do some process */
-    HTTPError parseHeaders(WritableMemoryBuffer &B);
+    HTTPError parseHeaders(WritableMemoryBuffer &B, size_t Size);
     HTTPRequest()= default;
+    HTTPError parseRequestURI(StringRef &S);
     HTTPError parse(WritableMemoryBuffer &TopHalf, size_t THSize,
                     WritableMemoryBuffer &BottomHalf, size_t BHSize);
-    HTTPError parseRequestURI(StringRef &S);
+    HTTPError write(WritableMemoryBuffer &TopHalf, BufferWriter &W);
 };
 } // HTTP
 } // ngx

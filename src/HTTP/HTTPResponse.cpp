@@ -2,18 +2,10 @@
 #include "HTTP/HTTPHeader.h"
 #include "HTTP/HTTPCoreHeader.h"
 #include "HTTP/HTTPResponse.h"
-
 using namespace ngx::HTTP;
-
 const char BadResponseLineErrorString[] = "bad response line error";
 const char BrokenResponseLineErrorString[] = "broken response line error";
-
-//HTTPCoreHeader HTTPResponse::HeaderOutProcesses[] = {
-//        {nullptr, HI_COMMON, nullptr},
-//};
-
-HTTPError HTTPResponse::ParseResponseLine(Buffer &B, HTTPResponse &R) {
-
+HTTPError HTTPResponse::parseResponseline(WritableMemoryBuffer &B, size_t Size) {
     enum HTTPResponseLineParseStates {
         RL_START = 0,
         RL_H,
@@ -29,148 +21,112 @@ HTTPError HTTPResponse::ParseResponseLine(Buffer &B, HTTPResponse &R) {
         RL_STATUS_TEXT,
         RL_ALMOST_DONE,
     } ResponseLineState = RL_START;
-
-    u_char C, C1;
+    u_char C1;
     u_short HTTPMajor = 0, HTTPMinor = 0;
     BoundCursor BC, LastBC;
-
-    for (B >> BC, LastBC = BC; C = *BC, !!BC; LastBC = BC++) {
-
+    auto it=B.begin(), itEnd=std::min(B.end(), B.begin()+Size);
+    auto StatusCodeStart=it, StatusCodeEnd=it;
+    auto StatusTextStart=it, StatusTextEnd=it;
+    for(;it!=itEnd && !*it; it++) {
         switch (ResponseLineState) {
-
             case RL_START:
-
-                switch (C) {
+                switch (*it) {
                     case 'H':
                         ResponseLineState = RL_H;
                         break;
                     default:
                         return {EINVAL, BadResponseLineErrorString};
                 }
-
                 break;
             case RL_H:
-
-                switch (C) {
+                switch (*it) {
                     case 'T':
                         ResponseLineState = RL_HT;
                         break;
                     default:
                         return {EINVAL, BadResponseLineErrorString};
                 }
-
                 break;
             case RL_HT:
-
-                switch (C) {
+                switch (*it) {
                     case 'T':
                         ResponseLineState = RL_HTT;
                         break;
                     default:
                         return {EINVAL, BadResponseLineErrorString};
                 }
-
                 break;
             case RL_HTT:
-
-                switch (C) {
+                switch (*it) {
                     case 'P':
                         ResponseLineState = RL_HTTP;
                         break;
                     default:
                         return {EINVAL, BadResponseLineErrorString};
                 }
-
                 break;
             case RL_HTTP:
-
-                switch (C) {
+                switch (*it) {
                     case '/':
                         ResponseLineState = RL_FIRST_MAJOR_DIGIT;
                         break;
                     default:
                         return {EINVAL, BadResponseLineErrorString};
                 }
-
                 break;
             case RL_FIRST_MAJOR_DIGIT:
-
-                if (C < '1' || C > '9') {
+                if (*it<'1' || *it>'9')
                     return {EINVAL, BadResponseLineErrorString};
-                }
-
-                HTTPMajor = C - '0', ResponseLineState = RL_MAJOR_DIGIT;
+                HTTPMajor = *it-'0', ResponseLineState = RL_MAJOR_DIGIT;
                 break;
             case RL_MAJOR_DIGIT:
-
-                if (C == '.') {
+                if (*it=='.') {
                     ResponseLineState = RL_FIRST_MINOR_DIGIT;
                     break;
                 }
-
-                if (C < '1' || C > '9') {
+                if (*it<'1' || *it>'9')
                     return {EINVAL, BadResponseLineErrorString};
-                }
-
-                if (HTTPMajor > 99) {
+                if (HTTPMajor>99)
                     return {EINVAL, BadResponseLineErrorString};
-                }
-
-                HTTPMajor = 10 * HTTPMajor + (C - '0');
+                HTTPMajor = 10 * HTTPMajor + (*it-'0');
                 break;
             case RL_FIRST_MINOR_DIGIT:
-
-                if (C < '1' || C > '9') {
+                if (*it<'1' || *it>'9')
                     return {EINVAL, BadResponseLineErrorString};
-                }
-
-                HTTPMinor = C - '0', ResponseLineState = RL_MINOR_DIGIT;
+                HTTPMinor = *it-'0', ResponseLineState = RL_MINOR_DIGIT;
                 break;
             case RL_MINOR_DIGIT:
-
-                if (C == ' ') {
-
-                    R.StatusCode < (BC + 1);
+                if (*it==' ') {
+                    StatusCodeStart=it;
                     ResponseLineState = RL_STATUS;
                     break;
                 }
-
-                if (C < '1' || C > '9') {
+                if (*it<'1' || *it>'9')
                     return {EINVAL, BadResponseLineErrorString};
-                }
-
-                if (HTTPMinor > 99) {
+                if (HTTPMinor > 99)
                     return {EINVAL, BadResponseLineErrorString};
-                }
-
-                HTTPMinor = 10 * HTTPMinor + (C - '0');
+                HTTPMinor = 10 * HTTPMinor + (*it-'0');
                 break;
             case RL_STATUS:
-
-                if (C == ' ') {
+                if (*it==' ') {
                     ResponseLineState = RL_STATUS;
                     break;
                 }
-
-                if (C < '1' || C > '9') {
+                if (*it<'1' || *it>'9')
                     return {EINVAL, BadResponseLineErrorString};
-                }
-
-                R.Status = R.Status * 10 + (C - '0');
-                R.StatusCode > BC;
-
-                if (R.StatusCode.Size() == 3 || R.Status > 999) {
+                StatusCode=StatusCode*10+(*it-'0');
+                StatusCodeEnd=it;
+                if(StatusCodeEnd-StatusCodeStart==3 || StatusCode>999) {
                     ResponseLineState = RL_SPACE_AFTER_STATUS;
                     break;
                 }
                 break;
             case RL_SPACE_AFTER_STATUS:
-
-                switch (C) {
+                switch (*it) {
                     case ' ':
                     case '.':
                         ResponseLineState = RL_STATUS_TEXT;
-                        R.StatusText < (BC) + 1;
+                        StatusTextStart=it+1;
                         break;
                     case CR:
                         ResponseLineState = RL_ALMOST_DONE;
@@ -182,17 +138,17 @@ HTTPError HTTPResponse::ParseResponseLine(Buffer &B, HTTPResponse &R) {
                 }
                 break;
             case RL_STATUS_TEXT:
-                switch (C) {
+                switch (*it) {
                     case CR:
                         ResponseLineState = RL_ALMOST_DONE;
                         break;
                     case LF:
                         goto done;
                 }
-                R.StatusText > BC;
+                StatusTextEnd=it;
                 break;
             case RL_ALMOST_DONE:
-                switch (C) {
+                switch (*it) {
                     case LF:
                         goto done;
                     default:
@@ -200,29 +156,21 @@ HTTPError HTTPResponse::ParseResponseLine(Buffer &B, HTTPResponse &R) {
                 }
         }
     }
-
     return {EINVAL, BrokenResponseLineErrorString};
-
     done:
-
-    if (!(BC + 1)) {
+    if (it+1>=itEnd)
         return {EAGAIN, BrokenResponseLineErrorString};
-    }
-
-    BC += 1, B << BC;
-    R.Version = HTTPMajor * 1000 + HTTPMinor;
-
+    Version=HTTPMajor*1000+HTTPMinor;
+    if (StatusCodeEnd>StatusCodeStart)
+        StatueCodeStr={StatusCodeStart, (size_t)(StatusCodeEnd-StatusCodeStart)};
+    if (StatusTextEnd>StatusTextStart)
+        StatusText={StatusTextStart, (size_t)(StatusTextEnd-StatusTextStart)};
     return {0};
 }
-
-HTTPError HTTPResponse::Read(Buffer &B) {
+HTTPError HTTPResponse::parse(WritableMemoryBuffer &TopHalf, size_t THSize,
+                              WritableMemoryBuffer &BottomHalf, size_t BHSize) {
     return {0};
 }
-
-HTTPError HTTPResponse::Write(Buffer &B) {
+HTTPError HTTPResponse::write(WritableMemoryBuffer &B, BufferWriter &W) {
     return {0};
-}
-
-void HTTPResponse::Reset() {
-
 }
