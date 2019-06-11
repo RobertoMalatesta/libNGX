@@ -679,9 +679,8 @@ HTTPError HTTPRequest::parseRequestURI(const StringRef &TopHalf) {
 HTTPError HTTPRequest::parseHeaders(const StringRef &TopHalf) {
     HTTPHeader h;
     HTTPError e(0);
-    size_t Off = RequestLine.size();
-    if (Off==0) return {EBADE, BadHeaderErrorString };
-    while ((e=h.parse(TopHalf, Off, ALLOW_UNDERSCORE)).GetCode()==0) {
+    if (HeadersOffset==0) return {EBADE, BadHeaderErrorString };
+    while ((e=h.parse(TopHalf, HeadersOffset, ALLOW_UNDERSCORE)).GetCode()==0) {
         bool found=false;
         uint32_t hash=murmurhash2(h.getHeader(), true);
         for (auto &h1 : HeaderMap)
@@ -700,8 +699,10 @@ HTTPError HTTPRequest::parseHeaders(const StringRef &TopHalf) {
 }
 HTTPError HTTPRequest::parse(const StringRef &TopHalf, const StringRef &BottomHalf) {
     HTTPError err(0);
+    const Byte *BodyTHStart;
     switch (State) {
         case HTTPRequestState::HTTP_INIT:
+            BodyTH=BodyBH={}, HeadersOffset=0;
             State=HTTPRequestState::HTTP_PAESE_METHOD;
         case HTTPRequestState::HTTP_PAESE_METHOD:
             err=parseMethod(TopHalf);
@@ -712,18 +713,23 @@ HTTPError HTTPRequest::parse(const StringRef &TopHalf, const StringRef &BottomHa
             err=parseRequestline(TopHalf);
             if (err.GetCode()!=0)
                 return err;
+            HeadersOffset = RequestLine.size();
             State=HTTPRequestState::HTTP_PARSE_HEADER;
         case HTTPRequestState::HTTP_PARSE_HEADER:
             err=parseHeaders(TopHalf);
-            if (err.GetCode()!=0)
+            BodyTHStart=TopHalf.begin()+HeadersOffset;
+            if (err.GetCode()!=0 || BodyTHStart>=TopHalf.end())
                 return err;
+            BodyTH={BodyTHStart, (size_t)(BodyTH.end()-BodyTHStart)};
             State=HTTPRequestState::HTTP_HEADER_DONE;
         case HTTPRequestState::HTTP_HEADER_DONE:
-            // Read TopHalf body and BottomHalf data;
+            BodyTHStart=BodyTH.begin();
+            BodyTH={BodyTHStart, (size_t)(BodyTH.end()-BodyTHStart)};
+            BodyBH=BottomHalf;
             return {0};
     }
     HeaderMap.reset_to_small();
-    return {EBADF, BadRequestErrorString};
+    return {EBADE, BadRequestErrorString};
 }
 HTTPError HTTPRequest::write(BufferWriter &W) {
     return {0};

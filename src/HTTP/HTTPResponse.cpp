@@ -3,8 +3,11 @@
 #include "HTTP/HTTPCoreHeader.h"
 #include "HTTP/HTTPResponse.h"
 using namespace ngx::HTTP;
+const char BadHeaderErrorString[] = "bad header error";
 const char BadResponseLineErrorString[] = "bad response line error";
 const char BrokenResponseLineErrorString[] = "broken response line error";
+void HTTPResponse::processCoreHeader(HTTPHeader &H, uint32_t hash) {
+}
 HTTPError HTTPResponse::parseResponseline(const StringRef &TopHalf) {
     enum HTTPResponseLineParseStates {
         RL_START = 0,
@@ -25,7 +28,8 @@ HTTPError HTTPResponse::parseResponseline(const StringRef &TopHalf) {
     auto it=TopHalf.char_begin();
     auto StatusCodeStart=it, StatusCodeEnd=it;
     auto StatusTextStart=it, StatusTextEnd=it;
-    for(;it!=TopHalf.char_end() && !*it; it++) {
+    auto StatusLineStart=it, StatusLineEnd=it;
+    for(;it!=TopHalf.char_end() && *it; it++) {
         switch (ResponseLineState) {
             case RL_START:
                 switch (*it) {
@@ -95,7 +99,7 @@ HTTPError HTTPResponse::parseResponseline(const StringRef &TopHalf) {
                 break;
             case RL_MINOR_DIGIT:
                 if (*it==' ') {
-                    StatusCodeStart=it;
+                    StatusCodeStart=it+1;
                     ResponseLineState = RL_STATUS;
                     break;
                 }
@@ -110,10 +114,10 @@ HTTPError HTTPResponse::parseResponseline(const StringRef &TopHalf) {
                     ResponseLineState = RL_STATUS;
                     break;
                 }
-                if (*it<'1' || *it>'9')
+                if (*it<'0' || *it>'9')
                     return {EINVAL, BadResponseLineErrorString};
                 StatusCode=StatusCode*10+(*it-'0');
-                StatusCodeEnd=it;
+                StatusCodeEnd=it+1;
                 if(StatusCodeEnd-StatusCodeStart==3 || StatusCode>999) {
                     ResponseLineState = RL_SPACE_AFTER_STATUS;
                     break;
@@ -130,6 +134,7 @@ HTTPError HTTPResponse::parseResponseline(const StringRef &TopHalf) {
                         ResponseLineState = RL_ALMOST_DONE;
                         break;
                     case LF:
+                        StatusLineEnd=it;
                         goto done;
                     default:
                         return {EINVAL, BadResponseLineErrorString};
@@ -138,16 +143,19 @@ HTTPError HTTPResponse::parseResponseline(const StringRef &TopHalf) {
             case RL_STATUS_TEXT:
                 switch (*it) {
                     case CR:
+                        StatusTextEnd=it;
                         ResponseLineState = RL_ALMOST_DONE;
                         break;
                     case LF:
+                        StatusCodeEnd=it-1;
+                        StatusLineEnd=it;
                         goto done;
                 }
-                StatusTextEnd=it;
                 break;
             case RL_ALMOST_DONE:
                 switch (*it) {
                     case LF:
+                        StatusLineEnd=it;
                         goto done;
                     default:
                         return {EINVAL, BadResponseLineErrorString};
@@ -160,13 +168,62 @@ HTTPError HTTPResponse::parseResponseline(const StringRef &TopHalf) {
         return {EAGAIN, BrokenResponseLineErrorString};
     Version=HTTPMajor*1000+HTTPMinor;
     if (StatusCodeEnd>StatusCodeStart)
-        StatueCodeStr={reinterpret_cast<const Byte*>(StatusCodeStart), (size_t)(StatusCodeEnd-StatusCodeStart)};
+        StatusCodeStr={reinterpret_cast<const Byte*>(StatusCodeStart), (size_t)(StatusCodeEnd-StatusCodeStart)};
     if (StatusTextEnd>StatusTextStart)
         StatusText={reinterpret_cast<const Byte*>(StatusTextStart), (size_t)(StatusTextEnd-StatusTextStart)};
+    if (StatusLineEnd>StatusLineStart)
+        StatusLine={reinterpret_cast<const Byte*>(StatusLineStart), (size_t)(StatusLineEnd-StatusLineStart+1)};
     return {0};
 }
+HTTPError HTTPResponse::parseHeaders(const StringRef &TopHalf) {
+    HTTPHeader h;
+    HTTPError e(0);
+    if (HeadersOffset==0) return {EBADE, BadHeaderErrorString };
+    while ((e=h.parse(TopHalf, HeadersOffset, ALLOW_UNDERSCORE)).GetCode()==0) {
+        bool found=false;
+        uint32_t hash=murmurhash2(h.getHeader(), true);
+        for (auto &h1 : HeaderMap)
+            if (h1.first==hash) {
+                found=true, h1.second=h;
+                processCoreHeader(h, hash);
+                break;
+            }
+        if (!found) {
+            HeaderMap.push_back(std::pair<uint32_t, HTTPHeader>(hash, h));
+            processCoreHeader(h, hash);
+        }
+    }
+    if (e.GetCode()==ENOENT) return {0};
+    return e;
+}
 HTTPError HTTPResponse::parse(const StringRef &TopHalf, const StringRef &BottomHalf) {
-    return {0};
+    HTTPError err(0);
+    const Byte *BodyTHStart;
+    switch (State) {
+        case HTTPResponseState ::HTTP_INIT:
+            BodyTH=BodyBH={}, HeadersOffset=0;
+            State=HTTPResponseState::HTTP_PARSE_RESPONSE_LINE;
+        case HTTPResponseState::HTTP_PARSE_RESPONSE_LINE:
+            err=parseResponseline(TopHalf);
+            if (err.GetCode()!=0)
+                return err;
+            HeadersOffset = StatusLine.size();
+            State=HTTPResponseState::HTTP_PARSE_HEADERS;
+        case HTTPResponseState::HTTP_PARSE_HEADERS:
+            err=parseHeaders(TopHalf);
+            BodyTHStart=TopHalf.begin()+HeadersOffset;
+            if (err.GetCode()!=0 || BodyTHStart>=TopHalf.end())
+                return err;
+            BodyTH={BodyTHStart, (size_t)(BodyTH.end()-BodyTHStart)};
+            State=HTTPResponseState::HTTP_HEADER_DONE;
+        case HTTPResponseState::HTTP_HEADER_DONE:
+            BodyTHStart=BodyTH.begin();
+            BodyTH={BodyTHStart, (size_t)(BodyTH.end()-BodyTHStart)};
+            BodyBH=BottomHalf;
+            return {0};
+    }
+    HeaderMap.reset_to_small();
+    return {EBADE, BadResponseLineErrorString};
 }
 HTTPError HTTPResponse::write(BufferWriter &W) {
     return {0};

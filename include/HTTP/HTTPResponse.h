@@ -16,15 +16,27 @@ protected:
     } State = HTTP_INIT;
     int Version;
     int StatusCode;
-    StringRef StatueCodeStr;
+    size_t HeadersOffset;
+    StringRef StatusCodeStr;
     StringRef StatusText;
+    StringRef StatusLine;
+    StringRef BodyTH, BodyBH;
     SmallVector<std::pair<uint32_t, HTTPHeader>> HeaderMap;
     SmallVector<std::pair<uint32_t, HTTPHeader>> Trailers;
     /** Parse HTTP Response Line from Buffer to HTTPResponse */
+    void processCoreHeader(HTTPHeader &H, uint32_t hash);
     HTTPError parseResponseline(const StringRef &TopHalf);
-
+    HTTPError parseHeaders(const StringRef &TopHalf);
 public:
+
     HTTPResponse() = default;
+    int getVersion() const { return Version; }
+    int getStatusCode() const { return StatusCode; }
+    const StringRef &getStatusCodeString() const { return StatusCodeStr; }
+    const StringRef &getStatusText() const { return StatusText; }
+    const StringRef &getStatusLine() const { return StatusLine; }
+    const SmallVector<std::pair<uint32_t, HTTPHeader>> &getHeaders() const { return HeaderMap; }
+    const SmallVector<std::pair<uint32_t, HTTPHeader>> &getTrailers() const { return Trailers; }
     HTTPError parse(const StringRef &TopHalf, const StringRef &BottomHalf);
     HTTPError write(BufferWriter &W);
 };

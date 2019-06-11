@@ -6,7 +6,26 @@
 namespace ngx {
 namespace HTTP {
 using namespace ngx::Core::Support;
-struct HTTPRequest {
+class HTTPRequest {
+protected:
+    // HTTPRequest Parse State
+    enum HTTPRequestState {
+        HTTP_BAD_REQUEST = -1,
+        HTTP_INIT,
+        HTTP_PAESE_METHOD,
+        HTTP_PARSE_REQUEST_LINE,
+        HTTP_PARSE_HEADER,
+        HTTP_HEADER_DONE,
+    } State=HTTP_INIT;
+    size_t HeadersOffset;
+    void processCoreHeader(HTTPHeader &H, uint32_t hash);
+    /** Parse HTTP Method from Buffer into HTTPRequest */
+    HTTPError parseMethod(const StringRef &TopHalf);
+    /** Parse HTTP Request Line from Buffer into HTTPRequest */
+    HTTPError parseRequestline(const StringRef &TopHalf);
+    /** Parse HTTP Header In through ParseHeader, and do some process */
+    HTTPError parseHeaders(const StringRef &TopHalf);
+public:
     enum Method {
         GET,
         PUT,
@@ -24,15 +43,6 @@ struct HTTPRequest {
         PROPFIND,
         PROPPATCH,
     };
-    // HTTPRequest Parse State
-    enum HTTPRequestState {
-        HTTP_BAD_REQUEST = -1,
-        HTTP_INIT,
-        HTTP_PAESE_METHOD,
-        HTTP_PARSE_REQUEST_LINE,
-        HTTP_PARSE_HEADER,
-        HTTP_HEADER_DONE,
-    } State=HTTP_INIT;
     // HTTP Method GET, POST, PUT, DELETE, ...
     Method Method;
     StringRef MethodStr;
@@ -113,13 +123,8 @@ struct HTTPRequest {
     SmallVector<StringRef, 8> XForwardFor;
     // Cookies extracted from Cookie Header
     SmallVector<StringRef, 8> Cookies;
-    void processCoreHeader(HTTPHeader &H, uint32_t hash);
-    /** Parse HTTP Method from Buffer into HTTPRequest */
-    HTTPError parseMethod(const StringRef &TopHalf);
-    /** Parse HTTP Request Line from Buffer into HTTPRequest */
-    HTTPError parseRequestline(const StringRef &TopHalf);
-    /** Parse HTTP Header In through ParseHeader, and do some process */
-    HTTPError parseHeaders(const StringRef &TopHalf);
+    StringRef BodyTH, BodyBH;
+
     HTTPRequest()= default;
     HTTPError parseRequestURI(const StringRef &S);
     HTTPError parse(const StringRef &TopHalf, const StringRef &BottomHalf);
